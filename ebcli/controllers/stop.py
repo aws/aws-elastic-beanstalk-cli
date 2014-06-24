@@ -11,3 +11,17 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+from ebcli.core.abstractController import AbstractBaseController
+from ebcli.resources.strings import strings
+
+
+class StopController(AbstractBaseController):
+    class Meta:
+        label = 'stop'
+        description = strings['stop.info']
+        arguments = [
+            (['-f', '--foo'], dict(help='notorious foo option')),
+            ]
+
+    def do_command(self):
+        self.app.print_to_console('We are doing the stop stuff!')

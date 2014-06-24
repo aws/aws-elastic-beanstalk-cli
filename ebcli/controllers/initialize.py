@@ -11,17 +11,19 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from core.abstractController import AbstractBaseController
-from resources.strings import strings
+from ebcli.core.abstractController import AbstractBaseController
+from ebcli.resources.strings import strings
 
 
-class LogsController(AbstractBaseController):
+class InitController(AbstractBaseController):
     class Meta:
-        label = 'logs'
-        description = strings['logs.info']
+        label = 'init'
+        description = strings['init.info']
         arguments = [
             (['-f', '--foo'], dict(help='notorious foo option')),
-            ]
+        ]
+        usage = 'this is a usage statement'
+        epilog = 'this is an epilog'
 
     def do_command(self):
-        self.app.print_to_console('We are doing the logs stuff!')
+        self.app.print_to_console('We are doing the init stuff!')

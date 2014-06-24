@@ -12,19 +12,19 @@
 # language governing permissions and limitations under the License.
 
 from cement.core import foundation, controller, handler
-from outputHandler import OutputHandler
+from ebcli.core.outputHandler import OutputHandler
 
-from controllers.initialize import InitController
-from controllers.branch import BranchController
-from controllers.delete import DeleteController
-from controllers.events import EventsController
-from controllers.importation import ImportController
-from controllers.logs import LogsController
-from controllers.push import PushController
-from controllers.start import StartController
-from controllers.status import StatusController
-from controllers.stop import StopController
-from controllers.update import UpdateController
+from ebcli.controllers.initialize import InitController
+from ebcli.controllers.branch import BranchController
+from ebcli.controllers.delete import DeleteController
+from ebcli.controllers.events import EventsController
+from ebcli.controllers.importation import ImportController
+from ebcli.controllers.logs import LogsController
+from ebcli.controllers.push import PushController
+from ebcli.controllers.start import StartController
+from ebcli.controllers.status import StatusController
+from ebcli.controllers.stop import StopController
+from ebcli.controllers.update import UpdateController
 
 
 class EbBaseController(controller.CementBaseController):

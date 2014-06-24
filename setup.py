@@ -9,7 +9,7 @@ requires = ['botocore>=0.51.0,<0.52.0',
 
 setup_options = dict(
     name='nicksEB',
-    version='0.1.1',
+    version='0.1.11',
     description='Command Line Interface for AWS EB.',
     long_description=open('README.txt').read(),
     author='Nick Humrich',
@@ -17,8 +17,8 @@ setup_options = dict(
     url='eb.example.com',
     scripts=['bin/eb'],
     packages=find_packages('.', exclude=['tests*']),
-    package_dir={'eb': 'eb'},
-    package_data={'eb': ['data/*.json', 'examples/*/*.rst',
+    package_dir={'ebcli': 'ebcli'},
+    package_data={'ebcli': ['data/*.json', 'examples/*/*.rst',
                              'examples/*/*/*.rst']},
     install_requires=requires,
     license="Apache License 2.0",
@@ -44,7 +44,7 @@ if 'py2exe' in sys.argv:
             'optimize': 0,
             'skip_archive': True,
             'packages': ['docutils', 'urllib', 'httplib', 'HTMLParser',
-                         'eb', 'ConfigParser', 'xml.etree'],
+                         'ebcli', 'ConfigParser', 'xml.etree'],
             }
     }
     setup_options['console'] = ['bin/eb']

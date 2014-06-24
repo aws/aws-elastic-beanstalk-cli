@@ -10,17 +10,18 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from core.abstractController import AbstractBaseController
-from resources.strings import strings
+
+from ebcli.core.abstractController import AbstractBaseController
+from ebcli.resources.strings import strings
 
 
-class DeleteController(AbstractBaseController):
+class EventsController(AbstractBaseController):
     class Meta:
-        label = 'delete'
-        description = strings['delete.info']
+        label = 'events'
+        description = strings['events.info']
         arguments = [
             (['-f', '--foo'], dict(help='notorious foo option')),
-            ]
+        ]
 
     def do_command(self):
-        self.app.print_to_console('We are doing the delete stuff!')
+        self.app.print_to_console('We are doing the events stuff!')

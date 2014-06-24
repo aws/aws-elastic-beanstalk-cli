@@ -10,17 +10,18 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from core.abstractController import AbstractBaseController
-from resources.strings import strings
+
+from ebcli.core.abstractController import AbstractBaseController
+from ebcli.resources.strings import strings
 
 
-class BranchController(AbstractBaseController):
+class UpdateController(AbstractBaseController):
     class Meta:
-        label = 'branch'
-        description = strings['branch.info']
+        label = 'update'
+        description = strings['update.info']
         arguments = [
             (['-f', '--foo'], dict(help='notorious foo option')),
             ]
 
     def do_command(self):
-        self.app.print_to_console('We are doing the branch stuff!')
+        self.app.print_to_console('We are doing the update stuff!')
