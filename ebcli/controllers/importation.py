@@ -11,8 +11,10 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ebcli.core.abstractController import AbstractBaseController
+from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
+import sys
+import gettext
 
 
 class ImportController(AbstractBaseController):
@@ -24,4 +26,8 @@ class ImportController(AbstractBaseController):
         ]
 
     def do_command(self):
+        self.app.args.joe = 'bob'
+        self.app.print_to_console('joe = ' + self.app.args.joe)
+        name = self.app.prompt('enter bobs name')
+        self.app.print_to_console('you entered \'' + str(name) + '\'')
         self.app.print_to_console('We are doing the import stuff!')

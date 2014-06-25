@@ -22,7 +22,7 @@ class OutputHandler(output.CementOutputHandler):
             print("%s => %s" % (key, data[key]))
 
     def print_to_console(self, data):
-        if isinstance(data, basestring):
+        if isinstance(data, str):
             print(data)
         else:
             self.app.log.error("print_to_console called with an unsupported data type")

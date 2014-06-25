@@ -24,15 +24,10 @@ class AbstractBaseController(controller.CementBaseController):
         stacked_on = 'base'
         stacked_type = 'nested'
         arguments = [
-            ( ['-f', '--foo'], dict(help='notorious foo option')),
-            ]
+            (['-f', '--foo'], dict(help='notorious foo option')),
+        ]
 
     def _setup(self, base_app):
-        """
-        Add a common object that is useful in multiple sub-classed
-        controllers.
-
-        """
         super(AbstractBaseController, self)._setup(base_app)
         self.my_shared_obj = dict()
 
@@ -43,8 +38,7 @@ class AbstractBaseController(controller.CementBaseController):
     def default(self):
         """
         This command will be shared within all controllers that sub-class
-        from here.  It can also be overridden in the sub-class, but for
-        this example we are making it dynamic.
+        from here.  It can also be overridden in the sub-class
 
         """
         self.do_command()

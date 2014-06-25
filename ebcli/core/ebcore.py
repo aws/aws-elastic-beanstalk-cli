@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from cement.core import foundation, controller, handler
-from ebcli.core.outputHandler import OutputHandler
+from ebcli.core.outputhandler import OutputHandler
 
 from ebcli.controllers.initialize import InitController
 from ebcli.controllers.branch import BranchController
@@ -25,6 +25,7 @@ from ebcli.controllers.start import StartController
 from ebcli.controllers.status import StatusController
 from ebcli.controllers.stop import StopController
 from ebcli.controllers.update import UpdateController
+from ebcli.resources.strings import strings
 
 
 class EbBaseController(controller.CementBaseController):
@@ -34,7 +35,7 @@ class EbBaseController(controller.CementBaseController):
     """
     class Meta:
         label = 'base'
-        description = 'Welcome to EB. Please see below for a list of available commands.'
+        description = strings['base.info']
 
     @controller.expose(hide=True)
     def default(self):
@@ -50,12 +51,24 @@ class EB(foundation.CementApp):
     def print_to_console(self, data):
         self.output.print_to_console(data)
 
+    @staticmethod
+    def get_input(output):
+        try:
+            input = raw_input
+        except NameError:
+            pass
+        return input(output + ': ')
+
+    @staticmethod
+    def prompt(output):
+        return EB.get_input('(' + output + ')')
+
 
 def main():
     app = EB()
 
     try:
-        # register non-base controller handlers
+        # register all controllers
         handler.register(InitController)
         handler.register(BranchController)
         handler.register(DeleteController)
