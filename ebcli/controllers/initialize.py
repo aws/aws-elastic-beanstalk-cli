@@ -13,6 +13,7 @@
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
+# from ebcli.core import fileoperations
 
 
 class InitController(AbstractBaseController):
@@ -26,4 +27,17 @@ class InitController(AbstractBaseController):
         epilog = 'this is an epilog'
 
     def do_command(self):
+        # fileoperations.try_load_eb_config_file_operation()
         self.app.print_to_console('We are doing the init stuff!')
+
+        # queue.add(TryLoadEbConfigFileOperation(queue))
+        # queue.add(ReadAwsCredentialFileOperation(queue))
+        # queue.add(AskForConfigFileParameterOperation(queue))
+        # queue.add(ValidateParameterOperation(queue))
+        # queue.add(RotateOptionsettingFileOperation(queue))
+        # queue.add(SanitizeBranchOperation(queue))
+        # queue.add(UpdateAwsCredentialFileOperation(queue))
+        # queue.add(SanitizeAppVersionNameOperation(queue))
+        # queue.add(SaveEbConfigFileOperation(queue))
+        # queue.add(UpdateDevToolsConfigOperation(queue))
+        # queue.add(CheckGitIgnoreFileOperation(queue))

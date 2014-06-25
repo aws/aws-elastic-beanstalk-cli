@@ -2,14 +2,17 @@
 import sys
 
 from setuptools import setup, find_packages
+import ebcli
 
-requires = ['botocore>=0.51.0,<0.52.0',
-            'cement>=2.2.2']
+requires = ['botocore>=0.53.0',
+            'cement>=2.2.2',
+            'enum34>=1.0',
+            'six>=1.7.2']
 
 
 setup_options = dict(
     name='nicksEB',
-    version='0.1.11',
+    version=ebcli.__version__,
     description='Command Line Interface for AWS EB.',
     long_description=open('README.txt').read(),
     author='Nick Humrich',
@@ -33,7 +36,7 @@ setup_options = dict(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
     ),
-    )
+)
 
 if 'py2exe' in sys.argv:
     # This will actually give us a py2exe command.

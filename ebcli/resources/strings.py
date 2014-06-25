@@ -12,8 +12,11 @@
 # language governing permissions and limitations under the License.
 
 strings = {
-    'base.info' : 'Welcome to EB. Please see below for a list of available commands.',
-    'init.info' : 'Initializes your directory with eb. Sets up the environment',
+    'app.version_message': 'EBCLI - AWS Elastic Beanstalk CLI - Version:',
+    'base.info' : 'Welcome to EB. '
+                  'Please see below for a list of available commands.',
+    'init.info' : 'Initializes your directory with eb. '
+                  'Sets up the environment',
     'branch.info' : 'Branches stuff',
     'delete.info' : 'Delete stuff',
     'events.info' : 'Events stuff',

@@ -13,8 +13,7 @@
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
-import sys
-import gettext
+from ebcli.resources.constants import ParameterName
 
 
 class ImportController(AbstractBaseController):
@@ -26,8 +25,11 @@ class ImportController(AbstractBaseController):
         ]
 
     def do_command(self):
+        self.app.log.info('hello')
+        self.app.log.warn('hello')
         self.app.args.joe = 'bob'
+        self.app.print_to_console(ParameterName.AwsAccessKeyId, 'hello', 1)
         self.app.print_to_console('joe = ' + self.app.args.joe)
-        name = self.app.prompt('enter bobs name')
+        name = self.app.prompt('bobs name')
         self.app.print_to_console('you entered \'' + str(name) + '\'')
         self.app.print_to_console('We are doing the import stuff!')

@@ -24,7 +24,7 @@ class AbstractBaseController(controller.CementBaseController):
         stacked_on = 'base'
         stacked_type = 'nested'
         arguments = [
-            (['-f', '--foo'], dict(help='notorious foo option')),
+            (['-f', '--foo'], dict(action='store', dest='foo', help='notorious foo option')),
         ]
 
     def _setup(self, base_app):

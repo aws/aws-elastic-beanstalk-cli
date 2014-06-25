@@ -11,9 +11,10 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import ebcli
 from cement.core import foundation, controller, handler
+from cement.utils.misc import init_defaults
 from ebcli.core.outputhandler import OutputHandler
-
 from ebcli.controllers.initialize import InitController
 from ebcli.controllers.branch import BranchController
 from ebcli.controllers.delete import DeleteController
@@ -27,6 +28,8 @@ from ebcli.controllers.stop import StopController
 from ebcli.controllers.update import UpdateController
 from ebcli.resources.strings import strings
 
+app = 0
+
 
 class EbBaseController(controller.CementBaseController):
     """
@@ -36,10 +39,18 @@ class EbBaseController(controller.CementBaseController):
     class Meta:
         label = 'base'
         description = strings['base.info']
+        arguments = [
+            (['-v', '--version'], dict(action='store_true',
+                                       help='show application/version info')),
+        ]
 
     @controller.expose(hide=True)
     def default(self):
-        self.app.args.print_help()
+        if self.app.pargs.version:
+            self.app.print_to_console(strings['app.version_message'],
+                                      ebcli.__version__)
+        else:
+            self.app.args.print_help()
 
 
 class EB(foundation.CementApp):
@@ -47,9 +58,12 @@ class EB(foundation.CementApp):
         label = 'eb'
         base_controller = EbBaseController
         output_handler = OutputHandler
+        defaults = init_defaults('eb', 'log')
+        defaults['log']['level'] = 'WARN'
+        config_defaults = defaults
 
-    def print_to_console(self, data):
-        self.output.print_to_console(data)
+    def print_to_console(self, *data):
+        self.output.print_to_console(*data)
 
     @staticmethod
     def get_input(output):
@@ -64,7 +78,14 @@ class EB(foundation.CementApp):
         return EB.get_input('(' + output + ')')
 
 
+defaults = init_defaults('myapp', 'log')
+defaults['log']['level'] = 'WARN'
+
+app = foundation.CementApp('myapp', config_defaults=defaults)
+
+
 def main():
+    global app
     app = EB()
 
     try:

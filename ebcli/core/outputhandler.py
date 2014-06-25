@@ -11,7 +11,11 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import six
+
 from cement.core import output
+from enum import Enum
+
 
 class OutputHandler(output.CementOutputHandler):
     class Meta:
@@ -21,8 +25,13 @@ class OutputHandler(output.CementOutputHandler):
         for key in data:
             print("%s => %s" % (key, data[key]))
 
-    def print_to_console(self, data):
-        if isinstance(data, str):
-            print(data)
-        else:
-            self.app.log.error("print_to_console called with an unsupported data type")
+    def print_to_console(self, *args):
+        for data in args:
+            if isinstance(data, six.string_types) \
+                    or isinstance(data, six.integer_types):
+                print(data),
+            elif isinstance(data, Enum):
+                print(data.value),
+            else:
+                self.app.log.error("print_to_console called with an unsupported data type")
+        print('')
