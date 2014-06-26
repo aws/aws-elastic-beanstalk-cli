@@ -28,3 +28,7 @@ strings = {
     'stop.info' : 'Stop stuff',
     'update.info' : 'Update stuff',
 }
+
+responses = {
+    'event.greenmessage' : 'Environment health has been set to GREEN'
+}

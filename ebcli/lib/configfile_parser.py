@@ -16,16 +16,15 @@
 import codecs
 import os
 import re
-import six
-
-from ConfigParser import RawConfigParser as _RawConfigParser
 from StringIO import StringIO as _StringIO
 from contextlib import closing as _closing
+
+from six.moves.configparser import ConfigParser
 
 from ebcli.resources.constants import ServiceDefault
 
 
-class SectionedConfigParser(_RawConfigParser):
+class SectionedConfigParser(ConfigParser):
     """
     Derived ConfigParser.RawConfigParser to support
     Unicode write and case sensitive key name.

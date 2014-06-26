@@ -6,8 +6,8 @@ import ebcli
 
 requires = ['botocore>=0.53.0',
             'cement>=2.2.2',
-            'enum34>=1.0',
-            'six>=1.7.2']
+            'enum34',
+            'six']
 
 
 setup_options = dict(
