@@ -21,7 +21,21 @@ class InitController(AbstractBaseController):
         label = 'init'
         description = strings['init.info']
         arguments = [
-            (['-f', '--foo'], dict(help='notorious foo option')),
+            (['-r', '--region'], dict(help='Service region environments '
+                                           'will be created in')),
+            (['-a', '--app'], dict(help='Application name')),
+            (['-e', '--environment'], dict(help='Environment name')),
+            (['--worker'], dict(action='store_true',
+                                help='Start environment as a worker tier')),
+            (['-S', '--solution'], dict(help='Solution stack')),
+            (['-s', '--single'], dict(action='store_true',
+                                      help='Environment will use a Single '
+                                           'Instance with no Load Balancer')),
+            (['-D', '--defaults'], dict(action='store_true',
+                                        help='Automatically revert to defaults'
+                                             ' for unsupplied parameters')),
+            (['-p', '--profile'], dict(help='Instance profile')),
+
         ]
         usage = 'this is a usage statement'
         epilog = 'this is an epilog'

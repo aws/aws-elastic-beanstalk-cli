@@ -13,22 +13,24 @@
 
 strings = {
     'app.version_message': 'EBCLI - AWS Elastic Beanstalk CLI - Version:',
-    'base.info' : 'Welcome to EB. '
-                  'Please see below for a list of available commands.',
-    'init.info' : 'Initializes your directory with eb. '
-                  'Sets up the environment',
-    'branch.info' : 'Branches stuff',
-    'delete.info' : 'Delete stuff',
-    'events.info' : 'Events stuff',
-    'import.info' : 'Import stuff',
-    'logs.info' : 'Logs stuff',
-    'push.info' : 'Push stuff',
-    'start.info' : 'Start stuff',
-    'status.info' : 'Status stuff',
-    'stop.info' : 'Stop stuff',
-    'update.info' : 'Update stuff',
+    'base.info': 'Welcome to EB. \
+                 Please see below for a list of available commands.',
+    'init.info': 'Initializes your directory with eb. '
+                 'Sets up the environment',
+    'branch.info': 'Branches stuff',
+    'delete.info': 'Delete stuff',
+    'events.info': 'Events stuff',
+    'import.info': 'Import stuff',
+    'logs.info': 'Logs stuff',
+    'push.info': 'Push stuff',
+    'start.info': 'Start stuff',
+    'status.info': 'Status stuff',
+    'stop.info': 'Stop stuff',
+    'update.info': 'Update stuff',
+    'error.nocreds': 'A credentials file can not be found. \n'
+                     'Please place a credential file at ~/.awskeys'
 }
 
 responses = {
-    'event.greenmessage' : 'Environment health has been set to GREEN'
+    'event.greenmessage': 'Environment health has been set to GREEN'
 }

@@ -13,72 +13,72 @@
 # implied. See the License for the specific language governing permissions
 # and limitations under the License.
 #==============================================================================
-import os
-import subprocess
-
-from ebcli.core.ebcore import app
-from lib import utils, shell_utils
-from ebcli.resources.constants import ParameterName, EbLocalDir, EbConfigFile
-from ebcli.core import configfile
-
-
-def create_eb_local_dir():
-    shell_utils.create_directory(os.getcwdu() + os.path.sep + EbLocalDir.Path)
-
-# Format: ParameterName, from_file function, to_file function
-CredentialFileParameters = [
-    (ParameterName.AwsAccessKeyId, None, None),
-    (ParameterName.AwsSecretAccessKey, None, None),
-    (ParameterName.RdsMasterPassword, None, None),
-]
-
-
-def _try_read_credential_file(parameter_pool, location, source):
-    func_matrix = []
-    # Loop over default settings
-    for name, from_file, _ in CredentialFileParameters:
-        if not parameter_pool.has(name):
-            func_matrix.append((None, name, from_file))
-
-    # Loop over branch environment settings
-    branches = parameter_pool.get_value(ParameterName.Branches)
-    if branches:
-        for branch_name, branch_setting in branches.iteritems():
-            if not name in branch_setting:
-                func_matrix.append((branch_name, name, from_file))
-
-    configfile.read_aws_credential_file(location, parameter_pool,
-                                         func_matrix, source, True)
-
-
-def read_aws_credential_file_operation():
-    # Try to retrieve all credential info from specified file
-    if app.args.aws_credential_file:
-        file_param = app.args.aws_credential_file
-        _try_read_credential_file(file_param.value, file_param.source)
-    else:
-        location = configfile.default_aws_credential_file_location()
-        self._try_read_credential_file(parameter_pool,
-                                       location,
-                                       ParameterSource.ConfigFile)
-
-    osenv_location =  os.getenv(AwsCredentialFileDefault.OSVariableName)
-    if osenv_location is not None:
-        self._try_read_credential_file(parameter_pool,
-                                       osenv_location,
-                                       ParameterSource.OsEnvironment)
-
-    ret_result = OperationResult(self, None, None, None)
-    return ret_result
-
-
-def try_load_eb_config_file_operation():
-    location = EbLocalDir.Path + os.path.sep + EbConfigFile.Name
-
-    configfile.load_eb_config_file(location, True)
-
-    ret_result = OperationResult(self, None, None, None)
-    return ret_result
+# import os
+# import subprocess
+#
+# from ebcli.core.ebcore import app
+# from lib import utils, shell_utils
+# from ebcli.resources.constants import ParameterName, EbLocalDir, EbConfigFile
+# from ebcli.core import configfile
+#
+#
+# def create_eb_local_dir():
+#     shell_utils.create_directory(os.getcwdu() + os.path.sep + EbLocalDir.Path)
+#
+# # Format: ParameterName, from_file function, to_file function
+# CredentialFileParameters = [
+#     (ParameterName.AwsAccessKeyId, None, None),
+#     (ParameterName.AwsSecretAccessKey, None, None),
+#     (ParameterName.RdsMasterPassword, None, None),
+# ]
+#
+#
+# def _try_read_credential_file(parameter_pool, location, source):
+#     func_matrix = []
+#     # Loop over default settings
+#     for name, from_file, _ in CredentialFileParameters:
+#         if not parameter_pool.has(name):
+#             func_matrix.append((None, name, from_file))
+#
+#     # Loop over branch environment settings
+#     branches = parameter_pool.get_value(ParameterName.Branches)
+#     if branches:
+#         for branch_name, branch_setting in branches.iteritems():
+#             if not name in branch_setting:
+#                 func_matrix.append((branch_name, name, from_file))
+#
+#     configfile.read_aws_credential_file(location, parameter_pool,
+#                                          func_matrix, source, True)
+#
+#
+# def read_aws_credential_file_operation():
+#     # Try to retrieve all credential info from specified file
+#     if app.args.aws_credential_file:
+#         file_param = app.args.aws_credential_file
+#         _try_read_credential_file(file_param.value, file_param.source)
+#     else:
+#         location = configfile.default_aws_credential_file_location()
+#         _try_read_credential_file(parameter_pool,
+#                                        location,
+#                                        ParameterSource.ConfigFile)
+#
+#     osenv_location =  os.getenv(AwsCredentialFileDefault.OSVariableName)
+#     if osenv_location is not None:
+#         self._try_read_credential_file(parameter_pool,
+#                                        osenv_location,
+#                                        ParameterSource.OsEnvironment)
+#
+#     ret_result = OperationResult(self, None, None, None)
+#     return ret_result
+#
+#
+# def try_load_eb_config_file_operation():
+#     location = EbLocalDir.Path + os.path.sep + EbConfigFile.Name
+#
+#     configfile.load_eb_config_file(location, True)
+#
+#     ret_result = OperationResult(self, None, None, None)
+#     return ret_result
 
 #
 # class UpdateAwsCredentialFileOperation(OperationBase):

@@ -53,15 +53,15 @@ Today, when a repo has been initialized and associated with an EB environment, a
 * **`push`**
 
 ## New Commands
-* **`aws eb import`** Import an existing Elastic Beanstalk environment and map it to the current repository
-* **`aws eb open`** Open the environment's URL in the default web browser
-* **`aws eb envvar`** List environment variables for the current environment
-* **`aws eb envvar`** set KEY=VAL** Add a new env var to the correct location in the `.elasticbeanstalk` directory. Requires `aws eb update` to enact.
-* **`aws eb envvar unset KEY`** Remove an env var from the correct location in the `.elasticbeanstalk` directory. Requires `aws eb update` to enact.
-* **`aws eb envvar export-local`** Export EB environment variables into local env
-* **`aws eb scale min=x max=y`** Modify the scaling attributes. Requires `aws eb update` to enact.
-* **`aws eb keypair new-keypair`** Set or update the EC2 keypair. Requires `aws eb update` to enact.
-* **`aws eb update --dry-run`** Show changes that will result in new launch configuration (and instance replacement)
-* **`aws eb ssh`** SSH to a host in the environment. Interactive prompt with available instances (by instance ID) of desired capacity > 1.
-* **`aws eb local`** Deploy a repo with a Dockerrun.aws.json or Dockerfile to a local Docker environment.
-
+* **`eb import`** Import an existing Elastic Beanstalk environment and map it to the current repository
+* **`eb open`** Open the environment's URL in the default web browser
+* **`eb envvar`** List environment variables for the current environment
+* **`eb envvar`** set KEY=VAL** Add a new env var to the correct location in the `.elasticbeanstalk` directory. Requires `aws eb update` to enact.
+* **`eb envvar unset KEY`** Remove an env var from the correct location in the `.elasticbeanstalk` directory. Requires `aws eb update` to enact.
+* **`eb envvar export-local`** Export EB environment variables into local env
+* **`eb scale min=x max=y`** Modify the scaling attributes. Requires `aws eb update` to enact.
+* **`eb keypair new-keypair`** Set or update the EC2 keypair. Requires `aws eb update` to enact.
+* **`eb update --dry-run`** Show changes that will result in new launch configuration (and instance replacement)
+* **`eb ssh`** SSH to a host in the environment. Interactive prompt with available instances (by instance ID) of desired capacity > 1.
+* **`eb local`** Deploy a repo with a Dockerrun.aws.json or Dockerfile to a local Docker environment.
+* **`eb review`** (or eb init review) Reviews current config options

@@ -11,12 +11,15 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import sys
 import dateutil
 import datetime
 
 import botocore.session
+import botocore.exceptions
 
 from ebcli.core.ebcore import app
+from ebcli.resources.strings import strings
 
 
 def get_beanstalk_session():
@@ -46,6 +49,10 @@ def _make_api_call(operation_name, **operation_options):
             if response_data:
                 app.log.debug('Response:', response_data)
             return None
+    except botocore.exceptions.NoCredentialsError:
+        app.log.error('No credentials file found')
+        app.print_to_console(strings['error.nocreds'])
+        sys.exit(0)
 
     except (Exception, IOError) as error:
         app.log.error('Error while contacting Elastic Beanstalk Service')

@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 
 import six
+from six import print_
 
 from cement.core import output
 from enum import Enum
@@ -29,9 +30,9 @@ class OutputHandler(output.CementOutputHandler):
         for data in args:
             if isinstance(data, six.string_types) \
                     or isinstance(data, six.integer_types):
-                print(data),
+                print_(data, end='')
             elif isinstance(data, Enum):
-                print(data.value),
+                print_(data.value),
             else:
                 self.app.log.error("print_to_console called with an unsupported data type")
-        print('')
+        print_('')
