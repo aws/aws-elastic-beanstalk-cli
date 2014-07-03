@@ -78,11 +78,8 @@ class EB(foundation.CementApp):
         return EB.get_input('(' + output + ')')
 
 
-defaults = init_defaults('myapp', 'log')
+defaults = init_defaults('ebapp', 'log')
 defaults['log']['level'] = 'WARN'
-
-app = foundation.CementApp('myapp', config_defaults=defaults)
-
 
 def main():
     global app

@@ -22,3 +22,5 @@ def read_credential_file():
 
 
 
+def create_config_file():
+    location = '.elasticbeanstalk' + os.path.sep + 'config'

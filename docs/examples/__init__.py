@@ -11,20 +11,3 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings
-
-
-class UpdateController(AbstractBaseController):
-    class Meta:
-        label = 'update'
-        description = strings['update.info']
-        arguments = [
-            (['-f', '--foo'], dict(help='notorious foo option')),
-            ]
-
-    def do_command(self):
-
-        # update environment using a given config file
-
-        self.app.print_to_console('We are doing the update stuff!')

@@ -11,7 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from cement.core import foundation, controller, handler
+from cement.core import controller
 
 class AbstractBaseController(controller.CementBaseController):
     """

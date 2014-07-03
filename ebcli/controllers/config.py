@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+from cement.core import controller
+
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 
@@ -21,14 +23,25 @@ class BranchController(AbstractBaseController):
         description = strings['branch.info']
         arguments = [
             (['-f', '--foo'], dict(help='notorious foo option')),
-        ]
+            ]
 
     def do_command(self):
-
-        #This command will probably go away
-           #initialized a branch
-            # sets up an environment for the branch
-
-            # We should do this automagically when another command is called
-
         self.app.print_to_console('We are doing the branch stuff!')
+
+    @controller.expose(help="stuff")
+    def create(self):
+
+        # Create a config template based on current environment
+
+        # Store template somewhere?
+
+        self.app.print_to_console('Creating config template')
+
+    def update(self):
+        # update a config template
+
+        self.app.print_to_console('Updating config template')
+
+    @controller.expose(help="dump the settings file")
+    def dump(self):
+        self.app.print_to_console('Dumping the optionsettings file')

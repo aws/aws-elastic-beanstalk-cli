@@ -41,7 +41,20 @@ class InitController(AbstractBaseController):
         epilog = 'this is an epilog'
 
     def do_command(self):
-        # fileoperations.try_load_eb_config_file_operation()
+
+
+        # Read/create config file
+
+        # check for creds file
+           # prompt for them to create one
+           # export $AWS_CREDENTIALS_FILE if needed
+
+        # Set up Git stuff
+            # DevTools Git stuff for aws.push
+
+        # git ignore?
+
+
         self.app.print_to_console('We are doing the init stuff!')
 
         # queue.add(TryLoadEbConfigFileOperation(queue))

@@ -24,4 +24,7 @@ class StopController(AbstractBaseController):
             ]
 
     def do_command(self):
+
+        # stops environment
+            # wait for finish.. print status
         self.app.print_to_console('We are doing the stop stuff!')

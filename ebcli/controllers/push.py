@@ -24,4 +24,11 @@ class PushController(AbstractBaseController):
         ]
 
     def do_command(self):
+
+        # Check branch to see if its set up
+           # ask to create branch stuff
+
+        # do the push
+            # wait for finish.. print status
+
         self.app.print_to_console('We are doing the push stuff!')

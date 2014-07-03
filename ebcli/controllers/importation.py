@@ -25,6 +25,11 @@ class ImportController(AbstractBaseController):
         ]
 
     def do_command(self):
+
+        # import old settings (optionssettings/config) into
+        #   new version on eb
+
+
         self.app.log.info('hello')
         self.app.log.warn('hello')
         self.app.args.joe = 'bob'

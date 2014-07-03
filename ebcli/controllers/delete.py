@@ -24,4 +24,8 @@ class DeleteController(AbstractBaseController):
         ]
 
     def do_command(self):
+        # delete environment.
+
+        # remove all traces so its like the environment hasn't been
+        #  set up yet
         self.app.print_to_console('We are doing the delete stuff!')

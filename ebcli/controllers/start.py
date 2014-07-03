@@ -24,4 +24,17 @@ class StartController(AbstractBaseController):
         ]
 
     def do_command(self):
+
+        # load config file, save to params
+
+        # Get git branch operation
+        #   ask for missing params
+
+
+        # Start
+          # create app
+          # create app version
+          # create environment
+          # wait for finish.. print status
+
         self.app.print_to_console('We are doing the start stuff!')

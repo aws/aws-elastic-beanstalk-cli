@@ -18,6 +18,7 @@ import datetime
 import botocore.session
 import botocore.exceptions
 
+from ebcli import __version__
 from ebcli.core.ebcore import app
 from ebcli.resources.strings import strings
 
@@ -25,10 +26,16 @@ from ebcli.resources.strings import strings
 def get_beanstalk_session():
     app.log.info('Creating new Botocore session')
     session = botocore.session.get_session()
+    _set_user_agent_for_session(session)
     app.log.debug('Successfully created session')
 
     beanstalk = session.get_service('elasticbeanstalk')
     return beanstalk
+
+
+def _set_user_agent_for_session(session):
+    session.user_agent_name = 'eb-cli'
+    session.user_agent_version = __version__
 
 
 def _make_api_call(operation_name, **operation_options):
