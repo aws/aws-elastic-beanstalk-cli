@@ -11,8 +11,11 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ebcli.core.ebcore import app
 import os
+
+from six.moves import configparser
+
+from ebcli.core.ebcore import app
 
 def _try_read_credential_file():
     pass
@@ -20,7 +23,33 @@ def _try_read_credential_file():
 def read_credential_file():
     location = '.elasticbeanstalk' + os.path.sep + 'config'
 
-
+def get_directory_name():
+    pass
 
 def create_config_file():
     location = '.elasticbeanstalk' + os.path.sep + 'config'
+
+    if not os.path.exists('.elasticbeanstalk'):
+        os.makedirs('.elasticbeanstalk')
+
+
+    try:
+        #We want to try to open directory first, than file
+
+        config = configparser.ConfigParser()
+        config.read(location)
+        sections = config.sections()
+        app_name = config.get('global', 'ApplicationName')
+
+
+        config.add_section('global')
+        config.set('global', 'ApplicationName', 'test')
+
+        with open(location, "wb") as configfile:
+            config.write(configfile)
+
+    except IOError:
+
+        # File does not exist, we want to create it
+        os.mkdir()
+        f = file(location, "w")

@@ -25,4 +25,4 @@ class LogsController(AbstractBaseController):
 
     def do_command(self):
         # get environment logs
-        self.app.print_to_console('We are doing the logs stuff!')
+        self.app.print_to_console('There are no logs')

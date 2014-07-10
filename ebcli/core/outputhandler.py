@@ -30,7 +30,7 @@ class OutputHandler(output.CementOutputHandler):
         for data in args:
             if isinstance(data, six.string_types) \
                     or isinstance(data, six.integer_types):
-                print_(data, end='')
+                print_(data, end=' ')
             elif isinstance(data, Enum):
                 print_(data.value),
             else:

@@ -17,31 +17,53 @@ from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 
 
-class BranchController(AbstractBaseController):
+class ConfigController(AbstractBaseController):
     class Meta:
-        label = 'branch'
-        description = strings['branch.info']
+        label = 'config'
+        description = strings['config.info']
         arguments = [
-            (['-f', '--foo'], dict(help='notorious foo option')),
+            (['-f', '--file'], dict(help='file to load from/save to')),
+            (['-g', '--global'], dict(help='Make configuration file global'))
             ]
 
     def do_command(self):
-        self.app.print_to_console('We are doing the branch stuff!')
+        self.app.print_to_console('Error: Missing arguments. '
+                                  'Please type --help for a list of '
+                                  'available commands')
 
-    @controller.expose(help="stuff")
+    @controller.expose(help="create a new configuration")
     def create(self):
+        if not self.app.pargs.file:
+            self.app.pargs.file = '.elasticbeanstalk/config-1'
 
-        # Create a config template based on current environment
+        # Interactive create
 
         # Store template somewhere?
 
-        self.app.print_to_console('Creating config template')
+        self.app.print_to_console('Creating config template at',
+                                  self.app.pargs.file)
 
+    @controller.expose(help='Update an existing configuration')
     def update(self):
+        if not self.app.pargs.file:
+            self.app.pargs.file = '.elasticbeanstalk/config-1'
         # update a config template
 
-        self.app.print_to_console('Updating config template')
+        self.app.print_to_console('Updating config template',
+                                  self.app.pargs.file)
 
-    @controller.expose(help="dump the settings file")
-    def dump(self):
-        self.app.print_to_console('Dumping the optionsettings file')
+    @controller.expose(help='Load a settings file')
+    def load(self):
+        if not self.app.pargs.file:
+            self.app.pargs.file = '.elasticbeanstalk/config-1'
+
+        self.app.print_to_console('Loaded file into your environment',
+                                  self.app.pargs.file)
+
+    @controller.expose(help='Save current environment settings to a file')
+    def save(self):
+        if not self.app.pargs.file:
+            self.app.pargs.file = '.elasticbeanstalk/config-1'
+
+        self.app.print_to_console('Saved environment configuration at',
+                                  self.app.pargs.file)

@@ -11,24 +11,29 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import time
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 
 
-class BranchController(AbstractBaseController):
+class TerminateController(AbstractBaseController):
     class Meta:
-        label = 'branch'
-        description = strings['branch.info']
+        label = 'terminate'
+        description = strings['terminate.info']
         arguments = [
-            (['-f', '--foo'], dict(help='notorious foo option')),
-        ]
+            (['-e', '--environment'], dict(dest='env',
+                                           help='Environment name')),
+            ]
 
     def do_command(self):
+        if not self.app.pargs.env:
+            self.app.print_to_console('INFO: No environment has been given. '
+                                      'Using branch default.')
 
-        #This command will probably go away
-           #initialized a branch
-            # sets up an environment for the branch
+        self.app.print_to_console('Stopping environment')
+        self.app.print_to_console('...')
+        time.sleep(1)
+        self.app.print_to_console('Environment successfully terminated!')
 
-            # We should do this automagically when another command is called
-
-        self.app.print_to_console('We are doing the branch stuff!')
+        # stops environment
+            # wait for finish.. print status

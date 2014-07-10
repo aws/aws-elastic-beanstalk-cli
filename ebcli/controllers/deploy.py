@@ -11,24 +11,36 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import time
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 
 
-class PushController(AbstractBaseController):
+class DeployController(AbstractBaseController):
     class Meta:
-        label = 'push'
-        description = strings['push.info']
+        label = 'deploy'
+        description = strings['deploy.info']
         arguments = [
-            (['-f', '--foo'], dict(help='notorious foo option')),
+            (['-e', '--environment'], dict(dest='env',
+                                           help='Environment name')),
         ]
 
     def do_command(self):
+
+        if not self.app.pargs.env:
+            self.app.print_to_console('Deploying code to branch '
+                                      'default environment')
+        else:
+            self.app.print_to_console('Deploying code to environment:',
+                                      self.app.pargs.env)
+
+        self.app.print_to_console('...')
+        time.sleep(1.2)
+
+        self.app.print_to_console('Deploy Successful!')
 
         # Check branch to see if its set up
            # ask to create branch stuff
 
         # do the push
             # wait for finish.. print status
-
-        self.app.print_to_console('We are doing the push stuff!')

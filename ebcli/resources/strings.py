@@ -13,20 +13,20 @@
 
 strings = {
     'app.version_message': 'EBCLI - AWS Elastic Beanstalk CLI - Version:',
-    'base.info': 'Welcome to EB. \
-                 Please see below for a list of available commands.',
+    'base.info': 'Welcome to EB. Please '
+                 'see below for a list of available commands.',
     'init.info': 'Initializes your directory with eb. '
                  'Sets up the environment',
-    'branch.info': 'Branches stuff',
-    'delete.info': 'Delete stuff',
-    'events.info': 'Events stuff',
-    'import.info': 'Import stuff',
-    'logs.info': 'Logs stuff',
-    'push.info': 'Push stuff',
-    'start.info': 'Start stuff',
+    'create.info': 'Create a new environment',
+    'delete.info': 'Delete your application and all environments in it',
+    'events.info': 'Get recent events',
+    'import.info': 'Import an old configuration of eb',
+    'logs.info': 'Get recent logs',
+    'deploy.info': 'Deploys your current branch to the environment',
     'status.info': 'Status stuff',
-    'stop.info': 'Stop stuff',
-    'update.info': 'Update stuff',
+    'terminate.info': 'Stop stuff',
+    'update.info': 'Update environment',
+    'config.info' : 'Configure your environment',
     'error.nocreds': 'A credentials file can not be found. \n'
                      'Please place a credential file at ~/.awskeys'
 }

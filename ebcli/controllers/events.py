@@ -26,4 +26,4 @@ class EventsController(AbstractBaseController):
     def do_command(self):
 
         # get events
-        self.app.print_to_console('We are doing the events stuff!')
+        self.app.print_to_console('There are no events')

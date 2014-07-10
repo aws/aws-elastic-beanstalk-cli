@@ -16,19 +16,18 @@ from cement.core import foundation, controller, handler
 from cement.utils.misc import init_defaults
 from ebcli.core.outputhandler import OutputHandler
 from ebcli.controllers.initialize import InitController
-from ebcli.controllers.branch import BranchController
+from ebcli.controllers.create import CreateController
 from ebcli.controllers.delete import DeleteController
 from ebcli.controllers.events import EventsController
 from ebcli.controllers.importation import ImportController
 from ebcli.controllers.logs import LogsController
-from ebcli.controllers.push import PushController
-from ebcli.controllers.start import StartController
+from ebcli.controllers.deploy import DeployController
 from ebcli.controllers.status import StatusController
-from ebcli.controllers.stop import StopController
+from ebcli.controllers.terminate import TerminateController
 from ebcli.controllers.update import UpdateController
+from ebcli.controllers.config import ConfigController
 from ebcli.resources.strings import strings
-
-app = 0
+from ebcli.core import app
 
 
 class EbBaseController(controller.CementBaseController):
@@ -81,26 +80,26 @@ class EB(foundation.CementApp):
 defaults = init_defaults('ebapp', 'log')
 defaults['log']['level'] = 'WARN'
 
+
 def main():
-    global app
-    app = EB()
+    app.app = EB()
 
     try:
         # register all controllers
         handler.register(InitController)
-        handler.register(BranchController)
+        handler.register(CreateController)
         handler.register(DeleteController)
         handler.register(EventsController)
         handler.register(ImportController)
         handler.register(LogsController)
-        handler.register(PushController)
-        handler.register(StartController)
+        handler.register(DeployController)
         handler.register(StatusController)
-        handler.register(StopController)
+        handler.register(TerminateController)
         handler.register(UpdateController)
+        handler.register(ConfigController)
 
-        app.setup()
-        app.run()
+        app.app.setup()
+        app.app.run()
 
     finally:
-        app.close()
+        app.app.close()

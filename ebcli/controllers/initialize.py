@@ -21,29 +21,33 @@ class InitController(AbstractBaseController):
         label = 'init'
         description = strings['init.info']
         arguments = [
-            (['-r', '--region'], dict(help='Service region environments '
-                                           'will be created in')),
+            (['-r', '--region'], dict(help='Default Service region which '
+                                           'environments will be created in')),
             (['-a', '--app'], dict(help='Application name')),
-            (['-e', '--environment'], dict(help='Environment name')),
-            (['--worker'], dict(action='store_true',
-                                help='Start environment as a worker tier')),
-            (['-S', '--solution'], dict(help='Solution stack')),
-            (['-s', '--single'], dict(action='store_true',
-                                      help='Environment will use a Single '
-                                           'Instance with no Load Balancer')),
             (['-D', '--defaults'], dict(action='store_true',
                                         help='Automatically revert to defaults'
                                              ' for unsupplied parameters')),
-            (['-p', '--profile'], dict(help='Instance profile')),
-
         ]
         usage = 'this is a usage statement'
         epilog = 'this is an epilog'
 
     def do_command(self):
+        if self.app.pargs.defaults and not self.app.pargs.app:
+            self.app.pargs.app = 'myFirstConsoleApp'
 
+        if not self.app.pargs.region:
+            self.app.pargs.region = "us-east-1"
 
-        # Read/create config file
+        if not self.app.pargs.app:
+            self.app.pargs.app = self.app.prompt('application name')
+
+        self.app.print_to_console('Application', self.app.pargs.app,
+                                  'has been created with default region of',
+                                  self.app.pargs.region)
+
+        # Create directory if it does not exist
+
+        # Create app (?)
 
         # check for creds file
            # prompt for them to create one
@@ -53,9 +57,6 @@ class InitController(AbstractBaseController):
             # DevTools Git stuff for aws.push
 
         # git ignore?
-
-
-        self.app.print_to_console('We are doing the init stuff!')
 
         # queue.add(TryLoadEbConfigFileOperation(queue))
         # queue.add(ReadAwsCredentialFileOperation(queue))

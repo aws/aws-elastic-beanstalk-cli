@@ -21,20 +21,25 @@ class ImportController(AbstractBaseController):
         label = 'import'
         description = strings['import.info']
         arguments = [
-            (['-f', '--foo'], dict(help='notorious foo option')),
+            (['-f', '--file'], dict(help='location of project root')),
         ]
 
     def do_command(self):
 
-        # import old settings (optionssettings/config) into
-        #   new version on eb
+        if not self.app.pargs.file:
+            self.app.pargs.file = '.elasticbeanstalk'
+        else:
+            self.app.pargs.file += "/.elasticbeanstalk"
+
+        self.app.print_to_console('Importing all project settings from ',
+                                  self.app.pargs.file)
 
 
-        self.app.log.info('hello')
-        self.app.log.warn('hello')
-        self.app.args.joe = 'bob'
-        self.app.print_to_console(ParameterName.AwsAccessKeyId, 'hello', 1)
-        self.app.print_to_console('joe = ' + self.app.args.joe)
-        name = self.app.prompt('bobs name')
-        self.app.print_to_console('you entered \'' + str(name) + '\'')
-        self.app.print_to_console('We are doing the import stuff!')
+        # self.app.log.info('hello')
+        # self.app.log.warn('hello')
+        # self.app.args.joe = 'bob'
+        # self.app.print_to_console(ParameterName.AwsAccessKeyId, 'hello', 1)
+        # self.app.print_to_console('joe = ' + self.app.args.joe)
+        # name = self.app.prompt('bobs name')
+        # self.app.print_to_console('you entered \'' + str(name) + '\'')
+        # self.app.print_to_console('We are doing the import stuff!')

@@ -13,6 +13,7 @@
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
+import time
 
 
 class DeleteController(AbstractBaseController):
@@ -28,4 +29,9 @@ class DeleteController(AbstractBaseController):
 
         # remove all traces so its like the environment hasn't been
         #  set up yet
-        self.app.print_to_console('We are doing the delete stuff!')
+        self.app.print_to_console('Shutting down environments')
+        time.sleep(1)
+        self.app.print_to_console('Removing app')
+        time.sleep(1)
+        self.app.print_to_console('Everything has been removed all all '
+                                  'Environments have been shut down!')

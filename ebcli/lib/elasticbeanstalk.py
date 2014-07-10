@@ -19,15 +19,14 @@ import botocore.session
 import botocore.exceptions
 
 from ebcli import __version__
-from ebcli.core.ebcore import app
+from ebcli.core import app as eb
 from ebcli.resources.strings import strings
 
-
 def get_beanstalk_session():
-    app.log.info('Creating new Botocore session')
+    eb.app.log.info('Creating new Botocore session')
     session = botocore.session.get_session()
     _set_user_agent_for_session(session)
-    app.log.debug('Successfully created session')
+    eb.app.log.debug('Successfully created session')
 
     beanstalk = session.get_service('elasticbeanstalk')
     return beanstalk
@@ -39,50 +38,51 @@ def _set_user_agent_for_session(session):
 
 
 def _make_api_call(operation_name, **operation_options):
+    global app
     beanstalk = get_beanstalk_session()
     operation = beanstalk.get_operation(operation_name)
-    endpoint = beanstalk.get_endpoint(app.args.endpoint)
+    endpoint = beanstalk.get_endpoint('us-west-2')
 
     try:
-        app.log.debug('Making api call')
+        eb.app.log.debug('Making api call')
         http_response, response_data = operation.call(endpoint,
                                                       **operation_options)
         status = http_response.status_code
-        app.log.debug('API call finished, response =', status)
+        eb.app.log.debug('API call finished, response =', status)
 
         if http_response.status_code is not 200:
-            app.log.error('API Call unsuccessful. '
+            eb.app.log.error('API Call unsuccessful. '
                           'Status code returned', status)
             if response_data:
-                app.log.debug('Response:', response_data)
+                eb.app.log.debug('Response:', response_data)
             return None
     except botocore.exceptions.NoCredentialsError:
-        app.log.error('No credentials file found')
-        app.print_to_console(strings['error.nocreds'])
+        eb.app.log.error('No credentials file found')
+        eb.app.print_to_console(strings['error.nocreds'])
         sys.exit(0)
 
     except (Exception, IOError) as error:
-        app.log.error('Error while contacting Elastic Beanstalk Service')
-        app.log.debug(error)
+        eb.app.log.error('Error while contacting Elastic Beanstalk Service')
+        eb.app.log.debug(error)
         return None
 
     return response_data
 
 
 def describe_applications():
-    app.log.info('Inside describe_applications api wrapper')
+    eb.app.log.info('Inside describe_applications api wrapper')
     return _make_api_call('describe-applications')
 
 
 def create_application(app_name, descrip):
-    app.log.info('Inside create_application api wrapper')
+    eb.app.log.info('Inside create_application api wrapper')
     return _make_api_call('create-application',
                           application_name=app_name,
                           description=descrip)
 
 
 def create_application_version(app_name, vers_label, descrip):
-    app.log.info('Inside create_application_version api wrapper')
+    eb.app.log.info('Inside create_application_version api wrapper')
     return _make_api_call('create-application-version',
                           application_name=app_name,
                           version_label=vers_label,
@@ -90,7 +90,7 @@ def create_application_version(app_name, vers_label, descrip):
 
 
 def create_environment(app_name, env_name, descrip, solution_stck, tier0):
-    app.log.info('Inside create_environment api wrapper')
+    eb.app.log.info('Inside create_environment api wrapper')
     return _make_api_call('create-environment',
                           application_name=app_name,
                           environment_name=env_name,

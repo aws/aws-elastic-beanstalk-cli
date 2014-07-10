@@ -26,4 +26,4 @@ class StatusController(AbstractBaseController):
     def do_command(self):
 
         # get environment status
-        self.app.print_to_console('We are doing the status stuff!')
+        self.app.print_to_console('Your stuff works')
