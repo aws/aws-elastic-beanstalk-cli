@@ -11,9 +11,11 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import ebcli
+from six.moves import input
 from cement.core import foundation, controller, handler
 from cement.utils.misc import init_defaults
+
+import ebcli
 from ebcli.core.outputhandler import OutputHandler
 from ebcli.controllers.initialize import InitController
 from ebcli.controllers.create import CreateController
@@ -66,10 +68,6 @@ class EB(foundation.CementApp):
 
     @staticmethod
     def get_input(output):
-        try:
-            input = raw_input
-        except NameError:
-            pass
         return input(output + ': ')
 
     @staticmethod

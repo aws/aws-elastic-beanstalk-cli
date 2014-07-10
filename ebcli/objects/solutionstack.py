@@ -35,21 +35,21 @@ class SolutionStack():
 
     @staticmethod
     def get_platform(ss_string):
-        pattern = re.compile(ur'.+running\s([^\s]*).*')
+        pattern = re.compile('.+running\s([^\s]*).*')
         matcher = re.match(pattern, ss_string)
 
         return matcher.group(1)
 
     @staticmethod
     def get_version(ss_string):
-        pattern = re.compile(ur'.+running\s(.*)')
+        pattern = re.compile('.+running\s(.*)')
         matcher = re.match(pattern, ss_string)
 
         return matcher.group(1)
 
     @staticmethod
     def get_server(ss_string):
-        pattern = re.compile(ur'(.*)\srunning\s.*')
+        pattern = re.compile('(.*)\srunning\s.*')
         matcher = re.match(pattern, ss_string)
 
         return matcher.group(1)
