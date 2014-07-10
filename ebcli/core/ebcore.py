@@ -27,7 +27,7 @@ from ebcli.controllers.terminate import TerminateController
 from ebcli.controllers.update import UpdateController
 from ebcli.controllers.config import ConfigController
 from ebcli.resources.strings import strings
-from ebcli.core import app
+from ebcli.core import globals
 
 
 class EbBaseController(controller.CementBaseController):
@@ -82,7 +82,7 @@ defaults['log']['level'] = 'WARN'
 
 
 def main():
-    app.app = EB()
+    globals.app = EB()
 
     try:
         # register all controllers
@@ -98,8 +98,8 @@ def main():
         handler.register(UpdateController)
         handler.register(ConfigController)
 
-        app.app.setup()
-        app.app.run()
+        globals.app.setup()
+        globals.app.run()
 
     finally:
-        app.app.close()
+        globals.app.close()

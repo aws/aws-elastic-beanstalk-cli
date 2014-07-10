@@ -15,7 +15,7 @@ import os
 
 from six.moves import configparser
 
-from ebcli.core.ebcore import app
+from ebcli.core.ebcore import globals
 
 def _try_read_credential_file():
     pass

@@ -14,13 +14,16 @@
 import sys
 import dateutil
 import datetime
+import re
 
 import botocore.session
 import botocore.exceptions
 
 from ebcli import __version__
-from ebcli.core import app as eb
+from ebcli.core import globals as eb
 from ebcli.resources.strings import strings
+from ebcli.objects.solutionstack import SolutionStack
+from ebcli.objects.notfoundexception import NotFoundException
 
 def get_beanstalk_session():
     eb.app.log.info('Creating new Botocore session')
@@ -100,7 +103,15 @@ def create_environment(app_name, env_name, descrip, solution_stck, tier0):
 
 
 def get_available_solution_stacks():
-    return _make_api_call('list-available-solution-stacks')
+    result = _make_api_call('list-available-solution-stacks')
+    stack_strings = result['SolutionStacks']
+
+    solution_stacks= []
+    for s in stack_strings:
+        stack = SolutionStack(s)
+        solution_stacks.append(stack)
+
+    return solution_stacks
 
 
 def get_environment_details(app_name):
@@ -118,6 +129,90 @@ def get_new_events(app_name, last_event_time=''):
     return _make_api_call('describe-events',
                           application_name=app_name,
                           start_time=timestamp)
+
+
+def get_solution_stack(string):
+    solution_stacks = get_available_solution_stacks()
+    #filter
+    solution_stacks = [x for x in solution_stacks if x.string == string]
+
+    #check for a valid result
+    if len(solution_stacks) == 0:
+        raise NotFoundException('Solution stack not found')
+
+    #should only have 1 result
+    if len(solution_stacks) > 1:
+        eb.app.log.error('Solution Stack list contains '
+                         'multiple results')
+    return solution_stacks[0]
+
+
+def select_solution_stack():
+    solution_stacks = get_available_solution_stacks()
+
+    # get platforms
+    platforms = []
+    for stack in solution_stacks:
+        if stack.platform not in platforms:
+            platforms.append(stack.platform)
+
+    eb.app.print_to_console('Please choose a platform type')
+    platform = _prompt_for_item_in_list(platforms)
+
+    #filter
+    solution_stacks = [x for x in solution_stacks if x.platform == platform]
+
+    #get Versions
+    versions = []
+    for stack in solution_stacks:
+        if stack.version not in versions:
+            versions.append(stack.version)
+
+    #now choose a version (if applicable)
+    if len(versions) > 1:
+        eb.app.print_to_console('Please choose a version')
+        version = _prompt_for_item_in_list(versions)
+    else:
+        version = versions[0]
+
+    #filter
+    solution_stacks = [x for x in solution_stacks if x.version == version]
+
+    #Lastly choose a server type
+    servers = []
+    for stack in solution_stacks:
+        if stack.server not in servers:
+            servers.append(stack.server)
+
+    #now choose a server (if applicable)
+    if len(servers) > 1:
+        eb.app.print_to_console('Please choose a server type')
+        server = _prompt_for_item_in_list(servers)
+    else:
+        server = servers[0]
+
+    #filter
+    solution_stacks = [x for x in solution_stacks if x.server == server]
+
+    #should have 1 and only have 1 result
+    if len(solution_stacks) != 1:
+        eb.app.log.error('Filtered Solution Stack list contains '
+                         'multiple results')
+    return solution_stacks[0].string
+
+def _prompt_for_item_in_list(list):
+    for x in range(0, len(list)):
+        eb.app.print_to_console(str(x+1) + ') ' + list[x])
+
+    choice = int(eb.app.prompt('number'))
+    return list[choice-1]
+
+def select_region():
+    pass
+
+
+
+
 
 
 
