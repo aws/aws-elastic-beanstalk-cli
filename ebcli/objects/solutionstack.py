@@ -29,6 +29,11 @@ class SolutionStack():
 
     def create_string(self):
     #  note: platform, version, and server should all exist already
+        # handle custom stack case
+        if self.version == self.get_platform():
+            return self.pythonify(self.get_platform())
+
+        # handle all other cases
         string = self.version + ' ' + self.server[0:5]
         if 'v' in self.server:
             string += ' ' + self.server[-6:]
@@ -41,7 +46,8 @@ class SolutionStack():
         pattern = re.compile('.+running\s([^\s]*).*')
         matcher = re.match(pattern, ss_string)
         if matcher is None:
-            eb.app.log.error("Can not find a platform in string: " + ss_string)
+            eb.app.log.debug("Can not find a platform in string: " + ss_string)
+            return ss_string
         return matcher.group(1)
 
     @staticmethod
@@ -49,7 +55,8 @@ class SolutionStack():
         pattern = re.compile('.+running\s(.*)')
         matcher = re.match(pattern, ss_string)
         if matcher is None:
-            eb.app.log.error("Can not find a version in string: " + ss_string)
+            eb.app.log.debug("Can not find a version in string: " + ss_string)
+            return ss_string
         return matcher.group(1)
 
     @staticmethod
@@ -57,7 +64,8 @@ class SolutionStack():
         pattern = re.compile('(.*)\srunning\s.*')
         matcher = re.match(pattern, ss_string)
         if matcher is None:
-            eb.app.log.error("Can not find a server in string: " + ss_string)
+            eb.app.log.debug("Can not find a server in string: " + ss_string)
+            return ss_string
         return matcher.group(1)
 
     @staticmethod

@@ -212,7 +212,12 @@ def _prompt_for_item_in_list(list):
     for x in range(0, len(list)):
         eb.app.print_to_console(str(x + 1) + ') ' + list[x])
 
+
     choice = int(eb.app.prompt('number'))
+    while not (1 < choice < len(list)):
+        eb.app.print_to_console('Sorry, that is not a valid choice, '
+                                'please choose again')
+        choice = int(eb.app.prompt('number'))
     return list[choice - 1]
 
 
