@@ -214,7 +214,7 @@ def _prompt_for_item_in_list(list):
 
 
     choice = int(eb.app.prompt('number'))
-    while not (1 < choice < len(list)):
+    while not (0 < choice <= len(list)):
         eb.app.print_to_console('Sorry, that is not a valid choice, '
                                 'please choose again')
         choice = int(eb.app.prompt('number'))
