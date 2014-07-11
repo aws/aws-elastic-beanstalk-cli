@@ -106,6 +106,8 @@ def get_available_solution_stacks():
     result = _make_api_call('list-available-solution-stacks')
     stack_strings = result['SolutionStacks']
 
+    eb.app.log.debug('Solution Stack result size = ' + str(len(stack_strings)))
+
     solution_stacks= []
     for s in stack_strings:
         stack = SolutionStack(s)

@@ -11,7 +11,10 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import re  #RegEx
+import re
+
+import ebcli.core.globals as eb
+
 
 class SolutionStack():
     def __init__(self, ss_string):
@@ -37,21 +40,24 @@ class SolutionStack():
     def get_platform(ss_string):
         pattern = re.compile('.+running\s([^\s]*).*')
         matcher = re.match(pattern, ss_string)
-
+        if matcher is None:
+            eb.app.log.error("Can not find a platform in string: " + ss_string)
         return matcher.group(1)
 
     @staticmethod
     def get_version(ss_string):
         pattern = re.compile('.+running\s(.*)')
         matcher = re.match(pattern, ss_string)
-
+        if matcher is None:
+            eb.app.log.error("Can not find a version in string: " + ss_string)
         return matcher.group(1)
 
     @staticmethod
     def get_server(ss_string):
         pattern = re.compile('(.*)\srunning\s.*')
         matcher = re.match(pattern, ss_string)
-
+        if matcher is None:
+            eb.app.log.error("Can not find a server in string: " + ss_string)
         return matcher.group(1)
 
     @staticmethod
