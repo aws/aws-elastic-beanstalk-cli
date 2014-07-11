@@ -25,6 +25,7 @@ from ebcli.resources.strings import strings
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.notfoundexception import NotFoundException
 
+
 def get_beanstalk_session():
     eb.app.log.info('Creating new Botocore session')
     session = botocore.session.get_session()
@@ -53,9 +54,13 @@ def _make_api_call(operation_name, **operation_options):
         status = http_response.status_code
         eb.app.log.debug('API call finished, response =', status)
 
-        if http_response.status_code is not 200:
-            eb.app.log.error('API Call unsuccessful. '
-                          'Status code returned', status)
+        if status is not 200:
+            if status is 403:
+                eb.app.log.error('Operation Denied. Are your '
+                                 'credentials correct?')
+            else:
+                eb.app.log.error('API Call unsuccessful. '
+                                 'Status code returned' + status)
             if response_data:
                 eb.app.log.debug('Response:', response_data)
             return None
@@ -108,7 +113,7 @@ def get_available_solution_stacks():
 
     eb.app.log.debug('Solution Stack result size = ' + str(len(stack_strings)))
 
-    solution_stacks= []
+    solution_stacks = []
     for s in stack_strings:
         stack = SolutionStack(s)
         solution_stacks.append(stack)
@@ -135,7 +140,7 @@ def get_new_events(app_name, last_event_time=''):
 
 def get_solution_stack(string):
     solution_stacks = get_available_solution_stacks()
-    #filter
+    # filter
     solution_stacks = [x for x in solution_stacks if x.string == string]
 
     #check for a valid result
@@ -161,7 +166,7 @@ def select_solution_stack():
     eb.app.print_to_console('Please choose a platform type')
     platform = _prompt_for_item_in_list(platforms)
 
-    #filter
+    # filter
     solution_stacks = [x for x in solution_stacks if x.platform == platform]
 
     #get Versions
@@ -202,12 +207,14 @@ def select_solution_stack():
                          'multiple results')
     return solution_stacks[0].string
 
+
 def _prompt_for_item_in_list(list):
     for x in range(0, len(list)):
-        eb.app.print_to_console(str(x+1) + ') ' + list[x])
+        eb.app.print_to_console(str(x + 1) + ') ' + list[x])
 
     choice = int(eb.app.prompt('number'))
-    return list[choice-1]
+    return list[choice - 1]
+
 
 def select_region():
     pass
