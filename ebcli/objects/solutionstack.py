@@ -30,8 +30,8 @@ class SolutionStack():
     def create_string(self):
     #  note: platform, version, and server should all exist already
         # handle custom stack case
-        if self.version == self.get_platform():
-            return self.pythonify(self.get_platform())
+        if self.version == self.platform:
+            return self.pythonify(self.platform)
 
         # handle all other cases
         string = self.version + ' ' + self.server[0:5]
