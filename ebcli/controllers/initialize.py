@@ -13,7 +13,9 @@
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
-# from ebcli.core import fileoperations
+from ebcli.core import fileoperations
+from ebcli.core import operations
+from ebcli.objects.exceptions import NotInitializedError
 
 
 class InitController(AbstractBaseController):
@@ -21,8 +23,6 @@ class InitController(AbstractBaseController):
         label = 'init'
         description = strings['init.info']
         arguments = [
-            (['-r', '--region'], dict(help='Default Service region which '
-                                           'environments will be created in')),
             (['-a', '--app'], dict(help='Application name')),
             (['-D', '--defaults'], dict(action='store_true',
                                         help='Automatically revert to defaults'
@@ -32,40 +32,25 @@ class InitController(AbstractBaseController):
         epilog = 'this is an epilog'
 
     def do_command(self):
-        if self.app.pargs.defaults and not self.app.pargs.app:
-            self.app.pargs.app = 'myFirstConsoleApp'
+        # Get app name from config file, if exists
+        try:
+            app_name = fileoperations.get_application_name()
+        except NotInitializedError:
+            app_name = None
 
-        if not self.app.pargs.region:
-            self.app.pargs.region = "us-east-1"
+        if app_name and not self.app.pargs.app:
+            self.app.pargs.app = app_name
+
+        if self.app.pargs.defaults and not self.app.pargs.app:
+            if not app_name:
+                self.app.pargs.app = app_name
+            self.app.pargs.app = 'myFirstConsoleApp'
 
         if not self.app.pargs.app:
             self.app.pargs.app = self.app.prompt('application name')
 
+        #Do setup stuff
+        operations.setup(self.app.pargs.app, self.app)
+
         self.app.print_to_console('Application', self.app.pargs.app,
-                                  'has been created with default region of',
-                                  self.app.pargs.region)
-
-        # Create directory if it does not exist
-
-        # Create app (?)
-
-        # check for creds file
-           # prompt for them to create one
-           # export $AWS_CREDENTIALS_FILE if needed
-
-        # Set up Git stuff
-            # DevTools Git stuff for aws.push
-
-        # git ignore?
-
-        # queue.add(TryLoadEbConfigFileOperation(queue))
-        # queue.add(ReadAwsCredentialFileOperation(queue))
-        # queue.add(AskForConfigFileParameterOperation(queue))
-        # queue.add(ValidateParameterOperation(queue))
-        # queue.add(RotateOptionsettingFileOperation(queue))
-        # queue.add(SanitizeBranchOperation(queue))
-        # queue.add(UpdateAwsCredentialFileOperation(queue))
-        # queue.add(SanitizeAppVersionNameOperation(queue))
-        # queue.add(SaveEbConfigFileOperation(queue))
-        # queue.add(UpdateDevToolsConfigOperation(queue))
-        # queue.add(CheckGitIgnoreFileOperation(queue))
+                                  'has been created')

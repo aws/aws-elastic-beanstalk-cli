@@ -11,75 +11,38 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import sys
 import dateutil
 import datetime
-import re
 
-import botocore.session
-import botocore.exceptions
+from cement.utils.misc import minimal_logger
 
-from ebcli import __version__
 from ebcli.core import globals as eb
-from ebcli.resources.strings import strings
 from ebcli.objects.solutionstack import SolutionStack
-from ebcli.objects.notfoundexception import NotFoundException
+from ebcli.objects.exceptions import NotFoundException
+from ebcli.lib import utils
+from ebcli.lib import aws
 
-
-def get_beanstalk_session():
-    eb.app.log.info('Creating new Botocore session')
-    session = botocore.session.get_session()
-    _set_user_agent_for_session(session)
-    eb.app.log.debug('Successfully created session')
-
-    beanstalk = session.get_service('elasticbeanstalk')
-    return beanstalk
-
-
-def _set_user_agent_for_session(session):
-    session.user_agent_name = 'eb-cli'
-    session.user_agent_version = __version__
+LOG = minimal_logger(__name__)
 
 
 def _make_api_call(operation_name, **operation_options):
-    global app
-    beanstalk = get_beanstalk_session()
-    operation = beanstalk.get_operation(operation_name)
-    endpoint = beanstalk.get_endpoint('us-west-2')
 
-    try:
-        eb.app.log.debug('Making api call')
-        http_response, response_data = operation.call(endpoint,
-                                                      **operation_options)
-        status = http_response.status_code
-        eb.app.log.debug('API call finished, response =', status)
+    return aws.make_api_call('elasticbeanstalk',
+                               operation_name,
+                               **operation_options)
 
-        if status is not 200:
-            if status is 403:
-                eb.app.log.error('Operation Denied. Are your '
-                                 'credentials correct?')
-            else:
-                eb.app.log.error('API Call unsuccessful. '
-                                 'Status code returned' + status)
-            if response_data:
-                eb.app.log.debug('Response:', response_data)
-            return None
-    except botocore.exceptions.NoCredentialsError:
-        eb.app.log.error('No credentials file found')
-        eb.app.print_to_console(strings['error.nocreds'])
-        sys.exit(0)
 
-    except (Exception, IOError) as error:
-        eb.app.log.error('Error while contacting Elastic Beanstalk Service')
-        eb.app.log.debug(error)
-        return None
-
-    return response_data
+def describe_application(app_name):
+    LOG.debug('Inside describe_application api wrapper')
+    result = _make_api_call('describe-applications',
+                            application_names=[app_name])
+    return result['Applications']
 
 
 def describe_applications():
-    eb.app.log.info('Inside describe_applications api wrapper')
-    return _make_api_call('describe-applications')
+    LOG.debug('Inside describe_applications api wrapper')
+    result = _make_api_call('describe-applications')
+    return result['Applications']
 
 
 def create_application(app_name, descrip):
@@ -137,6 +100,10 @@ def get_new_events(app_name, last_event_time=''):
                           application_name=app_name,
                           start_time=timestamp)
 
+def get_storage_location():
+    response = _make_api_call('create-storage-location')
+    return response['S3Bucket']
+
 
 def get_solution_stack(string):
     solution_stacks = get_available_solution_stacks()
@@ -164,7 +131,7 @@ def select_solution_stack():
             platforms.append(stack.platform)
 
     eb.app.print_to_console('Please choose a platform type')
-    platform = _prompt_for_item_in_list(platforms)
+    platform = utils.prompt_for_item_in_list(platforms, eb.app)
 
     # filter
     solution_stacks = [x for x in solution_stacks if x.platform == platform]
@@ -178,7 +145,7 @@ def select_solution_stack():
     #now choose a version (if applicable)
     if len(versions) > 1:
         eb.app.print_to_console('Please choose a version')
-        version = _prompt_for_item_in_list(versions)
+        version = utils.prompt_for_item_in_list(versions, eb.app)
     else:
         version = versions[0]
 
@@ -194,7 +161,7 @@ def select_solution_stack():
     #now choose a server (if applicable)
     if len(servers) > 1:
         eb.app.print_to_console('Please choose a server type')
-        server = _prompt_for_item_in_list(servers)
+        server = utils.prompt_for_item_in_list(servers, eb.app)
     else:
         server = servers[0]
 
@@ -206,24 +173,6 @@ def select_solution_stack():
         eb.app.log.error('Filtered Solution Stack list contains '
                          'multiple results')
     return solution_stacks[0].string
-
-
-def _prompt_for_item_in_list(list):
-    for x in range(0, len(list)):
-        eb.app.print_to_console(str(x + 1) + ') ' + list[x])
-
-
-    choice = int(eb.app.prompt('number'))
-    while not (0 < choice <= len(list)):
-        eb.app.print_to_console('Sorry, that is not a valid choice, '
-                                'please choose again')
-        choice = int(eb.app.prompt('number'))
-    return list[choice - 1]
-
-
-def select_region():
-    pass
-
 
 
 

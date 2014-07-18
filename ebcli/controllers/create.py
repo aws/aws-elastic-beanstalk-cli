@@ -16,7 +16,7 @@ import time
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 from ebcli.lib import elasticbeanstalk
-from ebcli.objects.notfoundexception import NotFoundException
+from ebcli.objects.exceptions import NotFoundException
 
 
 class CreateController(AbstractBaseController):
@@ -55,6 +55,9 @@ class CreateController(AbstractBaseController):
             args.env = self.app.prompt('environment name')
         if not args.solution:
             args.solution = elasticbeanstalk.select_solution_stack()
+
+
+        # ToDo: Ask for environment c-name/url
 
         try:
             solution = elasticbeanstalk.get_solution_stack(args.solution)

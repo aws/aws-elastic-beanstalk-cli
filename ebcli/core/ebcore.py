@@ -47,6 +47,7 @@ class EbBaseController(controller.CementBaseController):
 
     @controller.expose(hide=True)
     def default(self):
+        self.app.log.debug('my awesome debug test')
         if self.app.pargs.version:
             self.app.print_to_console(strings['app.version_message'],
                                       ebcli.__version__)
@@ -96,7 +97,11 @@ def main():
         handler.register(UpdateController)
         handler.register(ConfigController)
 
+
         globals.app.setup()
+        # Add global arguments
+        globals.app.add_arg('--verbose', action='store_true',
+                                      help='verbose text')
         globals.app.run()
 
     finally:

@@ -26,11 +26,23 @@ strings = {
     'status.info': 'Status stuff',
     'terminate.info': 'Stop stuff',
     'update.info': 'Update environment',
-    'config.info' : 'Configure your environment',
+    'config.info': 'Configure your environment',
     'error.nocreds': 'A credentials file can not be found. \n'
-                     'Please place a credential file at ~/.awskeys'
+                     'Please place a credential file at ~/.aws/config',
+    'cred.prompt':  'It looks like your credentials are not yet set up \n'
+                    'Would you like to set them up now?',
+    'prompt.invalid': 'Sorry, that choice is invalid.',
+    'prompt.yes-or-no': 'Please enter either Y or N'
 }
 
 responses = {
-    'event.greenmessage': 'Environment health has been set to GREEN'
+    'event.greenmessage': 'Environment health has been set to GREEN',
+    'git.norepository': 'fatal: Not a git repository ' \
+                        '(or any of the parent directories): .git',
 }
+git_ignore = [
+    '# Elastic Beanstalk Files',        # comment line
+    '.elasticbeanstalk/*',              # ignore eb files
+    '!.elasticbeanstalk/*.ebe',         # don't ignore shareable environments
+    '!.elasticbeanstalk/*.global.*',    # don't ignore global configurations
+]

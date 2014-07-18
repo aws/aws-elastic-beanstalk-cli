@@ -1,405 +1,175 @@
-#!/usr/bin/env python
-#==============================================================================
-# Copyright 2012 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
-# Licensed under the Amazon Software License (the "License"). You may not use
-# this file except in compliance with the License. A copy of the License is
-# located at
+# Licensed under the Apache License, Version 2.0 (the "License"). You
+# may not use this file except in compliance with the License. A copy of
+# the License is located at
 #
-#       http://aws.amazon.com/asl/
+# http://aws.amazon.com/apache2.0/
 #
-# or in the "license" file accompanying this file. This file is distributed on
-# an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or
-# implied. See the License for the specific language governing permissions
-# and limitations under the License.
-#==============================================================================
-# import os
-# import subprocess
-#
-# from ebcli.core.ebcore import app
-# from lib import utils, shell_utils
-# from ebcli.resources.constants import ParameterName, EbLocalDir, EbConfigFile
-# from ebcli.core import configfile
-#
-#
-# def create_eb_local_dir():
-#     shell_utils.create_directory(os.getcwdu() + os.path.sep + EbLocalDir.Path)
-#
-# # Format: ParameterName, from_file function, to_file function
-# CredentialFileParameters = [
-#     (ParameterName.AwsAccessKeyId, None, None),
-#     (ParameterName.AwsSecretAccessKey, None, None),
-#     (ParameterName.RdsMasterPassword, None, None),
-# ]
-#
-#
-# def _try_read_credential_file(parameter_pool, location, source):
-#     func_matrix = []
-#     # Loop over default settings
-#     for name, from_file, _ in CredentialFileParameters:
-#         if not parameter_pool.has(name):
-#             func_matrix.append((None, name, from_file))
-#
-#     # Loop over branch environment settings
-#     branches = parameter_pool.get_value(ParameterName.Branches)
-#     if branches:
-#         for branch_name, branch_setting in branches.iteritems():
-#             if not name in branch_setting:
-#                 func_matrix.append((branch_name, name, from_file))
-#
-#     configfile.read_aws_credential_file(location, parameter_pool,
-#                                          func_matrix, source, True)
-#
-#
-# def read_aws_credential_file_operation():
-#     # Try to retrieve all credential info from specified file
-#     if app.args.aws_credential_file:
-#         file_param = app.args.aws_credential_file
-#         _try_read_credential_file(file_param.value, file_param.source)
-#     else:
-#         location = configfile.default_aws_credential_file_location()
-#         _try_read_credential_file(parameter_pool,
-#                                        location,
-#                                        ParameterSource.ConfigFile)
-#
-#     osenv_location =  os.getenv(AwsCredentialFileDefault.OSVariableName)
-#     if osenv_location is not None:
-#         self._try_read_credential_file(parameter_pool,
-#                                        osenv_location,
-#                                        ParameterSource.OsEnvironment)
-#
-#     ret_result = OperationResult(self, None, None, None)
-#     return ret_result
-#
-#
-# def try_load_eb_config_file_operation():
-#     location = EbLocalDir.Path + os.path.sep + EbConfigFile.Name
-#
-#     configfile.load_eb_config_file(location, True)
-#
-#     ret_result = OperationResult(self, None, None, None)
-#     return ret_result
+# or in the "license" file accompanying this file. This file is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+# ANY KIND, either express or implied. See the License for the specific
+# language governing permissions and limitations under the License.
 
-#
-# class UpdateAwsCredentialFileOperation(OperationBase):
-#     '''
-#     Generate AWS credential file if it is not retrieved from local OS environment variables
-#     '''
-#     _input_parameters = {
-#                          ParameterName.AwsAccessKeyId,
-#                          ParameterName.AwsSecretAccessKey,
-#                          }
-#
-#     _output_parameters = set()
-#
-#     def execute(self, parameter_pool):
-#
-#         func_matrix = []
-#         # Loop over default settings
-#         for name, _, to_file in CredentialFileParameters:
-#             if not parameter_pool.has(name):
-#                 continue
-#             elif ParameterSource.is_ahead(ParameterSource.Terminal,\
-#                                         parameter_pool.get_source(name)):
-#                 continue
-#             else:
-#                 func_matrix.append((None, name, to_file))
-#
-#         # Loop over current branch settings
-#         cur_branch = parameter_pool.get_value(ParameterName.CurrentBranch)
-#         if cur_branch and ParameterSource.is_ahead(parameter_pool.get_source(ParameterName.Branches),
-#                                                    ParameterSource.ConfigFile):
-#             branch_setting = parameter_pool.get_value(ParameterName.Branches, False)[cur_branch]
-#             for name, _, to_file in CredentialFileParameters:
-#                 if not name in branch_setting:
-#                     continue
-#                 else:
-#                     func_matrix.append((cur_branch, name, to_file))
-#
-#         if len(func_matrix) < 1:
-#             log.info(u'Skipped updating credential file as credentials are not changed.')
-#             return
-#
-#         location = config_file.default_aws_credential_file_location()
-#         # Create directory if needed
-#         try:
-#             shell_utils.create_directory(config_file.default_aws_credential_file_path())
-#             config_file.write_aws_credential_file(location, parameter_pool, func_matrix)
-#         except BaseException as ex:
-#             log.error(u'Encountered error when creating AWS Credential file at "{0}", because {1}.'.\
-#                       format(location, ex))
-#             return
-#
-#         else:
-#             log.info(WriteAwsCredentialFileOpMessage.Succeed.format(location))
-#             prompt.result(WriteAwsCredentialFileOpMessage.Succeed.format(location))
-#
-#             parameter_pool.put(Parameter(ParameterName.AwsCredentialFile,
-#                                          location,
-#                                          ParameterSource.OperationOutput),
-#                                True)
-#
-#             ret_result = OperationResult(self, None, None, None)
-#             return ret_result
-#
-#
-# class LoadEbConfigFileOperation(OperationBase):
-#     _input_parameters = set()
-#     _output_parameters = set()
-#
-#     def execute(self, parameter_pool):
-#         location = EbLocalDir.Path + os.path.sep + EbConfigFile.Name
-#
-#         try:
-#             config_file.load_eb_config_file(location, parameter_pool, False)
-#             if config_file.check_access_permission(location) is False:
-#                 message = ConfigFileErrorMessage.PermissionError.format(EbConfigFile.Name)
-#                 log.info(message)
-#                 prompt.error(message)
-#
-#             #Post processing
-#             if not parameter_pool.has(ParameterName.RdsSnippetUrl)\
-#                 and parameter_pool.has(ParameterName.Region):
-#                 region = parameter_pool.get_value(ParameterName.Region, False)
-#                 parameter_pool.put(Parameter(ParameterName.RdsSnippetUrl,
-#                                              RdsDefault.get_snippet_url(region),
-#                                              ParameterSource.ConfigFile))
-#
-#         except EBConfigFileNotExistError:
-#             log.error(u'Configuration file "{0}" not exist.'.format(EbConfigFile.Name))
-#             prompt.error(ConfigFileMessage.CannotFind.format\
-#                         (EbConfigFile.Name, CommandType.INIT.lower()))
-#             raise EBSCliException()
-#
-#         except BaseException as ex:
-#             log.error(u'Encountered error when load configuration file "{0}", becuase "{1}".'.\
-#                       format(EbConfigFile.Name, ex))
-#             prompt.error(ConfigFileMessage.CorrectionSuggestion.
-#                          format(location,CommandType.INIT.lower()))
-#             raise
-#
-#         ret_result = OperationResult(self, None, None, None)
-#         return ret_result
-#
-#
-# class TryLoadEbConfigFileOperation(OperationBase):
-#     _input_parameters = set()
-#     _output_parameters = set()
-#
-#     def execute(self, parameter_pool):
-#         location = EbLocalDir.Path + os.path.sep + EbConfigFile.Name
-#
-#         config_file.load_eb_config_file(location, parameter_pool, True)
-#
-#         ret_result = OperationResult(self, None, None, None)
-#         return ret_result
-#
-#
-#
-# class SaveEbConfigFileOperation(OperationBase):
-#     _input_parameters = set()
-#     _output_parameters = set()
-#
-#     def execute(self, parameter_pool):
-#         create_eb_local_dir()
-#
-#         location = EbLocalDir.Path + os.path.sep + EbConfigFile.Name
-#
-#         config_file.save_eb_config_file(location, parameter_pool, False)
-#         config_file.set_access_permission(location)
-#
-#         ret_result = OperationResult(self, None, None, None)
-#         return ret_result
-#
-#
-# class UpdateDevToolsConfigOperation(OperationBase):
-#
-#     _input_parameters = set()
-#     _output_parameters = set()
-#
-#     def execute(self, pool):
-#
-#         # Test if git local repo exists
-#         if not os.path.isdir(os.path.join(os.getcwdu(), DevToolsConfigFile.Path)):
-#             prompt.error(DevToolsMessage.GitRepoNotExist.format(''))
-#             return
-#
-#         error = False
-#         current_path = os.getcwdu()
-#         try:
-#             log.info(u'Running Dev Tools initialization script.')
-#             if misc.is_os_windows():
-#                 path = shell_utils.climb_dir_tree(shell_utils.ori_path(), OSSpecific.WindowsClimbUpDepth)
-#                 #TODO: replace current workaround for WindowsModuleScript
-#                 current_path = os.getcwdu()
-#                 script_path = os.path.join(path, OSSpecific.WindowsModuleScriptPath)
-#                 log.debug(u'Changing path to {0}.'.format(script_path))
-#                 os.chdir(script_path)
-#
-#                 log.info(u'Running script "{0}".'.format(OSSpecific.WindowsModuleScriptName))
-#                 shell_utils.call([OSSpecific.WindowsModuleScriptName])
-#
-#                 log.debug(u'Changing path to {0}.'.format(current_path))
-#                 os.chdir(current_path)
-#
-#                 log.info(u'Running script "{0}".'.format(OSSpecific.WindowsRepoScript))
-#                 fullpath = os.path.join(path, OSSpecific.WindowsRepoScript)
-#                 prompt.error(shell_utils.call([fullpath]))
-#             else:
-#                 path = shell_utils.climb_dir_tree(shell_utils.ori_path(), OSSpecific.LinuxClimbUpDepth)
-#                 log.info(u'Running script "{0}" at {1}.'.format(OSSpecific.LinuxRepoScript,
-#                                                                 path))
-#                 fullpath = os.path.join(path, OSSpecific.LinuxRepoScript)
-#                 prompt.error(shell_utils.call([fullpath]))
-#
-#             location = DevToolsConfigFile.Path + os.path.sep + DevToolsConfigFile.Name
-#             config_file.set_access_permission(location, True)
-#
-#         except subprocess.CalledProcessError as ex:
-#             # Git returned with an error code
-#             log.error(u'Dev Tools initialization script report an error, because "{0}".'.format(ex))
-#             error = True
-#             prompt.error(DevToolsMessage.InitError.format(ex.message))
-#
-#         except (OSError, IOError) as ex:
-#             log.error(u'Failed to call Dev Tools initialization script, because "{0}".'.format(ex))
-#             # Cannot find or run script
-#             error = True
-#             if ex.errno == FileErrorConstant.FileNotFoundErrorCode:
-#                 if fullpath:
-#                     prompt.error(DevToolsMessage.FileMissingError.format(fullpath))
-#                 else:
-#                     prompt.error(ex)
-#
-#         finally:
-#             if error:
-#                 prompt.error(DevToolsMessage.ExecutionError.format(DevToolsConfigFile.InitHelpUrl))
-#
-#         ret_result = OperationResult(self, None, None, None)
-#         return ret_result
-#
-#
-#
-# class CheckGitIgnoreFileOperation(OperationBase):
-#
-#     _input_parameters = set()
-#
-#     _output_parameters = set()
-#
-#     def execute(self, pool):
-#         location = GitIgnoreFile.Path + os.path.sep + GitIgnoreFile.Name
-#         config_file.add_ignore_file(location)
-#
-#         ret_result = OperationResult(self, None, None, None)
-#         return ret_result
-#
-#
-#
-# class SaveConfigurationSettingOperation(OperationBase):
-#     _input_parameters = {
-#                          ParameterName.AwsAccessKeyId,
-#                          ParameterName.AwsSecretAccessKey,
-#                          ParameterName.ServiceEndpoint,
-#                          ParameterName.ApplicationName,
-#                          ParameterName.EnvironmentName,
-#                          ParameterName.OptionSettingFile,
-#                         }
-#
-#     _output_parameters = set()
-#
-#     def execute(self, parameter_pool):
-#         create_eb_local_dir()
-#
-#         app_name = parameter_pool.get_value(ParameterName.ApplicationName)
-#         env_name = parameter_pool.get_value(ParameterName.EnvironmentName)
-#         location = parameter_pool.get_value(ParameterName.OptionSettingFile)
-#
-#         prompt.action(SaveConfigurationSettingOpMessage.Start.format(env_name))
-#
-#         try:
-#             option_settings = api_wrapper.retrieve_configuration_settings(parameter_pool,
-#                                                                           app_name,
-#                                                                           env_name)
-#             config_file.save_env_option_setting_file(location, option_settings)
-#         except Exception as ex:
-#             # Never fail. Just log event if any exception
-#             log.info(u'Cannot dump environment option settings before termination, because '.\
-#                      format(misc.to_unicode(ex)))
-#             option_settings = None
-#         else:
-#             log.info(SaveConfigurationSettingOpMessage.Succeed.format(location))
-#             prompt.info(SaveConfigurationSettingOpMessage.Succeed.format(location))
-#
-#         ret_result = OperationResult(self,
-#                                      None,
-#                                      None,
-#                                      option_settings)
-#         return ret_result
-#
-#
-#
-# class RotateOptionsettingFileOperation(OperationBase):
-#     _input_parameters = {
-#                          ParameterName.OptionSettingFile,
-#                         }
-#
-#     _output_parameters = set()
-#
-#     def execute(self, parameter_pool):
-#         ori_stack = parameter_pool.get_value(ParameterName.OriginalSolutionStack)\
-#             if parameter_pool.has(ParameterName.OriginalSolutionStack) else None
-#         stack = parameter_pool.get_value(ParameterName.SolutionStack)\
-#             if parameter_pool.has(ParameterName.SolutionStack) else None
-#
-#         if ori_stack is None or ori_stack == stack:
-#             log.info(u'Solution stack is not changed. Keeping current optionsettings file.')
-#         else:
-#             log.info(u'Rotate optionsettings file because solution stack is changed.')
-#
-#             # Rotate default option setting file
-#             location = parameter_pool.get_value(ParameterName.OptionSettingFile)
-#             config_file.rotate_file(location)
-#
-#             # Rotate branch environment option setting file if any
-#             branches = parameter_pool.get_value(ParameterName.Branches)\
-#                 if parameter_pool.has(ParameterName.Branches) else None
-#             if branches:
-#                 for _, branch in branches.iteritems():
-#                     location = branch[ParameterName.OptionSettingFile]
-#                     config_file.rotate_file(location)
-#
-#         ret_result = OperationResult(self, None, None, None)
-#         return ret_result
-#
-#
-# class TryGetCurrentBranchOperation(OperationBase):
-#     _input_parameters = set()
-#
-#     _output_parameters = {
-#                           ParameterName.CurrentBranch,
-#                           }
-#
-#     def execute(self, parameter_pool):
-#         current_branch, branch_count = shell_utils.get_working_branch(True)
-#         parameter_pool.put(Parameter(ParameterName.CurrentBranch,
-#                                      current_branch,
-#                                      ParameterSource.ConfigFile))
-#         if current_branch:
-#             log.info(u'Current working branch is "{0}".'.format(current_branch))
-#             branches = parameter_pool.get_value(ParameterName.Branches)
-#             if branches and current_branch in branches.keys():
-#                 log.info(u'Found registered environment for branch "{0}".'.format(current_branch))
-#                 for key, value in branches[current_branch].iteritems():
-#                     parameter_pool.put(Parameter(key, value, ParameterSource.ConfigFile))
-#             else:
-#                 if branch_count == 1:
-#                     log.info(u'Only one unregistered branch found. Using default settings.')
-#                     pass
-#                 else:
-#                     msg = TerminalMessage.FallBackToDefaultBranch.format(current_branch)
-#                     log.error(msg)
-#                     prompt.error(msg)
-#         else:
-#             # local repository does not have more than one branch, using default
-#             pass
-#
+import os
+
+from yaml import load, dump
+from six.moves import configparser
+from six.moves.configparser import NoSectionError
+from six.moves.configparser import NoOptionError
+from cement.utils.misc import minimal_logger
+
+from ebcli.objects.exceptions import NotInitializedError
+
+LOG = minimal_logger(__name__)
+
+
+def get_aws_home():
+    p = '~' + os.path.sep + '.aws' + os.path.sep
+    return os.path.expanduser(p)
+
+
+beanstalk_directory = '.elasticbeanstalk' + os.path.sep
+global_config_file = beanstalk_directory + 'config.global.yaml'
+local_config_file = beanstalk_directory + 'config.yaml'
+aws_config_folder = get_aws_home()
+aws_config_location = aws_config_folder + 'config'
+aws_access_key = 'aws_access_key_id'
+aws_secret_key = 'aws_secret_access_key'
+aws_region = 'region'
+default_section = 'default'
+
+
+def read_aws_config_credentials():
+    config = configparser.ConfigParser()
+    config.read(aws_config_location)
+    try:
+        access_key = config.get(default_section,aws_access_key)
+    except NoSectionError, NoOptionError:
+        access_key = None
+    try:
+        secret_key = config.get(default_section, aws_secret_key)
+    except NoSectionError, NoOptionError:
+        secret_key = None
+    try:
+        region = config.get(default_section, aws_region)
+    except NoSectionError, NoOptionError:
+        region = None
+    return access_key, secret_key, region
+
+
+def save_to_aws_config(access_key, secret_key, region):
+    config = configparser.ConfigParser()
+    if not os.path.exists(aws_config_folder):
+        os.makedirs(aws_config_folder)
+
+    config.read(aws_config_location)
+    if default_section not in config.sections():
+        config.add_section(default_section)
+
+    config.set(default_section, aws_access_key, access_key)
+    config.set(default_section, aws_secret_key, secret_key)
+    config.set(default_section, aws_region, region)
+
+    with open(aws_config_location, 'wb') as f:
+        config.write(f)
+
+
+def _try_read_credential_file():
+    pass
+
+def read_credential_file():
+    location = '.elasticbeanstalk' + os.path.sep + 'config'
+
+def get_directory_name():
+    pass
+
+
+
+def get_application_name():
+    return get_config_setting('global', 'application_name')
+
+
+def create_config_file(app_name):
+    """
+        We want to make sure we do not override the file if it already exists,
+         but we do want to fill in all missing pieces
+    :param app_name: name of the application
+    :return: VOID: no return value
+    """
+    LOG.debug('Creating config file at ' + os.getcwd())
+    location = local_config_file
+
+    if not os.path.exists(beanstalk_directory):
+        os.makedirs(beanstalk_directory)
+
+    # add to global without writing over any settings if they exist
+    write_config_setting('global', 'application_name', app_name)
+
+
+def _traverse_to_project_root():
+    cwd = os.getcwd()
+    if not os.path.exists(beanstalk_directory):
+        LOG.debug('beanstalk directory not found in ' + cwd +
+                  '  -Going up a level')
+        os.chdir(os.path.pardir)  # Go up one directory
+
+        if cwd == os.getcwd():  # We can't move any further
+            LOG.debug('Still at the same directory ' + cwd)
+            raise NotInitializedError('EB is not yet initialized')
+
+        _traverse_to_project_root()
+
+    else:
+        LOG.debug('Project root found at: ' + cwd)
+
+
+def write_config_setting(section, key_name, value):
+    cwd = os.getcwd()  # save working directory
+    try:
+        _traverse_to_project_root()
+
+        config = _get_yaml_dict(local_config_file)
+        if not config:
+            config = {}
+        config.setdefault(section, {})[key_name] = value
+
+        with open(local_config_file, 'w') as f:
+            f.write(dump(config, default_flow_style=False))
+
+    finally:
+        os.chdir(cwd)  # go back to working directory
+
+
+def get_config_setting(section, key_name):
+    # get setting from global if it exists
+    cwd = os.getcwd()  # save working directory
+    try:
+        _traverse_to_project_root()
+
+        config_global = _get_yaml_dict(global_config_file)
+        config_local = _get_yaml_dict(local_config_file)
+
+        # Grab value, local gets priority
+        try:
+            value = config_global[section][key_name]
+        except KeyError:
+            value = None
+
+        try:
+            if config_local:
+                value = config_local[section][key_name]
+        except KeyError:
+            pass  # Revert to global value
+
+    finally:
+        os.chdir(cwd)  # move back to working directory
+    return value
+
+
+def _get_yaml_dict(filename):
+    try:
+        with open(filename, 'r') as f:
+            return load(f)
+    except IOError:
+        return {}

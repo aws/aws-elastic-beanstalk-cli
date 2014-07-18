@@ -13,7 +13,7 @@
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
-from ebcli.resources.constants import ParameterName
+# from ebcli.resources.constants import ParameterName
 
 
 class ImportController(AbstractBaseController):
@@ -26,10 +26,12 @@ class ImportController(AbstractBaseController):
 
     def do_command(self):
 
+
+
         if not self.app.pargs.file:
             self.app.pargs.file = '.elasticbeanstalk'
         else:
-            self.app.pargs.file += "/.elasticbeanstalk"
+            self.app.pargs.file += '/.elasticbeanstalk'
 
         self.app.print_to_console('Importing all project settings from ',
                                   self.app.pargs.file)

@@ -11,5 +11,22 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+
 class NotFoundException(Exception):
+    pass
+
+
+class CommandException(Exception):
+    pass
+
+
+class ServiceError(Exception):
+    pass
+
+
+class NotInitializedError(Exception):
+    pass
+
+
+class NoSourceControlError(Exception):
     pass
