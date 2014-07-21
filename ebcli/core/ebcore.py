@@ -75,15 +75,7 @@ class EB(foundation.CementApp):
     def prompt(output):
         return EB.get_input('(' + output + ')')
 
-
-defaults = init_defaults('ebapp', 'log')
-defaults['log']['level'] = 'WARN'
-
-
-def main():
-    globals.app = EB()
-
-    try:
+    def setup(self):
         # register all controllers
         handler.register(InitController)
         handler.register(CreateController)
@@ -97,7 +89,18 @@ def main():
         handler.register(UpdateController)
         handler.register(ConfigController)
 
+        super(EB, self).setup()
 
+
+
+defaults = init_defaults('ebapp', 'log')
+defaults['log']['level'] = 'WARN'
+
+
+def main():
+    globals.app = EB()
+
+    try:
         globals.app.setup()
         # Add global arguments
         globals.app.add_arg('--verbose', action='store_true',
