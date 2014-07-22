@@ -14,7 +14,7 @@
 from datetime import datetime, timedelta
 
 from ebcli.lib import elasticbeanstalk
-from ebcli.core import fileoperations
+from ebcli.core import fileoperations, io
 from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.resources.strings import strings
 from ebcli.objects import region as regions
@@ -41,14 +41,14 @@ def wait_and_print_status(timeout_in_seconds):
         # message is in strings.responses['event.greenmessage']
 
 
-def setup(app_name, app):
+def setup(app_name):
     set_up_directory(app_name)
-    set_up_aws_dir(app)
+    set_up_aws_dir()
     create_app(app_name)
     set_up_ignore_file()
 
 
-def set_up_aws_dir(app):
+def set_up_aws_dir():
     access_key, secret_key, region = \
         fileoperations.read_aws_config_credentials()
 
@@ -56,21 +56,21 @@ def set_up_aws_dir(app):
     if not access_key or not secret_key:
         change = True
         # Ask if they want to setup their keys now
-        app.print_to_console(strings['cred.prompt'])
-        response = get_boolean_response(app)
+        io.echo(strings['cred.prompt'])
+        response = get_boolean_response()
 
         if response:
             # if yes, ask them for their keys
-            access_key = app.prompt('aws-access-id')
-            secret_key = app.prompt('aws-secret-key')
+            access_key = io.prompt('aws-access-id')
+            secret_key = io.prompt('aws-secret-key')
 
     if not region:
         change = True
-        app.print_to_console('Would you like to set a default region?')
-        response = get_boolean_response(app)
+        io.echo('Would you like to set a default region?')
+        response = get_boolean_response()
         if response:
             region_list = regions.get_all_regions()
-            result = utils.prompt_for_item_in_list(region_list, app)
+            result = utils.prompt_for_item_in_list(region_list)
             region = result.name
 
     if change:
@@ -129,12 +129,12 @@ def remove_zip_file():
     pass
 
 
-def get_boolean_response(app):
-    response = app.prompt('y/n').lower()
+def get_boolean_response():
+    response = io.prompt('y/n').lower()
     while response is not 'y' or 'n' or 'yes' or 'no':
-        app.print_to_console(strings['prompt.invalid'],
+        io.echo(strings['prompt.invalid'],
                              strings['prompt.yes-or-no'])
-        response = app.prompt('y/n').lower()
+        response = io.prompt('y/n').lower()
 
     if response == 'y' or 'yes':
         return True

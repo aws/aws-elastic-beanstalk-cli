@@ -13,26 +13,27 @@
 
 import six
 from six import print_
-
-from cement.core import output
-from enum import Enum
+from six.moves import input
 
 
-class OutputHandler(output.CementOutputHandler):
-    class Meta:
-        label = 'customDictOutput'
+from cement.utils.misc import minimal_logger
 
-    def render(data, template=None):
-        for key in data:
-            print("%s => %s" % (key, data[key]))
+LOG = minimal_logger(__name__)
 
-    def print_to_console(self, *args):
-        for data in args:
-            if isinstance(data, six.string_types) \
+
+def echo(*args):
+    for data in args:
+        if isinstance(data, six.string_types) \
                     or isinstance(data, six.integer_types):
-                print_(data, end=' ')
-            elif isinstance(data, Enum):
-                print_(data.value),
-            else:
-                self.app.log.error("print_to_console called with an unsupported data type")
-        print_('')
+            print_(data, end=' ')
+        else:
+            LOG.error("echo called with an unsupported data type")
+    print_('')
+
+
+def get_input(output):
+    return input(output + ': ')
+
+
+def prompt(output):
+    return get_input('(' + output + ')')

@@ -16,7 +16,7 @@ import datetime
 
 from cement.utils.misc import minimal_logger
 
-from ebcli.core import globals as eb
+from ebcli.core import io
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.exceptions import NotFoundException
 from ebcli.lib import utils
@@ -46,14 +46,14 @@ def describe_applications():
 
 
 def create_application(app_name, descrip):
-    eb.app.log.info('Inside create_application api wrapper')
+    LOG.info('Inside create_application api wrapper')
     return _make_api_call('create-application',
                           application_name=app_name,
                           description=descrip)
 
 
 def create_application_version(app_name, vers_label, descrip):
-    eb.app.log.info('Inside create_application_version api wrapper')
+    LOG.info('Inside create_application_version api wrapper')
     return _make_api_call('create-application-version',
                           application_name=app_name,
                           version_label=vers_label,
@@ -61,7 +61,7 @@ def create_application_version(app_name, vers_label, descrip):
 
 
 def create_environment(app_name, env_name, descrip, solution_stck, tier0):
-    eb.app.log.info('Inside create_environment api wrapper')
+    LOG.info('Inside create_environment api wrapper')
     return _make_api_call('create-environment',
                           application_name=app_name,
                           environment_name=env_name,
@@ -74,7 +74,7 @@ def get_available_solution_stacks():
     result = _make_api_call('list-available-solution-stacks')
     stack_strings = result['SolutionStacks']
 
-    eb.app.log.debug('Solution Stack result size = ' + str(len(stack_strings)))
+    LOG.debug('Solution Stack result size = ' + str(len(stack_strings)))
 
     solution_stacks = []
     for s in stack_strings:
@@ -116,7 +116,7 @@ def get_solution_stack(string):
 
     #should only have 1 result
     if len(solution_stacks) > 1:
-        eb.app.log.error('Solution Stack list contains '
+        LOG.error('Solution Stack list contains '
                          'multiple results')
     return solution_stacks[0]
 
@@ -130,8 +130,8 @@ def select_solution_stack():
         if stack.platform not in platforms:
             platforms.append(stack.platform)
 
-    eb.app.print_to_console('Please choose a platform type')
-    platform = utils.prompt_for_item_in_list(platforms, eb.app)
+    io.echo('Please choose a platform type')
+    platform = utils.prompt_for_item_in_list(platforms)
 
     # filter
     solution_stacks = [x for x in solution_stacks if x.platform == platform]
@@ -144,8 +144,8 @@ def select_solution_stack():
 
     #now choose a version (if applicable)
     if len(versions) > 1:
-        eb.app.print_to_console('Please choose a version')
-        version = utils.prompt_for_item_in_list(versions, eb.app)
+        io.echo('Please choose a version')
+        version = utils.prompt_for_item_in_list(versions)
     else:
         version = versions[0]
 
@@ -160,8 +160,8 @@ def select_solution_stack():
 
     #now choose a server (if applicable)
     if len(servers) > 1:
-        eb.app.print_to_console('Please choose a server type')
-        server = utils.prompt_for_item_in_list(servers, eb.app)
+        io.echo('Please choose a server type')
+        server = utils.prompt_for_item_in_list(servers)
     else:
         server = servers[0]
 
@@ -170,7 +170,7 @@ def select_solution_stack():
 
     #should have 1 and only have 1 result
     if len(solution_stacks) != 1:
-        eb.app.log.error('Filtered Solution Stack list contains '
+        LOG.error('Filtered Solution Stack list contains '
                          'multiple results')
     return solution_stacks[0].string
 

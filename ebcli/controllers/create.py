@@ -17,6 +17,7 @@ from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 from ebcli.lib import elasticbeanstalk
 from ebcli.objects.exceptions import NotFoundException
+from ebcli.core import io
 
 
 class CreateController(AbstractBaseController):
@@ -52,7 +53,7 @@ class CreateController(AbstractBaseController):
                 args.solution = 'php-5.5-64bit-v1.0.4'
 
         if not args.env:
-            args.env = self.app.prompt('environment name')
+            args.env = io.prompt('environment name')
         if not args.solution:
             args.solution = elasticbeanstalk.select_solution_stack()
 
@@ -65,29 +66,29 @@ class CreateController(AbstractBaseController):
             self.app.log.error('Could not find specified solution stack')
             return
 
-        self.app.print_to_console('Creating environment..')
-        self.app.print_to_console('...')
+        io.echo('Creating environment..')
+        io.echo('...')
 
 
 
         time.sleep(1)
 
-        self.app.print_to_console('The environment', args.env,
+        io.echo('The environment', args.env,
                                   'has been created.')
-        self.app.print_to_console('Region:', args.region)
-        self.app.print_to_console('Solution Stack Name:', solution.string)
-        self.app.print_to_console('Solution Stack Description:', solution.name)
+        io.echo('Region:', args.region)
+        io.echo('Solution Stack Name:', solution.string)
+        io.echo('Solution Stack Description:', solution.name)
 
 
         if args.single:
-            self.app.print_to_console('Instance Type: Single Instance')
+            io.echo('Instance Type: Single Instance')
         else:
-            self.app.print_to_console('Instance Type: Load Balanced')
+            io.echo('Instance Type: Load Balanced')
 
         if args.worker:
-            self.app.print_to_console('Tier: Worker')
+            io.echo('Tier: Worker')
         else:
-            self.app.print_to_console('Tier: Web Server')
+            io.echo('Tier: Web Server')
 
 
 

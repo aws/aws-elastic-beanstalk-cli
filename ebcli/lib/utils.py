@@ -11,17 +11,18 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+from ebcli.core import io
 
-def prompt_for_item_in_list(list, app):
+def prompt_for_item_in_list(list):
     for x in range(0, len(list)):
-        app.print_to_console(str(x + 1) + ') ' + list[x])
+        io.echo(str(x + 1) + ') ' + list[x])
 
 
-    choice = int(app.prompt('number'))
+    choice = int(io.prompt('number'))
     while not (0 < choice <= len(list)):
-        app.print_to_console('Sorry, that is not a valid choice, '
+        io.echo('Sorry, that is not a valid choice, '
                                 'please choose again')
-        choice = int(app.prompt('number'))
+        choice = int(io.prompt('number'))
     return list[choice - 1]
 
 

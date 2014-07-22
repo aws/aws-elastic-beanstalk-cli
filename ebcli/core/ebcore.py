@@ -11,12 +11,10 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from six.moves import input
-from cement.core import foundation, controller, handler
+
+from cement.core import foundation, handler
 from cement.utils.misc import init_defaults
 
-import ebcli
-from ebcli.core.outputhandler import OutputHandler
 from ebcli.controllers.initialize import InitController
 from ebcli.controllers.create import CreateController
 from ebcli.controllers.delete import DeleteController
@@ -28,52 +26,19 @@ from ebcli.controllers.status import StatusController
 from ebcli.controllers.terminate import TerminateController
 from ebcli.controllers.update import UpdateController
 from ebcli.controllers.config import ConfigController
-from ebcli.resources.strings import strings
-from ebcli.core import globals
-
-
-class EbBaseController(controller.CementBaseController):
-    """
-    This is the application base controller.
-    It handles eb when no sub-commands are given
-    """
-    class Meta:
-        label = 'base'
-        description = strings['base.info']
-        arguments = [
-            (['-v', '--version'], dict(action='store_true',
-                                       help='show application/version info')),
-        ]
-
-    @controller.expose(hide=True)
-    def default(self):
-        self.app.log.debug('my awesome debug test')
-        if self.app.pargs.version:
-            self.app.print_to_console(strings['app.version_message'],
-                                      ebcli.__version__)
-        else:
-            self.app.args.print_help()
+from ebcli.core.arghandler import ArgParseHandler
+from ebcli.core import globals, base
 
 
 class EB(foundation.CementApp):
     class Meta:
         label = 'eb'
-        base_controller = EbBaseController
-        output_handler = OutputHandler
+        base_controller = base.EbBaseController
         defaults = init_defaults('eb', 'log')
         defaults['log']['level'] = 'WARN'
         config_defaults = defaults
-
-    def print_to_console(self, *data):
-        self.output.print_to_console(*data)
-
-    @staticmethod
-    def get_input(output):
-        return input(output + ': ')
-
-    @staticmethod
-    def prompt(output):
-        return EB.get_input('(' + output + ')')
+        # argument_handler = ArgParseHandler
+        # uncomment above if custom arg handler is needed
 
     def setup(self):
         # register all controllers
@@ -91,6 +56,10 @@ class EB(foundation.CementApp):
 
         super(EB, self).setup()
 
+        #Register global arguments
+        self.add_arg('--verbose', action='store_true',
+                         help='verbose text')
+
 
 
 defaults = init_defaults('ebapp', 'log')
@@ -102,9 +71,6 @@ def main():
 
     try:
         globals.app.setup()
-        # Add global arguments
-        globals.app.add_arg('--verbose', action='store_true',
-                                      help='verbose text')
         globals.app.run()
 
     finally:

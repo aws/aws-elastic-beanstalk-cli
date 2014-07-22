@@ -8,3 +8,10 @@ python:
 install: pip install pytest
 # command to run tests, e.g. python setup.py test
 script:  py.test
+
+deploy:
+  provider: pypi
+  user: ...
+  password: ...
+  on:
+    branch: prod
