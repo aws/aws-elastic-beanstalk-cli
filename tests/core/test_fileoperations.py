@@ -12,13 +12,11 @@
 # language governing permissions and limitations under the License.
 
 import os
-import mock
 import shutil
 import unittest
 import yaml
 
 from six.moves import configparser
-from six.moves.configparser import NoSectionError
 from six.moves.configparser import NoOptionError
 
 from ebcli.core import fileoperations

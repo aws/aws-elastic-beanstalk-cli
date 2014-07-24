@@ -18,13 +18,6 @@ from ebcli.core import operations
 
 class TestOperations(unittest.TestCase):
 
-    # @mock.patch('ebcli.lib.elasticbeanstalk.aws')
-    # def test_aws(self, mock_aws):
-    #     mock_aws.make_api_call.return_value = {'Applications': 'test'}
-    #     result = elasticbeanstalk.describe_applications()
-    #     mock_aws.make_api_call.assert_called_with('elasticbeanstalk', 'describe-applications')
-    #     print result
-
     def test_wait_and_print_status(self):
         pass
 
@@ -60,7 +53,7 @@ class TestOperations(unittest.TestCase):
 
     @mock.patch('ebcli.core.operations.io')
     def test_get_boolean_response_bad(self, mock_io):
-        #populate with all bad responses
+        # populate with all bad responses
         # Last response must be valid in order to terminate loop
         response_list = ['a', '1', 'Ys', 'x', '', 'nah', '?', 'y']
         mock_io.prompt.side_effect = response_list

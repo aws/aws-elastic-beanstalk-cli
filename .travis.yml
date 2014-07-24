@@ -11,7 +11,7 @@ script:  py.test
 
 deploy:
   provider: pypi
-  user: ...
-  password: ...
+  user: nhumrich
+  password: fakepass
   on:
     branch: prod
