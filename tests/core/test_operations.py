@@ -14,7 +14,7 @@
 import mock
 import unittest
 
-from core import operations
+from ebcli.core import operations
 
 class TestOperations(unittest.TestCase):
 
