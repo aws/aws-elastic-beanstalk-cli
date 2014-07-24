@@ -14,7 +14,7 @@
 import mock
 import unittest
 
-from ebcli.core import operations
+from core import operations
 
 class TestOperations(unittest.TestCase):
 
@@ -51,7 +51,7 @@ class TestOperations(unittest.TestCase):
     def test_remove_zip_file(self):
         pass
 
-    @mock.patch('ebcli.core.operations.io')
+    @mock.patch('core.operations.io')
     def test_get_boolean_response_bad(self, mock_io):
         # populate with all bad responses
         # Last response must be valid in order to terminate loop
@@ -63,7 +63,7 @@ class TestOperations(unittest.TestCase):
         self.assertTrue(result)
         self.assertEqual(mock_io.prompt.call_count, len(response_list))
 
-    @mock.patch('ebcli.core.operations.io')
+    @mock.patch('core.operations.io')
     def test_get_boolean_response_true(self, mock_io):
         mock_io.prompt.side_effect = ['y', 'Y', 'YES', 'yes', 'Yes']
         result1 = operations.get_boolean_response()  # test with y
@@ -77,7 +77,7 @@ class TestOperations(unittest.TestCase):
         self.assertTrue(result4)
         self.assertTrue(result5)
 
-    @mock.patch('ebcli.core.operations.io')
+    @mock.patch('core.operations.io')
     def test_get_boolean_response_false(self, mock_io):
         mock_io.prompt.side_effect = ['n', 'N', 'NO', 'no', 'No']
         result1 = operations.get_boolean_response()  # test with n

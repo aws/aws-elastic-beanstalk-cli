@@ -19,7 +19,7 @@ import yaml
 from six.moves import configparser
 from six.moves.configparser import NoOptionError
 
-from ebcli.core import fileoperations
+from core import fileoperations
 
 
 class TestFileOperations(unittest.TestCase):
@@ -525,7 +525,6 @@ class TestFileOperations(unittest.TestCase):
         self.assertEqual(result, 'ebcli-test')
 
     def test_get_config_setting_no_local(self):
-        print os.getcwd()
         # create global file
         config = {'global':{'application_name':'myApp'}}
         with open(fileoperations.global_config_file, 'w') as f:

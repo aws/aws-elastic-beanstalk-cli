@@ -14,9 +14,9 @@
 import mock
 
 from cement.utils import test
-from ebcli.core.ebcore import EB
+from core.ebcore import EB
 
-from ebcli.lib import aws
+from lib import aws
 
 
 class TestInit(test.CementTestCase):
@@ -33,7 +33,7 @@ class TestInit(test.CementTestCase):
         self.app.run()
         self.app.close()
 
-    @mock.patch('ebcli.lib.elasticbeanstalk.aws')
+    @mock.patch('lib.elasticbeanstalk.aws')
     def myTest(self, mock_aws):
         aws.make_api_call('elasticbeanstalk', 'describe-applications')
         mock_aws._get_session.assert_called_with('elasticbeanstalk')
