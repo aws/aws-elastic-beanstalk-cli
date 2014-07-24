@@ -12,11 +12,11 @@
 # language governing permissions and limitations under the License.
 
 import os
+from collections import defaultdict
 
 from yaml import load, dump
 from six.moves import configparser
-from six.moves.configparser import NoSectionError
-from six.moves.configparser import NoOptionError
+from six.moves.configparser import NoSectionError, NoOptionError
 from cement.utils.misc import minimal_logger
 
 from ebcli.objects.exceptions import NotInitializedError
@@ -25,7 +25,8 @@ LOG = minimal_logger(__name__)
 
 
 def get_aws_home():
-    p = '~' + os.path.sep + '.aws' + os.path.sep
+    sep = os.path.sep
+    p = '~' + sep + '.aws' + sep
     return os.path.expanduser(p)
 
 
@@ -39,23 +40,26 @@ aws_secret_key = 'aws_secret_access_key'
 aws_region = 'region'
 default_section = 'default'
 
+def _get_option(config, section, key, default):
+    try:
+        return config.get(section, key)
+    except (NoSectionError, NoOptionError):
+        return default
 
 def read_aws_config_credentials():
     config = configparser.ConfigParser()
     config.read(aws_config_location)
-    try:
-        access_key = config.get(default_section,aws_access_key)
-    except NoSectionError, NoOptionError:
-        access_key = None
-    try:
-        secret_key = config.get(default_section, aws_secret_key)
-    except NoSectionError, NoOptionError:
-        secret_key = None
-    try:
-        region = config.get(default_section, aws_region)
-    except NoSectionError, NoOptionError:
-        region = None
+
+    access_key = _get_option(config, default_section, aws_access_key, None)
+    secret_key = _get_option(config, default_section, aws_secret_key, None)
+    region = _get_option(config, default_section, aws_region, None)
+
     return access_key, secret_key, region
+
+
+def _set_not_none(config, section, option, value):
+    if value:
+        config.set(section, option, value)
 
 
 def save_to_aws_config(access_key, secret_key, region):
@@ -67,23 +71,12 @@ def save_to_aws_config(access_key, secret_key, region):
     if default_section not in config.sections():
         config.add_section(default_section)
 
-    config.set(default_section, aws_access_key, access_key)
-    config.set(default_section, aws_secret_key, secret_key)
-    config.set(default_section, aws_region, region)
+    _set_not_none(config, default_section, aws_access_key, access_key)
+    _set_not_none(config, default_section, aws_secret_key, secret_key)
+    _set_not_none(config, default_section, aws_region, region)
 
     with open(aws_config_location, 'wb') as f:
         config.write(f)
-
-
-def _try_read_credential_file():
-    pass
-
-def read_credential_file():
-    location = '.elasticbeanstalk' + os.path.sep + 'config'
-
-def get_directory_name():
-    pass
-
 
 
 def get_application_name():
@@ -98,7 +91,6 @@ def create_config_file(app_name):
     :return: VOID: no return value
     """
     LOG.debug('Creating config file at ' + os.getcwd())
-    location = local_config_file
 
     if not os.path.exists(beanstalk_directory):
         os.makedirs(beanstalk_directory)

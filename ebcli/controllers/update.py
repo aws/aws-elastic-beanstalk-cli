@@ -14,6 +14,7 @@
 import time
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
+from ebcli.core import io
 
 
 class UpdateController(AbstractBaseController):
@@ -27,12 +28,12 @@ class UpdateController(AbstractBaseController):
 
     def do_command(self):
         if not self.app.pargs.env:
-            self.app.print_to_console('INFO: No environment has been given. '
+            io.echo('INFO: No environment has been given. '
                                       'Using branch default.')
 
         # update environment using a given config file
 
-        self.app.print_to_console('...')
+        io.echo('...')
         time.sleep(1)
 
-        self.app.print_to_console('Your Environment has been updated')
+        io.echo('Your Environment has been updated')

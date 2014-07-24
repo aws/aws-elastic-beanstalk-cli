@@ -42,17 +42,20 @@ def wait_and_print_status(timeout_in_seconds):
 
 
 def setup(app_name):
-    set_up_directory(app_name)
-    set_up_aws_dir()
+    setup_directory(app_name)
+    setup_aws_dir()
     create_app(app_name)
-    set_up_ignore_file()
+    setup_ignore_file()
 
 
-def set_up_aws_dir():
+def setup_aws_dir():
     access_key, secret_key, region = \
         fileoperations.read_aws_config_credentials()
 
     change = False
+    access_key = None
+    secret_key = None
+    region = None
     if not access_key or not secret_key:
         change = True
         # Ask if they want to setup their keys now
@@ -76,17 +79,16 @@ def set_up_aws_dir():
     if change:
         fileoperations.save_to_aws_config(access_key, secret_key, region)
 
-
-
 def create_app(app_name):
     # check if app exists
     app_result = elasticbeanstalk.describe_application(app_name)
 
     if not app_result:  # no app found with that name
         # Create it
-        elasticbeanstalk.create_application(app_name,
-                                            'Application created from '
-                                            'eb-cli tool using eb init')
+        elasticbeanstalk.create_application(
+            app_name,
+            'Application created from eb-cli tool using eb init'
+        )
 
         # ToDo: save app details
     else:
@@ -99,10 +101,10 @@ def create_app(app_name):
 def create_env():
     pass
 
-def set_up_directory(app_name):
+def setup_directory(app_name):
     fileoperations.create_config_file(app_name)
 
-def set_up_ignore_file():
+def setup_ignore_file():
     git_installed = fileoperations.get_config_setting('global', 'git')
 
     if not git_installed:
@@ -131,12 +133,12 @@ def remove_zip_file():
 
 def get_boolean_response():
     response = io.prompt('y/n').lower()
-    while response is not 'y' or 'n' or 'yes' or 'no':
+    while response not in ('y', 'n', 'yes', 'no'):
         io.echo(strings['prompt.invalid'],
                              strings['prompt.yes-or-no'])
         response = io.prompt('y/n').lower()
 
-    if response == 'y' or 'yes':
+    if response in ('y', 'yes'):
         return True
     else:
         return False
