@@ -6,7 +6,8 @@ import ebcli
 
 requires = ['botocore>=0.53.0',
             'cement>=2.2.2',
-            'six']
+            'six',
+            'pyyaml']
 
 
 setup_options = dict(

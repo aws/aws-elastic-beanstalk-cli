@@ -19,7 +19,7 @@ import yaml
 from six.moves import configparser
 from six.moves.configparser import NoOptionError
 
-from core import fileoperations
+from ebcli.core import fileoperations
 
 
 class TestFileOperations(unittest.TestCase):
