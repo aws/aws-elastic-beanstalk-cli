@@ -75,7 +75,7 @@ def save_to_aws_config(access_key, secret_key, region):
     _set_not_none(config, default_section, aws_secret_key, secret_key)
     _set_not_none(config, default_section, aws_region, region)
 
-    with open(aws_config_location, 'wb') as f:
+    with open(aws_config_location, 'w') as f:
         config.write(f)
 
 

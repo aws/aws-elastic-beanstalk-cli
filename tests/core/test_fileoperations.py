@@ -71,7 +71,7 @@ class TestFileOperations(unittest.TestCase):
         config.set('section1', 'aws_secret_access_key', secret2)
         config.set('section1', 'region', region2)
 
-        with open(fileoperations.aws_config_location, 'wb') as f:
+        with open(fileoperations.aws_config_location, 'w') as f:
             config.write(f)
 
 
