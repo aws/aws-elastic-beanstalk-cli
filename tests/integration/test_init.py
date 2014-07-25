@@ -18,7 +18,7 @@ import shutil
 from cement.utils import test
 from ebcli.core.ebcore import EB
 from ebcli.core import fileoperations
-from baseinttest import BaseIntegrationTest
+from integration.baseinttest import BaseIntegrationTest
 
 from lib import aws
 
