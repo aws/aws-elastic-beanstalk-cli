@@ -32,7 +32,8 @@ strings = {
     'cred.prompt':  'It looks like your credentials are not yet set up \n'
                     'Would you like to set them up now?',
     'prompt.invalid': 'Sorry, that choice is invalid.',
-    'prompt.yes-or-no': 'Please enter either Y or N'
+    'prompt.yes-or-no': 'Please enter either Y or N',
+    'app.description': 'Application created from eb-cli tool using eb init',
 }
 
 responses = {

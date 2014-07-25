@@ -32,17 +32,6 @@ def _make_api_call(operation_name, **operation_options):
                                **operation_options)
 
 
-def describe_application(app_name):
-    LOG.debug('Inside describe_application api wrapper')
-    result = _make_api_call('describe-applications',
-                            application_names=[app_name])
-    return result['Applications']
-
-
-def describe_applications():
-    LOG.debug('Inside describe_applications api wrapper')
-    result = _make_api_call('describe-applications')
-    return result['Applications']
 
 
 def create_application(app_name, descrip):
@@ -68,6 +57,24 @@ def create_environment(app_name, env_name, descrip, solution_stck, tier0):
                           description=descrip,
                           solution_stack=solution_stck,
                           tier=tier0)
+
+
+def delete_application(app_name):
+    LOG.debug('Inside delete_application api wrapper')
+    result = _make_api_call('delete-application')
+
+
+def describe_application(app_name):
+    LOG.debug('Inside describe_application api wrapper')
+    result = _make_api_call('describe-applications',
+                            application_names=[app_name])
+    return result['Applications']
+
+
+def describe_applications():
+    LOG.debug('Inside describe_applications api wrapper')
+    result = _make_api_call('describe-applications')
+    return result['Applications']
 
 
 def get_available_solution_stacks():

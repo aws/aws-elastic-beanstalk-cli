@@ -15,7 +15,7 @@ from ebcli.core import io
 
 def prompt_for_item_in_list(list):
     for x in range(0, len(list)):
-        io.echo(str(x + 1) + ') ' + list[x])
+        io.echo(str(x + 1) + ') ', list[x])
 
 
     choice = int(io.prompt('number'))

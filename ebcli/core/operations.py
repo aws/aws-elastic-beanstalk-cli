@@ -54,6 +54,9 @@ def setup(app_name):
 
 
 def setup_aws_dir():
+    # ToDo: ignore prompting for creds if they exist in path.
+    # Maybe wait for an exception before bothering
+
     access_key, secret_key, region = \
         fileoperations.read_aws_config_credentials()
 
@@ -89,7 +92,7 @@ def create_app(app_name):
         # Create it
         elasticbeanstalk.create_application(
             app_name,
-            'Application created from eb-cli tool using eb init'
+            strings['app.description']
         )
 
         # ToDo: save app details

@@ -30,5 +30,5 @@ class Region():
         self.name = name
         self.description = description
 
-    def to_string(self):
+    def __str__(self):
         return self.name + ' : ' + self.description

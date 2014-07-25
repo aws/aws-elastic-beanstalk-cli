@@ -26,7 +26,11 @@ def echo(*args):
                     or isinstance(data, six.integer_types):
             print_(data, end=' ')
         else:
-            LOG.error("echo called with an unsupported data type")
+            op = getattr(data, '__str__', None)
+            if op:
+                print_(data.__str__(), end=' ')
+            else:
+                LOG.error("echo called with an unsupported data type")
     print_('')
 
 
