@@ -35,7 +35,7 @@ class EB(foundation.CementApp):
         label = 'eb'
         base_controller = base.EbBaseController
         defaults = init_defaults('eb', 'log')
-        defaults['log']['level'] = 'WARN'
+        # defaults['log']['level'] = 'WARN'
         config_defaults = defaults
         # argument_handler = ArgParseHandler
         # uncomment above if custom arg handler is needed
@@ -59,12 +59,6 @@ class EB(foundation.CementApp):
         #Register global arguments
         self.add_arg('--verbose', action='store_true',
                          help='verbose text')
-
-
-
-defaults = init_defaults('ebapp', 'log')
-defaults['log']['level'] = 'WARN'
-
 
 def main():
     globals.app = EB()

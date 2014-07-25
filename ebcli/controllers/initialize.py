@@ -13,8 +13,7 @@
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
-from ebcli.core import fileoperations
-from ebcli.core import operations
+from ebcli.core import fileoperations, io, operations
 from ebcli.objects.exceptions import NotInitializedError
 
 
@@ -47,10 +46,7 @@ class InitController(AbstractBaseController):
             self.app.pargs.app = 'myFirstConsoleApp'
 
         if not self.app.pargs.app:
-            self.app.pargs.app = self.app.prompt('application name')
+            self.app.pargs.app = io.prompt('application name')
 
         #Do setup stuff
-        operations.setup(self.app.pargs.app, self.app)
-
-        self.app.print_to_console('Application', self.app.pargs.app,
-                                  'has been created')
+        operations.setup(self.app.pargs.app)

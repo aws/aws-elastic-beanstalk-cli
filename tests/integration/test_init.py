@@ -12,30 +12,21 @@
 # language governing permissions and limitations under the License.
 
 import mock
+import os
+import shutil
 
 from cement.utils import test
-from core.ebcore import EB
+from ebcli.core.ebcore import EB
+from ebcli.core import fileoperations
+from baseinttest import BaseIntegrationTest
 
 from lib import aws
 
 
-class TestInit(test.CementTestCase):
-    app_class = EB
+class TestInit(BaseIntegrationTest):
 
-    def setUp(self):
-        super(TestInit, self).setUp()
-        self.reset_backend()
-
-
-    def test_myapp(self):
+    def test_init_standard(self):
         self.app = EB(argv=['update'])
         self.app.setup()
         self.app.run()
         self.app.close()
-
-    @mock.patch('lib.elasticbeanstalk.aws')
-    def myTest(self, mock_aws):
-        aws.make_api_call('elasticbeanstalk', 'describe-applications')
-        mock_aws._get_session.assert_called_with('elasticbeanstalk')
-
-

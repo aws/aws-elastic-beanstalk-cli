@@ -14,11 +14,10 @@
 import six
 from six import print_
 from six.moves import input
+import logging
 
-
-from cement.utils.misc import minimal_logger
-
-LOG = minimal_logger(__name__)
+from ebcli.core import globals
+LOG = logging.getLogger(__name__)
 
 
 def echo(*args):
@@ -29,6 +28,18 @@ def echo(*args):
         else:
             LOG.error("echo called with an unsupported data type")
     print_('')
+
+
+def log_info(message):
+    globals.app.log.info(message)
+
+
+def log_warning(message):
+    globals.app.log.warn(message)
+
+
+def log_error(message):
+    globals.app.log.error(message)
 
 
 def get_input(output):

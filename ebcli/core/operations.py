@@ -13,12 +13,17 @@
 
 from datetime import datetime, timedelta
 
+from cement.utils.misc import minimal_logger
+
+LOG = minimal_logger(__name__)
+
 from ebcli.lib import elasticbeanstalk
 from ebcli.core import fileoperations, io
 from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.resources.strings import strings
 from ebcli.objects import region as regions
 from ebcli.lib import utils
+
 
 
 def wait_and_print_status(timeout_in_seconds):
@@ -53,9 +58,6 @@ def setup_aws_dir():
         fileoperations.read_aws_config_credentials()
 
     change = False
-    access_key = None
-    secret_key = None
-    region = None
     if not access_key or not secret_key:
         change = True
         # Ask if they want to setup their keys now
@@ -91,6 +93,8 @@ def create_app(app_name):
         )
 
         # ToDo: save app details
+        io.echo('Application', app_name,
+                'has been created')
     else:
         # App exists, pull down environments
         # ToDo: Pull down environments
