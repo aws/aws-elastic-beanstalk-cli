@@ -103,7 +103,7 @@ class TestFileOperations(unittest.TestCase):
         config.set('section1', 'aws_secret_access_key', secret2)
         config.set('section1', 'region', region2)
 
-        with open(fileoperations.aws_config_location, 'wb') as f:
+        with open(fileoperations.aws_config_location, 'w') as f:
             config.write(f)
 
 
@@ -131,7 +131,7 @@ class TestFileOperations(unittest.TestCase):
         config.set('section1', 'aws_secret_access_key', secret2)
         config.set('section1', 'region', region2)
 
-        with open(fileoperations.aws_config_location, 'wb') as f:
+        with open(fileoperations.aws_config_location, 'w') as f:
             config.write(f)
 
 
@@ -167,7 +167,7 @@ class TestFileOperations(unittest.TestCase):
 
     def test_read_aws_config_credentials_empty_file(self):
         # setup
-        with open(fileoperations.aws_config_location, 'wb') as f:
+        with open(fileoperations.aws_config_location, 'w') as f:
             f.write('')
 
         # do test
