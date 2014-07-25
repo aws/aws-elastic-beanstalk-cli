@@ -19,8 +19,6 @@ from cement.utils import test
 from ebcli.core.ebcore import EB
 from ebcli.core import fileoperations
 
-from lib import aws
-
 class BaseIntegrationTest(test.CementTestCase):
     app_class =  EB
 

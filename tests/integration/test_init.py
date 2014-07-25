@@ -20,8 +20,6 @@ from ebcli.core.ebcore import EB
 from ebcli.core import fileoperations
 from integration.baseinttest import BaseIntegrationTest
 
-from lib import aws
-
 
 class TestInit(BaseIntegrationTest):
 
