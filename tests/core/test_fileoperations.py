@@ -441,14 +441,14 @@ class TestFileOperations(unittest.TestCase):
 
         #make sure section does not exist
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
-        self.assertFalse(dict.has_key('mytestsection'))
+        self.assertFalse('mytestsection' in dict)
 
         # now do write
         fileoperations.write_config_setting('mytestsection', 'testkey', 'value')
 
         # make sure section now exists
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
-        self.assertTrue(dict.has_key('mytestsection'))
+        self.assertTrue('mytestsection' in dict)
 
     def test_write_config_setting_no_option(self):
         # create config file
@@ -458,16 +458,16 @@ class TestFileOperations(unittest.TestCase):
         fileoperations.write_config_setting('mytestsection', 'notmykey', 'val')
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
 
-        self.assertTrue(dict.has_key('mytestsection'))
-        self.assertFalse(dict['mytestsection'].has_key('testkey'))
+        self.assertTrue('mytestsection' in dict)
+        self.assertFalse('testkey' in dict['mytestsection'])
 
         # now do write
         fileoperations.write_config_setting('mytestsection', 'testkey', 'value')
 
         # make sure section now exists
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
-        self.assertTrue(dict.has_key('mytestsection'))
-        self.assertTrue(dict['mytestsection'].has_key('testkey'))
+        self.assertTrue('mytestsection' in dict)
+        self.assertTrue('testkey' in dict['mytestsection'])
         self.assertEqual(dict['mytestsection']['testkey'], 'value')
 
     def test_write_config_setting_override(self):
@@ -476,9 +476,9 @@ class TestFileOperations(unittest.TestCase):
 
         #make sure app name exists
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
-        self.assertTrue(dict.has_key('global'))
-        self.assertTrue(dict['global'].has_key('application_name'))
-        self.assertTrue(dict['global'].has_key('application_name'))
+        self.assertTrue('global' in dict)
+        self.assertTrue('application_name' in dict['global'])
+        self.assertTrue('application_name' in dict['global'])
         self.assertEqual(dict['global']['application_name'], 'ebcli-test')
 
         # now override
@@ -502,7 +502,7 @@ class TestFileOperations(unittest.TestCase):
         # make sure section and file now exists
         self.assertTrue(os.path.exists(fileoperations.local_config_file))
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
-        self.assertTrue(dict.has_key('mytestsection'))
+        self.assertTrue('mytestsection' in dict)
 
     def test_write_config_setting_standard(self):
         fileoperations.write_config_setting('global', 'mysetting', 'value')
