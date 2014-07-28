@@ -1,0 +1,19 @@
+By default, this package is configured to run Nose tests
+(https://w.amazon.com/index.php/Nose).
+
+Prefix the test files with 'test_'.
+
+Run the tests by calling:
+$ brazil-build test
+
+To run a single/few test files, just provide a path to the files:
+$ brazil-build test test/test_foo.py test/test_bar.py
+
+To report the code coverage:
+$ brazil-build test --with-coverage --cover-package=[YOUR_PYTHON_PKG]
+The --cover-package parameter should have your Python package name (not the
+brazil package) as this will limit the coverage reports to your code only.
+
+To debug the failing tests:
+$ brazil-build test --pdb
+will drop you into the Python debugger on the failed test.

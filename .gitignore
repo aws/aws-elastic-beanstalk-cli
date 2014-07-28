@@ -1,0 +1,8 @@
+*.pyc
+*.pyo
+*.class
+*~
+*#
+/doc/generated/*
+/runpy
+/build
