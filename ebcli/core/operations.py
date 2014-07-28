@@ -14,8 +14,7 @@
 from datetime import datetime, timedelta
 
 from cement.utils.misc import minimal_logger
-
-LOG = minimal_logger(__name__)
+from botocore.exceptions import NoCredentialsError
 
 from ebcli.lib import elasticbeanstalk
 from ebcli.core import fileoperations, io
@@ -23,7 +22,9 @@ from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.resources.strings import strings
 from ebcli.objects import region as regions
 from ebcli.lib import utils
+from ebcli.objects.exceptions import NoSourceControlError
 
+LOG = minimal_logger(__name__)
 
 
 def wait_and_print_status(timeout_in_seconds):
@@ -46,43 +47,35 @@ def wait_and_print_status(timeout_in_seconds):
         # message is in strings.responses['event.greenmessage']
 
 
-def setup(app_name):
-    setup_directory(app_name)
-    setup_aws_dir()
-    create_app(app_name)
-    setup_ignore_file()
+def setup(app_name, region):
+    setup_directory(app_name, region)
+    try:
+        create_app(app_name)
+    except NoCredentialsError:
+        setup_aws_dir()  # only need this if there are no creds in env vars
+        create_app(app_name)  # now that creds are set up, create app
+
+    try:
+        setup_ignore_file()
+    except NoSourceControlError:
+        io.log_warning(strings['git.notfound'])
 
 
 def setup_aws_dir():
     # ToDo: ignore prompting for creds if they exist in path.
     # Maybe wait for an exception before bothering
 
-    access_key, secret_key, region = \
+    access_key, secret_key = \
         fileoperations.read_aws_config_credentials()
 
     change = False
     if not access_key or not secret_key:
-        change = True
-        # Ask if they want to setup their keys now
         io.echo(strings['cred.prompt'])
-        response = get_boolean_response()
 
-        if response:
-            # if yes, ask them for their keys
-            access_key = io.prompt('aws-access-id')
-            secret_key = io.prompt('aws-secret-key')
+        access_key = io.prompt('aws-access-id')
+        secret_key = io.prompt('aws-secret-key')
 
-    if not region:
-        change = True
-        io.echo('Would you like to set a default region?')
-        response = get_boolean_response()
-        if response:
-            region_list = regions.get_all_regions()
-            result = utils.prompt_for_item_in_list(region_list)
-            region = result.name
-
-    if change:
-        fileoperations.save_to_aws_config(access_key, secret_key, region)
+        fileoperations.save_to_aws_config(access_key, secret_key)
 
 def create_app(app_name):
     # check if app exists
@@ -108,8 +101,8 @@ def create_app(app_name):
 def create_env():
     pass
 
-def setup_directory(app_name):
-    fileoperations.create_config_file(app_name)
+def setup_directory(app_name, region):
+    fileoperations.create_config_file(app_name, region)
 
 def setup_ignore_file():
     git_installed = fileoperations.get_config_setting('global', 'git')

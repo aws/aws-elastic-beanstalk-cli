@@ -11,16 +11,11 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import mock
-import os
-import shutil
-
-from cement.utils import test
 from ebcli.core.ebcore import EB
-from ebcli.core import fileoperations
 from integration.baseinttest import BaseIntegrationTest
 from ebcli.resources.strings import strings
-from ebcli.lib import elasticbeanstalk
+
+from botocore.exceptions import NoCredentialsError
 
 
 class TestInit(BaseIntegrationTest):
@@ -29,9 +24,134 @@ class TestInit(BaseIntegrationTest):
         """
                 testing for:
                 1. Prompt for app name
+                2. Ask to set up default region: Accept
+                3. Create app
+            """
+        app_name = 'ebcli-intTest-app'
+
+        # Set up mock responses
+        self.mock_aws.make_api_call.side_effect = [
+            {'Applications': []},  # describe call
+            None  # create call, we don't need a return value
+        ]
+
+        self.mock_input.side_effect = [
+            app_name,  # Application name
+            'y',    # setup region
+            '3',  # region
+        ]
+
+        # run cmd
+        self.app = EB(argv=['init'])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+        # make sure everything happened
+        self.mock_aws.make_api_call.assert_any_call(
+            'elasticbeanstalk',
+            'describe-applications',
+            application_names=[app_name]
+        )
+        self.mock_aws.make_api_call.assert_any_call(
+            'elasticbeanstalk',
+            'create-application',
+            application_name=app_name,
+            description=strings['app.description'],
+        )
+        self.assertEqual(self.mock_input.call_count, 3)
+
+
+    def test_init_no_creds(self):
+        """
+                testing for:
+                1. Give app name as cli option
+                2. Ask to set up Credentials: Reject
+                3. Ask to set up Region: Accept
+                4. Fail to create app (no credentials)
+        """
+        app_name = 'ebcli-intTest-app'
+
+        # Set up mock responses
+        self.mock_aws.make_api_call.side_effect = [
+            NoCredentialsError,  # first describe call
+            {'Applications': []},  # describe call
+            None  # create call, we don't need a return value
+        ]
+
+        self.mock_input.side_effect = [
+            '12345',  # access key
+            'ABCDEF',  # Secret Key
+        ]
+
+        # run cmd
+        self.app = EB(argv=['init -a ' + app_name])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+        # make sure we were prompted for keys
+        self.assertEqual(self.mock_input.call_count, 2)
+
+    def test_init_override(self):
+        """
+                testing to make sure all options successfully override defaults
+                 1. App name overrides config file app name
+            """
+
+        app_name = 'ebcli-intTest-app'
+
+    # run cmd
+        self.app = EB(argv=['init -a ' + app_name])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+    def test_init_no_git(self):
+        """
+                testing to make sure a warning is given if git is not installed
+                1. Prompt for app name
+                2. Create App
+                3. Warn that git is not installed
+        """
+
+        app_name = 'ebcli-intTest-app'
+
+    # run cmd
+        self.app = EB(argv=['init -a ' + app_name])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+    def test_init_repeat(self):
+        """
+                testing to make sure init doesnt override anything if
+                called a second time
+                All options previously entered should be persisted
+        """
+
+        app_name = 'ebcli-intTest-app'
+
+        # run cmd
+        self.app = EB(argv=['init -a ' + app_name])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+        self.app = EB(argv=['init'])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+    def test_init_app_exists(self):
+        """
+                testing for:
+                1. Prompt for app name
                 2. Ask to set up credentials: Accept
                 3. Ask to set up default region: Accept
                 4. Create app
+
+                Create app api should not be called because app exists
             """
         app_name = 'ebcli-intTest-app'
 
@@ -50,75 +170,17 @@ class TestInit(BaseIntegrationTest):
             '3',  # region
         ]
 
-        try:
-            # run cmd
-            self.app = EB(argv=['init'])
-            self.app.setup()
-            self.app.run()
-            self.app.close()
+        self.app = EB(argv=['init'])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
 
-            # make sure everything happened
-            self.mock_aws.make_api_call.assert_any_call(
-                'elasticbeanstalk',
-                'describe-applications',
-                application_names=[app_name]
-            )
-            self.mock_aws.make_api_call.assert_called_with(
-                'elasticbeanstalk',
-                'create-application',
-                application_name=app_name,
-                description=strings['app.description'],
-            )
-            self.assertEqual(self.mock_input.call_count, 6)
-
-        # clean up
-        finally:
-            # elasticbeanstalk.delete_application(app_name)
-            pass
-
-
-    def test_init_no_creds(self):
-        """
-                testing for:
-                1. Give app name as cli option
-                2. Ask to set up Credentials: Reject
-                3. Ask to set up Region: Accept
-                4. Fail to create app (no credentials)
-        """
-
-    def test_init_no_region(self):
-        """
-                testing for:
-                1.  Give app name as cli option
-                2. Credentials should be present,
-                        Do not ask to set up credentials
-                3. Ask to set up region: Reject
-                4. Create app in default region
-        """
-
-    def test_init_override(self):
-        """
-                testing to make sure all options successfully override defaults
-                 1. App name overrides config file app name
-            """
-
-    def test_init_no_git(self):
-        """
-                testing to make sure a warning is given if git is not installed
-                1. Prompt for app name
-                2. Create App
-                3. Warn that git is not installed
-        """
-
-    def test_init_repeat(self):
-        """
-                testing to make sure init doesnt override anything if
-                called a second time
-                All options previously entered should be persisted
-        """
-
-    def test_init_app_exists(self):
-        """
-                Testing to make sure init doesnt fail or override any existing apps
-                it should pull down environments from given app
-        """
+        # make sure describe was called and not create
+        # assert_called_with with validate that create was not called
+        # since it gets the very last call
+        self.mock_aws.make_api_call.assert_called_with(
+            'elasticbeanstalk',
+            'describe-applications',
+            application_names=[app_name]
+        )
+        self.assertEqual(self.mock_input.call_count, 6)

@@ -24,7 +24,6 @@ def get_all_regions():
         Region('sa-east-1', 'South America (Sao Paulo)'),
     ]
 
-
 class Region():
     def __init__(self, name, description):
         self.name = name

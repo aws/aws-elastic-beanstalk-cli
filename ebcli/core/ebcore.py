@@ -26,8 +26,7 @@ from ebcli.controllers.status import StatusController
 from ebcli.controllers.terminate import TerminateController
 from ebcli.controllers.update import UpdateController
 from ebcli.controllers.config import ConfigController
-from ebcli.core.arghandler import ArgParseHandler
-from ebcli.core import globals, base
+from ebcli.core import globals, base, io
 
 
 class EB(foundation.CementApp):
@@ -60,12 +59,14 @@ class EB(foundation.CementApp):
         self.add_arg('--verbose', action='store_true',
                          help='verbose text')
 
+        globals.app = self
+
 def main():
-    globals.app = EB()
+    app = EB()
 
     try:
-        globals.app.setup()
-        globals.app.run()
+        app.setup()
+        app.run()
 
     finally:
-        globals.app.close()
+        app.close()

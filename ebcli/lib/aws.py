@@ -17,6 +17,7 @@ from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
 from ebcli.objects.exceptions import ServiceError
+from ebcli.core import fileoperations
 LOG = minimal_logger(__name__)
 
 
@@ -40,7 +41,8 @@ def make_api_call(service_name, operation_name, **operation_options):
     global app
     service = _get_session(service_name)
     operation = service.get_operation(operation_name)
-    endpoint = service.get_endpoint()
+    region = fileoperations.get_default_region()
+    endpoint = service.get_endpoint(region)
 
     try:
         LOG.debug('Making api call')
@@ -60,7 +62,7 @@ def make_api_call(service_name, operation_name, **operation_options):
                 LOG.debug('Response:', response_data)
             return None
     except botocore.exceptions.NoCredentialsError as e:
-        LOG.error('No credentials file found')
+        LOG.error('No credentials found')
         raise e
 
     except (Exception, IOError) as error:

@@ -22,6 +22,7 @@ class TestOperations(unittest.TestCase):
         pass
 
     def test_setup(self):
+        # wrapper
         pass
 
     def test_setup_aws_dir(self):

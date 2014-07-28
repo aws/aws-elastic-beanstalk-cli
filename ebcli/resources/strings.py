@@ -30,10 +30,12 @@ strings = {
     'error.nocreds': 'A credentials file can not be found. \n'
                      'Please place a credential file at ~/.aws/config',
     'cred.prompt':  'It looks like your credentials are not yet set up \n'
-                    'Would you like to set them up now?',
+                    'Please enter your credentials now',
     'prompt.invalid': 'Sorry, that choice is invalid.',
     'prompt.yes-or-no': 'Please enter either Y or N',
     'app.description': 'Application created from eb-cli tool using eb init',
+    'git.notfound': 'Git does not seam to be installed. '
+                     'Have you ran git init?'
 }
 
 responses = {

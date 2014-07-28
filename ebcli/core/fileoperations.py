@@ -37,7 +37,6 @@ aws_config_folder = get_aws_home()
 aws_config_location = aws_config_folder + 'config'
 aws_access_key = 'aws_access_key_id'
 aws_secret_key = 'aws_secret_access_key'
-aws_region = 'region'
 default_section = 'default'
 
 def _get_option(config, section, key, default):
@@ -52,9 +51,8 @@ def read_aws_config_credentials():
 
     access_key = _get_option(config, default_section, aws_access_key, None)
     secret_key = _get_option(config, default_section, aws_secret_key, None)
-    region = _get_option(config, default_section, aws_region, None)
 
-    return access_key, secret_key, region
+    return access_key, secret_key
 
 
 def _set_not_none(config, section, option, value):
@@ -62,7 +60,7 @@ def _set_not_none(config, section, option, value):
         config.set(section, option, value)
 
 
-def save_to_aws_config(access_key, secret_key, region):
+def save_to_aws_config(access_key, secret_key):
     config = configparser.ConfigParser()
     if not os.path.exists(aws_config_folder):
         os.makedirs(aws_config_folder)
@@ -73,7 +71,6 @@ def save_to_aws_config(access_key, secret_key, region):
 
     _set_not_none(config, default_section, aws_access_key, access_key)
     _set_not_none(config, default_section, aws_secret_key, secret_key)
-    _set_not_none(config, default_section, aws_region, region)
 
     with open(aws_config_location, 'w') as f:
         config.write(f)
@@ -83,7 +80,11 @@ def get_application_name():
     return get_config_setting('global', 'application_name')
 
 
-def create_config_file(app_name):
+def get_default_region():
+    return get_config_setting('global', 'default_region')
+
+
+def create_config_file(app_name, region):
     """
         We want to make sure we do not override the file if it already exists,
          but we do want to fill in all missing pieces
@@ -97,6 +98,7 @@ def create_config_file(app_name):
 
     # add to global without writing over any settings if they exist
     write_config_setting('global', 'application_name', app_name)
+    write_config_setting('global', 'default_region', region)
 
 
 def _traverse_to_project_root():

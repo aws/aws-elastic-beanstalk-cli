@@ -20,7 +20,7 @@ from ebcli.core.ebcore import EB
 from ebcli.core import fileoperations
 
 class BaseIntegrationTest(test.CementTestCase):
-    app_class =  EB
+    app_class = EB
 
     def setUp(self):
         super(BaseIntegrationTest, self).setUp()
@@ -32,8 +32,8 @@ class BaseIntegrationTest(test.CementTestCase):
         self.mock_aws = self.patcher_aws.start()
 
         # set up test directory
-        if not os.path.exists('testDir'):
-            os.makedirs('testDir')
+        if not os.path.exists('testDir/.git'):
+            os.makedirs('testDir/.git')
         os.chdir('testDir')
 
         # set up mock elastic beanstalk directory
