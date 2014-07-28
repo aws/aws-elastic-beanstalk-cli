@@ -1,0 +1,17 @@
+language: python
+python:
+  - "3.4"
+  - "3.3"
+  - "2.7"
+  - "2.6"
+# command to install dependencies, we also need pytest
+install: python setup.py install && pip install pytest
+# command to run tests
+script:  py.test
+
+deploy:
+  provider: pypi
+  user: nhumrich
+  password: fakepass
+  on:
+    branch: prod
