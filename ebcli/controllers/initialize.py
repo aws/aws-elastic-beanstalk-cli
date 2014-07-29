@@ -15,7 +15,8 @@ from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 from ebcli.core import fileoperations, io, operations
 from ebcli.objects.exceptions import NotInitializedError
-
+from ebcli.objects import region as regions
+from ebcli.lib import utils
 
 class InitController(AbstractBaseController):
     class Meta:
@@ -23,6 +24,7 @@ class InitController(AbstractBaseController):
         description = strings['init.info']
         arguments = [
             (['-a', '--app'], dict(help='Application name')),
+            (['-r', '--region'], dict(help='Default Region')),
             (['-D', '--defaults'], dict(action='store_true',
                                         help='Automatically revert to defaults'
                                              ' for unsupplied parameters')),
@@ -31,22 +33,54 @@ class InitController(AbstractBaseController):
         epilog = 'this is an epilog'
 
     def do_command(self):
+        # get arguments
+        flag = False
+        app_name = self.app.pargs.app
+        region = self.app.pargs.region
+        defaults = self.app.pargs.defaults
+        if app_name or region or defaults:
+            flag = True
+
         # Get app name from config file, if exists
-        try:
-            app_name = fileoperations.get_application_name()
-        except NotInitializedError:
-            app_name = None
+        if not app_name:
+            try:
+                app_name = fileoperations.get_application_name()
+            except NotInitializedError:
+                app_name = None
 
-        if app_name and not self.app.pargs.app:
-            self.app.pargs.app = app_name
+        # Get region from config file, if exists
+        if not region:
+            try:
+                region = fileoperations.get_default_region()
+            except NotInitializedError:
+                region = None
 
-        if self.app.pargs.defaults and not self.app.pargs.app:
+        # if default flag is given, revert to defaults
+        if defaults:
             if not app_name:
-                self.app.pargs.app = app_name
-            self.app.pargs.app = 'myFirstConsoleApp'
+                app_name = 'myEbApp'
+            if not region:
+                region = 'us-east-1'
 
-        if not self.app.pargs.app:
-            self.app.pargs.app = io.prompt('application name')
+        # If we still do not have app name, ask for it
+        if not app_name:
+            app_name = io.prompt('application name')
+
+        # If we still do not have region name, ask for it
+        if not region:
+            if not flag:
+                io.echo('Would you like to set a default region? '
+                        '(if no, we will use us-east-1)')
+                response = operations.get_boolean_response()
+            else:
+                response = False
+
+            if response:
+                region_list = regions.get_all_regions()
+                result = utils.prompt_for_item_in_list(region_list)
+                region = result.name
+            else:
+                region = 'us-east-1'
 
         #Do setup stuff
-        operations.setup(self.app.pargs.app)
+        operations.setup(app_name, region)

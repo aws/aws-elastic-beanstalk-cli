@@ -58,41 +58,6 @@ class TestFileOperations(unittest.TestCase):
         access2 = '567890'
         secret1 = 'abcdefg'
         secret2 = 'hijklmn'
-        region1 = 'us-west-2'
-        region2 = 'us-east-1'
-
-        config.add_section(default)
-        config.add_section('section1')
-        config.set(default, 'aws_access_key_id', access1)
-        config.set(default, 'aws_secret_access_key', secret1)
-        config.set(default, 'region', region1)
-
-        config.set('section1', 'aws_access_key_id', access2)
-        config.set('section1', 'aws_secret_access_key', secret2)
-        config.set('section1', 'region', region2)
-
-        with open(fileoperations.aws_config_location, 'w') as f:
-            config.write(f)
-
-
-        # do Test
-        access, secret, region = fileoperations.read_aws_config_credentials()
-        self.assertEqual(access, access1)
-        self.assertEqual(secret, secret1)
-        self.assertEqual(region, region1)
-
-
-
-    def test_read_aws_config_credentials_no_region(self):
-        # setup
-        config = configparser.ConfigParser()
-
-        default = fileoperations.default_section
-        access1 = '123456'
-        access2 = '567890'
-        secret1 = 'abcdefg'
-        secret2 = 'hijklmn'
-        region2 = 'us-east-1'
 
         config.add_section(default)
         config.add_section('section1')
@@ -101,45 +66,15 @@ class TestFileOperations(unittest.TestCase):
 
         config.set('section1', 'aws_access_key_id', access2)
         config.set('section1', 'aws_secret_access_key', secret2)
-        config.set('section1', 'region', region2)
 
         with open(fileoperations.aws_config_location, 'w') as f:
             config.write(f)
 
 
         # do Test
-        access, secret, region = fileoperations.read_aws_config_credentials()
+        access, secret = fileoperations.read_aws_config_credentials()
         self.assertEqual(access, access1)
         self.assertEqual(secret, secret1)
-        self.assertEqual(region, None)
-
-    def test_read_aws_config_credentials_region_only(self):
-        # setup
-        config = configparser.ConfigParser()
-
-        default = fileoperations.default_section
-        access2 = '567890'
-        secret2 = 'hijklmn'
-        region1 = 'us-west-2'
-        region2 = 'us-east-1'
-
-        config.add_section(default)
-        config.add_section('section1')
-        config.set(default, 'region', region1)
-
-        config.set('section1', 'aws_access_key_id', access2)
-        config.set('section1', 'aws_secret_access_key', secret2)
-        config.set('section1', 'region', region2)
-
-        with open(fileoperations.aws_config_location, 'w') as f:
-            config.write(f)
-
-
-        # do Test
-        access, secret, region = fileoperations.read_aws_config_credentials()
-        self.assertEqual(access, None)
-        self.assertEqual(secret, None)
-        self.assertEqual(region, region1)
 
     def test_read_aws_config_credentials_no_file(self):
         # setup
@@ -148,10 +83,9 @@ class TestFileOperations(unittest.TestCase):
             os.remove(fileoperations.aws_config_location)
 
         # do test
-        access, secret, region = fileoperations.read_aws_config_credentials()
+        access, secret = fileoperations.read_aws_config_credentials()
         self.assertEqual(access, None)
         self.assertEqual(secret, None)
-        self.assertEqual(region, None)
 
     def test_read_aws_config_credentials_no_dir(self):
         # setup
@@ -160,10 +94,9 @@ class TestFileOperations(unittest.TestCase):
             shutil.rmtree(fileoperations.aws_config_folder)
 
         # do test
-        access, secret, region = fileoperations.read_aws_config_credentials()
+        access, secret = fileoperations.read_aws_config_credentials()
         self.assertEqual(access, None)
         self.assertEqual(secret, None)
-        self.assertEqual(region, None)
 
     def test_read_aws_config_credentials_empty_file(self):
         # setup
@@ -171,29 +104,26 @@ class TestFileOperations(unittest.TestCase):
             f.write('')
 
         # do test
-        access, secret, region = fileoperations.read_aws_config_credentials()
+        access, secret = fileoperations.read_aws_config_credentials()
         self.assertEqual(access, None)
         self.assertEqual(secret, None)
-        self.assertEqual(region, None)
 
     def test_save_to_aws_config_override(self):
         # first, write in some values
-        fileoperations.save_to_aws_config('1234', 'abc', 'test_region')
+        fileoperations.save_to_aws_config('1234', 'abc')
 
         #now override
         access = '09876'
         secret = 'abDfg'
-        region = 'us-east-1'
-        fileoperations.save_to_aws_config(access, secret, region)
+        fileoperations.save_to_aws_config(access, secret)
 
         # Grab values and make sure they were saved
-        access_result, secret_result, region_result \
+        access_result, secret_result \
             = fileoperations.read_aws_config_credentials()
 
         # Test
         self.assertEqual(access, access_result)
         self.assertEqual(secret, secret_result)
-        self.assertEqual(region, region_result)
 
     def test_save_to_aws_config_no_dir(self):
         # make sure directory doesn't exist
@@ -203,17 +133,15 @@ class TestFileOperations(unittest.TestCase):
         # write values
         access = '09876'
         secret = 'abDfg'
-        region = 'us-east-1'
-        fileoperations.save_to_aws_config(access, secret, region)
+        fileoperations.save_to_aws_config(access, secret)
 
         # Grab values and make sure they were saved
-        access_result, secret_result, region_result \
+        access_result, secret_result, \
             = fileoperations.read_aws_config_credentials()
 
         # Test
         self.assertEqual(access, access_result)
         self.assertEqual(secret, secret_result)
-        self.assertEqual(region, region_result)
 
     def test_save_to_aws_config_no_file(self):
         # make sure file doesn't exist
@@ -223,95 +151,30 @@ class TestFileOperations(unittest.TestCase):
         # write values
         access = '09876'
         secret = 'abDfg'
-        region = 'us-east-1'
-        fileoperations.save_to_aws_config(access, secret, region)
+        fileoperations.save_to_aws_config(access, secret)
 
         # Grab values and make sure they were saved
-        access_result, secret_result, region_result \
+        access_result, secret_result,  \
             = fileoperations.read_aws_config_credentials()
 
         # Test
         self.assertEqual(access, access_result)
         self.assertEqual(secret, secret_result)
-        self.assertEqual(region, region_result)
 
 
     def test_save_to_aws_config_standard(self):
         # write values
         access = '09876'
         secret = 'abDfg'
-        region = 'us-east-1'
-        fileoperations.save_to_aws_config(access, secret, region)
+        fileoperations.save_to_aws_config(access, secret)
 
         # Grab values and make sure they were saved
-        access_result, secret_result, region_result \
+        access_result, secret_result \
             = fileoperations.read_aws_config_credentials()
 
         # Test
         self.assertEqual(access, access_result)
         self.assertEqual(secret, secret_result)
-        self.assertEqual(region, region_result)
-
-
-    def test_save_to_aws_config_no_region(self):
-        # write values
-        access = '09876'
-        secret = 'abDfg'
-        fileoperations.save_to_aws_config(access, secret, None)
-
-        # Grab values and make sure they were saved
-        access_result, secret_result, region_result \
-            = fileoperations.read_aws_config_credentials()
-
-        # Test
-        self.assertEqual(access, access_result)
-        self.assertEqual(secret, secret_result)
-        self.assertEqual(None, region_result)
-
-        # make sure nothing was saved to the file
-        config = configparser.ConfigParser()
-        config.read(fileoperations.aws_config_location)
-
-        try:
-            config.get(fileoperations.default_section,
-                       fileoperations.aws_region)
-            raise Exception('Should have thrown a no section error')
-        except NoOptionError:
-            pass  # Error expected
-
-
-    def test_save_to_aws_config_region_only(self):
-        # write values
-        region = 'us-east-1'
-        fileoperations.save_to_aws_config(None, None, region)
-
-        # Grab values and make sure they were saved
-        access_result, secret_result, region_result \
-            = fileoperations.read_aws_config_credentials()
-
-        # Test
-        self.assertEqual(None, access_result)
-        self.assertEqual(None, secret_result)
-        self.assertEqual(region, region_result)
-
-        # make sure nothing was saved to the file
-        config = configparser.ConfigParser()
-        config.read(fileoperations.aws_config_location)
-
-        try:
-            config.get(fileoperations.default_section,
-                       fileoperations.aws_access_key)
-            raise Exception('Should have thrown a no section error')
-        except NoOptionError:
-            pass  # Error expected
-
-        try:
-            config.get(fileoperations.default_section,
-                       fileoperations.aws_secret_key)
-            raise Exception('Should have thrown a no section error')
-        except NoOptionError:
-            pass  # Error expected
-
 
     def test_save_and_read_to_real_credentials_file(self):
         # change directory back to normal
@@ -321,18 +184,16 @@ class TestFileOperations(unittest.TestCase):
 
         access = '12345678'
         secret = 'aBcdEfgh'
-        region = 'us-west-2'
 
         # save
-        fileoperations.save_to_aws_config(access, secret, region)
+        fileoperations.save_to_aws_config(access, secret)
         # read
-        access_result, secret_result, region_result \
+        access_result, secret_result \
             = fileoperations.read_aws_config_credentials()
 
         # Test
         self.assertEqual(access, access_result)
         self.assertEqual(secret, secret_result)
-        self.assertEqual(region, region_result)
 
     def test_get_application_name(self):
         # wrapper of get_config_setting
@@ -346,7 +207,8 @@ class TestFileOperations(unittest.TestCase):
         self.assertFalse(os.path.exists(fileoperations.local_config_file))
 
         app_name = 'ebcli-test'
-        fileoperations.create_config_file(app_name)
+        region = 'us-east-1'
+        fileoperations.create_config_file(app_name, region)
 
         # Make sure file now exists
         self.assertTrue(os.path.exists(fileoperations.local_config_file))
@@ -362,7 +224,8 @@ class TestFileOperations(unittest.TestCase):
         self.assertFalse(os.path.exists(fileoperations.beanstalk_directory))
 
         app_name = 'ebcli-test'
-        fileoperations.create_config_file(app_name)
+        region = 'us-east-1'
+        fileoperations.create_config_file(app_name, region)
 
         # Make sure file and dir now exists
         self.assertTrue(os.path.exists(fileoperations.beanstalk_directory))
@@ -380,7 +243,8 @@ class TestFileOperations(unittest.TestCase):
 
         # call create
         app_name = 'ebcli-test'
-        fileoperations.create_config_file(app_name)
+        region = 'us-east-1'
+        fileoperations.create_config_file(app_name, region)
 
         key = fileoperations.get_config_setting('global', 'randomKey')
         app = fileoperations.get_config_setting('global', 'application_name')
@@ -437,14 +301,15 @@ class TestFileOperations(unittest.TestCase):
 
     def test_write_config_setting_no_section(self):
         # create config file
-        fileoperations.create_config_file('ebcli-test')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1')
 
         #make sure section does not exist
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
         self.assertFalse('mytestsection' in dict)
 
         # now do write
-        fileoperations.write_config_setting('mytestsection', 'testkey', 'value')
+        fileoperations.write_config_setting('mytestsection',
+                                            'testkey', 'value')
 
         # make sure section now exists
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
@@ -452,7 +317,7 @@ class TestFileOperations(unittest.TestCase):
 
     def test_write_config_setting_no_option(self):
         # create config file
-        fileoperations.create_config_file('ebcli-test')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1')
 
         #make sure section does exists, but option doesn't
         fileoperations.write_config_setting('mytestsection', 'notmykey', 'val')
@@ -462,7 +327,8 @@ class TestFileOperations(unittest.TestCase):
         self.assertFalse('testkey' in dict['mytestsection'])
 
         # now do write
-        fileoperations.write_config_setting('mytestsection', 'testkey', 'value')
+        fileoperations.write_config_setting('mytestsection',
+                                            'testkey', 'value')
 
         # make sure section now exists
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
@@ -472,7 +338,7 @@ class TestFileOperations(unittest.TestCase):
 
     def test_write_config_setting_override(self):
         # create config file
-        fileoperations.create_config_file('ebcli-test')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1')
 
         #make sure app name exists
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
@@ -497,7 +363,8 @@ class TestFileOperations(unittest.TestCase):
         self.assertFalse(os.path.exists(fileoperations.local_config_file))
 
         # now do write
-        fileoperations.write_config_setting('mytestsection', 'testkey', 'value')
+        fileoperations.write_config_setting('mytestsection',
+                                            'testkey', 'value')
 
         # make sure section and file now exists
         self.assertTrue(os.path.exists(fileoperations.local_config_file))
@@ -516,7 +383,7 @@ class TestFileOperations(unittest.TestCase):
         self.assertFalse(os.path.exists(fileoperations.global_config_file))
 
         # Now create local
-        fileoperations.create_config_file('ebcli-test')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1')
 
         #get app name
         result = fileoperations.get_config_setting('global',
@@ -526,7 +393,7 @@ class TestFileOperations(unittest.TestCase):
 
     def test_get_config_setting_no_local(self):
         # create global file
-        config = {'global':{'application_name':'myApp'}}
+        config = {'global': {'application_name': 'myApp'}}
         with open(fileoperations.global_config_file, 'w') as f:
             f.write(yaml.dump(config, default_flow_style=False))
 
@@ -570,7 +437,7 @@ class TestFileOperations(unittest.TestCase):
         self.assertTrue(os.path.exists(fileoperations.global_config_file))
 
         # Now create local
-        fileoperations.create_config_file('ebcli-test')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1')
 
         #get app name
         result = fileoperations.get_config_setting('global',

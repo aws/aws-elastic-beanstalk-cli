@@ -17,6 +17,7 @@ from six.moves import input
 import logging
 
 from ebcli.core import globals
+
 LOG = logging.getLogger(__name__)
 
 

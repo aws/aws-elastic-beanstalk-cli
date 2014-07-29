@@ -20,20 +20,22 @@ from ebcli.core.ebcore import EB
 from ebcli.core import fileoperations
 
 class BaseIntegrationTest(test.CementTestCase):
-    app_class =  EB
+    app_class = EB
 
     def setUp(self):
         super(BaseIntegrationTest, self).setUp()
         self.reset_backend()
         self.patcher_input = mock.patch('ebcli.core.io.get_input')
         self.patcher_aws = mock.patch('ebcli.lib.elasticbeanstalk.aws')
+        self.patcher_output = mock.patch('ebcli.core.io.echo')
 
         self.mock_input = self.patcher_input.start()
         self.mock_aws = self.patcher_aws.start()
+        self.mock_output = self.patcher_output.start()
 
         # set up test directory
-        if not os.path.exists('testDir'):
-            os.makedirs('testDir')
+        if not os.path.exists('testDir/.git'):
+            os.makedirs('testDir/.git')
         os.chdir('testDir')
 
         # set up mock elastic beanstalk directory
@@ -54,6 +56,7 @@ class BaseIntegrationTest(test.CementTestCase):
     def tearDown(self):
         self.patcher_aws.stop()
         self.patcher_input.stop()
+        self.patcher_output.stop()
 
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
