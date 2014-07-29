@@ -11,9 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import mock
+
 from ebcli.core.ebcore import EB
 from integration.baseinttest import BaseIntegrationTest
 from ebcli.resources.strings import strings
+from ebcli.core import fileoperations
 
 from botocore.exceptions import NoCredentialsError
 
@@ -98,32 +101,49 @@ class TestInit(BaseIntegrationTest):
             """
 
         # setup config file
+        fileoperations.create_config_file('savedAppName', 'saved-region')
+
+        # Set up mock responses
+        self.mock_aws.make_api_call.side_effect = [
+            {'Applications': []},  # describe call
+            None  # create call, we don't need a return value
+        ]
 
         app_name = 'ebcli-intTest-app'
 
-    # run cmd
+        # run cmd
         self.app = EB(argv=['init', '-a', app_name])
         self.app.setup()
         self.app.run()
         self.app.close()
 
         self.assertEqual(self.mock_input.call_count, 0)
+        self.mock_output.assert_called_with('Application', app_name,
+                                            'has been created')
 
-    def test_init_no_git(self):
+    @mock.patch('ebcli.core.io.log_warning')
+    def test_init_no_git(self, mock_warning):
         """
                 testing to make sure a warning is given if git is not installed
                 1. Prompt for app name
                 2. Create App
                 3. Warn that git is not installed
         """
+        # Set up mock responses
+        self.mock_aws.make_api_call.side_effect = [
+            {'Applications': []},  # describe call
+            None  # create call, we don't need a return value
+        ]
 
         app_name = 'ebcli-intTest-app'
 
-    # run cmd
+        # run cmd
         self.app = EB(argv=['init', '-a', app_name])
         self.app.setup()
         self.app.run()
         self.app.close()
+
+        mock_warning.assert_called_with(strings['git.notfound'])
 
     def test_init_repeat(self):
         """
@@ -131,6 +151,16 @@ class TestInit(BaseIntegrationTest):
                 called a second time
                 All options previously entered should be persisted
         """
+
+        # Set up mock responses
+        self.mock_aws.make_api_call.side_effect = [
+            {'Applications': []},  # describe call
+            None,  # create call, we don't need a return value
+            {'Applications': []},  # describe call
+            None  # create call, we don't need a return value
+        ]
+        self.mock_input.side_effect = Exception('should not be called')
+
 
         app_name = 'ebcli-intTest-app'
 
@@ -145,6 +175,8 @@ class TestInit(BaseIntegrationTest):
         self.app.setup()
         self.app.run()
         self.app.close()
+
+        self.assertEqual(self.mock_input.call_count, 0)
 
     def test_init_app_exists(self):
         """
