@@ -17,6 +17,7 @@ from ebcli.core.ebcore import EB
 from integration.baseinttest import BaseIntegrationTest
 from ebcli.resources.strings import strings
 from ebcli.core import fileoperations
+from ebcli.objects.sourcecontrol import NoSC
 
 from botocore.exceptions import NoCredentialsError
 
@@ -121,8 +122,9 @@ class TestInit(BaseIntegrationTest):
         self.mock_output.assert_called_with('Application', app_name,
                                             'has been created')
 
+    @mock.patch('ebcli.objects.sourcecontrol.SourceControl')
     @mock.patch('ebcli.core.io.log_warning')
-    def test_init_no_git(self, mock_warning):
+    def test_init_no_git(self, mock_warning, mock_src_ctrl):
         """
                 testing to make sure a warning is given if git is not installed
                 1. Prompt for app name
@@ -134,6 +136,7 @@ class TestInit(BaseIntegrationTest):
             {'Applications': []},  # describe call
             None  # create call, we don't need a return value
         ]
+        mock_src_ctrl.get_source_control.side_effect = NoSC()
 
         app_name = 'ebcli-intTest-app'
 
