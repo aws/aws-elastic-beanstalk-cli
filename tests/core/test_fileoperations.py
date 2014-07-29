@@ -118,7 +118,7 @@ class TestFileOperations(unittest.TestCase):
         fileoperations.save_to_aws_config(access, secret)
 
         # Grab values and make sure they were saved
-        access_result, secret_result, region_result \
+        access_result, secret_result \
             = fileoperations.read_aws_config_credentials()
 
         # Test
@@ -188,13 +188,12 @@ class TestFileOperations(unittest.TestCase):
         # save
         fileoperations.save_to_aws_config(access, secret)
         # read
-        access_result, secret_result, region_result \
+        access_result, secret_result \
             = fileoperations.read_aws_config_credentials()
 
         # Test
         self.assertEqual(access, access_result)
         self.assertEqual(secret, secret_result)
-        self.assertEqual(region_result)
 
     def test_get_application_name(self):
         # wrapper of get_config_setting
@@ -208,7 +207,8 @@ class TestFileOperations(unittest.TestCase):
         self.assertFalse(os.path.exists(fileoperations.local_config_file))
 
         app_name = 'ebcli-test'
-        fileoperations.create_config_file(app_name)
+        region = 'us-east-1'
+        fileoperations.create_config_file(app_name, region)
 
         # Make sure file now exists
         self.assertTrue(os.path.exists(fileoperations.local_config_file))
@@ -224,7 +224,8 @@ class TestFileOperations(unittest.TestCase):
         self.assertFalse(os.path.exists(fileoperations.beanstalk_directory))
 
         app_name = 'ebcli-test'
-        fileoperations.create_config_file(app_name)
+        region = 'us-east-1'
+        fileoperations.create_config_file(app_name, region)
 
         # Make sure file and dir now exists
         self.assertTrue(os.path.exists(fileoperations.beanstalk_directory))
@@ -242,7 +243,8 @@ class TestFileOperations(unittest.TestCase):
 
         # call create
         app_name = 'ebcli-test'
-        fileoperations.create_config_file(app_name)
+        region = 'us-east-1'
+        fileoperations.create_config_file(app_name, region)
 
         key = fileoperations.get_config_setting('global', 'randomKey')
         app = fileoperations.get_config_setting('global', 'application_name')
@@ -299,14 +301,15 @@ class TestFileOperations(unittest.TestCase):
 
     def test_write_config_setting_no_section(self):
         # create config file
-        fileoperations.create_config_file('ebcli-test')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1')
 
         #make sure section does not exist
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
         self.assertFalse('mytestsection' in dict)
 
         # now do write
-        fileoperations.write_config_setting('mytestsection', 'testkey', 'value')
+        fileoperations.write_config_setting('mytestsection',
+                                            'testkey', 'value')
 
         # make sure section now exists
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
@@ -314,7 +317,7 @@ class TestFileOperations(unittest.TestCase):
 
     def test_write_config_setting_no_option(self):
         # create config file
-        fileoperations.create_config_file('ebcli-test')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1')
 
         #make sure section does exists, but option doesn't
         fileoperations.write_config_setting('mytestsection', 'notmykey', 'val')
@@ -324,7 +327,8 @@ class TestFileOperations(unittest.TestCase):
         self.assertFalse('testkey' in dict['mytestsection'])
 
         # now do write
-        fileoperations.write_config_setting('mytestsection', 'testkey', 'value')
+        fileoperations.write_config_setting('mytestsection',
+                                            'testkey', 'value')
 
         # make sure section now exists
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
@@ -334,7 +338,7 @@ class TestFileOperations(unittest.TestCase):
 
     def test_write_config_setting_override(self):
         # create config file
-        fileoperations.create_config_file('ebcli-test')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1')
 
         #make sure app name exists
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
@@ -359,7 +363,8 @@ class TestFileOperations(unittest.TestCase):
         self.assertFalse(os.path.exists(fileoperations.local_config_file))
 
         # now do write
-        fileoperations.write_config_setting('mytestsection', 'testkey', 'value')
+        fileoperations.write_config_setting('mytestsection',
+                                            'testkey', 'value')
 
         # make sure section and file now exists
         self.assertTrue(os.path.exists(fileoperations.local_config_file))
@@ -378,7 +383,7 @@ class TestFileOperations(unittest.TestCase):
         self.assertFalse(os.path.exists(fileoperations.global_config_file))
 
         # Now create local
-        fileoperations.create_config_file('ebcli-test')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1')
 
         #get app name
         result = fileoperations.get_config_setting('global',
@@ -388,7 +393,7 @@ class TestFileOperations(unittest.TestCase):
 
     def test_get_config_setting_no_local(self):
         # create global file
-        config = {'global':{'application_name':'myApp'}}
+        config = {'global': {'application_name': 'myApp'}}
         with open(fileoperations.global_config_file, 'w') as f:
             f.write(yaml.dump(config, default_flow_style=False))
 
@@ -432,7 +437,7 @@ class TestFileOperations(unittest.TestCase):
         self.assertTrue(os.path.exists(fileoperations.global_config_file))
 
         # Now create local
-        fileoperations.create_config_file('ebcli-test')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1')
 
         #get app name
         result = fileoperations.get_config_setting('global',

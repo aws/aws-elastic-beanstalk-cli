@@ -16,25 +16,14 @@ import unittest
 
 from ebcli.core import operations
 
+
 class TestOperations(unittest.TestCase):
 
     def test_wait_and_print_status(self):
         pass
 
-    def test_setup(self):
-        # wrapper
-        pass
-
-    def test_setup_aws_dir(self):
-        pass
-
-    def test_create_app(self):
-        pass
 
     def test_create_env(self):
-        pass
-
-    def test_setup_directory(self):
         pass
 
     def test_setup_ignore_file(self):

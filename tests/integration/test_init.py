@@ -66,8 +66,6 @@ class TestInit(BaseIntegrationTest):
         """
                 testing for:
                 1. Give app name as cli option
-                2. Ask to set up Credentials: Reject
-                3. Ask to set up Region: Accept
                 4. Fail to create app (no credentials)
         """
         app_name = 'ebcli-intTest-app'
@@ -85,7 +83,7 @@ class TestInit(BaseIntegrationTest):
         ]
 
         # run cmd
-        self.app = EB(argv=['init -a ' + app_name])
+        self.app = EB(argv=['init', '-a', app_name])
         self.app.setup()
         self.app.run()
         self.app.close()
@@ -99,13 +97,17 @@ class TestInit(BaseIntegrationTest):
                  1. App name overrides config file app name
             """
 
+        # setup config file
+
         app_name = 'ebcli-intTest-app'
 
     # run cmd
-        self.app = EB(argv=['init -a ' + app_name])
+        self.app = EB(argv=['init', '-a', app_name])
         self.app.setup()
         self.app.run()
         self.app.close()
+
+        self.assertEqual(self.mock_input.call_count, 0)
 
     def test_init_no_git(self):
         """
@@ -118,7 +120,7 @@ class TestInit(BaseIntegrationTest):
         app_name = 'ebcli-intTest-app'
 
     # run cmd
-        self.app = EB(argv=['init -a ' + app_name])
+        self.app = EB(argv=['init', '-a', app_name])
         self.app.setup()
         self.app.run()
         self.app.close()
@@ -133,10 +135,11 @@ class TestInit(BaseIntegrationTest):
         app_name = 'ebcli-intTest-app'
 
         # run cmd
-        self.app = EB(argv=['init -a ' + app_name])
+        self.app = EB(argv=['init', '-a', app_name])
         self.app.setup()
         self.app.run()
         self.app.close()
+        self.reset_backend()
 
         self.app = EB(argv=['init'])
         self.app.setup()
@@ -163,9 +166,6 @@ class TestInit(BaseIntegrationTest):
 
         self.mock_input.side_effect = [
             app_name,  # Application name
-            'y',   # setup creds
-            '12345',  # access key
-            'ABCDEF',  # Secret Key
             'y',    # setup region
             '3',  # region
         ]
@@ -183,4 +183,4 @@ class TestInit(BaseIntegrationTest):
             'describe-applications',
             application_names=[app_name]
         )
-        self.assertEqual(self.mock_input.call_count, 6)
+        self.assertEqual(self.mock_input.call_count, 3)

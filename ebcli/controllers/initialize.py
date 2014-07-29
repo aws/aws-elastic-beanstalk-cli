@@ -15,7 +15,7 @@ from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 from ebcli.core import fileoperations, io, operations
 from ebcli.objects.exceptions import NotInitializedError
-from ebcli.objects import region
+from ebcli.objects import region as regions
 from ebcli.lib import utils
 
 class InitController(AbstractBaseController):
@@ -24,7 +24,7 @@ class InitController(AbstractBaseController):
         description = strings['init.info']
         arguments = [
             (['-a', '--app'], dict(help='Application name')),
-            (['-r', '--region'], dict(helo='Default Region')),
+            (['-r', '--region'], dict(help='Default Region')),
             (['-D', '--defaults'], dict(action='store_true',
                                         help='Automatically revert to defaults'
                                              ' for unsupplied parameters')),
@@ -67,16 +67,20 @@ class InitController(AbstractBaseController):
             app_name = io.prompt('application name')
 
         # If we still do not have region name, ask for it
-        if not region and not flag:
-            change = True
-            io.echo('Would you like to set a default region? '
-                    '(if no, we will use us-east-1)')
+        if not region:
+            if not flag:
+                io.echo('Would you like to set a default region? '
+                        '(if no, we will use us-east-1)')
+                response = operations.get_boolean_response()
+            else:
+                response = False
 
-            response = operations.get_boolean_response()
             if response:
-                region_list = region.get_all_regions()
+                region_list = regions.get_all_regions()
                 result = utils.prompt_for_item_in_list(region_list)
                 region = result.name
+            else:
+                region = 'us-east-1'
 
         #Do setup stuff
         operations.setup(app_name, region)

@@ -101,8 +101,10 @@ def create_app(app_name):
 def create_env():
     pass
 
+
 def setup_directory(app_name, region):
     fileoperations.create_config_file(app_name, region)
+
 
 def setup_ignore_file():
     git_installed = fileoperations.get_config_setting('global', 'git')
@@ -112,8 +114,10 @@ def setup_ignore_file():
         source_control.set_up_ignore_file()
         fileoperations.write_config_setting('global', 'git', True)
 
+
 def zip_up_code():
     pass
+
 
 def create_app_version():
     # NOTE: Requires instance to be running

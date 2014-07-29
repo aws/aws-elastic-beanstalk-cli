@@ -27,9 +27,11 @@ class BaseIntegrationTest(test.CementTestCase):
         self.reset_backend()
         self.patcher_input = mock.patch('ebcli.core.io.get_input')
         self.patcher_aws = mock.patch('ebcli.lib.elasticbeanstalk.aws')
+        self.patcher_output = mock.patch('ebcli.core.io.echo')
 
         self.mock_input = self.patcher_input.start()
         self.mock_aws = self.patcher_aws.start()
+        self.mock_output = self.patcher_output.start()
 
         # set up test directory
         if not os.path.exists('testDir/.git'):
@@ -54,6 +56,7 @@ class BaseIntegrationTest(test.CementTestCase):
     def tearDown(self):
         self.patcher_aws.stop()
         self.patcher_input.stop()
+        self.patcher_output.stop()
 
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
