@@ -11,13 +11,13 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import mock
+from mock import patch
 
 from ebcli.core.ebcore import EB
 from integration.baseinttest import BaseIntegrationTest
 from ebcli.resources.strings import strings
 from ebcli.core import fileoperations
-from ebcli.objects.sourcecontrol import NoSC
+from ebcli.objects.sourcecontrol import NoSC, SourceControl
 
 from botocore.exceptions import NoCredentialsError
 
@@ -122,8 +122,8 @@ class TestInit(BaseIntegrationTest):
         self.mock_output.assert_called_with('Application', app_name,
                                             'has been created')
 
-    @mock.patch('ebcli.objects.sourcecontrol.SourceControl')
-    @mock.patch('ebcli.core.io.log_warning')
+    @patch('ebcli.core.operations.SourceControl')
+    @patch('ebcli.core.io.log_warning')
     def test_init_no_git(self, mock_warning, mock_src_ctrl):
         """
                 testing to make sure a warning is given if git is not installed
@@ -136,7 +136,7 @@ class TestInit(BaseIntegrationTest):
             {'Applications': []},  # describe call
             None  # create call, we don't need a return value
         ]
-        mock_src_ctrl.get_source_control.side_effect = NoSC()
+        mock_src_ctrl.get_source_control.return_value = NoSC()
 
         app_name = 'ebcli-intTest-app'
 
