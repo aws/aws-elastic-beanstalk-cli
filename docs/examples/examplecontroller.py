@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.core import io
 
 
 '''  Flag types
@@ -47,7 +48,19 @@ class ExampleController(AbstractBaseController):
                                               help='V for Vendetta')),
             (['-A'], dict(action='store_const', const=12345,
                                               help='the A option')),
+            # The position_arg is a flagless argument
+            ##  nargs specifies the number of arguments expected
+            (['positional_arg'], dict(action='store', nargs='*')),
         ]
 
     def do_command(self):
-        self.app.print_to_console('Hello World!')
+        io.echo('Hello World!')
+
+        for arg in self.app.pargs.positional_arg:
+            io.echo(arg)
+
+        if self.app.pargs.foo:
+            io.echo(self.app.pargs.foo)
+
+        if self.app.pargs.vendetta:
+            io.echo('Vendetta Flag was set')

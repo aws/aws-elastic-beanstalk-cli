@@ -12,6 +12,9 @@
 # language governing permissions and limitations under the License.
 
 from cement.core import controller
+from cement.utils.misc import init_defaults
+from ebcli.core import io
+from cement.ext.ext_logging import LoggingLogHandler
 
 class AbstractBaseController(controller.CementBaseController):
     """
@@ -42,4 +45,7 @@ class AbstractBaseController(controller.CementBaseController):
         from here.  It can also be overridden in the sub-class
 
         """
+        if self.app.pargs.verbose:
+            LoggingLogHandler.set_level(self.app.log, 'INFO')
+        io.log_info("Verbose Mode On")
         self.do_command()

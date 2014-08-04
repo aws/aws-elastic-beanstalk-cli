@@ -15,13 +15,20 @@ from ebcli.core import io
 
 def prompt_for_item_in_list(list):
     for x in range(0, len(list)):
-        io.echo(str(x + 1) + ') ', list[x])
+        io.echo(str(x + 1) + ')', list[x])
 
 
-    choice = int(io.prompt('number'))
-    while not (0 < choice <= len(list)):
-        io.echo('Sorry, that is not a valid choice, '
-                                'please choose again')
+    while True:
+        try:
+            choice = int(io.prompt('number'))
+            if not (0 < choice <= len(list)):
+                raise ValueError
+            else:
+                break
+        except ValueError:
+            io.echo('Sorry, that is not a valid choice. '
+                    'Please choose a number between 1 and ' +
+                    str(len(list)) + '.')
         choice = int(io.prompt('number'))
     return list[choice - 1]
 

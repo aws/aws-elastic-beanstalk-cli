@@ -12,12 +12,14 @@
 # language governing permissions and limitations under the License.
 
 import time
+import sys
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
-from ebcli.lib import elasticbeanstalk
-from ebcli.objects.exceptions import NotFoundException
-from ebcli.core import io
+from ebcli.lib import elasticbeanstalk, iam
+from ebcli.objects.exceptions import NotFoundException, NotInitializedError
+from ebcli.core import io, fileoperations, operations
+from ebcli.objects.tier import Tier
 
 
 class CreateController(AbstractBaseController):
@@ -25,75 +27,116 @@ class CreateController(AbstractBaseController):
         label = 'create'
         description = strings['create.info']
         arguments = [
-
             (['-n', '--name'], dict(dest='env', help='Environment name')),
             (['-r', '--region'], dict(help='Region which environment '
                                            'will be created in')),
-            (['--worker'], dict(action='store_true',
-                                help='Start environment as a worker tier')),
-            (['-S', '--solution'], dict(help='Solution stack')),
-            (['-s', '--single'], dict(action='store_true',
+            (['-c', '--cname'], dict(help='Cname prefix')),
+            (['-t', '--tier'], dict(help='Environment tier type')),
+            (['-s', '--solution'], dict(help='Solution stack')),
+            (['--single'], dict(action='store_true',
                                       help='Environment will use a Single '
                                            'Instance with no Load Balancer')),
             (['-D', '--defaults'], dict(action='store_true',
                                         help='Automatically revert to defaults'
                                              ' for unsupplied parameters')),
+            (['-d', '--branch_default'], dict(action='store_true',
+                                              help='Set as branches default '
+                                                   'environment')),
             (['-p', '--profile'], dict(help='Instance profile')),
+            (['-vl', '--versionlabel'], dict(help='Version label to deploy')),
+            (['-k', '--keyname'], dict(help='EC2 SSH KeyPair name')),
         ]
 
     def do_command(self):
-        args = self.app.pargs
-        if not args.region:
-            args.region = "us-east-1"
-
-        if args.defaults:
-            if not args.env:
-                args.env = "myFirstEnvironment"
-            if not args.solution:
-                args.solution = 'php-5.5-64bit-v1.0.4'
-
-        if not args.env:
-            args.env = io.prompt('environment name')
-        if not args.solution:
-            args.solution = elasticbeanstalk.select_solution_stack()
+        env_name = self.app.pargs.env
+        region = self.app.pargs.region
+        cname = self.app.pargs.cname
+        tier = self.app.pargs.tier
+        solution_string = self.app.pargs.solution
+        single = self.app.pargs.single
+        defaults = self.app.pargs.defaults
+        profile = self.app.pargs.profile
+        label = self.app.pargs.versionlabel
+        branch_default = self.app.pargs.branch_default
+        key_name = self.app.pargs.keyname
 
 
-        # ToDo: Ask for environment c-name/url
+        # get application name
+        app_name = fileoperations.get_application_name()
 
-        try:
-            solution = elasticbeanstalk.get_solution_stack(args.solution)
-        except NotFoundException:
-            self.app.log.error('Could not find specified solution stack')
-            return
+        #load default region
+        if not region:
+            region = fileoperations.get_default_region()
 
-        io.echo('Creating environment..')
-        io.echo('...')
+        # Test out solution stack before we ask any questions (Fast Fail)
+        if solution_string:
+            try:
+                solution = elasticbeanstalk.get_solution_stack(solution_string)
+            except NotFoundException:
+                io.log_error('Could not find specified solution stack')
+                sys.exit(127)
 
+        if tier:
+            try:
+                tier = Tier.parse_tier(tier)
+            except NotFoundException:
+                io.log_error('Provided tier does not appear to be valid')
+                sys.exit(127)
 
+        # Load defaults if needed
+        if defaults:
+            if not env_name:
+               app_name = fileoperations.get_application_name()
+               env_name = (app_name + "-env")[:23]
 
-        time.sleep(1)
+            if not cname:
+                # Service supports defaulted cnames
+                pass
 
-        io.echo('The environment', args.env,
-                                  'has been created.')
-        io.echo('Region:', args.region)
-        io.echo('Solution Stack Name:', solution.string)
-        io.echo('Solution Stack Description:', solution.name)
+            if not tier:
+                # Service supports defaulted tiers
+                pass
 
+            if not solution_string:
+                # Service does NOT support default solution stack
+                # ToDo: Should we allow a default solution stack?
+                solution_string = 'php-5.5-64bit-v1.0.4'
+                solution = elasticbeanstalk.get_solution_stack(solution_string)
 
-        if args.single:
-            io.echo('Instance Type: Single Instance')
+            if not label:
+                # Service will launch sample app
+                pass
+
+            if not profile:
+                # Service supports default profile
+                pass
+
+            if not key_name:
+                # Service support no keyname
+                pass
         else:
-            io.echo('Instance Type: Load Balanced')
+            # Lets prompt for everything!
+            if not env_name:
+                env_name = io.prompt_for_environment_name()
 
-        if args.worker:
-            io.echo('Tier: Worker')
-        else:
-            io.echo('Tier: Web Server')
+            if not cname:
+                cname = io.prompt_for_cname()
+                # ToDo: Check for availability (CheckDNSAvailability)
+
+            if not solution_string:
+                solution = elasticbeanstalk.select_solution_stack()
+
+            if not tier:
+                tier = elasticbeanstalk.select_tier()
+
+            if not label:
+                # Default to service, will launch sample app
+                pass
+
+            if not profile:
+                # Default to service
+                pass
 
 
-
-        #This command will probably go away
-           #initialized a branch
-            # sets up an environment for the branch
-
-            # We should do this automagically when another command is called
+        operations.make_new_env(app_name, env_name, region, cname,
+                                solution, tier, label, profile, branch_default)

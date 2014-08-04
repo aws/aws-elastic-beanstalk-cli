@@ -6,3 +6,8 @@
 /doc/generated/*
 /runpy
 /build
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.ebe.*
+!.elasticbeanstalk/*.global.*

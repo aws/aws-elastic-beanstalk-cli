@@ -13,6 +13,7 @@
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
+from ebcli.core import fileoperations, operations, io
 
 
 class StatusController(AbstractBaseController):
@@ -20,10 +21,28 @@ class StatusController(AbstractBaseController):
         label = 'status'
         description = strings['status.info']
         arguments = [
-            (['-f', '--foo'], dict(help='notorious foo option')),
+            (['environment_name'], dict(action='store', nargs='?',
+                                        default=[],
+                                        help='Environment name')),
+            (['-r', '--region'], dict(help='Region where environment lives')),
         ]
 
     def do_command(self):
+        region = self.app.pargs.region
+        env_name = self.app.pargs.environment_name
+        #load default region
+        if not region:
+            region = fileoperations.get_default_region()
 
-        # get environment status
-        self.app.print_to_console('Your stuff works')
+        app_name = fileoperations.get_application_name()
+        if not env_name:
+            env_name = operations. \
+                get_setting_from_current_branch('environment')
+
+        if not env_name:
+            # ask for environment name
+            io.echo('No environment is registered with this branch. '
+                    'You must specify an environment, i.e. eb deploy envName')
+            env_name = io.prompt_for_environment_name()
+
+        operations.status(app_name, env_name, region)

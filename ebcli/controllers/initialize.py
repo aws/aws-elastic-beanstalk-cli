@@ -44,7 +44,7 @@ class InitController(AbstractBaseController):
         # Get app name from config file, if exists
         if not app_name:
             try:
-                app_name = fileoperations.get_application_name()
+                app_name = fileoperations.get_application_name(default=None)
             except NotInitializedError:
                 app_name = None
 

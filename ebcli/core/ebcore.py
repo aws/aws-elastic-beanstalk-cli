@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import sys
 
 from cement.core import foundation, handler
 from cement.utils.misc import init_defaults
@@ -27,6 +28,9 @@ from ebcli.controllers.terminate import TerminateController
 from ebcli.controllers.update import UpdateController
 from ebcli.controllers.config import ConfigController
 from ebcli.core import globals, base, io
+from ebcli.objects.exceptions import NotInitializedError, \
+    NoSourceControlError, NoRegionError, EBCLIException
+from ebcli.resources.strings import strings
 
 
 class EB(foundation.CementApp):
@@ -34,6 +38,7 @@ class EB(foundation.CementApp):
         label = 'eb'
         base_controller = base.EbBaseController
         defaults = init_defaults('eb', 'log')
+        # ToDo: Verbose mode by default for development, uncomment below to fix
         # defaults['log']['level'] = 'WARN'
         config_defaults = defaults
         # argument_handler = ArgParseHandler
@@ -57,7 +62,7 @@ class EB(foundation.CementApp):
 
         #Register global arguments
         self.add_arg('--verbose', action='store_true',
-                         help='verbose text')
+                         help='toggle verbose ouput')
 
         globals.app = self
 
@@ -66,7 +71,20 @@ def main():
 
     try:
         app.setup()
+        args = app.pargs
         app.run()
 
+    # Handle General Exceptions
+    except NotInitializedError:
+        io.log_error(strings['exit.notsetup'])
+        sys.exit(128)
+    except NoSourceControlError:
+        io.log_error(strings['git.notfound'])
+        sys.exit(129)
+    except NoRegionError:
+        io.log_error(strings['exit.noregion'])
+        sys.exit(130)
+    except EBCLIException as e:
+        io.log_error(e.__class__.__name__ + ": " + e.message)
     finally:
         app.close()

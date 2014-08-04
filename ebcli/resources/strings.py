@@ -23,7 +23,7 @@ strings = {
     'import.info': 'Import an old configuration of eb',
     'logs.info': 'Get recent logs',
     'deploy.info': 'Deploys your current branch to the environment',
-    'status.info': 'Status stuff',
+    'status.info': 'Get Environment info and status',
     'terminate.info': 'Stop stuff',
     'update.info': 'Update environment',
     'config.info': 'Configure your environment',
@@ -34,18 +34,33 @@ strings = {
     'prompt.invalid': 'Sorry, that choice is invalid.',
     'prompt.yes-or-no': 'Please enter either Y or N',
     'app.description': 'Application created from eb-cli tool using eb init',
-    'git.notfound': 'Git does not seam to be installed. '
-                     'Have you ran git init?'
+    'env.description': 'Environment created from eb-cli tool using eb create',
+    'env.exists': 'An environment with that name already exists, '
+                  'please try another.',
+    'git.notfound': 'Git does not seem to be installed. '
+                     'Have you ran git init?',
+    'exit.notsetup': 'This directory does not appear to be setup with EB-CLI\n'
+                     'Have you ran eb init?',
+    'exit.noregion': 'A default region can not be found. Please run eb init or'
+                     ' add the region using --region',
+
 }
 
 responses = {
+    'event.redmessage': 'Environment health has been set to RED',
+    'evnt.redtoyellowmessage': 'Environment health has transitioned '
+                               'from YELLOW to RED',
+    'event.yellowmessage': 'Environment health has been set to YELLOW',
     'event.greenmessage': 'Environment health has been set to GREEN',
-    'git.norepository': 'fatal: Not a git repository ' \
+    'event.launchsuccess': 'Successfully launched environment:',
+    'git.norepository': 'Error: Not a git repository ' \
                         '(or any of the parent directories): .git',
+    'env.cnamenotavailable': 'DNS name \([a-zA-Z-]+\) is not available.',
+    'env.nameexists': 'Environment [^ ]+ already exists.',
 }
 git_ignore = [
     '# Elastic Beanstalk Files',        # comment line
     '.elasticbeanstalk/*',              # ignore eb files
-    '!.elasticbeanstalk/*.ebe',         # don't ignore shareable environments
+    '!.elasticbeanstalk/*.ebe.*',       # don't ignore shareable environments
     '!.elasticbeanstalk/*.global.*',    # don't ignore global configurations
 ]

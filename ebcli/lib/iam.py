@@ -21,13 +21,24 @@ LOG = minimal_logger(__name__)
 
 
 def _make_api_call(operation_name, **operation_options):
-    return aws.make_api_call('s3', operation_name, **operation_options)
+    return aws.make_api_call('iam', operation_name, **operation_options)
 
 
-def upload_application_version(bucket, key, file_path,
-                               region=None):
-    with open(file_path, 'rb') as fp:
-        return _make_api_call('PutObject',
-                              bucket=bucket,
-                              key=key,
-                              body=fp, region=region)
+def get_instance_profiles(region=None):
+    result = _make_api_call('list-instance-profiles', region=region)
+    return result['InstanceProfiles']
+
+
+def create_instance_profile(profile_name, region=None):
+    _make_api_call('create-instance-profile',
+                   instance_profile_name=profile_name,
+                   region=region)
+
+
+def get_instance_profile_names(region=None):
+    profiles = get_instance_profiles(region=region)
+    lst = []
+    for profile in profiles:
+        lst.append(profile['InstanceProfileName'])
+
+    return lst

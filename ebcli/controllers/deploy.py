@@ -14,6 +14,7 @@
 import time
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
+from ebcli.core import io, operations, fileoperations
 
 
 class DeployController(AbstractBaseController):
@@ -21,26 +22,33 @@ class DeployController(AbstractBaseController):
         label = 'deploy'
         description = strings['deploy.info']
         arguments = [
-            (['-e', '--environment'], dict(dest='env',
-                                           help='Environment name')),
+            (['environment_name'], dict(action='store', nargs='?',
+                                        default=[],
+                                        help='Environment name')),
+            (['-r', '--region'], dict(help='Region where environment lives')),
         ]
 
     def do_command(self):
+        region = self.app.pargs.region
+        env_name = self.app.pargs.environment_name
+        #load default region
+        if not region:
+            region = fileoperations.get_default_region()
 
-        if not self.app.pargs.env:
-            self.app.print_to_console('Deploying code to branch '
-                                      'default environment')
-        else:
-            self.app.print_to_console('Deploying code to environment:',
-                                      self.app.pargs.env)
+        # for arg in self.app.pargs.environment_name:
+        #     # deploy to every environment listed
+        #     ## Right now you can only list one
+        #     print arg
 
-        self.app.print_to_console('...')
-        time.sleep(1.2)
+        app_name = fileoperations.get_application_name()
+        if not env_name:
+            env_name = operations.\
+                get_setting_from_current_branch('environment')
 
-        self.app.print_to_console('Deploy Successful!')
+        if not env_name:
+            # ask for environment name
+            io.echo('No environment is registered with this branch. '
+                    'You must specify an environment, i.e. eb deploy envName')
+            env_name = io.prompt_for_environment_name()
 
-        # Check branch to see if its set up
-           # ask to create branch stuff
-
-        # do the push
-            # wait for finish.. print status
+        operations.deploy(app_name, env_name, region)

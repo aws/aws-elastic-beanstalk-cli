@@ -12,48 +12,72 @@
 # language governing permissions and limitations under the License.
 
 from datetime import datetime, timedelta
+import time
+import re
 
 from cement.utils.misc import minimal_logger
 from botocore.exceptions import NoCredentialsError
 
-from ebcli.lib import elasticbeanstalk
+from ebcli.lib import elasticbeanstalk, s3, iam
 from ebcli.core import fileoperations, io
 from ebcli.objects.sourcecontrol import SourceControl
-from ebcli.resources.strings import strings
+from ebcli.resources.strings import strings, responses
 from ebcli.objects import region as regions
 from ebcli.lib import utils
-from ebcli.objects.exceptions import NoSourceControlError
+from ebcli.objects import environment
+from ebcli.objects.exceptions import NoSourceControlError, \
+    ServiceError, TimeoutError
+from ebcli.objects.solutionstack import SolutionStack
+from ebcli.objects.tier import Tier
+from ebcli.lib.aws import InvalidParameterValueError
 
 LOG = minimal_logger(__name__)
+DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
 
 
-def wait_and_print_status(timeout_in_seconds):
+def wait_and_print_events(app_name, env_name, region,
+                          timeout_in_seconds=60*10):
     start = datetime.now()
-    timediff = timedelta(seconds = timeout_in_seconds)
+    timediff = timedelta(seconds=timeout_in_seconds)
 
     status_green = False
-    while not status_green and (datetime.now() - start) > timediff:
-        #sleep a little
-        last_time = ''
-        results = elasticbeanstalk.get_new_events('testappname',
-                                                  last_event_time=last_time)
+    last_time = ''
+    while not status_green and (datetime.now() - start) < timediff:
+        time.sleep(5)
+        results = elasticbeanstalk.get_new_events(app_name, env_name,
+                                                  last_event_time=last_time,
+                                                  region=region)
 
-        for event in results:
-            #print each event message
-            #save event time as last_time
-            pass
+        for event in results['Events']:
+            message = event['Message']
+            severity = event['Severity']
+            if severity == 'INFO':
+                io.log_info(message)
+            elif severity == 'WARN':
+                io.log_warning(message)
+            elif severity == 'ERROR':
+                io.log_error(message)
+            last_time = event['EventDate']
 
-        #compare for green message last
-        # message is in strings.responses['event.greenmessage']
+            if message == responses['event.greenmessage'] or \
+                    message.startswith(responses['event.launchsuccess']):
+                status_green = True
+            if message.startswith(responses['event.launchsuccess']):
+                status_green = True
+            if message == responses['event.redmessage']:
+                raise ServiceError(message)
+
+    if not status_green:
+        raise TimeoutError('Timed out while waiting for environment to launch')
 
 
 def setup(app_name, region):
     setup_directory(app_name, region)
     try:
-        create_app(app_name)
+        create_app(app_name, region)
     except NoCredentialsError:
         setup_aws_dir()  # only need this if there are no creds in env vars
-        create_app(app_name)  # now that creds are set up, create app
+        create_app(app_name, region)  # now that creds are set up, create app
 
     try:
         setup_ignore_file()
@@ -62,6 +86,7 @@ def setup(app_name, region):
 
 
 def setup_aws_dir():
+    io.log_info('Setting up ~/aws/ directory with config file')
     # ToDo: ignore prompting for creds if they exist in path.
     # Maybe wait for an exception before bothering
 
@@ -77,15 +102,17 @@ def setup_aws_dir():
 
         fileoperations.save_to_aws_config(access_key, secret_key)
 
-def create_app(app_name):
+
+def create_app(app_name, region):
     # check if app exists
-    app_result = elasticbeanstalk.describe_application(app_name)
+    app_result = elasticbeanstalk.describe_application(app_name, region)
 
     if not app_result:  # no app found with that name
         # Create it
         elasticbeanstalk.create_application(
             app_name,
-            strings['app.description']
+            strings['app.description'],
+            region=region
         )
 
         # ToDo: save app details
@@ -93,13 +120,147 @@ def create_app(app_name):
                 'has been created')
     else:
         # App exists, pull down environments
-        # ToDo: Pull down environments
-        # Maybe inform user
+        io.log_warning('App Exists: Syncing existing Environments')
+        sync_app(app_name, region)
         pass
 
 
-def create_env():
-    pass
+def pull_down_env(app_name, env_name, region):
+    api_model = elasticbeanstalk.describe_configuration_settings(
+        app_name, env_name, region=region
+    )
+    usr_model = environment.convert_api_to_usr_model(api_model)
+    fileoperations.save_env_file(usr_model)
+
+
+def sync_app(app_name, region):
+    envs = elasticbeanstalk.get_all_environments(app_name, region)
+    for env in envs or []:
+        pull_down_env(app_name, env, region)
+
+    # ToDo: Remove all deleted, non-paused env's
+
+
+def get_default_profile():
+    """  Get the default elasticbeanstalk IAM profile,
+            Create it if it doesn't exist """
+
+    # get list of profiles
+    profile_names = iam.get_instance_profile_names()
+    profile = DEFAULT_ROLE_NAME
+    if profile not in profile_names:
+        iam.create_instance_profile(profile)
+
+    return profile
+
+
+def make_new_env(app_name, env_name, region, cname, solution_stack,
+                 tier, label, profile, branch_default):
+    if profile is None:
+        # Service supports no profile, however it is not good/recommended
+        # Get the eb default profile
+        profile = get_default_profile()
+
+    # Create env
+    result = create_env(app_name, env_name, region, cname, solution_stack,
+                        tier, label, profile)
+
+    env_name = result['EnvironmentName']  # get the (possibly) updated name
+
+    # Edit configurations
+    ## Get default environment
+    default_env = get_setting_from_current_branch('environment')
+    ## Save env as branch default if needed
+    if not default_env or branch_default:
+        write_setting_to_current_branch('environment', env_name)
+
+    # Print status of app
+    io.echo('-- The environment is being created. --')
+    print_env_details(result, health=False)
+
+    io.log_info('Printing Status:')
+    try:
+        wait_and_print_events(app_name, env_name, region)
+        pull_down_env(app_name, env_name, region)
+        io.echo('-- The environment has been created successfully! --')
+    except TimeoutError:
+        io.log_error('Unknown state of environment. Operation timed out.')
+
+
+def print_env_details(env, health=True):
+
+    app_name = env['ApplicationName']
+    env_name = env['EnvironmentName']
+    env_id = env['EnvironmentId']
+    solution_stack = env['SolutionStackName']
+    cname = env['CNAME']
+    tier = env['Tier']
+    env_status = env['Status']
+    health = env['Health']
+
+    # Convert solution_stack and tier to objects
+    solution_stack = SolutionStack(solution_stack)
+    tier = Tier(tier['Name'], tier['Type'], tier['Version'])
+
+    io.echo('Environment details for:', env_name)
+    io.echo('  App name:', app_name)
+    io.echo('  Environment ID:', env_id)
+    io.echo('  Solution Stack:', solution_stack)
+    io.echo('  Tier:', tier)
+    io.echo('  CNAME', cname)
+
+    if health:
+        io.echo('Status:', env_status)
+        io.echo('Health:', health)
+
+
+def create_env(app_name, env_name, region, cname, solution_stack,
+               tier, label, profile):
+    description = strings['env.description']
+
+    try:
+        return elasticbeanstalk.create_environment(
+            app_name, env_name, cname, description, solution_stack,
+            tier, label, profile, region=region)
+
+    except InvalidParameterValueError as e:
+        LOG.debug('creating app returned error: ' + e.message)
+        if re.match(responses['env.cnamenotavailable'], e.message):
+            io.echo('The CNAME you provided is currently not available.')
+            io.echo('Please try again')
+            cname = io.prompt_for_cname()
+        elif re.match(responses['env.nameexists'], e.message):
+            io.echo(strings['env.exists'])
+            env_name = io.prompt_for_environment_name()
+        else:
+            raise e
+
+        # Try again with new values
+        return create_env(app_name, env_name, region, cname,
+                          solution_stack, tier, label, profile)
+
+
+def deploy(app_name, env_name, region):
+    if region:
+        region_name = region
+    else:
+        region_name = 'DEFAULT'
+
+    io.log_info('Deploying code to ' + env_name + " in region " + region_name)
+
+    # Create app version
+    app_version_label = create_app_version(app_name, region)
+
+    # swap env to new app version
+    elasticbeanstalk.update_env_application_version(env_name,
+                                                    app_version_label, region)
+
+    wait_and_print_events(app_name, env_name, region)
+
+
+def status(app_name, env_name, region):
+    env = elasticbeanstalk.get_environment(app_name, env_name, region)
+    print_env_details(env, True)
 
 
 def setup_directory(app_name, region):
@@ -119,12 +280,39 @@ def zip_up_code():
     pass
 
 
-def create_app_version():
+def create_app_version(app_name, region):
     # NOTE: Requires instance to be running
-    # describe app version to get bucket info
+
+    #get version_label
+    source_control = SourceControl.get_source_control()
+    version_label = source_control.get_version_label()
+
+    #get description
+    description = source_control.get_message()
+
+    # Create zip file
+    file_name = version_label + '.zip'
+    file_path = fileoperations.get_zip_location(file_name)
+    source_control.do_zip(file_path)
+
+    # Get s3 location
+    bucket = elasticbeanstalk.get_storage_location(region)
     # upload to s3
-    # create app version
-    pass
+    key = app_name + '/' + file_name
+    s3.upload_application_version(bucket, key, file_path,
+                                                region=region)
+
+    try:
+        elasticbeanstalk.create_application_version(
+            app_name, version_label, description, bucket, key, region
+        )
+    except InvalidParameterValueError as e:
+        if e.message.startswith('Application Version ') and \
+                e.message.endswith(' already exists'):
+            #ToDo: Should we check for existing before we do anything?
+            pass  # ignore, we must be deploying with an existing app version
+
+    return version_label
 
 
 def update_environment():
@@ -146,3 +334,29 @@ def get_boolean_response():
         return True
     else:
         return False
+
+
+def write_setting_to_current_branch(keyname, value):
+    source_control = SourceControl.get_source_control()
+
+    branch_name = source_control.get_current_branch()
+
+    fileoperations.write_config_setting(
+        'branch-defaults',
+        branch_name,
+        {keyname: value}
+    )
+
+def get_setting_from_current_branch(keyname):
+    source_control = SourceControl.get_source_control()
+
+    branch_name = source_control.get_current_branch()
+
+    branch_dict = fileoperations.get_config_setting('branch-defaults', branch_name)
+    if branch_dict is None:
+        return None
+    else:
+        try:
+            return branch_dict[keyname]
+        except KeyError:
+            return None

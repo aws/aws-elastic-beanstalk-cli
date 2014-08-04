@@ -12,21 +12,47 @@
 # language governing permissions and limitations under the License.
 
 
-class NotFoundException(Exception):
+class EBCLIException(Exception):
+    """ Base exception for all EB-CLI exceptions """
     pass
 
 
-class CommandException(Exception):
+class NotFoundException(EBCLIException):
     pass
 
 
-class ServiceError(Exception):
+class CommandError(EBCLIException):
+    """ Error occurred executing some non eb cli command """
     pass
 
 
-class NotInitializedError(Exception):
+class ServiceError(EBCLIException):
+    """  Error occurred calling the api    """
     pass
 
 
-class NoSourceControlError(Exception):
+class CredentialsError(EBCLIException):
+    """  Error occurred with credentials   """
+    pass
+
+
+class NotInitializedError(EBCLIException):
+    """  The eb directory can not be found.  """
+    pass
+
+
+class NoSourceControlError(EBCLIException):
+    """  Error occured because a source control system
+    can not be found in the current directory
+     """
+    pass
+
+
+class NoRegionError(EBCLIException):
+    """  No region provided or found   """
+    pass
+
+
+class TimeoutError(EBCLIException):
+    """ Operation timed out   """
     pass

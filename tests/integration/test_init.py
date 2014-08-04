@@ -17,7 +17,7 @@ from ebcli.core.ebcore import EB
 from integration.baseinttest import BaseIntegrationTest
 from ebcli.resources.strings import strings
 from ebcli.core import fileoperations
-from ebcli.objects.sourcecontrol import NoSC, SourceControl
+from ebcli.objects.sourcecontrol import NoSC
 
 from botocore.exceptions import NoCredentialsError
 
@@ -55,13 +55,15 @@ class TestInit(BaseIntegrationTest):
         self.mock_aws.make_api_call.assert_any_call(
             'elasticbeanstalk',
             'describe-applications',
-            application_names=[app_name]
+            application_names=[app_name],
+            region='us-west-2'
         )
-        self.mock_aws.make_api_call.assert_any_call(
+        self.mock_aws.make_api_call.assert_called_with(
             'elasticbeanstalk',
             'create-application',
             application_name=app_name,
             description=strings['app.description'],
+            region='us-west-2'
         )
         self.assertEqual(self.mock_input.call_count, 3)
 
@@ -210,12 +212,18 @@ class TestInit(BaseIntegrationTest):
         self.app.run()
         self.app.close()
 
-        # make sure describe was called and not create
-        # assert_called_with with validate that create was not called
-        # since it gets the very last call
-        self.mock_aws.make_api_call.assert_called_with(
+        # make sure describe and get_all_environments were called
+        #
+        self.mock_aws.make_api_call.assert_any_call(
             'elasticbeanstalk',
             'describe-applications',
-            application_names=[app_name]
+            application_names=[app_name],
+            region='us-west-2'
+        )
+        self.mock_aws.make_api_call.assert_called_with(
+            'elasticbeanstalk',
+            'describe-environments',
+            application_name=app_name,
+            region='us-west-2'
         )
         self.assertEqual(self.mock_input.call_count, 3)

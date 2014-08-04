@@ -14,12 +14,12 @@
 import os
 from collections import defaultdict
 
-from yaml import load, dump
+from yaml import load, dump, safe_dump
 from six.moves import configparser
 from six.moves.configparser import NoSectionError, NoOptionError
 from cement.utils.misc import minimal_logger
 
-from ebcli.objects.exceptions import NotInitializedError
+from ebcli.objects.exceptions import NotInitializedError, NoRegionError
 
 LOG = minimal_logger(__name__)
 
@@ -31,19 +31,22 @@ def get_aws_home():
 
 
 beanstalk_directory = '.elasticbeanstalk' + os.path.sep
-global_config_file = beanstalk_directory + 'config.global.yaml'
-local_config_file = beanstalk_directory + 'config.yaml'
+global_config_file = beanstalk_directory + 'config.global.yml'
+local_config_file = beanstalk_directory + 'config.yml'
 aws_config_folder = get_aws_home()
 aws_config_location = aws_config_folder + 'config'
 aws_access_key = 'aws_access_key_id'
 aws_secret_key = 'aws_secret_access_key'
 default_section = 'default'
+app_version_folder = beanstalk_directory + 'app_versions'
+
 
 def _get_option(config, section, key, default):
     try:
         return config.get(section, key)
     except (NoSectionError, NoOptionError):
         return default
+
 
 def read_aws_config_credentials():
     config = configparser.ConfigParser()
@@ -76,11 +79,24 @@ def save_to_aws_config(access_key, secret_key):
         config.write(f)
 
 
-def get_application_name():
-    return get_config_setting('global', 'application_name')
+_marker = object()
+
+
+def get_application_name(default=_marker):
+    result = get_config_setting('global', 'application_name')
+    if result is not None:
+        return result
+
+    # get_config_setting should throw error if directory is not set up
+    LOG.debug('Directory found, but no config or app name exists')
+    if default is _marker:
+        raise NotInitializedError
+    return default
 
 
 def get_default_region():
+    # Don't return an error
+    ### We can defer to .aws/config region
     return get_config_setting('global', 'default_region')
 
 
@@ -116,6 +132,49 @@ def _traverse_to_project_root():
 
     else:
         LOG.debug('Project root found at: ' + cwd)
+
+
+def get_zip_location(file_name):
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        if not os.path.exists(app_version_folder):
+            # create it
+            os.makedirs(app_version_folder)
+
+        return os.path.abspath(app_version_folder) + os.path.sep + file_name
+
+    finally:
+        os.chdir(cwd)
+
+
+def get_environment_from_file():
+    pass
+
+
+def get_environments_from_files():
+    pass
+
+
+def save_env_file(env, public=False, paused=False):
+    cwd = os.getcwd()
+    env_name = env['EnvironmentName']
+    if public:
+        file_name = env_name + '.ebe.yml'
+    elif paused:
+        file_name = env_name + '.paused-env.yml'
+    else:
+        file_name = env_name + '.env.yml'
+
+    file_name = beanstalk_directory + file_name
+    try:
+        _traverse_to_project_root()
+
+        with open(file_name, 'w') as f:
+            f.write(safe_dump(env, default_flow_style=False))
+
+    finally:
+        os.chdir(cwd)
 
 
 def write_config_setting(section, key_name, value):

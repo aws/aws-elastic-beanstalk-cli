@@ -24,13 +24,13 @@ class SolutionStack():
         self.server = self.get_server(ss_string)
         self.string = self.create_string()
 
-    def __repr__(self):
+    def __str__(self):
         return self.string
 
     def create_string(self):
     #  note: platform, version, and server should all exist already
         # handle custom stack case
-        if self.version == self.platform:
+        if self.version == self.platform == self.server:
             return self.pythonify(self.platform)
 
         # handle all other cases
