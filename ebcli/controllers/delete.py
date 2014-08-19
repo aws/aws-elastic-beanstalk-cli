@@ -33,5 +33,5 @@ class DeleteController(AbstractBaseController):
         time.sleep(1)
         self.app.print_to_console('Removing app')
         time.sleep(1)
-        self.app.print_to_console('Everything has been removed all all '
+        self.app.print_to_console('Everything has been removed and all '
                                   'Environments have been shut down!')

@@ -20,7 +20,6 @@ from ebcli.controllers.initialize import InitController
 from ebcli.controllers.create import CreateController
 from ebcli.controllers.delete import DeleteController
 from ebcli.controllers.events import EventsController
-from ebcli.controllers.importation import ImportController
 from ebcli.controllers.logs import LogsController
 from ebcli.controllers.deploy import DeployController
 from ebcli.controllers.status import StatusController
@@ -50,13 +49,12 @@ class EB(foundation.CementApp):
         handler.register(CreateController)
         handler.register(DeleteController)
         handler.register(EventsController)
-        handler.register(ImportController)
         handler.register(LogsController)
         handler.register(DeployController)
         handler.register(StatusController)
         handler.register(TerminateController)
         handler.register(UpdateController)
-        handler.register(ConfigController)
+        # handler.register(ConfigController)  # Do we want this command?
 
         super(EB, self).setup()
 

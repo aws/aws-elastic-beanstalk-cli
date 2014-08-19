@@ -13,6 +13,7 @@
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
+from ebcli.core import operations, io
 
 
 class LogsController(AbstractBaseController):
@@ -20,9 +21,24 @@ class LogsController(AbstractBaseController):
         label = 'logs'
         description = strings['logs.info']
         arguments = [
-            (['-f', '--foo'], dict(help='notorious foo option')),
+            (['environment_name'], dict(action='store', nargs='?',
+                                        default=[],
+                                        help='Environment name')),
+            (['-r', '--region'], dict(help='Region where environment lives')),
         ]
 
     def do_command(self):
-        # get environment logs
-        self.app.print_to_console('There are no logs')
+        region = self.app.pargs.region
+        env_name = self.app.pargs.environment_name
+
+        if not env_name:
+            env_name = operations. \
+                get_setting_from_current_branch('environment')
+
+        if not env_name:
+            # ask for environment name
+            io.echo('No environment is registered with this branch. '
+                    'You must specify an environment, i.e. eb deploy envName')
+            env_name = io.prompt_for_environment_name()
+
+        operations.logs(env_name, region)

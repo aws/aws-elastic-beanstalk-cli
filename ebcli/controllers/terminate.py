@@ -14,6 +14,7 @@
 import time
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
+from ebcli.core import operations, io
 
 
 class TerminateController(AbstractBaseController):
@@ -21,19 +22,24 @@ class TerminateController(AbstractBaseController):
         label = 'terminate'
         description = strings['terminate.info']
         arguments = [
-            (['-e', '--environment'], dict(dest='env',
-                                           help='Environment name')),
+            (['environment_name'], dict(action='store', nargs='?',
+                                        default=[],
+                                        help='Environment name')),
+            (['-r', '--region'], dict(help='Region where environment lives')),
             ]
 
     def do_command(self):
-        if not self.app.pargs.env:
-            self.app.print_to_console('INFO: No environment has been given. '
-                                      'Using branch default.')
+        region = self.app.pargs.region
+        env_name = self.app.pargs.environment_name
 
-        self.app.print_to_console('Stopping environment')
-        self.app.print_to_console('...')
-        time.sleep(1)
-        self.app.print_to_console('Environment successfully terminated!')
+        if not env_name:
+            env_name = operations. \
+                get_setting_from_current_branch('environment')
 
-        # stops environment
-            # wait for finish.. print status
+        if not env_name:
+            # ask for environment name
+            io.echo('No environment is registered with this branch. '
+                    'You must specify an environment, i.e. eb deploy envName')
+            env_name = io.prompt_for_environment_name()
+
+        operations.terminate(env_name, region)

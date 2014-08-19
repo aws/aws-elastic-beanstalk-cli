@@ -14,7 +14,10 @@
 from datetime import datetime, timedelta
 import time
 import re
+import urllib2
 
+from six import iteritems
+from cement.utils.shell import exec_cmd2
 from cement.utils.misc import minimal_logger
 from botocore.exceptions import NoCredentialsError
 
@@ -35,40 +38,64 @@ LOG = minimal_logger(__name__)
 DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
 
 
-def wait_and_print_events(app_name, env_name, region,
-                          timeout_in_seconds=60*10):
+def wait_and_log_events(request_id, region,
+                          timeout_in_seconds=60*10, sleep_time=5):
     start = datetime.now()
     timediff = timedelta(seconds=timeout_in_seconds)
 
-    status_green = False
+    finished = False
     last_time = ''
-    while not status_green and (datetime.now() - start) < timediff:
-        time.sleep(5)
-        results = elasticbeanstalk.get_new_events(app_name, env_name,
+    while not finished and (datetime.now() - start) < timediff:
+        time.sleep(sleep_time)
+        results = elasticbeanstalk.get_new_events(None, None,
+                                                  request_id,
                                                   last_event_time=last_time,
                                                   region=region)
 
-        for event in results['Events']:
-            message = event['Message']
-            severity = event['Severity']
-            if severity == 'INFO':
-                io.log_info(message)
-            elif severity == 'WARN':
-                io.log_warning(message)
-            elif severity == 'ERROR':
-                io.log_error(message)
-            last_time = event['EventDate']
+        for event in reversed(results['Events']):
+            #Log event
+            message, last_time = log_event(event)
 
+            # Test event message for success string
             if message == responses['event.greenmessage'] or \
                     message.startswith(responses['event.launchsuccess']):
-                status_green = True
+                finished = True
             if message.startswith(responses['event.launchsuccess']):
-                status_green = True
+                finished = True
             if message == responses['event.redmessage']:
                 raise ServiceError(message)
+            if message == responses['logs.pulled']:
+                finished = True
+            if message == responses['env.terminated']:
+                finished = True
 
-    if not status_green:
+    if not finished:
         raise TimeoutError('Timed out while waiting for environment to launch')
+
+
+def log_event(event, echo=False):
+    message = event['Message']
+    severity = event['Severity']
+    date = event['EventDate']
+    if echo:
+        io.echo(date.ljust(26) + severity.ljust(8) + message)
+    elif severity == 'INFO':
+        io.log_info(message)
+    elif severity == 'WARN':
+        io.log_warning(message)
+    elif severity == 'ERROR':
+        io.log_error(message)
+
+    return message, date
+
+
+def print_events(app_name, env_name, region):
+    results = elasticbeanstalk.get_new_events(
+        app_name, env_name, None, last_event_time='', region=region
+    )
+
+    for event in results['Events']:
+        log_event(event, echo=True)
 
 
 def setup(app_name, region):
@@ -180,7 +207,8 @@ def make_new_env(app_name, env_name, region, cname, solution_stack,
 
     io.log_info('Printing Status:')
     try:
-        wait_and_print_events(app_name, env_name, region)
+        request_id = result['ResponseMetadata']['RequestId']
+        wait_and_log_events(request_id, region)
         pull_down_env(app_name, env_name, region)
         io.echo('-- The environment has been created successfully! --')
     except TimeoutError:
@@ -193,7 +221,10 @@ def print_env_details(env, health=True):
     env_name = env['EnvironmentName']
     env_id = env['EnvironmentId']
     solution_stack = env['SolutionStackName']
-    cname = env['CNAME']
+    try:
+        cname = env['CNAME']
+    except KeyError:
+        cname = 'UNKNOWN'
     tier = env['Tier']
     env_status = env['Status']
     health = env['Health']
@@ -207,7 +238,7 @@ def print_env_details(env, health=True):
     io.echo('  Environment ID:', env_id)
     io.echo('  Solution Stack:', solution_stack)
     io.echo('  Tier:', tier)
-    io.echo('  CNAME', cname)
+    io.echo('  Cname:', cname)
 
     if health:
         io.echo('Status:', env_status)
@@ -255,12 +286,66 @@ def deploy(app_name, env_name, region):
     elasticbeanstalk.update_env_application_version(env_name,
                                                     app_version_label, region)
 
-    wait_and_print_events(app_name, env_name, region)
+    wait_and_log_events(app_name, env_name, region)
 
 
 def status(app_name, env_name, region):
     env = elasticbeanstalk.get_environment(app_name, env_name, region)
     print_env_details(env, True)
+
+
+def logs(env_name, region):
+    # Request info
+    result = elasticbeanstalk.request_environment_info(env_name, region)
+
+    # Wait for logs to finish tailing
+    request_id = result['ResponseMetadata']['RequestId']
+    wait_and_log_events(request_id, region,
+                        timeout_in_seconds=60, sleep_time=1)
+
+    return print_logs(env_name, region, '')
+
+
+def print_logs(env_name, region):
+    # Get logs
+    result = elasticbeanstalk.retrieve_environment_info(env_name, region)
+
+    """
+    Results are ordered with latest last, we just want the latest
+    """
+    log_list = {}
+    for log in result['EnvironmentInfo']:
+        instance_id = log['Ec2InstanceId']
+        url = log['Message']
+        log_list[instance_id] = url
+
+    for instance_id, url in iteritems(log_list):
+        io.echo('================ ' + instance_id + '=================')
+        print_url(url)
+
+
+def print_url(url):
+    result = urllib2.urlopen(url).read()
+    io.echo(result)
+
+
+def terminate(env_name, region):
+    result = elasticbeanstalk.terminate_environment(env_name, region)
+
+    # disassociate with branch if branch default
+    ## Get default environment
+    default_env = get_setting_from_current_branch('environment')
+    if default_env == env_name:
+        write_setting_to_current_branch('environment', None)
+
+    # remove config file
+    fileoperations.delete_env_file(env_name)
+
+    # Wait for logs to finish tailing
+    request_id = result['ResponseMetadata']['RequestId']
+    wait_and_log_events(request_id, region,
+                        timeout_in_seconds=60*5)
+
 
 
 def setup_directory(app_name, region):
@@ -309,9 +394,8 @@ def create_app_version(app_name, region):
     except InvalidParameterValueError as e:
         if e.message.startswith('Application Version ') and \
                 e.message.endswith(' already exists'):
-            #ToDo: Should we check for existing before we do anything?
-            pass  # ignore, we must be deploying with an existing app version
-
+            # we must be deploying with an existing app version
+            io.log_warning('Your are deploying a previously deployed commit')
     return version_label
 
 

@@ -60,6 +60,8 @@ def make_api_call(service_name, operation_name, region=None,
                                                       **operation_options)
         status = http_response.status_code
         LOG.debug('API call finished, status = ' + str(status))
+        if response_data:
+            LOG.debug('Response: ' + str(response_data))
 
         if status is not 200:
             if status == 400:
@@ -72,8 +74,6 @@ def make_api_call(service_name, operation_name, region=None,
             else:
                 LOG.error('API Call unsuccessful. '
                           'Status code returned ' + str(status))
-            if response_data:
-                LOG.debug('Response: ' + str(response_data))
             return None
     except botocore.exceptions.NoCredentialsError as e:
         LOG.error('No credentials found')

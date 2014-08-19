@@ -57,6 +57,8 @@ responses = {
                         '(or any of the parent directories): .git',
     'env.cnamenotavailable': 'DNS name \([a-zA-Z-]+\) is not available.',
     'env.nameexists': 'Environment [^ ]+ already exists.',
+    'logs.pulled': 'Pulled logs for environment instances.',
+    'env.terminated': 'terminateEnvironment completed successfully.'
 }
 git_ignore = [
     '# Elastic Beanstalk Files',        # comment line

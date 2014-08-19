@@ -156,6 +156,20 @@ def get_environments_from_files():
     pass
 
 
+def delete_env_file(env_name):
+    cwd = os.getcwd()
+    file_name = beanstalk_directory + env_name
+
+    try:
+        _traverse_to_project_root()
+        for file_ext in ['.ebe.yml', '.env.yml']:
+            path = file_name + file_ext
+            if os.path.exists(path):
+                os.rmdir(path)
+    finally:
+        os.chdir(cwd)
+
+
 def save_env_file(env, public=False, paused=False):
     cwd = os.getcwd()
     env_name = env['EnvironmentName']

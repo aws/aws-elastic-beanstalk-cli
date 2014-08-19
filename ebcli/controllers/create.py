@@ -27,7 +27,7 @@ class CreateController(AbstractBaseController):
         label = 'create'
         description = strings['create.info']
         arguments = [
-            (['-n', '--name'], dict(dest='env', help='Environment name')),
+            (['-e', '--env_name'], dict(dest='env', help='Environment name')),
             (['-r', '--region'], dict(help='Region which environment '
                                            'will be created in')),
             (['-c', '--cname'], dict(help='Cname prefix')),
