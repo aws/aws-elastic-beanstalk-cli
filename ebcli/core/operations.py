@@ -303,7 +303,7 @@ def logs(env_name, region):
     wait_and_log_events(request_id, region,
                         timeout_in_seconds=60, sleep_time=1)
 
-    return print_logs(env_name, region, '')
+    return print_logs(env_name, region)
 
 
 def print_logs(env_name, region):

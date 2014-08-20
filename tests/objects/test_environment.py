@@ -38,7 +38,7 @@ class TestEnvironment(unittest.TestCase):
 
         # compare results
         environment.collect_changes(example_api_response, example_usr_model)
-        self.assertDictEqual(example_api_response, changed_response)
+        self.assertEqual(example_api_response, changed_response)
 
 
 def get_example_api_response():
