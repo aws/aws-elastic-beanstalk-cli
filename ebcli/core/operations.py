@@ -14,8 +14,8 @@
 from datetime import datetime, timedelta
 import time
 import re
-import urllib2
 
+from six.moves import urllib
 from six import iteritems
 from cement.utils.shell import exec_cmd2
 from cement.utils.misc import minimal_logger
@@ -325,7 +325,7 @@ def print_logs(env_name, region):
 
 
 def print_url(url):
-    result = urllib2.urlopen(url).read()
+    result = urllib.request.urlopen(url).read()
     io.echo(result)
 
 
