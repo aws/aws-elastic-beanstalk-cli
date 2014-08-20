@@ -79,10 +79,11 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
         'application_name': app_name,
         'environment_name': env_name,
         'description': description,
-        'cname_prefix': cname,
         'solution_stack_name': solution_stck.name,
         'option_settings': settings,
     }
+    if cname:
+        kwargs['cname_prefix'] = cname
     if tier:
         kwargs['tier'] = tier.to_struct()
     if label:
@@ -156,7 +157,7 @@ def get_environment(app_name, env_name, region=None):
     return result['Environments'][0]
 
 
-def get_new_events(app_name, env_name, last_event_time='', region=None):
+def get_new_events(app_name, env_name, request_id, last_event_time='', region=None):
     LOG.debug('Inside get_new_events api wrapper')
     if last_event_time is not '':
         time = dateutil.parser.parse(last_event_time)
@@ -164,11 +165,18 @@ def get_new_events(app_name, env_name, last_event_time='', region=None):
         timestamp = new_time.isoformat()[0:-9] + 'Z'
     else:
         timestamp = ''
+    kwargs = {}
+    if app_name:
+        kwargs['application_name'] = app_name
+    if env_name:
+        kwargs['environment_name'] = env_name
+    if request_id:
+        kwargs['request_id'] = request_id
+    kwargs['start_time'] = timestamp
+
     return _make_api_call('describe-events',
-                          application_name=app_name,
-                          environment_name=env_name,
-                          start_time=timestamp,
-                          region=region)
+                          region=region,
+                          **kwargs)
 
 
 def get_storage_location(region=None):
@@ -192,6 +200,29 @@ def update_env_application_version(env_name,
     return response
 
 
+def request_environment_info(env_name, region=None):
+    result = _make_api_call('request-environment-info',
+                          environment_name=env_name,
+                          info_type='tail',
+                          region=region)
+    return result
+
+
+def retrieve_environment_info(env_name, region=None):
+    result = _make_api_call('retrieve-environment-info',
+                          environment_name=env_name,
+                          info_type='tail',
+                          region=region)
+    return result
+
+
+def terminate_environment(env_name, region=None):
+    result = _make_api_call('terminate-environment',
+                            environment_name=env_name,
+                            region=region)
+    return result
+
+
 def get_solution_stack(string):
     solution_stacks = get_available_solution_stacks()
     # filter
@@ -204,7 +235,7 @@ def get_solution_stack(string):
     #should only have 1 result
     if len(solution_stacks) > 1:
         LOG.error('Solution Stack list contains '
-                         'multiple results')
+                  'multiple results')
     return solution_stacks[0]
 
 

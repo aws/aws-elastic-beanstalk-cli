@@ -29,9 +29,12 @@ class Tier():
         }
 
     def __str__(self):
-        return self.name + '-' + \
-            self.type + '-' + \
-            self.version
+        return (self.name + '-' +
+            self.type + '-' +
+            self.version).lower()
+
+    def __eq__(self, other):
+        return self.string.lower() == other.string.lower()
 
     @staticmethod
     def get_all_tiers():
@@ -47,7 +50,10 @@ class Tier():
         name, typ, version = string.split('-')
         result = Tier(name, typ, version)
 
-        if result not in Tier.get_all_tiers():
-            raise NotFoundException('Tier Not found')
+        for tier in Tier.get_all_tiers():
+            if tier == result:
+                # we want to return the Proper, uppercase version
+                return tier
 
-        return result
+        # tier not found
+        raise NotFoundException('Tier Not found')
