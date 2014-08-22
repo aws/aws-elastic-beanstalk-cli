@@ -39,7 +39,7 @@ class EB(foundation.CementApp):
         base_controller = base.EbBaseController
         defaults = init_defaults('eb', 'log')
         # ToDo: Verbose mode by default for development, uncomment below to fix
-        # defaults['log']['level'] = 'WARN'
+        defaults['log']['level'] = 'WARN'
         config_defaults = defaults
         # argument_handler = ArgParseHandler
         # uncomment above if custom arg handler is needed

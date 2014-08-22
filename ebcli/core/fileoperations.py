@@ -230,7 +230,7 @@ def delete_env_file(env_name):
         for file_ext in ['.ebe.yml', '.env.yml']:
             path = file_name + file_ext
             if os.path.exists(path):
-                os.rmdir(path)
+                os.remove(path)
     finally:
         os.chdir(cwd)
 

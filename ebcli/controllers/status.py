@@ -42,7 +42,7 @@ class StatusController(AbstractBaseController):
         if not env_name:
             # ask for environment name
             io.echo('No environment is registered with this branch. '
-                    'You must specify an environment, i.e. eb deploy envName')
+                    'You must specify an environment, i.e. eb status envName')
             env_name = io.prompt_for_environment_name()
 
         operations.status(app_name, env_name, region)

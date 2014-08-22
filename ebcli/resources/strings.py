@@ -24,7 +24,7 @@ strings = {
     'logs.info': 'Get recent logs',
     'deploy.info': 'Deploys your current branch to the environment',
     'status.info': 'Get Environment info and status',
-    'terminate.info': 'Stop stuff',
+    'terminate.info': 'Terminate environment',
     'update.info': 'Update environment',
     'sync.info': 'Pull down environment configurations',
     'config.info': 'Config stuff',
