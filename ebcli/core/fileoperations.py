@@ -12,7 +12,8 @@
 # language governing permissions and limitations under the License.
 
 import os
-from collections import defaultdict
+import pickle
+import shutil
 
 from yaml import load, dump, safe_dump
 from six.moves import configparser
@@ -20,6 +21,7 @@ from six.moves.configparser import NoSectionError, NoOptionError
 from cement.utils.misc import minimal_logger
 
 from ebcli.objects.exceptions import NotInitializedError, NoRegionError
+from ebcli.objects.envlist import EnvList
 
 LOG = minimal_logger(__name__)
 
@@ -41,11 +43,29 @@ default_section = 'default'
 app_version_folder = beanstalk_directory + 'app_versions'
 
 
+def _get_envlist():
+    if not EnvList.envlist:
+        EnvList.envlist = load_envlist()
+
+    return EnvList.envlist
+
+
 def _get_option(config, section, key, default):
     try:
         return config.get(section, key)
     except (NoSectionError, NoOptionError):
         return default
+
+
+def clean_up():
+    # remove dir
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        if os.path.exists(beanstalk_directory):
+            shutil.rmtree(beanstalk_directory)
+    finally:
+        os.chdir(cwd)
 
 
 def read_aws_config_credentials():
@@ -148,17 +168,62 @@ def get_zip_location(file_name):
         os.chdir(cwd)
 
 
-def get_environment_from_file():
-    pass
+def get_environment_from_file(env_name):
+    cwd = os.getcwd()
+    file_name = beanstalk_directory + env_name
+    envlist = _get_envlist()
+    date = envlist.get_env_date(env_name)
+
+    try:
+        _traverse_to_project_root()
+        for file_ext in ['.ebe.yml', '.env.yml', '.paused-env.yml']:
+            path = file_name + file_ext
+            if os.path.exists(path):
+                with open(path, 'r') as f:
+                    env = load(f)
+    finally:
+        os.chdir(cwd)
+
+    env['DateUpdated'] = date
+    return env
 
 
 def get_environments_from_files():
-    pass
+    # get all saved environment names from stored envlist
+    envlist = _get_envlist()
+
+    return map(get_environment_from_file, envlist.get_env_names())
+
+
+def save_envlist(envlist):
+    file_location = beanstalk_directory + '.ebdata'
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        pickle.dump(envlist, open(file_location, 'wb'))
+    finally:
+        os.chdir(cwd)
+
+
+def load_envlist():
+    file_location = beanstalk_directory + '.ebdata'
+
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        if os.path.exists(file_location):
+            return pickle.load(open(file_location, 'r'))
+        else:
+            return EnvList()
+    finally:
+        os.chdir(cwd)
 
 
 def delete_env_file(env_name):
     cwd = os.getcwd()
     file_name = beanstalk_directory + env_name
+    envlist = _get_envlist()
+    envlist.remove_env(env_name)
 
     try:
         _traverse_to_project_root()
@@ -170,8 +235,32 @@ def delete_env_file(env_name):
         os.chdir(cwd)
 
 
+def get_env_date(env):
+    envlist = _get_envlist()
+
+    env_name = env['EnvironmentName']
+    date = envlist.get_env_date(env_name)
+
+    env['DateUpdated'] = date
+
+
+def save_env_date(env):
+    # load envlist
+    envlist = _get_envlist()
+
+    # strip out date
+    env_name = env['EnvironmentName']
+    date = env['DateUpdated']
+    del env['DateUpdated']
+
+    envlist.add_env(env_name, date)
+
+    save_envlist(envlist)
+
+
 def save_env_file(env, public=False, paused=False):
     cwd = os.getcwd()
+    save_env_date(env)
     env_name = env['EnvironmentName']
     if public:
         file_name = env_name + '.ebe.yml'

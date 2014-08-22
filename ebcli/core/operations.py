@@ -153,19 +153,34 @@ def create_app(app_name, region):
 
 
 def pull_down_env(app_name, env_name, region):
+    # we need the last time the env was updated
+    env_details = elasticbeanstalk.get_environment(app_name,
+                                                   env_name, region)
     api_model = elasticbeanstalk.describe_configuration_settings(
         app_name, env_name, region=region
     )
+
+    # move date updated over to api_model for merging
+    date = env_details['DateUpdated']
+    api_model['DateUpdated'] = date
+
     usr_model = environment.convert_api_to_usr_model(api_model)
     fileoperations.save_env_file(usr_model)
 
 
 def sync_app(app_name, region):
-    envs = elasticbeanstalk.get_all_environments(app_name, region)
-    for env in envs or []:
-        pull_down_env(app_name, env, region)
+    envs_remote = elasticbeanstalk.get_all_environments(app_name, region)
+    env_names_remote = []
+    for env in envs_remote or []:
+        env_name = env['EnvironmentName']
+        env_names_remote.append(env_name)
+        pull_down_env(app_name, env_name, region)
 
-    # ToDo: Remove all deleted, non-paused env's
+    envs_local = fileoperations.get_environments_from_files()
+    for env in envs_local:
+        env_name = env['EnvironmentName']
+        if env_name not in env_names_remote:
+            fileoperations.delete_env_file(env_name)
 
 
 def get_default_profile():
@@ -220,6 +235,7 @@ def print_env_details(env, health=True):
     app_name = env['ApplicationName']
     env_name = env['EnvironmentName']
     env_id = env['EnvironmentId']
+    date = env['DateUpdated']
     solution_stack = env['SolutionStackName']
     try:
         cname = env['CNAME']
@@ -239,6 +255,7 @@ def print_env_details(env, health=True):
     io.echo('  Solution Stack:', solution_stack)
     io.echo('  Tier:', tier)
     io.echo('  Cname:', cname)
+    io.echo('  Updated:', date)
 
     if health:
         io.echo('Status:', env_status)
@@ -269,6 +286,12 @@ def create_env(app_name, env_name, region, cname, solution_stack,
         # Try again with new values
         return create_env(app_name, env_name, region, cname,
                           solution_stack, tier, label, profile)
+
+
+def delete(app_name, region):
+    #elasticbeanstalk.delete_application(app_name, region)
+    cleanup_ignore_file()
+    fileoperations.clean_up()
 
 
 def deploy(app_name, env_name, region):
@@ -353,16 +376,22 @@ def setup_directory(app_name, region):
 
 
 def setup_ignore_file():
-    git_installed = fileoperations.get_config_setting('global', 'git')
+    sc = fileoperations.get_config_setting('global', 'sc')
 
-    if not git_installed:
+    if not sc:
         source_control = SourceControl.get_source_control()
         source_control.set_up_ignore_file()
-        fileoperations.write_config_setting('global', 'git', True)
+        sc_name = source_control.get_name()
+        fileoperations.write_config_setting('global', 'sc', sc_name)
 
 
-def zip_up_code():
-    pass
+def cleanup_ignore_file():
+    sc = fileoperations.get_config_setting('global', 'sc')
+
+    if sc:
+        source_control = SourceControl.get_source_control()
+        source_control.clean_up_ignore_file()
+        fileoperations.write_config_setting('global', 'sc', None)
 
 
 def create_app_version(app_name, region):
@@ -399,8 +428,32 @@ def create_app_version(app_name, region):
     return version_label
 
 
-def update_environment():
-    pass
+def update_environment(app_name, env_name, region):
+    usr_model = fileoperations.get_environment_from_file(env_name)
+
+    # pull down env details from cloud
+    # check date of saved env and compare
+    env_details = elasticbeanstalk.get_environment(app_name, env_name, region)
+
+    if env_details['DateUpdated'] != usr_model['DateUpdated']:
+        io.echo('Your environments settings are out of date. \n'
+                'Please do an \'eb sync\' before updating environment')
+        return
+
+    api_model = elasticbeanstalk.describe_configuration_settings(
+        app_name, env_name, region
+    )
+    changes = environment.collect_changes(api_model, usr_model)
+    result = elasticbeanstalk.update_environment(env_name, changes, region)
+
+    io.log_info('Printing Status:')
+    try:
+        request_id = result['ResponseMetadata']['RequestId']
+        wait_and_log_events(request_id, region)
+        pull_down_env(app_name, env_name, region)
+        io.echo('-- The environment has been created successfully! --')
+    except TimeoutError:
+        io.log_error('Unknown state of environment. Operation timed out.')
 
 
 def remove_zip_file():

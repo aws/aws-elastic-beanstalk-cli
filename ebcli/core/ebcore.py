@@ -26,6 +26,7 @@ from ebcli.controllers.status import StatusController
 from ebcli.controllers.terminate import TerminateController
 from ebcli.controllers.update import UpdateController
 from ebcli.controllers.config import ConfigController
+from ebcli.controllers.sync import SyncController
 from ebcli.core import globals, base, io
 from ebcli.objects.exceptions import NotInitializedError, \
     NoSourceControlError, NoRegionError, EBCLIException
@@ -54,6 +55,7 @@ class EB(foundation.CementApp):
         handler.register(StatusController)
         handler.register(TerminateController)
         handler.register(UpdateController)
+        handler.register(SyncController)
         # handler.register(ConfigController)  # Do we want this command?
 
         super(EB, self).setup()
@@ -73,6 +75,12 @@ def main():
         app.run()
 
     # Handle General Exceptions
+
+    # ToDo: the safer way of closing would be
+    # app.close(129) rather than sys.exit(129)
+    # But this is not currently available in the current version of cement
+    # A patch has been submitted and excepted
+    # The fix needs to be changed once the next release of cement is out
     except NotInitializedError:
         io.log_error(strings['exit.notsetup'])
         sys.exit(128)

@@ -13,25 +13,18 @@
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
-import time
-
+from ebcli.core import fileoperations, operations
 
 class DeleteController(AbstractBaseController):
     class Meta:
-        label = 'delete'
+        label = 'unlink'
         description = strings['delete.info']
         arguments = [
             (['-f', '--foo'], dict(help='notorious foo option')),
         ]
 
     def do_command(self):
-        # delete environment.
-
-        # remove all traces so its like the environment hasn't been
-        #  set up yet
-        self.app.print_to_console('Shutting down environments')
-        time.sleep(1)
-        self.app.print_to_console('Removing app')
-        time.sleep(1)
-        self.app.print_to_console('Everything has been removed and all '
-                                  'Environments have been shut down!')
+        # delete App
+        app_name = fileoperations.get_application_name()
+        region = fileoperations.get_default_region()
+        operations.delete(app_name, region)

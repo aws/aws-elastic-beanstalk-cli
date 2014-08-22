@@ -18,15 +18,16 @@ strings = {
     'init.info': 'Initializes your directory with eb. '
                  'Sets up the environment',
     'create.info': 'Create a new environment',
-    'delete.info': 'Delete your application and all environments in it',
+    'delete.info': 'Remove all eb related materials for this project. Does not'
+                   ' affect anything in the cloud',
     'events.info': 'Get recent events',
-    'import.info': 'Import an old configuration of eb',
     'logs.info': 'Get recent logs',
     'deploy.info': 'Deploys your current branch to the environment',
     'status.info': 'Get Environment info and status',
     'terminate.info': 'Stop stuff',
     'update.info': 'Update environment',
-    'config.info': 'Configure your environment',
+    'sync.info': 'Pull down environment configurations',
+    'config.info': 'Config stuff',
     'error.nocreds': 'A credentials file can not be found. \n'
                      'Please place a credential file at ~/.aws/config',
     'cred.prompt':  'It looks like your credentials are not yet set up \n'

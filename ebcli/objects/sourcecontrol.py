@@ -11,8 +11,10 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+from __future__ import print_function
 import os
 import zipfile
+import fileinput
 
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
@@ -20,13 +22,19 @@ from cement.utils.shell import exec_cmd
 from ebcli.resources.strings import git_ignore
 from ebcli.core.fileoperations import get_config_setting
 from ebcli.objects.exceptions import NoSourceControlError, CommandError
+from ebcli.core import fileoperations
 
 LOG = minimal_logger(__name__)
 
 
 class SourceControl():
+    name = 'base'
+
     def __init__(self):
         self.name = ''
+
+    def get_name(self):
+        return None
 
     def get_current_branch(self):
         pass
@@ -58,6 +66,9 @@ class NoSC(SourceControl):
     """
         No source control installed
     """
+    def get_name(self):
+        return None
+
     def get_current_branch(self):
         return 'master'
 
@@ -85,6 +96,9 @@ class Git(SourceControl):
     """
         The user has git installed
         """
+
+    def get_name(self):
+        return 'git'
 
     def _handle_exitcode(self, exitcode, stderr):
         if exitcode == 0:
@@ -124,7 +138,7 @@ class Git(SourceControl):
         stdout, stderr, exitcode = \
             exec_cmd(['git log --oneline -1'], True)
         self._handle_exitcode(exitcode, stderr)
-        return stdout[:-1] # strip new line
+        return stdout[:-1]  # strip new line
 
     def is_setup(self):
         #   does the current directory have git set-up
@@ -146,7 +160,31 @@ class Git(SourceControl):
         return True
 
     def set_up_ignore_file(self):
-        with open('.gitignore', 'a') as f:
+        with open('.gitignore', 'r+') as f:
+            for line in f:
+                if line.strip() == git_ignore[0]:
+                    return
+
+            # Move to the end of the file:
+            f.seek(0, 2)
             f.write(os.linesep)
             for line in git_ignore:
                 f.write(line + os.linesep)
+
+    def clean_up_ignore_file(self):
+        cwd = os.getcwd()
+        try:
+            fileoperations._traverse_to_project_root()
+
+            in_section = False
+            for line in fileinput.input('.gitignore', inplace=True):
+                if line.startswith(git_ignore[0]):
+                    in_section = True
+                if not line.strip():
+                    in_section = False
+
+                if not in_section:
+                    print(line, end='')
+
+        finally:
+            os.chdir(cwd)

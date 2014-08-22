@@ -15,11 +15,13 @@
 def collect_changes(api_model, usr_model):
     """
     Grabs all things in the usr_model that are different and
-    applies them into the api_model
+   returns just the changes
     :param api_model: Model from api with Namespace keys
     :param usr_model: User model, key-value style
     :return: api_model
     """
+
+    changes = []
 
     option_settings = api_model['OptionSettings']
     usr_options = usr_model['settings']
@@ -33,12 +35,13 @@ def collect_changes(api_model, usr_model):
         if 'Value' in setting:
             if setting['Value'] != usr_value:
                 setting['Value'] = usr_value
+                changes.append(setting)
         else:
             if usr_value is not None:
                 setting['Value'] = usr_value
+                changes.append(setting)
 
-
-    return api_model
+    return changes
 
 
 def convert_api_to_usr_model(api_model):
@@ -53,6 +56,7 @@ def convert_api_to_usr_model(api_model):
     # Grab only data we care about
     _get_key('ApplicationName', usr_model, api_model)
     _get_key('EnvironmentName', usr_model, api_model)
+    _get_key('DateUpdated', usr_model, api_model)
     usr_model['settings'] = dict()
     usr_model_settings = usr_model['settings']
 

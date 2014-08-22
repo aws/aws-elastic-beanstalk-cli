@@ -101,7 +101,9 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
 def delete_application(app_name, region=None):
     LOG.debug('Inside delete_application api wrapper')
     result = _make_api_call('delete-application',
+                            application_name=app_name,
                             region=region)
+    return result
 
 
 def describe_application(app_name, region=None):
@@ -143,9 +145,10 @@ def get_available_solution_stacks(region=None):
 
 def get_all_environments(app_name, region=None):
     LOG.debug('Inside get_all_environments api wrapper')
-    return _make_api_call('describe-environments',
+    result = _make_api_call('describe-environments',
                           application_name=app_name,
                           region=region)
+    return result['Environments']
 
 
 def get_environment(app_name, env_name, region=None):
@@ -185,9 +188,13 @@ def get_storage_location(region=None):
     return response['S3Bucket']
 
 
-def update_environment(app_name, env_name, region=None):
+def update_environment(env_name, options, region=None):
     LOG.debug('Inside update_environment api wrapper')
-    pass
+    response = _make_api_call('update-environment',
+                              environment_name=env_name,
+                              option_settings=options,
+                              region=region)
+    return response
 
 
 def update_env_application_version(env_name,
