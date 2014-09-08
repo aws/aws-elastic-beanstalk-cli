@@ -17,8 +17,8 @@ import re
 
 from six.moves import urllib
 from six import iteritems
-from cement.utils.shell import exec_cmd2
 from cement.utils.misc import minimal_logger
+from cement.utils.shell import exec_cmd
 from botocore.exceptions import NoCredentialsError
 
 from ebcli.lib import elasticbeanstalk, s3, iam
@@ -262,6 +262,13 @@ def get_default_profile():
         iam.create_instance_profile(profile)
 
     return profile
+
+
+def open_app(app_name, env_name, region):
+    # get cname
+    env = elasticbeanstalk.get_environment(app_name, env_name, region)
+    cname = env.cname
+    exec_cmd(['xdg-open http://' + cname], True)
 
 
 def make_new_env(app_name, env_name, region, cname, solution_stack,

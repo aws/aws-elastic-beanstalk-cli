@@ -27,6 +27,7 @@ from ebcli.controllers.status import StatusController
 from ebcli.controllers.terminate import TerminateController
 from ebcli.controllers.update import UpdateController
 from ebcli.controllers.pause import PauseController
+from ebcli.controllers.open import OpenController
 from ebcli.controllers.config import ConfigController
 from ebcli.controllers.sync import SyncController
 from ebcli.core import globals, base, io
@@ -59,6 +60,7 @@ class EB(foundation.CementApp):
         handler.register(UpdateController)
         handler.register(SyncController)
         handler.register(PauseController)
+        handler.register(OpenController)
         # handler.register(ConfigController)  # Do we want this command?
 
         super(EB, self).setup()

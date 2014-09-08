@@ -22,6 +22,7 @@ strings = {
     'delete.info': 'Remove all eb related materials for this project. Does not'
                    ' affect anything in the cloud',
     'events.info': 'Get recent events',
+    'open.info': 'Opens the envirnment app in a browser',
     'logs.info': 'Get recent logs',
     'deploy.info': 'Deploys your current branch to the environment',
     'status.info': 'Get Environment info and status',
