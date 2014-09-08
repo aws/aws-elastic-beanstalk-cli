@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import argparse
+
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.core import io
 
@@ -50,7 +52,10 @@ class ExampleController(AbstractBaseController):
                                               help='the A option')),
             # The position_arg is a flagless argument
             ##  nargs specifies the number of arguments expected
-            (['positional_arg'], dict(action='store', nargs='*')),
+            (['positional_arg'], dict(action='store', nargs='*', default=[])),
+            # The below is a hidden option flag, it is set as hidden by the
+            ## help text being set to SUPRESS
+            (['--hidden'], dict(action='store_true', help=argparse.SUPPRESS))
         ]
 
     def do_command(self):
@@ -64,3 +69,6 @@ class ExampleController(AbstractBaseController):
 
         if self.app.pargs.vendetta:
             io.echo('Vendetta Flag was set')
+
+        if self.app.pargs.hidden:
+            io.echo('The hidden flag was set')

@@ -160,6 +160,7 @@ class Git(SourceControl):
         return True
 
     def set_up_ignore_file(self):
+        # ToDo: create .gitignore if it doesnt exist
         with open('.gitignore', 'r+') as f:
             for line in f:
                 if line.strip() == git_ignore[0]:

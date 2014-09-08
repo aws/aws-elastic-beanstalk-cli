@@ -13,7 +13,7 @@
 
 import unittest
 
-from ebcli.objects import environment
+from ebcli.objects import configuration
 
 
 class TestEnvironment(unittest.TestCase):
@@ -23,7 +23,7 @@ class TestEnvironment(unittest.TestCase):
     def test_convert_api_to_usr_model(self):
         example_api_response = get_example_api_response()
         expected_conversion_result = get_expected_conversion()
-        result = environment.convert_api_to_usr_model(example_api_response)
+        result = configuration.convert_api_to_usr_model(example_api_response)
 
         self.assertEqual(result, expected_conversion_result)
 
@@ -37,7 +37,7 @@ class TestEnvironment(unittest.TestCase):
         example_usr_model['settings']['aws:autoscaling:asg']['MaxSize'] = '6'
 
         # compare results
-        environment.collect_changes(example_api_response, example_usr_model)
+        configuration.collect_changes(example_api_response, example_usr_model)
         self.assertEqual(example_api_response, changed_response)
 
 

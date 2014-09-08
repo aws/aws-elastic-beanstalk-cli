@@ -67,7 +67,6 @@ class TestInit(BaseIntegrationTest):
         )
         self.assertEqual(self.mock_input.call_count, 3)
 
-
     def test_init_no_creds(self):
         """
                 testing for:
@@ -89,7 +88,7 @@ class TestInit(BaseIntegrationTest):
         ]
 
         # run cmd
-        self.app = EB(argv=['init', '-a', app_name])
+        self.app = EB(argv=['init', '-a', app_name, '-r', 'us-west-2'])
         self.app.setup()
         self.app.run()
         self.app.close()
@@ -143,7 +142,7 @@ class TestInit(BaseIntegrationTest):
         app_name = 'ebcli-intTest-app'
 
         # run cmd
-        self.app = EB(argv=['init', '-a', app_name])
+        self.app = EB(argv=['init', '-a', app_name, '-r', 'us-west-w'])
         self.app.setup()
         self.app.run()
         self.app.close()
@@ -170,7 +169,7 @@ class TestInit(BaseIntegrationTest):
         app_name = 'ebcli-intTest-app'
 
         # run cmd
-        self.app = EB(argv=['init', '-a', app_name])
+        self.app = EB(argv=['init', '-a', app_name, '-r', 'us-west-2'])
         self.app.setup()
         self.app.run()
         self.app.close()
@@ -198,6 +197,7 @@ class TestInit(BaseIntegrationTest):
         # Set up mock responses
         self.mock_aws.make_api_call.side_effect = [
             {'Applications': [{'ApplicationName': 'myApp'}]},  # describe call
+            {'Environments': []},  # get env's
             None  # create call, we don't need a return value
         ]
 

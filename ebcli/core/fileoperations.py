@@ -85,11 +85,14 @@ def _set_not_none(config, section, option, value):
 
 def save_to_aws_config(access_key, secret_key):
     config = configparser.ConfigParser()
+    configparser.DEFAULTSECT = 'default'
     if not os.path.exists(aws_config_folder):
         os.makedirs(aws_config_folder)
 
     config.read(aws_config_location)
-    if default_section not in config.sections():
+
+    if default_section.lower() != 'default' and \
+                    default_section not in config.sections():
         config.add_section(default_section)
 
     _set_not_none(config, default_section, aws_access_key, access_key)
@@ -100,6 +103,11 @@ def save_to_aws_config(access_key, secret_key):
 
 
 _marker = object()
+
+
+def get_current_directory_name():
+    dirname, filename = os.path.split(os.getcwd())
+    return filename
 
 
 def get_application_name(default=_marker):
@@ -200,7 +208,7 @@ def save_envlist(envlist):
     cwd = os.getcwd()
     try:
         _traverse_to_project_root()
-        pickle.dump(envlist, open(file_location, 'wb'))
+        pickle.dump(envlist, open(file_location, 'wb'), 2)
     finally:
         os.chdir(cwd)
 

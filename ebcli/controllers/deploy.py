@@ -11,7 +11,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import time
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 from ebcli.core import io, operations, fileoperations
@@ -47,8 +46,7 @@ class DeployController(AbstractBaseController):
 
         if not env_name:
             # ask for environment name
-            io.echo('No environment is registered with this branch. '
-                    'You must specify an environment, i.e. eb deploy envName')
-            env_name = io.prompt_for_environment_name()
+            io.log_error(strings['branch.noenv'].replace('{cmd}', 'deploy'))
+            return
 
         operations.deploy(app_name, env_name, region)

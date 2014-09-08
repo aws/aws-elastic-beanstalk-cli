@@ -48,50 +48,52 @@ def log_error(message):
     globals.app.log.error(message)
 
 
-def get_input(output):
-    # Don't except blank inputs
+def get_input(output, default=None):
     # Trim spaces
-    while True:
-        result = input(output + ': ').strip()
-        if result:
-            break
-        else:
-            echo('Blank inputs are not allowed. Please try again.')
+    result = input(output + ': ').strip()
+    if not result:
+        result = default
     return result
 
 
-def prompt(output):
-    return get_input('(' + output + ')')
+def prompt(output, default=None):
+    return get_input('(' + output + ')', default)
 
 
-def prompt_for_environment_name():
+def prompt_for_environment_name(default_name='myEnv'):
     # Validate env_name: Spec says:
     # Constraint: Must be from 4 to 23 characters in length.
     # The name can contain only letters, numbers, and hyphens.
     # It cannot start or end with a hyphen.
     while True:
-        env_name = prompt('environment name')
+        echo('Enter Environment Name')
+        env_name = prompt('default is ' + default_name)
+        if not env_name:
+            return default_name
         if re.match('^[a-z0-9][a-z0-9-]{2,21}[a-z0-9]$', env_name.lower()):
             break
         else:
-            echo('Environment name be 4 to 23 characters in length. It can'
-                 ' only contain letters, numbers, and hyphens. It can not '
+            echo('Environment name must be 4 to 23 characters in length. It '
+                 'can only contain letters, numbers, and hyphens. It can not '
                  'start or end with a hyphen')
 
     return env_name
 
 
-def prompt_for_cname():
+def prompt_for_cname(default=None):
     # Validate cname: spec says:
     # Constraint: Must be from 4 to 23 characters in length.
     # The name can contain only letters, numbers, and hyphens.
     # It cannot start or end with a hyphen.
     while True:
-        cname = prompt('cname prefix')
+        echo('Enter DNS CNAME prefix')
+        cname = prompt('default is auto-generated')
+        if not cname:
+            return default
         if re.match('^[a-z0-9][a-z0-9-]{2,61}[a-z0-9]$', cname.lower()):
             break
         else:
-            echo('CNAME can be 4 to 63 characters in length. It can'
+            echo('CNAME must be 4 to 63 characters in length. It can'
                  ' only contain letters, numbers, and hyphens. It can not '
                  'start or end with a hyphen')
 

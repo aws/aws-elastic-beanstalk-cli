@@ -19,27 +19,11 @@ from ebcli.core import operations
 
 class TestOperations(unittest.TestCase):
 
-    def test_wait_and_print_status(self):
-        pass
-
-
-    def test_create_env(self):
-        pass
-
-    def test_setup_ignore_file(self):
-        pass
-
-    def test_zip_up_code(self):
-        pass
-
-    def test_create_app_version(self):
-        pass
-
-    def test_update_environment(self):
-        pass
-
-    def test_remove_zip_file(self):
-        pass
+    def test_is_success_string(self):
+        self.assertTrue('Environment health has been set to GREEN')
+        self.assertTrue('Successfully launched environment: my-env')
+        self.assertTrue('Pulled logs for environment instances')
+        self.assertTrue('terminateEnvironment completed successfully')
 
     @mock.patch('ebcli.core.operations.io')
     def test_get_boolean_response_bad(self, mock_io):

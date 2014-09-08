@@ -13,10 +13,11 @@
 
 strings = {
     'app.version_message': 'EBCLI - AWS Elastic Beanstalk CLI - Version:',
-    'base.info': 'Welcome to EB. Please '
-                 'see below for a list of available commands.',
+    'base.info': "Welcome to EB. Please "
+                 "use 'eb {cmd} --help' for more info",
+    'base.epilog': "To get started please use 'eb init' followed by 'eb create' and 'eb open'",
     'init.info': 'Initializes your directory with eb. '
-                 'Sets up the environment',
+                 'Sets up the app',
     'create.info': 'Create a new environment',
     'delete.info': 'Remove all eb related materials for this project. Does not'
                    ' affect anything in the cloud',
@@ -44,19 +45,23 @@ strings = {
                      'Have you ran eb init?',
     'exit.noregion': 'A default region can not be found. Please run eb init or'
                      ' add the region using --region',
+    'branch.noenv': 'No environment is registered with this branch. You must'
+                    ' specify an environment, i.e. eb {cmd} envName'
 
 }
 
 responses = {
     'event.redmessage': 'Environment health has been set to RED',
-    'evnt.redtoyellowmessage': 'Environment health has transitioned '
+    'event.redtoyellowmessage': 'Environment health has transitioned '
                                'from YELLOW to RED',
     'event.yellowmessage': 'Environment health has been set to YELLOW',
     'event.greenmessage': 'Environment health has been set to GREEN',
     'event.launchsuccess': 'Successfully launched environment:',
+    'event.launchbad': 'Create environment operation is complete, '
+                       'but with errors',
     'git.norepository': 'Error: Not a git repository ' \
                         '(or any of the parent directories): .git',
-    'env.cnamenotavailable': 'DNS name \([a-zA-Z-]+\) is not available.',
+    'env.cnamenotavailable': 'DNS name \([^ ]+\) is not available.',
     'env.nameexists': 'Environment [^ ]+ already exists.',
     'logs.pulled': 'Pulled logs for environment instances.',
     'env.terminated': 'terminateEnvironment completed successfully.'

@@ -27,7 +27,7 @@ from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.resources.strings import strings, responses
 from ebcli.objects import region as regions
 from ebcli.lib import utils
-from ebcli.objects import environment
+from ebcli.objects import configuration
 from ebcli.objects.exceptions import NoSourceControlError, \
     ServiceError, TimeoutError
 from ebcli.objects.solutionstack import SolutionStack
@@ -47,36 +47,40 @@ def wait_and_log_events(request_id, region,
     last_time = ''
     while not finished and (datetime.now() - start) < timediff:
         time.sleep(sleep_time)
-        results = elasticbeanstalk.get_new_events(None, None,
-                                                  request_id,
-                                                  last_event_time=last_time,
-                                                  region=region)
+        events = elasticbeanstalk.get_new_events(
+            None, None, request_id, last_event_time=last_time, region=region
+        )
 
-        for event in reversed(results['Events']):
-            #Log event
-            message, last_time = log_event(event)
+        for event in reversed(events):
+            log_event(event)
 
             # Test event message for success string
-            if message == responses['event.greenmessage'] or \
-                    message.startswith(responses['event.launchsuccess']):
-                finished = True
-            if message.startswith(responses['event.launchsuccess']):
-                finished = True
-            if message == responses['event.redmessage']:
-                raise ServiceError(message)
-            if message == responses['logs.pulled']:
-                finished = True
-            if message == responses['env.terminated']:
-                finished = True
+            finished = _is_success_string(event.message)
+            last_time = event.event_date
 
     if not finished:
-        raise TimeoutError('Timed out while waiting for environment to launch')
+        raise TimeoutError('Timed out while waiting for command to complete')
+
+
+def _is_success_string(message):
+    if message == responses['event.greenmessage']:
+        return True
+    if message.startswith(responses['event.launchsuccess']):
+        return True
+    if message == responses['event.redmessage']:
+        raise ServiceError(message)
+    if message.startswith(responses['event.launchbad']):
+        raise ServiceError(message)
+    if message == responses['logs.pulled']:
+        return True
+    if message == responses['env.terminated']:
+        return True
 
 
 def log_event(event, echo=False):
-    message = event['Message']
-    severity = event['Severity']
-    date = event['EventDate']
+    message = event.message
+    severity = event.severity
+    date = event.event_date
     if echo:
         io.echo(date.ljust(26) + severity.ljust(8) + message)
     elif severity == 'INFO':
@@ -89,12 +93,12 @@ def log_event(event, echo=False):
     return message, date
 
 
-def print_events(app_name, env_name, region):
-    results = elasticbeanstalk.get_new_events(
+def print_events(app_name, env_name, region, follow):
+    events = elasticbeanstalk.get_new_events(
         app_name, env_name, None, last_event_time='', region=region
     )
 
-    for event in results['Events']:
+    for event in reversed(events):
         log_event(event, echo=True)
 
 
@@ -104,7 +108,7 @@ def setup(app_name, region):
         create_app(app_name, region)
     except NoCredentialsError:
         setup_aws_dir()  # only need this if there are no creds in env vars
-        create_app(app_name, region)  # now that creds are set up, create app
+        create_app(app_name, region) # now that creds are set up, create app
 
     try:
         setup_ignore_file()
@@ -142,7 +146,6 @@ def create_app(app_name, region):
             region=region
         )
 
-        # ToDo: save app details
         io.echo('Application', app_name,
                 'has been created')
     else:
@@ -164,7 +167,7 @@ def pull_down_env(app_name, env_name, region):
     date = env_details['DateUpdated']
     api_model['DateUpdated'] = date
 
-    usr_model = environment.convert_api_to_usr_model(api_model)
+    usr_model = configuration.convert_api_to_usr_model(api_model)
     fileoperations.save_env_file(usr_model)
 
 
@@ -204,10 +207,10 @@ def make_new_env(app_name, env_name, region, cname, solution_stack,
         profile = get_default_profile()
 
     # Create env
-    result = create_env(app_name, env_name, region, cname, solution_stack,
+    result, request_id = create_env(app_name, env_name, region, cname, solution_stack,
                         tier, label, profile)
 
-    env_name = result['EnvironmentName']  # get the (possibly) updated name
+    env_name = result.name  # get the (possibly) updated name
 
     # Edit configurations
     ## Get default environment
@@ -222,7 +225,6 @@ def make_new_env(app_name, env_name, region, cname, solution_stack,
 
     io.log_info('Printing Status:')
     try:
-        request_id = result['ResponseMetadata']['RequestId']
         wait_and_log_events(request_id, region)
         pull_down_env(app_name, env_name, region)
         io.echo('-- The environment has been created successfully! --')
@@ -232,34 +234,17 @@ def make_new_env(app_name, env_name, region, cname, solution_stack,
 
 def print_env_details(env, health=True):
 
-    app_name = env['ApplicationName']
-    env_name = env['EnvironmentName']
-    env_id = env['EnvironmentId']
-    date = env['DateUpdated']
-    solution_stack = env['SolutionStackName']
-    try:
-        cname = env['CNAME']
-    except KeyError:
-        cname = 'UNKNOWN'
-    tier = env['Tier']
-    env_status = env['Status']
-    health = env['Health']
-
-    # Convert solution_stack and tier to objects
-    solution_stack = SolutionStack(solution_stack)
-    tier = Tier(tier['Name'], tier['Type'], tier['Version'])
-
-    io.echo('Environment details for:', env_name)
-    io.echo('  App name:', app_name)
-    io.echo('  Environment ID:', env_id)
-    io.echo('  Solution Stack:', solution_stack)
-    io.echo('  Tier:', tier)
-    io.echo('  Cname:', cname)
-    io.echo('  Updated:', date)
+    io.echo('Environment details for:', env.name)
+    io.echo('  App name:', env.app_name)
+    io.echo('  Environment ID:', env.id)
+    io.echo('  Solution Stack:', env.solution_stack)
+    io.echo('  Tier:', env.tier)
+    io.echo('  Cname:', env.cname)
+    io.echo('  Updated:', env.date_updated)
 
     if health:
-        io.echo('Status:', env_status)
-        io.echo('Health:', health)
+        io.echo('  Status:', env.status)
+        io.echo('  Health:', env.health)
 
 
 def create_env(app_name, env_name, region, cname, solution_stack,
@@ -306,10 +291,10 @@ def deploy(app_name, env_name, region):
     app_version_label = create_app_version(app_name, region)
 
     # swap env to new app version
-    elasticbeanstalk.update_env_application_version(env_name,
+    request_id = elasticbeanstalk.update_env_application_version(env_name,
                                                     app_version_label, region)
 
-    wait_and_log_events(app_name, env_name, region)
+    wait_and_log_events(request_id, region, 60*5)
 
 
 def status(app_name, env_name, region):
@@ -443,7 +428,7 @@ def update_environment(app_name, env_name, region):
     api_model = elasticbeanstalk.describe_configuration_settings(
         app_name, env_name, region
     )
-    changes = environment.collect_changes(api_model, usr_model)
+    changes = configuration.collect_changes(api_model, usr_model)
     result = elasticbeanstalk.update_environment(env_name, changes, region)
 
     io.log_info('Printing Status:')
@@ -461,7 +446,7 @@ def remove_zip_file():
 
 
 def get_boolean_response():
-    response = io.prompt('y/n').lower()
+    response = io.prompt('y/n', default='y').lower()
     while response not in ('y', 'n', 'yes', 'no'):
         io.echo(strings['prompt.invalid'],
                              strings['prompt.yes-or-no'])
@@ -483,6 +468,7 @@ def write_setting_to_current_branch(keyname, value):
         branch_name,
         {keyname: value}
     )
+
 
 def get_setting_from_current_branch(keyname):
     source_control = SourceControl.get_source_control()

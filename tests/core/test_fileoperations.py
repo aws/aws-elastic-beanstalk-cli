@@ -33,7 +33,7 @@ class TestFileOperations(unittest.TestCase):
         if not os.path.exists(fileoperations.beanstalk_directory):
             os.makedirs(fileoperations.beanstalk_directory)
 
-        fileoperations.default_section = 'ebcli_test_default'
+        # fileoperations.default_section = 'ebcli_test_default'
 
         #set up mock home dir
         if not os.path.exists('home'):
@@ -52,6 +52,7 @@ class TestFileOperations(unittest.TestCase):
     def test_read_aws_config_credentials_standard(self):
         # setup
         config = configparser.ConfigParser()
+        configparser.DEFAULTSECT = 'default'
 
         default = fileoperations.default_section
         access1 = '123456'
@@ -59,7 +60,6 @@ class TestFileOperations(unittest.TestCase):
         secret1 = 'abcdefg'
         secret2 = 'hijklmn'
 
-        config.add_section(default)
         config.add_section('section1')
         config.set(default, 'aws_access_key_id', access1)
         config.set(default, 'aws_secret_access_key', secret1)
@@ -151,8 +151,9 @@ class TestFileOperations(unittest.TestCase):
         # write values
         access = '09876'
         secret = 'abDfg'
-        fileoperations.save_to_aws_config(access, secret)
 
+        fileoperations.default_section = 'default'
+        fileoperations.save_to_aws_config(access, secret)
         # Grab values and make sure they were saved
         access_result, secret_result,  \
             = fileoperations.read_aws_config_credentials()
@@ -176,24 +177,24 @@ class TestFileOperations(unittest.TestCase):
         self.assertEqual(access, access_result)
         self.assertEqual(secret, secret_result)
 
-    def test_save_and_read_to_real_credentials_file(self):
-        # change directory back to normal
-        fileoperations.aws_config_folder = fileoperations.get_aws_home()
-        fileoperations.aws_config_location \
-            = fileoperations.aws_config_folder + 'config'
-
-        access = '12345678'
-        secret = 'aBcdEfgh'
-
-        # save
-        fileoperations.save_to_aws_config(access, secret)
-        # read
-        access_result, secret_result \
-            = fileoperations.read_aws_config_credentials()
-
-        # Test
-        self.assertEqual(access, access_result)
-        self.assertEqual(secret, secret_result)
+    # def test_save_and_read_to_real_credentials_file(self):
+    #     # change directory back to normal
+    #     fileoperations.aws_config_folder = fileoperations.get_aws_home()
+    #     fileoperations.aws_config_location \
+    #         = fileoperations.aws_config_folder + 'config'
+    #
+    #     access = '12345678'
+    #     secret = 'aBcdEfgh'
+    #
+    #     # save
+    #     fileoperations.save_to_aws_config(access, secret)
+    #     # read
+    #     access_result, secret_result \
+    #         = fileoperations.read_aws_config_credentials()
+    #
+    #     # Test
+    #     self.assertEqual(access, access_result)
+    #     self.assertEqual(secret, secret_result)
 
     def test_get_application_name(self):
         # wrapper of get_config_setting
@@ -426,7 +427,6 @@ class TestFileOperations(unittest.TestCase):
                                                    'application_name')
 
         self.assertEquals(result, None)
-
 
     def test_get_config_setting_merge(self):
         # create global file

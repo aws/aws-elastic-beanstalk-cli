@@ -25,11 +25,15 @@ class EventsController(AbstractBaseController):
                                         default=[],
                                         help='Environment name')),
             (['-r', '--region'], dict(help='Region where environment lives')),
+            (['-f', '--follow'], dict(action='store_true',
+                                      help='Wait and continue to print '
+                                           'events as they come'))
         ]
 
     def do_command(self):
         region = self.app.pargs.region
         env_name = self.app.pargs.environment_name
+        follow = self.app.pargs.follow
         #load default region
         if not region:
             region = fileoperations.get_default_region()
@@ -41,8 +45,7 @@ class EventsController(AbstractBaseController):
 
         if not env_name:
             # ask for environment name
-            io.echo('No environment is registered with this branch. '
-                    'You must specify an environment, i.e. eb deploy envName')
-            env_name = io.prompt_for_environment_name()
+            io.log_error(strings['branch.noenv'].replace('{cmd}', 'events'))
+            return
 
-        operations.print_events(app_name, env_name, region)
+        operations.print_events(app_name, env_name, region, follow)

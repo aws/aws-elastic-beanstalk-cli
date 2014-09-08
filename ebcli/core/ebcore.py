@@ -15,6 +15,7 @@ import sys
 
 from cement.core import foundation, handler
 from cement.utils.misc import init_defaults
+from cement.core.exc import CaughtSignal
 
 from ebcli.controllers.initialize import InitController
 from ebcli.controllers.create import CreateController
@@ -25,6 +26,7 @@ from ebcli.controllers.deploy import DeployController
 from ebcli.controllers.status import StatusController
 from ebcli.controllers.terminate import TerminateController
 from ebcli.controllers.update import UpdateController
+from ebcli.controllers.pause import PauseController
 from ebcli.controllers.config import ConfigController
 from ebcli.controllers.sync import SyncController
 from ebcli.core import globals, base, io
@@ -39,7 +41,7 @@ class EB(foundation.CementApp):
         base_controller = base.EbBaseController
         defaults = init_defaults('eb', 'log')
         # ToDo: Verbose mode by default for development, uncomment below to fix
-        defaults['log']['level'] = 'WARN'
+        # defaults['log']['level'] = 'WARN'
         config_defaults = defaults
         # argument_handler = ArgParseHandler
         # uncomment above if custom arg handler is needed
@@ -56,6 +58,7 @@ class EB(foundation.CementApp):
         handler.register(TerminateController)
         handler.register(UpdateController)
         handler.register(SyncController)
+        handler.register(PauseController)
         # handler.register(ConfigController)  # Do we want this command?
 
         super(EB, self).setup()
@@ -66,12 +69,12 @@ class EB(foundation.CementApp):
 
         globals.app = self
 
+
 def main():
     app = EB()
 
     try:
         app.setup()
-        args = app.pargs
         app.run()
 
     # Handle General Exceptions
@@ -81,6 +84,9 @@ def main():
     # But this is not currently available in the current version of cement
     # A patch has been submitted and excepted
     # The fix needs to be changed once the next release of cement is out
+    except CaughtSignal:
+        io.echo()
+        sys.exit(1)
     except NotInitializedError:
         io.log_error(strings['exit.notsetup'])
         sys.exit(128)

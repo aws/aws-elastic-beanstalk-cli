@@ -16,6 +16,7 @@ import mock
 
 from ebcli.core import io
 
+
 class TestFileOperations(unittest.TestCase):
     def setUp(self):
         pass

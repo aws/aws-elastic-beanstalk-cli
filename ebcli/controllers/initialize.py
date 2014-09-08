@@ -25,9 +25,6 @@ class InitController(AbstractBaseController):
         arguments = [
             (['-a', '--app'], dict(help='Application name')),
             (['-r', '--region'], dict(help='Default Region')),
-            (['-D', '--defaults'], dict(action='store_true',
-                                        help='Automatically revert to defaults'
-                                             ' for unsupplied parameters')),
         ]
         usage = 'this is a usage statement'
         epilog = 'this is an epilog'
@@ -37,9 +34,6 @@ class InitController(AbstractBaseController):
         flag = False
         app_name = self.app.pargs.app
         region = self.app.pargs.region
-        defaults = self.app.pargs.defaults
-        if app_name or region or defaults:
-            flag = True
 
         # Get app name from config file, if exists
         if not app_name:
@@ -55,22 +49,18 @@ class InitController(AbstractBaseController):
             except NotInitializedError:
                 region = None
 
-        # if default flag is given, revert to defaults
-        if defaults:
-            if not app_name:
-                app_name = 'myEbApp'
-            if not region:
-                region = 'us-east-1'
-
         # If we still do not have app name, ask for it
         if not app_name:
-            app_name = io.prompt('application name')
+            file_name = fileoperations.get_current_directory_name()
+            io.echo('Enter Application Name')
+            app_name = io.prompt('default is "' + file_name + '"',
+                                 default=file_name)
 
         # If we still do not have region name, ask for it
         if not region:
             if not flag:
-                io.echo('Would you like to set a default region? '
-                        '(if no, we will use us-east-1)')
+                io.echo('Set a default region'
+                        ' (if no, we will use us-west-2)')
                 response = operations.get_boolean_response()
             else:
                 response = False
@@ -80,7 +70,7 @@ class InitController(AbstractBaseController):
                 result = utils.prompt_for_item_in_list(region_list)
                 region = result.name
             else:
-                region = 'us-east-1'
+                region = 'us-west-2'
 
         #Do setup stuff
         operations.setup(app_name, region)

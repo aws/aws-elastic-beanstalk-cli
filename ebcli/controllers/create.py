@@ -36,9 +36,6 @@ class CreateController(AbstractBaseController):
             (['--single'], dict(action='store_true',
                                       help='Environment will use a Single '
                                            'Instance with no Load Balancer')),
-            (['-D', '--defaults'], dict(action='store_true',
-                                        help='Automatically revert to defaults'
-                                             ' for unsupplied parameters')),
             (['-d', '--branch_default'], dict(action='store_true',
                                               help='Set as branches default '
                                                    'environment')),
@@ -54,7 +51,6 @@ class CreateController(AbstractBaseController):
         tier = self.app.pargs.tier
         solution_string = self.app.pargs.solution
         single = self.app.pargs.single
-        defaults = self.app.pargs.defaults
         profile = self.app.pargs.profile
         label = self.app.pargs.versionlabel
         branch_default = self.app.pargs.branch_default
@@ -83,60 +79,32 @@ class CreateController(AbstractBaseController):
                 io.log_error('Provided tier does not appear to be valid')
                 sys.exit(127)
 
-        # Load defaults if needed
-        if defaults:
-            if not env_name:
-               app_name = fileoperations.get_application_name()
-               env_name = (app_name + "-env")[:23]
+        if not env_name:
+            # default is app-name plus '-dev'
+            default_name = app_name + '-dev'
+            env_name = io.prompt_for_environment_name(default_name)
 
-            if not cname:
-                # Service supports defaulted cnames
-                pass
-
-            if not tier:
-                # Service supports defaulted tiers
-                pass
-
-            if not solution_string:
-                # Service does NOT support default solution stack
-                # ToDo: Should we allow a default solution stack?
-                solution_string = 'php-5.5-64bit-v1.0.4'
-                solution = elasticbeanstalk.get_solution_stack(solution_string)
-
-            if not label:
-                # Service will launch sample app
-                pass
-
-            if not profile:
-                # Service supports default profile
-                pass
-
-            if not key_name:
-                # Service support no keyname
-                pass
-        else:
-            # Lets prompt for everything!
-            if not env_name:
-                env_name = io.prompt_for_environment_name()
-
-            if not cname:
+        if not cname:
+            cname = io.prompt_for_cname()
+            while cname and \
+                    (not elasticbeanstalk.is_cname_available(cname, region)):
+                io.echo('That cname is not available. '
+                        'Please choose another')
                 cname = io.prompt_for_cname()
-                # ToDo: Check for availability (CheckDNSAvailability)
 
-            if not solution_string:
-                solution = elasticbeanstalk.select_solution_stack()
+        if not solution_string:
+            solution = elasticbeanstalk.select_solution_stack()
 
-            if not tier:
-                tier = elasticbeanstalk.select_tier()
+        if not tier:
+            tier = elasticbeanstalk.select_tier()
 
-            if not label:
-                # Default to service, will launch sample app
-                pass
+        if not label:
+            # Default to service, will launch sample app
+            pass
 
-            if not profile:
-                # Default to service
-                pass
-
+        if not profile:
+            # Default to service
+            pass
 
         operations.make_new_env(app_name, env_name, region, cname,
                                 solution, tier, label, profile, branch_default)

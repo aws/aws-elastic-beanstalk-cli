@@ -12,22 +12,12 @@
 # language governing permissions and limitations under the License.
 
 
-class Environment():
-    def __init__(self, version_label=None, status=None, app_name=None,
-                 health=None, id=None, date_updated=None,
-                 solution_stack=None, description=None,
-                 name=None, date_created=None, tier=None,
-                 cname=None):
-
+class Event():
+    def __init__(self, message=None, event_date=None, version_label=None,
+                 app_name=None, environment_name=None, severity=None):
+        self.message = message
+        self.event_date = event_date
         self.version_label = version_label
-        self.status = status
         self.app_name = app_name
-        self.health = health
-        self.id = id
-        self.date_updated = date_updated
-        self.solution_stack = solution_stack
-        self.description = description
-        self.name = name
-        self.date_created = date_created
-        self.tier = tier
-        self.cname = cname
+        self.environment_name = environment_name
+        self.severity = severity

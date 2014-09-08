@@ -20,16 +20,15 @@ def prompt_for_item_in_list(list):
 
     while True:
         try:
-            choice = int(io.prompt('number'))
+            choice = int(io.prompt('default is 1', default='1'))
             if not (0 < choice <= len(list)):
-                raise ValueError
+                raise ValueError  # Also thrown by non int numbers
             else:
                 break
         except ValueError:
             io.echo('Sorry, that is not a valid choice. '
                     'Please choose a number between 1 and ' +
                     str(len(list)) + '.')
-        choice = int(io.prompt('number'))
     return list[choice - 1]
 
 

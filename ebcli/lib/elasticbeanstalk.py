@@ -22,6 +22,8 @@ from ebcli.objects.exceptions import NotFoundException
 from ebcli.objects.tier import Tier
 from ebcli.lib import utils
 from ebcli.lib import aws
+from ebcli.objects.event import Event
+from ebcli.objects.environment import Environment
 
 LOG = minimal_logger(__name__)
 
@@ -73,7 +75,7 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
         # 'Value': 'amazonPersonal'},
     ]
 
-    # ToDo : we should default to t2.micro, but maybe at a service level
+    # ToDo : should we default to t2.micro?
 
     kwargs = {
         'application_name': app_name,
@@ -95,8 +97,48 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
              'Value': profile}
         )
 
-    return _make_api_call('create-environment', region=region, **kwargs)
+    result = _make_api_call('create-environment', region=region, **kwargs)
 
+    # convert to object
+    env = _api_to_environment(result)
+    request_id = result['ResponseMetadata']['RequestId']
+    return env, request_id
+
+
+def _api_to_environment(api_dict):
+    try:
+        cname = api_dict['CNAME']
+    except KeyError:
+        cname = 'UNKNOWN'
+    try:
+        version_label = api_dict['VersionLabel']
+    except KeyError:
+        version_label = None
+    try:
+        description = api_dict['Description']
+    except KeyError:
+        description = None
+
+    # Convert solution_stack and tier to objects
+    solution_stack = SolutionStack(api_dict['SolutionStackName'])
+    tier = api_dict['Tier']
+    tier = Tier(tier['Name'], tier['Type'], tier['Version'])
+
+    env = Environment(
+        version_label=version_label,
+        status=api_dict['Status'],
+        app_name=api_dict['ApplicationName'],
+        health=api_dict['Health'],
+        id=api_dict['EnvironmentId'],
+        date_updated=api_dict['DateUpdated'],
+        solution_stack=solution_stack,
+        description=description,
+        name=api_dict['EnvironmentName'],
+        date_created=api_dict['DateCreated'],
+        tier=tier,
+        cname=cname,
+    )
+    return env
 
 def delete_application(app_name, region=None):
     LOG.debug('Inside delete_application api wrapper')
@@ -112,6 +154,14 @@ def describe_application(app_name, region=None):
                             application_names=[app_name],
                             region=region)
     return result['Applications']
+
+
+def is_cname_available(cname, region=None):
+    LOG.debug('Inside is_cname_available api wrapper')
+    result = _make_api_call('check-dns-availability',
+                            cname_prefix=cname,
+                            region=region)
+    return result['Available']
 
 
 def describe_applications(region=None):
@@ -148,7 +198,11 @@ def get_all_environments(app_name, region=None):
     result = _make_api_call('describe-environments',
                           application_name=app_name,
                           region=region)
-    return result['Environments']
+    # convert to object
+    envs = []
+    for env in result['Environments']:
+        envs.append(_api_to_environment(env))
+    return envs
 
 
 def get_environment(app_name, env_name, region=None):
@@ -157,11 +211,13 @@ def get_environment(app_name, env_name, region=None):
                           application_name=app_name,
                           environment_names=[env_name],
                           region=region)
-    return result['Environments'][0]
+    return _api_to_environment(result['Environments'][0])
 
 
-def get_new_events(app_name, env_name, request_id, last_event_time='', region=None):
+def get_new_events(app_name, env_name, request_id,
+                   last_event_time='', region=None):
     LOG.debug('Inside get_new_events api wrapper')
+    # make call
     if last_event_time is not '':
         time = dateutil.parser.parse(last_event_time)
         new_time = time + datetime.timedelta(0, 0, 1000)
@@ -177,9 +233,28 @@ def get_new_events(app_name, env_name, request_id, last_event_time='', region=No
         kwargs['request_id'] = request_id
     kwargs['start_time'] = timestamp
 
-    return _make_api_call('describe-events',
+    result = _make_api_call('describe-events',
                           region=region,
                           **kwargs)
+
+    # convert to object
+    events = []
+    for event in result['Events']:
+        try:
+            version_label = event['VersionLabel']
+        except KeyError:
+            version_label = None
+
+        events.append(
+            Event(event['Message'],
+                  event['EventDate'],
+                  version_label,
+                  event['ApplicationName'],
+                  event['EnvironmentName'],
+                  event['Severity'],
+                  )
+        )
+    return events
 
 
 def get_storage_location(region=None):

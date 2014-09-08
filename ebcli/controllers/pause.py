@@ -13,31 +13,21 @@
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
-from ebcli.core import operations, io
+from ebcli.core import fileoperations, operations, io
 
 
-class LogsController(AbstractBaseController):
+class PauseController(AbstractBaseController):
     class Meta:
-        label = 'logs'
-        description = strings['logs.info']
+        label = 'pause'
+        description = strings['delete.info']
         arguments = [
-            (['environment_name'], dict(action='store', nargs='?',
+            (['stuff'], dict(action='store', nargs='*',
                                         default=[],
-                                        help='Environment name')),
-            (['-r', '--region'], dict(help='Region where environment lives')),
+                                        help='stuff')),
         ]
+        hide = True
 
     def do_command(self):
-        region = self.app.pargs.region
-        env_name = self.app.pargs.environment_name
-
-        if not env_name:
-            env_name = operations. \
-                get_setting_from_current_branch('environment')
-
-        if not env_name:
-            # ask for environment name
-            io.echo(strings['branch.noenv'])
-            return
-
-        operations.logs(env_name, region)
+        stuff = self.app.pargs.stuff
+        for s in stuff:
+            io.echo(s)

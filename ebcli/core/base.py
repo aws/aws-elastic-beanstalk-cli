@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 
 import textwrap
+import argparse
 
 from cement.core import foundation, controller, handler
 
@@ -27,14 +28,15 @@ class EbBaseController(controller.CementBaseController):
     class Meta:
         label = 'base'
         description = strings['base.info']
+        # usage = eb {cmd} --option
         arguments = [
             (['-v', '--version'], dict(action='store_true',
                                        help='show application/version info')),
-            ]
+        ]
+        epilog = strings['base.epilog']
 
     @controller.expose(hide=True)
     def default(self):
-        self.app.log.debug('my awesome debug test')
         if self.app.pargs.version:
             io.echo(strings['app.version_message'],
                                       ebcli.__version__)
