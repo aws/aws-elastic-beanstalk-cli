@@ -42,7 +42,15 @@ class Tier():
             Tier('WebServer', 'Standard', '1.0'),
             Tier('Worker', 'SQS/HTTP', '1.0'),
             Tier('Worker', 'SQS/HTTP', '1.1'),
-            ]
+        ]
+        return lst
+
+    @staticmethod
+    def get_latest_tiers():
+        lst = [
+            Tier('WebServer', 'Standard', '1.0'),
+            Tier('Worker', 'SQS/HTTP', '1.1'),
+        ]
         return lst
 
     @staticmethod

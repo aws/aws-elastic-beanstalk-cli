@@ -18,10 +18,8 @@ setup_options = dict(
     author='Nick Humrich',
     author_email='humrichn@amazon.com',
     url='eb.example.com',
-    packages=find_packages('.', exclude=['tests*']),
+    packages=find_packages('.', exclude=['tests*', 'docs*', 'sampleApps*']),
     package_dir={'ebcli': 'ebcli'},
-    package_data={'ebcli': ['data/*.json', 'examples/*/*.rst',
-                             'examples/*/*/*.rst']},
     install_requires=requires,
     license="Apache License 2.0",
     classifiers=(

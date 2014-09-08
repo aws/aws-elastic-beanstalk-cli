@@ -25,6 +25,7 @@ class InitController(AbstractBaseController):
         arguments = [
             (['-a', '--app'], dict(help='Application name')),
             (['-r', '--region'], dict(help='Default Region')),
+            (['-s', '--solution'], dict(help='Solution stack')),
         ]
         usage = 'this is a usage statement'
         epilog = 'this is an epilog'
@@ -34,6 +35,7 @@ class InitController(AbstractBaseController):
         flag = False
         app_name = self.app.pargs.app
         region = self.app.pargs.region
+        solution = self.app.pargs.solution
 
         # Get app name from config file, if exists
         if not app_name:
@@ -49,6 +51,13 @@ class InitController(AbstractBaseController):
             except NotInitializedError:
                 region = None
 
+        # Get solution stack from config file, if exists
+        if not solution:
+            try:
+                solution = fileoperations.get_default_solution_stack()
+            except NotInitializedError:
+                solution = None
+
         # If we still do not have app name, ask for it
         if not app_name:
             file_name = fileoperations.get_current_directory_name()
@@ -59,18 +68,14 @@ class InitController(AbstractBaseController):
         # If we still do not have region name, ask for it
         if not region:
             if not flag:
-                io.echo('Set a default region'
-                        ' (if no, we will use us-west-2)')
-                response = operations.get_boolean_response()
-            else:
-                response = False
-
-            if response:
+                io.echo('Select a default region')
                 region_list = regions.get_all_regions()
-                result = utils.prompt_for_item_in_list(region_list)
+                result = utils.prompt_for_item_in_list(region_list, default=3)
                 region = result.name
-            else:
-                region = 'us-west-2'
+
+        # If we still do not have solution stack, ask for it
+        if not solution:
+            solution = operations.get_solution_stack(region)
 
         #Do setup stuff
-        operations.setup(app_name, region)
+        operations.setup(app_name, region, solution.string)

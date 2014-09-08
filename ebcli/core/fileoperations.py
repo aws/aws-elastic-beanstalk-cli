@@ -123,12 +123,13 @@ def get_application_name(default=_marker):
 
 
 def get_default_region():
-    # Don't return an error
-    ### We can defer to .aws/config region
     return get_config_setting('global', 'default_region')
 
+def get_default_solution_stack():
+    return get_config_setting('global', 'default_solution_stack')
 
-def create_config_file(app_name, region):
+
+def create_config_file(app_name, region, solution_stack):
     """
         We want to make sure we do not override the file if it already exists,
          but we do want to fill in all missing pieces
@@ -143,6 +144,7 @@ def create_config_file(app_name, region):
     # add to global without writing over any settings if they exist
     write_config_setting('global', 'application_name', app_name)
     write_config_setting('global', 'default_region', region)
+    write_config_setting('global', 'default_solution_stack', solution_stack)
 
 
 def _traverse_to_project_root():

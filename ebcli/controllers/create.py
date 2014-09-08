@@ -34,8 +34,10 @@ class CreateController(AbstractBaseController):
             (['-t', '--tier'], dict(help='Environment tier type')),
             (['-s', '--solution'], dict(help='Solution stack')),
             (['--single'], dict(action='store_true',
-                                      help='Environment will use a Single '
-                                           'Instance with no Load Balancer')),
+                                help='Environment will use a Single '
+                                     'Instance with no Load Balancer')),
+            (['--sample'], dict(action='store_true',
+                                help='Use Sample Application')),
             (['-d', '--branch_default'], dict(action='store_true',
                                               help='Set as branches default '
                                                    'environment')),
@@ -55,6 +57,7 @@ class CreateController(AbstractBaseController):
         label = self.app.pargs.versionlabel
         branch_default = self.app.pargs.branch_default
         key_name = self.app.pargs.keyname
+        sample = self.app.pargs.sample
 
 
         # get application name
@@ -63,6 +66,10 @@ class CreateController(AbstractBaseController):
         #load default region
         if not region:
             region = fileoperations.get_default_region()
+
+        #load solution stack
+        if not solution_string:
+            solution_string = fileoperations.get_default_solution_stack()
 
         # Test out solution stack before we ask any questions (Fast Fail)
         if solution_string:
@@ -93,7 +100,7 @@ class CreateController(AbstractBaseController):
                 cname = io.prompt_for_cname()
 
         if not solution_string:
-            solution = elasticbeanstalk.select_solution_stack()
+            solution = operations.get_solution_stack(region)
 
         if not tier:
             tier = elasticbeanstalk.select_tier()
@@ -106,5 +113,6 @@ class CreateController(AbstractBaseController):
             # Default to service
             pass
 
-        operations.make_new_env(app_name, env_name, region, cname,
-                                solution, tier, label, profile, branch_default)
+        operations.make_new_env(app_name, env_name, region, cname, solution,
+                                tier, label, profile, key_name, branch_default,
+                                sample)

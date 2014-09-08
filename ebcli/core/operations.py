@@ -33,6 +33,7 @@ from ebcli.objects.exceptions import NoSourceControlError, \
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.tier import Tier
 from ebcli.lib.aws import InvalidParameterValueError
+from ebcli.lib import heuristics
 
 LOG = minimal_logger(__name__)
 DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
@@ -102,13 +103,76 @@ def print_events(app_name, env_name, region, follow):
         log_event(event, echo=True)
 
 
-def setup(app_name, region):
-    setup_directory(app_name, region)
+def get_solution_stack(region):
+    solution_stacks = elasticbeanstalk.get_available_solution_stacks(region)
+
+    # get list of platforms
+    platforms = []
+    for stack in solution_stacks:
+        if stack.platform not in platforms:
+            platforms.append(stack.platform)
+
+    # First check to see if we know what language the project is in
+    platform = heuristics.find_language_type()
+
+    if platform is not None:
+        io.echo('It appears you are using ' + platform + '. Is this correct?')
+        correct = get_boolean_response()
+
+    if not platform or not correct:
+        # ask for platform
+        io.echo('Please choose a platform type')
+        platform = utils.prompt_for_item_in_list(platforms)
+
+    # filter
+    solution_stacks = [x for x in solution_stacks if x.platform == platform]
+
+    #get Versions
+    versions = []
+    for stack in solution_stacks:
+        if stack.version not in versions:
+            versions.append(stack.version)
+
+    #now choose a version (if applicable)
+    if len(versions) > 1:
+        io.echo('Please choose a version')
+        version = utils.prompt_for_item_in_list(versions)
+    else:
+        version = versions[0]
+
+    #filter
+    solution_stacks = [x for x in solution_stacks if x.version == version]
+
+    #Lastly choose a server type
+    servers = []
+    for stack in solution_stacks:
+        if stack.server not in servers:
+            servers.append(stack.server)
+
+    #Default to latest version of server
+            # if len(servers) > 1:
+            #     io.echo('Please choose a server type')
+            #     server = utils.prompt_for_item_in_list(servers)
+            # else:
+    server = servers[0]
+
+    #filter
+    solution_stacks = [x for x in solution_stacks if x.server == server]
+
+    #should have 1 and only have 1 result
+    if len(solution_stacks) != 1:
+        LOG.error('Filtered Solution Stack list contains '
+                  'multiple results')
+    return solution_stacks[0]
+
+
+def setup(app_name, region, solution):
+    setup_directory(app_name, region, solution)
     try:
         create_app(app_name, region)
     except NoCredentialsError:
         setup_aws_dir()  # only need this if there are no creds in env vars
-        create_app(app_name, region) # now that creds are set up, create app
+        create_app(app_name, region)  # now that creds are set up, create app
 
     try:
         setup_ignore_file()
@@ -140,6 +204,7 @@ def create_app(app_name, region):
 
     if not app_result:  # no app found with that name
         # Create it
+        io.log_info('Creating application: ' + app_name)
         elasticbeanstalk.create_application(
             app_name,
             strings['app.description'],
@@ -164,7 +229,7 @@ def pull_down_env(app_name, env_name, region):
     )
 
     # move date updated over to api_model for merging
-    date = env_details['DateUpdated']
+    date = env_details.date_updated
     api_model['DateUpdated'] = date
 
     usr_model = configuration.convert_api_to_usr_model(api_model)
@@ -200,15 +265,22 @@ def get_default_profile():
 
 
 def make_new_env(app_name, env_name, region, cname, solution_stack,
-                 tier, label, profile, branch_default):
+                 tier, label, profile, key_name, branch_default, sample):
     if profile is None:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
         profile = get_default_profile()
 
+    # deploy code
+    if not sample and not label:
+        io.log_info('Creating new application version using project code')
+        label = create_app_version(app_name, region)
+
     # Create env
-    result, request_id = create_env(app_name, env_name, region, cname, solution_stack,
-                        tier, label, profile)
+    io.log_info('Creating new environment')
+    result, request_id = create_env(app_name, env_name, region, cname,
+                                    solution_stack, tier, label, key_name,
+                                    profile)
 
     env_name = result.name  # get the (possibly) updated name
 
@@ -248,13 +320,13 @@ def print_env_details(env, health=True):
 
 
 def create_env(app_name, env_name, region, cname, solution_stack,
-               tier, label, profile):
+               tier, label, key_name, profile):
     description = strings['env.description']
 
     try:
         return elasticbeanstalk.create_environment(
             app_name, env_name, cname, description, solution_stack,
-            tier, label, profile, region=region)
+            tier, label, key_name, profile, region=region)
 
     except InvalidParameterValueError as e:
         LOG.debug('creating app returned error: ' + e.message)
@@ -355,12 +427,13 @@ def terminate(env_name, region):
                         timeout_in_seconds=60*5)
 
 
-
-def setup_directory(app_name, region):
-    fileoperations.create_config_file(app_name, region)
+def setup_directory(app_name, region, solution):
+    io.log_info('Setting up .elasticbeanstalk directory')
+    fileoperations.create_config_file(app_name, region, solution)
 
 
 def setup_ignore_file():
+    io.log_info('Setting up ignore file for source control')
     sc = fileoperations.get_config_setting('global', 'sc')
 
     if not sc:
@@ -380,8 +453,6 @@ def cleanup_ignore_file():
 
 
 def create_app_version(app_name, region):
-    # NOTE: Requires instance to be running
-
     #get version_label
     source_control = SourceControl.get_source_control()
     version_label = source_control.get_version_label()
@@ -409,7 +480,7 @@ def create_app_version(app_name, region):
         if e.message.startswith('Application Version ') and \
                 e.message.endswith(' already exists'):
             # we must be deploying with an existing app version
-            io.log_warning('Your are deploying a previously deployed commit')
+            io.log_warning('Deploying a previously deployed commit')
     return version_label
 
 

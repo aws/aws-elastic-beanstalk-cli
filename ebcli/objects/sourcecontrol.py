@@ -15,6 +15,7 @@ from __future__ import print_function
 import os
 import zipfile
 import fileinput
+import datetime
 
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
@@ -69,27 +70,35 @@ class NoSC(SourceControl):
     def get_name(self):
         return None
 
-    def get_current_branch(self):
-        return 'master'
-
     def get_version_label(self):
-        return 'myApp'
+        # use timestamp as version
+        suffix = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
+        return 'app-' + suffix
+
+    def get_current_branch(self):
+        return 'default'
 
     def _zipdir(self, path, zipf):
         for root, dirs, files in os.walk(path):
             for f in files:
                 zipf.write(os.path.join(root, f))
 
-    def do_zip(self):
-        LOG.debug("Zipping with no source control is Not Supported")
-        raise NoSourceControlError
-        # zipf = zipfile.ZipFile('myApp.zip', 'w', zipfile.ZIP_DEFLATED)
-        # self._zipdir('./', zipf)
-        # zipf.close()
+    def do_zip(self, location):
+        zipf = zipfile.ZipFile(location, 'w', zipfile.ZIP_DEFLATED)
+        self._zipdir('./', zipf)
+        zipf.close()
+
+    def get_message(self):
+        return 'EB-CLI deploy'
+
+    def is_setup(self):
+        pass
 
     def set_up_ignore_file(self):
-        LOG.debug('No Source control installed')
-        raise NoSourceControlError
+        pass
+
+    def clean_up_ignore_fil(self):
+        pass
 
 
 class Git(SourceControl):

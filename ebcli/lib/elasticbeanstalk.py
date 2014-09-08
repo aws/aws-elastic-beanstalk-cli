@@ -60,7 +60,7 @@ def create_application_version(app_name, vers_label, descrip, s3_bucket,
 
 
 def create_environment(app_name, env_name, cname, description, solution_stck,
-                       tier, label, profile, region=None):
+                       tier, label, key_name, profile, region=None):
     LOG.debug('Inside create_environment api wrapper')
 
     assert app_name is not None, 'App name can not be empty'
@@ -68,12 +68,7 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
     assert description is not None, 'Description can not be empty'
     assert solution_stck is not None, 'Solution stack can not be empty'
 
-    settings = [
-        # ToDo: Remove code below: reserved for testing reasons
-        # {'Namespace': 'aws:autoscaling:launchconfiguration',
-        # 'OptionName': 'EC2KeyName',
-        # 'Value': 'amazonPersonal'},
-    ]
+    settings = []
 
     # ToDo : should we default to t2.micro?
 
@@ -89,12 +84,18 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
     if tier:
         kwargs['tier'] = tier.to_struct()
     if label:
-        kwargs['label'] = label
+        kwargs['version_label'] = label
     if profile:
         settings.append(
             {'Namespace': 'aws:autoscaling:launchconfiguration',
              'OptionName': 'IamInstanceProfile',
              'Value': profile}
+        )
+    if key_name:
+        settings.append(
+            {'Namespace': 'aws:autoscaling:launchconfiguration',
+            'OptionName': 'EC2KeyName',
+            'Value': key_name},
         )
 
     result = _make_api_call('create-environment', region=region, **kwargs)
@@ -321,62 +322,8 @@ def get_solution_stack(string):
     return solution_stacks[0]
 
 
-def select_solution_stack():
-    solution_stacks = get_available_solution_stacks()
-
-    # get platforms
-    platforms = []
-    for stack in solution_stacks:
-        if stack.platform not in platforms:
-            platforms.append(stack.platform)
-
-    io.echo('Please choose a platform type')
-    platform = utils.prompt_for_item_in_list(platforms)
-
-    # filter
-    solution_stacks = [x for x in solution_stacks if x.platform == platform]
-
-    #get Versions
-    versions = []
-    for stack in solution_stacks:
-        if stack.version not in versions:
-            versions.append(stack.version)
-
-    #now choose a version (if applicable)
-    if len(versions) > 1:
-        io.echo('Please choose a version')
-        version = utils.prompt_for_item_in_list(versions)
-    else:
-        version = versions[0]
-
-    #filter
-    solution_stacks = [x for x in solution_stacks if x.version == version]
-
-    #Lastly choose a server type
-    servers = []
-    for stack in solution_stacks:
-        if stack.server not in servers:
-            servers.append(stack.server)
-
-    #now choose a server (if applicable)
-    if len(servers) > 1:
-        io.echo('Please choose a server type')
-        server = utils.prompt_for_item_in_list(servers)
-    else:
-        server = servers[0]
-
-    #filter
-    solution_stacks = [x for x in solution_stacks if x.server == server]
-
-    #should have 1 and only have 1 result
-    if len(solution_stacks) != 1:
-        LOG.error('Filtered Solution Stack list contains '
-                         'multiple results')
-    return solution_stacks[0]
-
-
 def select_tier():
-    tier_list = Tier.get_all_tiers()
+    tier_list = Tier.get_latest_tiers()
     io.echo('Please choose a tier')
     tier = utils.prompt_for_item_in_list(tier_list)
     return tier

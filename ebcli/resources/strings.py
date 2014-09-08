@@ -46,8 +46,7 @@ strings = {
     'exit.noregion': 'A default region can not be found. Please run eb init or'
                      ' add the region using --region',
     'branch.noenv': 'No environment is registered with this branch. You must'
-                    ' specify an environment, i.e. eb {cmd} envName'
-
+                    ' specify an environment, i.e. eb {cmd} envName',
 }
 
 responses = {

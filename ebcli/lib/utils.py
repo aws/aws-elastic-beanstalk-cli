@@ -13,14 +13,15 @@
 
 from ebcli.core import io
 
-def prompt_for_item_in_list(list):
+
+def prompt_for_item_in_list(list, default=1):
     for x in range(0, len(list)):
         io.echo(str(x + 1) + ')', list[x])
 
-
     while True:
         try:
-            choice = int(io.prompt('default is 1', default='1'))
+            choice = int(io.prompt('default is ' + str(default),
+                                   default=default))
             if not (0 < choice <= len(list)):
                 raise ValueError  # Also thrown by non int numbers
             else:
