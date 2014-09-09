@@ -13,18 +13,21 @@
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
-from ebcli.core import fileoperations, operations
+from ebcli.core import fileoperations, operations, io
+from ebcli.objects.exceptions import ServiceError
 
 class DeleteController(AbstractBaseController):
     class Meta:
-        label = 'unlink'
+        label = 'delete'
         description = strings['delete.info']
         arguments = [
-            (['-f', '--foo'], dict(help='notorious foo option')),
+            (['-y'], dict(action='store_true',
+                          help='answer yes to all questions')),
         ]
 
     def do_command(self):
+        confirm = self.app.pargs.y
         # delete App
         app_name = fileoperations.get_application_name()
         region = fileoperations.get_default_region()
-        operations.delete(app_name, region)
+        operations.delete(app_name, region, confirm)

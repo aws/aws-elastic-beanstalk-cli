@@ -20,12 +20,8 @@ class OpenController(AbstractBaseController):
     class Meta:
         label = 'open'
         description = strings['open.info']
-        arguments = [
-            (['environment_name'], dict(action='store', nargs='?',
-                                        default=[],
-                                        help='Environment name')),
-            (['-r', '--region'], dict(help='Region where environment lives')),
-        ]
+        usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
+
 
     def do_command(self):
         region = self.app.pargs.region

@@ -19,8 +19,7 @@ strings = {
     'init.info': 'Initializes your directory with eb. '
                  'Sets up the app',
     'create.info': 'Create a new environment',
-    'delete.info': 'Remove all eb related materials for this project. Does not'
-                   ' affect anything in the cloud',
+    'delete.info': 'Completely remove application and all environments in it',
     'events.info': 'Get recent events',
     'open.info': 'Opens the envirnment app in a browser',
     'logs.info': 'Get recent logs',
@@ -48,6 +47,9 @@ strings = {
                      ' add the region using --region',
     'branch.noenv': 'No environment is registered with this branch. You must'
                     ' specify an environment, i.e. eb {cmd} envName',
+    'init.epilog': 'This command is safe when ran in a previously initialized'
+                   ' directory. To re-initialize with different options, '
+                   'use the -i flag.'
 }
 
 responses = {
@@ -61,6 +63,7 @@ responses = {
                        'but with errors',
     'git.norepository': 'Error: Not a git repository ' \
                         '(or any of the parent directories): .git',
+    'env.updatesuccess': 'Environment update completed successfully.',
     'env.cnamenotavailable': 'DNS name \([^ ]+\) is not available.',
     'env.nameexists': 'Environment [^ ]+ already exists.',
     'logs.pulled': 'Pulled logs for environment instances.',

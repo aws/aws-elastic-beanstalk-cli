@@ -148,6 +148,13 @@ def delete_application(app_name, region=None):
                             region=region)
     return result
 
+def delete_application_and_envs(app_name, region=None):
+    LOG.debug('Inside delete_application_and_envs')
+    result = _make_api_call('delete-application',
+                          application_name=app_name,
+                          terminate_env_by_force=True,
+                          region=region)
+
 
 def describe_application(app_name, region=None):
     LOG.debug('Inside describe_application api wrapper')
@@ -280,7 +287,7 @@ def update_env_application_version(env_name,
                               environment_name=env_name,
                               version_label=version_label,
                               region=region)
-    return response
+    return response['ResponseMetadata']['RequestId']
 
 
 def request_environment_info(env_name, region=None):

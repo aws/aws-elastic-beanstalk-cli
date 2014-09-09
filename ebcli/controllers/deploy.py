@@ -17,7 +17,7 @@ from ebcli.core import io, operations, fileoperations
 
 
 class DeployController(AbstractBaseController):
-    class Meta:
+    class Meta(AbstractBaseController.Meta):
         label = 'deploy'
         description = strings['deploy.info']
         arguments = [
@@ -26,6 +26,8 @@ class DeployController(AbstractBaseController):
                                         help='Environment name')),
             (['-r', '--region'], dict(help='Region where environment lives')),
         ]
+        # usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
+
 
     def do_command(self):
         region = self.app.pargs.region

@@ -24,14 +24,20 @@ class AbstractBaseController(controller.CementBaseController):
 
     """
     class Meta:
+        label = 'test'
         stacked_on = 'base'
         stacked_type = 'nested'
         arguments = [
-            (['-f', '--foo'], dict(action='store', dest='foo',
-                                   help='notorious foo option')),
+            (['environment_name'], dict(action='store', nargs='?',
+                                        default=[],
+                                        help='Environment name')),
+            (['-r', '--region'], dict(help='Region where environment lives')),
         ]
+        epilog = ''
+        usage = 'eb {cmd} <environment_name> [options ...]'
 
     def _setup(self, base_app):
+        self.Meta.usage = 'eb ' + self.Meta.label + ' {stuff}'
         super(AbstractBaseController, self)._setup(base_app)
         self.my_shared_obj = dict()
 

@@ -20,15 +20,13 @@ class EventsController(AbstractBaseController):
     class Meta:
         label = 'events'
         description = strings['events.info']
-        arguments = [
-            (['environment_name'], dict(action='store', nargs='?',
-                                        default=[],
-                                        help='Environment name')),
-            (['-r', '--region'], dict(help='Region where environment lives')),
+        arguments = AbstractBaseController.Meta.arguments + [
             (['-f', '--follow'], dict(action='store_true',
                                       help='Wait and continue to print '
                                            'events as they come'))
         ]
+        usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
+
 
     def do_command(self):
         region = self.app.pargs.region

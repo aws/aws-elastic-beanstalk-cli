@@ -21,14 +21,18 @@ from ebcli.lib import utils
 class InitController(AbstractBaseController):
     class Meta:
         label = 'init'
+        help = 'blarg!!'
         description = strings['init.info']
         arguments = [
             (['-a', '--app'], dict(help='Application name')),
             (['-r', '--region'], dict(help='Default Region')),
             (['-s', '--solution'], dict(help='Solution stack')),
+            (['-i', '--interactive'], dict(action='store_true',
+                                           help='Force interactive mode'))
         ]
-        usage = 'this is a usage statement'
-        epilog = 'this is an epilog'
+        usage = 'eb init [options ...]'
+        epilog = strings['init.epilog']
+
 
     def do_command(self):
         # get arguments
@@ -36,6 +40,7 @@ class InitController(AbstractBaseController):
         app_name = self.app.pargs.app
         region = self.app.pargs.region
         solution = self.app.pargs.solution
+        interactive = self.app.pargs.interactive
 
         # Get app name from config file, if exists
         if not app_name:
@@ -58,23 +63,23 @@ class InitController(AbstractBaseController):
             except NotInitializedError:
                 solution = None
 
-        # If we still do not have app name, ask for it
-        if not app_name:
+        # If we still do not have app name, (or interactive mode) ask for it
+        if not app_name or interactive:
             file_name = fileoperations.get_current_directory_name()
             io.echo('Enter Application Name')
             app_name = io.prompt('default is "' + file_name + '"',
                                  default=file_name)
 
-        # If we still do not have region name, ask for it
-        if not region:
+        # If we still do not have region name, (or interactive mode) ask for it
+        if not region or interactive:
             if not flag:
                 io.echo('Select a default region')
                 region_list = regions.get_all_regions()
                 result = utils.prompt_for_item_in_list(region_list, default=3)
                 region = result.name
 
-        # If we still do not have solution stack, ask for it
-        if not solution:
+        # If still no have solution stack, (or interactive mode) ask for it
+        if not solution or interactive:
             solution = operations.get_solution_stack(region)
 
         #Do setup stuff

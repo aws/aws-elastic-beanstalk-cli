@@ -44,7 +44,12 @@ class CreateController(AbstractBaseController):
             (['-p', '--profile'], dict(help='Instance profile')),
             (['-vl', '--versionlabel'], dict(help='Version label to deploy')),
             (['-k', '--keyname'], dict(help='EC2 SSH KeyPair name')),
+            (['-nh', '--nohang'], dict(action='store_true',
+                                       help='Do not hang and wait for create '
+                                            'to be complete')),
         ]
+        usage = 'eb create [options ...]'
+
 
     def do_command(self):
         env_name = self.app.pargs.env
@@ -58,6 +63,7 @@ class CreateController(AbstractBaseController):
         branch_default = self.app.pargs.branch_default
         key_name = self.app.pargs.keyname
         sample = self.app.pargs.sample
+        nohang = self.app.pargs.nohang
 
 
         # get application name
@@ -115,4 +121,4 @@ class CreateController(AbstractBaseController):
 
         operations.make_new_env(app_name, env_name, region, cname, solution,
                                 tier, label, profile, key_name, branch_default,
-                                sample)
+                                sample, nohang)

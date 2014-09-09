@@ -76,6 +76,8 @@ def _is_success_string(message):
         return True
     if message == responses['env.terminated']:
         return True
+    if message == responses['env.updatesuccess']:
+        return True
 
 
 def log_event(event, echo=False):
@@ -271,8 +273,8 @@ def open_app(app_name, env_name, region):
     exec_cmd(['xdg-open http://' + cname], True)
 
 
-def make_new_env(app_name, env_name, region, cname, solution_stack,
-                 tier, label, profile, key_name, branch_default, sample):
+def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
+                 label, profile, key_name, branch_default, sample, nohang):
     if profile is None:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
@@ -301,6 +303,9 @@ def make_new_env(app_name, env_name, region, cname, solution_stack,
     # Print status of app
     io.echo('-- The environment is being created. --')
     print_env_details(result, health=False)
+
+    if nohang:
+        return
 
     io.log_info('Printing Status:')
     try:
@@ -352,10 +357,28 @@ def create_env(app_name, env_name, region, cname, solution_stack,
                           solution_stack, tier, label, profile)
 
 
-def delete(app_name, region):
-    #elasticbeanstalk.delete_application(app_name, region)
+def delete(app_name, region, confirm):
+    try:
+        elasticbeanstalk.delete_application(app_name, region)
+
+    #ToDo catch more explicit
+    ## Currently also catches "invalid app name"
+    except InvalidParameterValueError:
+        # Env's exist, let make sure the user is ok
+        io.echo('This application has currently running environments, '
+                'if you delete it, all environments will be terminated. '
+                'Are you sure you want to delete the application?')
+        if not confirm:
+            confirm = get_boolean_response()
+
+        if not confirm:
+            return
+
+        elasticbeanstalk.delete_application_and_envs(app_name, region, )
+
     cleanup_ignore_file()
     fileoperations.clean_up()
+    # Todo: Print events for application
 
 
 def deploy(app_name, env_name, region):
