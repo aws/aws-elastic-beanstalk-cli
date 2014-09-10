@@ -16,7 +16,7 @@ from ebcli.resources.strings import strings
 from ebcli.core import fileoperations, io, operations
 from ebcli.objects.exceptions import NotInitializedError
 from ebcli.objects import region as regions
-from ebcli.lib import utils
+from ebcli.lib import utils, elasticbeanstalk
 
 class InitController(AbstractBaseController):
     class Meta:
@@ -39,7 +39,7 @@ class InitController(AbstractBaseController):
         flag = False
         app_name = self.app.pargs.app
         region = self.app.pargs.region
-        solution = self.app.pargs.solution
+        solution_string = self.app.pargs.solution
         interactive = self.app.pargs.interactive
 
         # Get app name from config file, if exists
@@ -57,9 +57,10 @@ class InitController(AbstractBaseController):
                 region = None
 
         # Get solution stack from config file, if exists
-        if not solution:
+        if not solution_string:
             try:
-                solution = fileoperations.get_default_solution_stack()
+                solution_string = fileoperations.get_default_solution_stack()
+                solution = elasticbeanstalk.get_solution_stack(solution_string)
             except NotInitializedError:
                 solution = None
 

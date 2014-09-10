@@ -83,6 +83,8 @@ def smells_of_tomcat():
     """
     True of directory has a jsp file or a WEB-INF directory
     """
+    #ToDo, check for a build directory and a .war file inside somewhere
+    ## typically build/lib/*.war
     return _contains_file_types('*.jsp', 'WEB-INF')
 
 
