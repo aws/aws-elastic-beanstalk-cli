@@ -1,0 +1,22 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="AWSBeanstalkHelloWorldWebApp.SiteMaster" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head runat="server">
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>ASP.NET Application - AWS Elastic Beanstalk</title>
+    <link href="~/Styles/Site.css" rel="stylesheet" type="text/css" />
+	<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Lobster+Two" type="text/css">
+	<link rel="icon" href="https://awsmedia.s3.amazonaws.com/favicon.ico" type="image/ico" >
+	<link rel="shortcut icon" href="https://awsmedia.s3.amazonaws.com/favicon.ico" type="image/ico" >
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body id="mainBody">
+    <form runat="server">
+        <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+    </form>
+	<!--[if lt IE 9]><script src="http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js"></script><![endif]-->
+</body>
+</html>

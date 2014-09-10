@@ -1,0 +1,7 @@
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !=/index.php
+RewriteCond %{REQUEST_URI} !=/info.php
+RewriteCond %{REQUEST_URI} !=/logo_aws_reduced.gif
+RewriteCond %{REQUEST_URI} !=/styles.css
+RewriteRule .* /index.php
+

@@ -1,0 +1,9 @@
+﻿<parameters>
+  <parameter name="IIS Web Application Name" defaultValue="Default Web Site/AWSBeanstalkHelloWorldWebApp_deploy" tags="IisApp">
+    <parameterEntry kind="ProviderPath" scope="IisApp" match="^C:\\Work\\dotnet\\vidro\\AWSBeanstalkHelloWorld\\AWSBeanstalkHelloWorldWebApp\\obj\\Release\\Package\\PackageTmp$" />
+    <parameterEntry kind="ProviderPath" scope="setAcl" match="^C:\\Work\\dotnet\\vidro\\AWSBeanstalkHelloWorld\\AWSBeanstalkHelloWorldWebApp\\obj\\Release\\Package\\PackageTmp$" />
+  </parameter>
+  <parameter name="ApplicationServices-Web.config Connection String" description="ApplicationServices Connection String used in web.config by the application to access the database." defaultValue="data source=.\SQLEXPRESS;Integrated Security=SSPI;AttachDBFilename=|DataDirectory|\aspnetdb.mdf;User Instance=true" tags="SqlConnectionString">
+    <parameterEntry kind="XmlFile" scope="C:\\Work\\dotnet\\vidro\\AWSBeanstalkHelloWorld\\AWSBeanstalkHelloWorldWebApp\\obj\\Release\\Package\\PackageTmp\\Web\.config$" match="/configuration/connectionStrings/add[@name='ApplicationServices']/@connectionString" />
+  </parameter>
+</parameters>

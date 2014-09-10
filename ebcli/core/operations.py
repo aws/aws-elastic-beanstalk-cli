@@ -97,6 +97,8 @@ def log_event(event, echo=False):
 
 
 def print_events(app_name, env_name, region, follow):
+    if follow:
+        io.echo('Hanging and waiting for events. Use CTRL + C to exit.')
     while True:
         events = elasticbeanstalk.get_new_events(
             app_name, env_name, None, last_event_time='', region=region
@@ -365,7 +367,7 @@ def create_env(app_name, env_name, region, cname, solution_stack,
 
 def delete(app_name, region, confirm):
     try:
-        elasticbeanstalk.delete_application(app_name, region)
+        request_id = elasticbeanstalk.delete_application(app_name, region)
 
     #ToDo catch more explicit
     ## Currently also catches "invalid app name"
@@ -380,7 +382,8 @@ def delete(app_name, region, confirm):
         if not confirm:
             return
 
-        request_id = elasticbeanstalk.delete_application_and_envs(app_name, region, )
+        request_id = elasticbeanstalk.delete_application_and_envs(app_name,
+                                                                  region)
 
     cleanup_ignore_file()
     fileoperations.clean_up()

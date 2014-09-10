@@ -146,7 +146,7 @@ def delete_application(app_name, region=None):
     result = _make_api_call('delete-application',
                             application_name=app_name,
                             region=region)
-    return result
+    return result['ResponseMetadata']['RequestId']
 
 def delete_application_and_envs(app_name, region=None):
     LOG.debug('Inside delete_application_and_envs')
@@ -154,7 +154,7 @@ def delete_application_and_envs(app_name, region=None):
                           application_name=app_name,
                           terminate_env_by_force=True,
                           region=region)
-    return ['ResponseMetadata']['RequestId']
+    return result['ResponseMetadata']['RequestId']
 
 
 def describe_application(app_name, region=None):
