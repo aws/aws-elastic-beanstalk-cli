@@ -39,8 +39,8 @@ strings = {
     'env.description': 'Environment created from eb-cli tool using eb create',
     'env.exists': 'An environment with that name already exists, '
                   'please try another.',
-    'git.notfound': 'Git does not seem to be installed. '
-                     'Have you ran git init?',
+    'sc.notfound': 'No source control found. '
+                     'Will use system\'s zip for deploys.',
     'exit.notsetup': 'This directory does not appear to be setup with EB-CLI\n'
                      'Have you ran eb init?',
     'exit.noregion': 'A default region can not be found. Please run eb init or'

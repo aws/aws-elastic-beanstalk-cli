@@ -39,7 +39,7 @@ LOG = minimal_logger(__name__)
 DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
 
 
-def wait_and_log_events(request_id, region,
+def wait_and_print_events(request_id, region,
                           timeout_in_seconds=60*10, sleep_time=5):
     start = datetime.now()
     timediff = timedelta(seconds=timeout_in_seconds)
@@ -87,7 +87,7 @@ def log_event(event, echo=False):
     if echo:
         io.echo(date.ljust(26) + severity.ljust(8) + message)
     elif severity == 'INFO':
-        io.log_info(message)
+        io.echo('INFO:', message)
     elif severity == 'WARN':
         io.log_warning(message)
     elif severity == 'ERROR':
@@ -97,12 +97,18 @@ def log_event(event, echo=False):
 
 
 def print_events(app_name, env_name, region, follow):
-    events = elasticbeanstalk.get_new_events(
-        app_name, env_name, None, last_event_time='', region=region
-    )
+    while True:
+        events = elasticbeanstalk.get_new_events(
+            app_name, env_name, None, last_event_time='', region=region
+        )
 
-    for event in reversed(events):
-        log_event(event, echo=True)
+        for event in reversed(events):
+            log_event(event, echo=True)
+
+        if follow:
+            time.sleep(4)
+        else:
+            break
 
 
 def get_solution_stack(region):
@@ -179,7 +185,7 @@ def setup(app_name, region, solution):
     try:
         setup_ignore_file()
     except NoSourceControlError:
-        io.log_warning(strings['git.notfound'])
+        io.log_warning(strings['sc.notfound'])
 
 
 def setup_aws_dir():
@@ -309,7 +315,7 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
 
     io.log_info('Printing Status:')
     try:
-        wait_and_log_events(request_id, region)
+        wait_and_print_events(request_id, region)
         pull_down_env(app_name, env_name, region)
         io.echo('-- The environment has been created successfully! --')
     except TimeoutError:
@@ -374,11 +380,11 @@ def delete(app_name, region, confirm):
         if not confirm:
             return
 
-        elasticbeanstalk.delete_application_and_envs(app_name, region, )
+        request_id = elasticbeanstalk.delete_application_and_envs(app_name, region, )
 
     cleanup_ignore_file()
     fileoperations.clean_up()
-    # Todo: Print events for application
+    wait_and_print_events(request_id, region, timeout_in_seconds=60*5)
 
 
 def deploy(app_name, env_name, region):
@@ -396,7 +402,7 @@ def deploy(app_name, env_name, region):
     request_id = elasticbeanstalk.update_env_application_version(env_name,
                                                     app_version_label, region)
 
-    wait_and_log_events(request_id, region, 60*5)
+    wait_and_print_events(request_id, region, 60*5)
 
 
 def status(app_name, env_name, region):
@@ -410,7 +416,7 @@ def logs(env_name, region):
 
     # Wait for logs to finish tailing
     request_id = result['ResponseMetadata']['RequestId']
-    wait_and_log_events(request_id, region,
+    wait_and_print_events(request_id, region,
                         timeout_in_seconds=60, sleep_time=1)
 
     return print_logs(env_name, region)
@@ -453,7 +459,7 @@ def terminate(env_name, region):
 
     # Wait for logs to finish tailing
     request_id = result['ResponseMetadata']['RequestId']
-    wait_and_log_events(request_id, region,
+    wait_and_print_events(request_id, region,
                         timeout_in_seconds=60*5)
 
 
@@ -508,7 +514,7 @@ def create_app_version(app_name, region):
         )
     except InvalidParameterValueError as e:
         if e.message.startswith('Application Version ') and \
-                e.message.endswith(' already exists'):
+                e.message.endswith(' already exists.'):
             # we must be deploying with an existing app version
             io.log_warning('Deploying a previously deployed commit')
     return version_label
@@ -535,7 +541,7 @@ def update_environment(app_name, env_name, region):
     io.log_info('Printing Status:')
     try:
         request_id = result['ResponseMetadata']['RequestId']
-        wait_and_log_events(request_id, region)
+        wait_and_print_events(request_id, region)
         pull_down_env(app_name, env_name, region)
         io.echo('-- The environment has been created successfully! --')
     except TimeoutError:

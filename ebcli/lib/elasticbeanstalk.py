@@ -154,6 +154,7 @@ def delete_application_and_envs(app_name, region=None):
                           application_name=app_name,
                           terminate_env_by_force=True,
                           region=region)
+    return ['ResponseMetadata']['RequestId']
 
 
 def describe_application(app_name, region=None):
