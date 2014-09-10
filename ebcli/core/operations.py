@@ -113,7 +113,8 @@ def print_events(app_name, env_name, region, follow):
             break
 
 
-def get_solution_stack(region):
+def prompt_for_solution_stack(region):
+
     solution_stacks = elasticbeanstalk.get_available_solution_stacks(region)
 
     # get list of platforms
@@ -177,12 +178,21 @@ def get_solution_stack(region):
 
 
 def setup(app_name, region, solution):
-    setup_directory(app_name, region, solution)
+    # try to get solution stacks to test for credentials
     try:
-        create_app(app_name, region)
+        solution = elasticbeanstalk.get_available_solution_stacks(region)
     except NoCredentialsError:
-        setup_aws_dir()  # only need this if there are no creds in env vars
-        create_app(app_name, region)  # now that creds are set up, create app
+        setup_aws_dir()  # fix credentials
+
+    # Now that credentials are working, lets continue
+    if solution:
+        solution = elasticbeanstalk.get_solution_stack(solution)
+    else:
+        solution = prompt_for_solution_stack(region)
+
+    setup_directory(app_name, region, solution.string)
+
+    create_app(app_name, region)
 
     try:
         setup_ignore_file()

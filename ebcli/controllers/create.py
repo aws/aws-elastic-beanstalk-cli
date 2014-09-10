@@ -106,7 +106,7 @@ class CreateController(AbstractBaseController):
                 cname = io.prompt_for_cname()
 
         if not solution_string:
-            solution = operations.get_solution_stack(region)
+            solution = operations.prompt_for_solution_stack(region)
 
         if not tier:
             tier = elasticbeanstalk.select_tier()

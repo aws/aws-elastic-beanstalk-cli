@@ -39,7 +39,7 @@ class InitController(AbstractBaseController):
         flag = False
         app_name = self.app.pargs.app
         region = self.app.pargs.region
-        solution_string = self.app.pargs.solution
+        solution = self.app.pargs.solution
         interactive = self.app.pargs.interactive
 
         # Get app name from config file, if exists
@@ -57,10 +57,9 @@ class InitController(AbstractBaseController):
                 region = None
 
         # Get solution stack from config file, if exists
-        if not solution_string:
+        if not solution:
             try:
-                solution_string = fileoperations.get_default_solution_stack()
-                solution = elasticbeanstalk.get_solution_stack(solution_string)
+                solution = fileoperations.get_default_solution_stack()
             except NotInitializedError:
                 solution = None
 
@@ -80,8 +79,8 @@ class InitController(AbstractBaseController):
                 region = result.name
 
         # If still no have solution stack, (or interactive mode) ask for it
-        if not solution or interactive:
-            solution = operations.get_solution_stack(region)
+        if interactive:
+            solution = None
 
         #Do setup stuff
-        operations.setup(app_name, region, solution.string)
+        operations.setup(app_name, region, solution)

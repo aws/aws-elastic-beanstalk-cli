@@ -95,9 +95,10 @@ class NoSC(SourceControl):
         pass
 
     def set_up_ignore_file(self):
-        pass
+        LOG.debug('No Source control installed')
+        raise NoSourceControlError
 
-    def clean_up_ignore_fil(self):
+    def clean_up_ignore_file(self):
         pass
 
 
