@@ -80,7 +80,8 @@ class CreateController(AbstractBaseController):
         # Test out solution stack before we ask any questions (Fast Fail)
         if solution_string:
             try:
-                solution = elasticbeanstalk.get_solution_stack(solution_string)
+                solution = elasticbeanstalk.get_solution_stack(solution_string,
+                                                               region)
             except NotFoundException:
                 io.log_error('Could not find specified solution stack')
                 sys.exit(127)
