@@ -186,7 +186,7 @@ def setup(app_name, region, solution):
 
     # Now that credentials are working, lets continue
     if solution:
-        solution = elasticbeanstalk.get_solution_stack(solution)
+        solution = elasticbeanstalk.get_solution_stack(solution, region)
     else:
         solution = prompt_for_solution_stack(region)
 

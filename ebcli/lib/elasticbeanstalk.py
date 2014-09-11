@@ -314,8 +314,8 @@ def terminate_environment(env_name, region=None):
     return result
 
 
-def get_solution_stack(string):
-    solution_stacks = get_available_solution_stacks()
+def get_solution_stack(string, region):
+    solution_stacks = get_available_solution_stacks(region)
     # filter
     solution_stacks = [x for x in solution_stacks if x.string == string]
 
