@@ -180,7 +180,7 @@ def prompt_for_solution_stack(region):
 def setup(app_name, region, solution):
     # try to get solution stacks to test for credentials
     try:
-        solution = elasticbeanstalk.get_available_solution_stacks(region)
+        elasticbeanstalk.get_available_solution_stacks(region)
     except NoCredentialsError:
         setup_aws_dir()  # fix credentials
 
