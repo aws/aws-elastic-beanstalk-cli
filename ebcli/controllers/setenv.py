@@ -16,15 +16,25 @@ from ebcli.resources.strings import strings
 from ebcli.core import fileoperations, operations, io
 
 
-class StatusController(AbstractBaseController):
+class SetEnvController(AbstractBaseController):
     class Meta:
-        label = 'status'
-        description = strings['status.info']
-        usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
+        label = 'setenv'
+        description = strings['setenv.info']
+        usage = 'eb setenv [VAR_NAME=KEY ...] [-e environment] [options ...]'
+        arguments = [
+            (['varKey'], dict(action='store', nargs='+',
+                              default=[], help='Space seperated list in format'
+                                               ': VAR_NAME=KEY')),
+            (['-e', '--environment'], dict(dest='environment_name',
+                                        help='Environment\'s name')),
+            (['-r', '--region'], dict(help='Region where environment lives')),
+        ]
 
     def do_command(self):
-        app_name = self.get_app_name()
         region = self.get_region()
         env_name = self.get_env_name()
+        var_list = self.app.pargs.varKey
 
-        operations.status(app_name, env_name, region)
+        print env_name
+        print var_list
+        operations.setenv(env_name, var_list, region)

@@ -28,11 +28,13 @@ from ebcli.controllers.terminate import TerminateController
 from ebcli.controllers.update import UpdateController
 from ebcli.controllers.pause import PauseController
 from ebcli.controllers.open import OpenController
+from ebcli.controllers.console import ConsoleController
+from ebcli.controllers.scale import ScaleController
+from ebcli.controllers.setenv import SetEnvController
 from ebcli.controllers.config import ConfigController
 from ebcli.controllers.sync import SyncController
 from ebcli.core import globals, base, io
-from ebcli.objects.exceptions import NotInitializedError, \
-    NoSourceControlError, NoRegionError, EBCLIException
+from ebcli.objects.exceptions import *
 from ebcli.resources.strings import strings
 
 
@@ -61,7 +63,10 @@ class EB(foundation.CementApp):
         handler.register(SyncController)
         handler.register(PauseController)
         handler.register(OpenController)
-        # handler.register(ConfigController)  # Do we want this command?
+        handler.register(ConsoleController)
+        handler.register(ScaleController)
+        handler.register(SetEnvController)
+        # handler.register(ConfigController)  # ToDo: Do we want this command?
 
         super(EB, self).setup()
 
@@ -89,6 +94,8 @@ def main():
     except CaughtSignal:
         io.echo()
         sys.exit(1)
+    except NoEnvironmentForBranchError:
+        pass
     except NotInitializedError:
         io.log_error(strings['exit.notsetup'])
         sys.exit(128)

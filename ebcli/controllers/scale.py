@@ -16,16 +16,24 @@ from ebcli.resources.strings import strings
 from ebcli.core import fileoperations, operations, io
 
 
-class OpenController(AbstractBaseController):
+class ScaleController(AbstractBaseController):
     class Meta:
-        label = 'open'
-        description = strings['open.info']
+        label = 'scale'
+        description = strings['scale.info']
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
-
+        arguments = [
+            (['number'], dict(action='store', type=int,
+                              help='Number of desired instances')),
+            (['-f'], dict(action='store_true',
+                          help='skip confirmation prompt')),
+        ] + AbstractBaseController.Meta.arguments
+        usage = 'eb scale {number} <environment_name> [options ...]'
 
     def do_command(self):
         app_name = self.get_app_name()
         region = self.get_region()
-        env_name = self.get_region()
+        number = self.app.pargs.number
+        env_name = self.get_env_name(cmd_example='scale ' + str(number))
+        confirm = self.app.pargs.f
 
-        operations.open_app(app_name, env_name, region)
+        operations.scale(app_name, env_name, number, confirm, region)

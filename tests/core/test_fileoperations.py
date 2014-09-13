@@ -209,7 +209,8 @@ class TestFileOperations(unittest.TestCase):
 
         app_name = 'ebcli-test'
         region = 'us-east-1'
-        fileoperations.create_config_file(app_name, region)
+        solution = 'my-solution-stack'
+        fileoperations.create_config_file(app_name, region, solution)
 
         # Make sure file now exists
         self.assertTrue(os.path.exists(fileoperations.local_config_file))
@@ -226,7 +227,8 @@ class TestFileOperations(unittest.TestCase):
 
         app_name = 'ebcli-test'
         region = 'us-east-1'
-        fileoperations.create_config_file(app_name, region)
+        solution = 'my-solution-stack'
+        fileoperations.create_config_file(app_name, region, solution)
 
         # Make sure file and dir now exists
         self.assertTrue(os.path.exists(fileoperations.beanstalk_directory))
@@ -245,7 +247,8 @@ class TestFileOperations(unittest.TestCase):
         # call create
         app_name = 'ebcli-test'
         region = 'us-east-1'
-        fileoperations.create_config_file(app_name, region)
+        solution = 'my-solution-stack'
+        fileoperations.create_config_file(app_name, region, solution)
 
         key = fileoperations.get_config_setting('global', 'randomKey')
         app = fileoperations.get_config_setting('global', 'application_name')
@@ -302,7 +305,8 @@ class TestFileOperations(unittest.TestCase):
 
     def test_write_config_setting_no_section(self):
         # create config file
-        fileoperations.create_config_file('ebcli-test', 'us-east-1')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1',
+                                          'my-solution-stack')
 
         #make sure section does not exist
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
@@ -318,7 +322,8 @@ class TestFileOperations(unittest.TestCase):
 
     def test_write_config_setting_no_option(self):
         # create config file
-        fileoperations.create_config_file('ebcli-test', 'us-east-1')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1',
+                                          'my-solution-stack')
 
         #make sure section does exists, but option doesn't
         fileoperations.write_config_setting('mytestsection', 'notmykey', 'val')
@@ -339,7 +344,8 @@ class TestFileOperations(unittest.TestCase):
 
     def test_write_config_setting_override(self):
         # create config file
-        fileoperations.create_config_file('ebcli-test', 'us-east-1')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1',
+                                          'my-solution-stack')
 
         #make sure app name exists
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
@@ -384,7 +390,8 @@ class TestFileOperations(unittest.TestCase):
         self.assertFalse(os.path.exists(fileoperations.global_config_file))
 
         # Now create local
-        fileoperations.create_config_file('ebcli-test', 'us-east-1')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1',
+                                          'my-solution-stack')
 
         #get app name
         result = fileoperations.get_config_setting('global',
@@ -437,7 +444,8 @@ class TestFileOperations(unittest.TestCase):
         self.assertTrue(os.path.exists(fileoperations.global_config_file))
 
         # Now create local
-        fileoperations.create_config_file('ebcli-test', 'us-east-1')
+        fileoperations.create_config_file('ebcli-test', 'us-east-1',
+                                          'my-solution-stack')
 
         #get app name
         result = fileoperations.get_config_setting('global',

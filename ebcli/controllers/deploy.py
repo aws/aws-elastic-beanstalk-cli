@@ -26,29 +26,16 @@ class DeployController(AbstractBaseController):
                                         help='Environment name')),
             (['-r', '--region'], dict(help='Region where environment lives')),
         ]
-        # usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
-
+        usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 
     def do_command(self):
-        region = self.app.pargs.region
+        app_name = self.get_app_name()
+        region = self.get_region()
         env_name = self.app.pargs.environment_name
-        #load default region
-        if not region:
-            region = fileoperations.get_default_region()
 
+        # ToDo add support for deploying to multiples?
         # for arg in self.app.pargs.environment_name:
         #     # deploy to every environment listed
         #     ## Right now you can only list one
-        #     print arg
-
-        app_name = fileoperations.get_application_name()
-        if not env_name:
-            env_name = operations.\
-                get_setting_from_current_branch('environment')
-
-        if not env_name:
-            # ask for environment name
-            io.log_error(strings['branch.noenv'].replace('{cmd}', 'deploy'))
-            return
 
         operations.deploy(app_name, env_name, region)

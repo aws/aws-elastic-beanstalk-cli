@@ -13,8 +13,12 @@
 
 from cement.core import controller
 from cement.utils.misc import init_defaults
-from ebcli.core import io
 from cement.ext.ext_logging import LoggingLogHandler
+
+from ebcli.core import io, fileoperations, operations
+from ebcli.objects.exceptions import NoEnvironmentForBranchError
+from ebcli.resources.strings import strings
+
 
 class AbstractBaseController(controller.CementBaseController):
     """
@@ -55,3 +59,33 @@ class AbstractBaseController(controller.CementBaseController):
             LoggingLogHandler.set_level(self.app.log, 'INFO')
         io.log_info("Verbose Mode On")
         self.do_command()
+
+    def get_app_name(self):
+        app_name = fileoperations.get_application_name()
+        return app_name
+
+    def get_env_name(self, cmd_example=None):
+        env_name = self.app.pargs.environment_name
+        if not env_name:
+            #If env name not provided, grab branch default
+            env_name = operations. \
+                get_setting_from_current_branch('environment')
+
+        if not env_name:
+            # No default env, lets ask for one
+            if not cmd_example:
+                message = strings['branch.noenv'].replace('{cmd}',
+                                                          self.Meta.label)
+            else:
+                message = strings['branch.noenv'].replace('eb {cmd}',
+                                                          cmd_example)
+            io.log_error(message)
+            raise NoEnvironmentForBranchError()
+
+        return env_name
+
+    def get_region(self):
+        region = self.app.pargs.region
+        if not region:
+            region = fileoperations.get_default_region()
+        return region

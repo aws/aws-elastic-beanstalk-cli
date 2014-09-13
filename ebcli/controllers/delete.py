@@ -16,17 +16,18 @@ from ebcli.resources.strings import strings
 from ebcli.core import fileoperations, operations, io
 from ebcli.objects.exceptions import ServiceError
 
+
 class DeleteController(AbstractBaseController):
     class Meta:
         label = 'delete'
         description = strings['delete.info']
         arguments = [
-            (['-y'], dict(action='store_true',
-                          help='answer yes to all questions')),
+            (['-f'], dict(action='store_true',
+                          help='skip confirmation prompt')),
         ]
 
     def do_command(self):
-        confirm = self.app.pargs.y
+        confirm = self.app.pargs.f
         # delete App
         app_name = fileoperations.get_application_name()
         region = fileoperations.get_default_region()

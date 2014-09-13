@@ -17,13 +17,13 @@ from ebcli.core import fileoperations
 from integration.baseinttest import BaseIntegrationTest
 
 
-
 class TestCreate(BaseIntegrationTest):
 
     def setUp(self):
         super(TestCreate, self).setUp()
         # Create all app stuff
-        fileoperations.create_config_file('myEBCLItest', 'us-west-2')
+        fileoperations.create_config_file('myEBCLItest', 'us-west-2',
+                                          'my-stack-stack')
 
     def test_create_standard(self):
         """

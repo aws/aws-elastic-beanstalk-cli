@@ -47,6 +47,10 @@ class NoSourceControlError(EBCLIException):
      """
     pass
 
+class NoEnvironmentForBranchError(EBCLIException):
+    """ No provided environment for the given Branch   """
+    pass
+
 
 class NoRegionError(EBCLIException):
     """  No region provided or found   """

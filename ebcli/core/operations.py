@@ -287,8 +287,86 @@ def get_default_profile():
 def open_app(app_name, env_name, region):
     # get cname
     env = elasticbeanstalk.get_environment(app_name, env_name, region)
-    cname = env.cname
-    exec_cmd(['xdg-open http://' + cname], True)
+
+    open_webpage_in_browser(env.cname)
+
+
+def open_console(app_name, env_name, region):
+    #Get environment id
+    env = elasticbeanstalk.get_environment(app_name, env_name, region)
+
+    console_url = 'console.aws.amazon.com/elasticbeanstalk/home?region' +\
+                region + \
+                '#/environment/dashboard?applicationName=' + app_name + \
+                  '&environmentId=' + env.id
+
+    open_webpage_in_browser(console_url, ssl=True)
+
+
+def open_webpage_in_browser(url, ssl=False):
+    io.log_info('Opening webpage with default browser')
+    if ssl:
+        url = 'https://' + url
+    else:
+        url = 'http://' + url
+
+    stdout, stderr, exitcode = \
+        exec_cmd(['python -m webbrowser \'' + url + '\''], True)
+
+    LOG.debug('browser stdout: ' + stdout)
+    LOG.debug('browser stderr: ' + stderr)
+    LOG.debug('browser exitcode: ' + str(exitcode))
+
+    if exitcode == 127:
+        # python probably isnt on path
+        ## try to run webbrowser internally
+        import webbrowser
+        webbrowser.open(url)
+
+
+def scale(app_name, env_name, number, confirm, region):
+    options = []
+    # get environment
+    env = elasticbeanstalk.describe_configuration_settings(
+        app_name, env_name, region
+    )['OptionSettings']
+
+    # if single instance, offer to switch to load-balanced
+    namespace = 'aws:elasticbeanstalk:environment'
+    setting = next((n for n in env if n["Namespace"] == namespace), None)
+    value = setting['Value']
+    if value == 'SingleInstance':
+        ## prompt to switch to LoadBalanced
+        io.echo('The environment is currently a Single Instance, would you '
+                'like to switch to a Load Balanced environment?')
+        switch = get_boolean_response()
+        if not switch:
+            return
+
+        options.append({'Namespace':namespace,
+                   'OptionName': 'EnvironmentType',
+                   'Value':'LoadBalanced'})
+
+    # change autoscaling min AND max to number
+    namespace = 'aws:autoscaling:asg'
+    max = 'MaxSize'
+    min = 'MinSize'
+
+    for name in [max, min]:
+        options.append(
+            {'Namespace': namespace,
+             'OptionName': name,
+             'Value': number
+             }
+        )
+    result = elasticbeanstalk.update_environment(env_name, options, region)
+    try:
+        request_id = result['ResponseMetadata']['RequestId']
+        wait_and_print_events(request_id, region)
+        pull_down_env(app_name, env_name, region)
+        io.echo('-- The environment has been created successfully! --')
+    except TimeoutError:
+        io.log_error('Unknown state of environment. Operation timed out.')
 
 
 def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
@@ -451,6 +529,26 @@ def print_logs(env_name, region):
     for instance_id, url in iteritems(log_list):
         io.echo('================ ' + instance_id + '=================')
         print_url(url)
+
+
+def setenv(env_name, var_list, region):
+    namespace = 'aws:elasticbeanstalk:application:environment'
+
+    options = []
+    for pair in var_list:
+        ## validate
+        if not pair.matches('^[\w\\_.:/+-@][^=]*=[\w\\_.:/+-@][^=]*$'):
+            io.log_error('Must use format VAR_NAME=KEY. Variable and keys '
+                         'cannot contain any spaces or =. They must start'
+                         ' with a letter, number or one of \\_.:/+-@')
+            return
+        else:
+            option_name, value = pair.split('=')
+            options.append({'Namespace': namespace,
+                            'OptionName': option_name,
+                            'Value': value})
+
+    elasticbeanstalk.update_environment(env_name, options, region)
 
 
 def print_url(url):

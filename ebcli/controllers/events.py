@@ -27,23 +27,10 @@ class EventsController(AbstractBaseController):
         ]
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 
-
     def do_command(self):
-        region = self.app.pargs.region
-        env_name = self.app.pargs.environment_name
+        app_name = self.get_app_name()
+        region = self.get_region()
+        env_name = self.get_env_name()
         follow = self.app.pargs.follow
-        #load default region
-        if not region:
-            region = fileoperations.get_default_region()
-
-        app_name = fileoperations.get_application_name()
-        if not env_name:
-            env_name = operations. \
-                get_setting_from_current_branch('environment')
-
-        if not env_name:
-            # ask for environment name
-            io.log_error(strings['branch.noenv'].replace('{cmd}', 'events'))
-            return
 
         operations.print_events(app_name, env_name, region, follow)
