@@ -42,19 +42,4 @@ setup_options = dict(
     }
 )
 
-# if 'py2exe' in sys.argv:
-#     # This will actually give us a py2exe command.
-#     import py2exe
-#     # And we have some py2exe specific options.
-#     setup_options['options'] = {
-#         'py2exe': {
-#             'optimize': 0,
-#             'skip_archive': True,
-#             'packages': ['docutils', 'urllib', 'httplib', 'HTMLParser',
-#                          'ebcli', 'ConfigParser', 'xml.etree'],
-#             }
-#     }
-#     setup_options['console'] = ['bin/eb']
-
-
 setup(**setup_options)

@@ -31,10 +31,9 @@ class SetEnvController(AbstractBaseController):
         ]
 
     def do_command(self):
+        app_name = self.get_app_name()
         region = self.get_region()
         env_name = self.get_env_name()
         var_list = self.app.pargs.varKey
 
-        print env_name
-        print var_list
-        operations.setenv(env_name, var_list, region)
+        operations.setenv(app_name, env_name, var_list, region)

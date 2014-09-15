@@ -22,10 +22,9 @@ class OpenController(AbstractBaseController):
         description = strings['open.info']
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 
-
     def do_command(self):
         app_name = self.get_app_name()
         region = self.get_region()
-        env_name = self.get_region()
+        env_name = self.get_env_name()
 
         operations.open_app(app_name, env_name, region)

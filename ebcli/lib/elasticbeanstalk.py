@@ -223,6 +223,14 @@ def get_environment(app_name, env_name, region=None):
     return _api_to_environment(result['Environments'][0])
 
 
+def get_environment_resources(env_name, region=None):
+    LOG.debug('Inside get_environment_resources api wrapper')
+    result = _make_api_call('describe-environment-resources',
+                            environment_name=env_name,
+                            region=region)
+    return result
+
+
 def get_new_events(app_name, env_name, request_id,
                    last_event_time='', region=None):
     LOG.debug('Inside get_new_events api wrapper')

@@ -99,13 +99,15 @@ def log_event(event, echo=False):
 def print_events(app_name, env_name, region, follow):
     if follow:
         io.echo('Hanging and waiting for events. Use CTRL + C to exit.')
+    last_time = ''
     while True:
         events = elasticbeanstalk.get_new_events(
-            app_name, env_name, None, last_event_time='', region=region
+            app_name, env_name, None, last_event_time=last_time, region=region
         )
 
         for event in reversed(events):
             log_event(event, echo=True)
+            last_time = event.event_date
 
         if follow:
             time.sleep(4)
@@ -336,16 +338,17 @@ def scale(app_name, env_name, number, confirm, region):
     setting = next((n for n in env if n["Namespace"] == namespace), None)
     value = setting['Value']
     if value == 'SingleInstance':
-        ## prompt to switch to LoadBalanced
-        io.echo('The environment is currently a Single Instance, would you '
-                'like to switch to a Load Balanced environment?')
-        switch = get_boolean_response()
-        if not switch:
-            return
+        if not confirm:
+            ## prompt to switch to LoadBalanced environment type
+            io.echo('The environment is currently a Single Instance, would you'
+                    ' like to switch to a Load Balanced environment?')
+            switch = get_boolean_response()
+            if not switch:
+                return
 
-        options.append({'Namespace':namespace,
-                   'OptionName': 'EnvironmentType',
-                   'Value':'LoadBalanced'})
+        options.append({'Namespace': namespace,
+                        'OptionName': 'EnvironmentType',
+                        'Value': 'LoadBalanced'})
 
     # change autoscaling min AND max to number
     namespace = 'aws:autoscaling:asg'
@@ -356,13 +359,13 @@ def scale(app_name, env_name, number, confirm, region):
         options.append(
             {'Namespace': namespace,
              'OptionName': name,
-             'Value': number
+             'Value': str(number)
              }
         )
     result = elasticbeanstalk.update_environment(env_name, options, region)
     try:
         request_id = result['ResponseMetadata']['RequestId']
-        wait_and_print_events(request_id, region)
+        wait_and_print_events(request_id, region, timeout_in_seconds=60*5)
         pull_down_env(app_name, env_name, region)
         io.echo('-- The environment has been created successfully! --')
     except TimeoutError:
@@ -412,7 +415,7 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
         io.log_error('Unknown state of environment. Operation timed out.')
 
 
-def print_env_details(env, health=True):
+def print_env_details(env, health=True, verbose=False):
 
     io.echo('Environment details for:', env.name)
     io.echo('  App name:', env.app_name)
@@ -425,7 +428,6 @@ def print_env_details(env, health=True):
     if health:
         io.echo('  Status:', env.status)
         io.echo('  Health:', env.health)
-
 
 def create_env(app_name, env_name, region, cname, solution_stack,
                tier, label, key_name, profile):
@@ -496,9 +498,30 @@ def deploy(app_name, env_name, region):
     wait_and_print_events(request_id, region, 60*5)
 
 
-def status(app_name, env_name, region):
+def status(app_name, env_name, region, verbose):
     env = elasticbeanstalk.get_environment(app_name, env_name, region)
     print_env_details(env, True)
+
+    if verbose:
+        # Print environment Variables
+        settings = elasticbeanstalk.describe_configuration_settings(
+            app_name, env_name, region
+        )['OptionSettings']
+        namespace = 'aws:elasticbeanstalk:application:environment'
+        vars = {n['OptionName']: n['Value'] for n in settings
+                if n["Namespace"] == namespace}
+        io.echo('  Environment Variables:')
+        for key, value in vars.iteritems():
+            io.echo('       ', key, '=', value)
+
+        # Print environment instances
+        env = elasticbeanstalk.get_environment_resources(env_name, region)
+        instances = env['EnvironmentResources']['Instances']
+        io.echo('  Running instances:', len(instances))
+        for i in instances:
+            io.echo('       ', i['Id'])
+
+
 
 
 def logs(env_name, region):
@@ -528,16 +551,16 @@ def print_logs(env_name, region):
 
     for instance_id, url in iteritems(log_list):
         io.echo('================ ' + instance_id + '=================')
-        print_url(url)
+        print_from_url(url)
 
 
-def setenv(env_name, var_list, region):
+def setenv(app_name, env_name, var_list, region):
     namespace = 'aws:elasticbeanstalk:application:environment'
 
     options = []
     for pair in var_list:
         ## validate
-        if not pair.matches('^[\w\\_.:/+-@][^=]*=[\w\\_.:/+-@][^=]*$'):
+        if not re.match('^[\w\\_.:/+-@][^=]*=[\w\\_.:/+-@][^=]*$', pair):
             io.log_error('Must use format VAR_NAME=KEY. Variable and keys '
                          'cannot contain any spaces or =. They must start'
                          ' with a letter, number or one of \\_.:/+-@')
@@ -548,10 +571,17 @@ def setenv(env_name, var_list, region):
                             'OptionName': option_name,
                             'Value': value})
 
-    elasticbeanstalk.update_environment(env_name, options, region)
+    result = elasticbeanstalk.update_environment(env_name, options, region)
+    try:
+        request_id = result['ResponseMetadata']['RequestId']
+        wait_and_print_events(request_id, region, timeout_in_seconds=60*4)
+        pull_down_env(app_name, env_name, region)
+        io.echo('-- The environment has been created successfully! --')
+    except TimeoutError:
+        io.log_error('Unknown state of environment. Operation timed out.')
 
 
-def print_url(url):
+def print_from_url(url):
     result = urllib.request.urlopen(url).read()
     io.echo(result)
 
