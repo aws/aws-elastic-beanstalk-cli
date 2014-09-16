@@ -13,6 +13,7 @@
 
 import botocore.session
 import botocore.exceptions
+import six
 from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
@@ -24,12 +25,20 @@ LOG = minimal_logger(__name__)
 _api_sessions = {}
 
 
+def set_session_creds(id, key):
+    global _api_sessions
+    for k, service in six.iteritems(_api_sessions):
+        service.session.set_credentials(id, key)
+
+
+
 def _set_user_agent_for_session(session):
     session.user_agent_name = 'eb-cli'
     session.user_agent_version = __version__
 
 
-def _get_session(service_name):
+def _get_service(service_name):
+    global _api_sessions
     if service_name in _api_sessions:
         return _api_sessions[service_name]
 
@@ -46,7 +55,8 @@ def _get_session(service_name):
 
 def make_api_call(service_name, operation_name, region=None,
                   **operation_options):
-    service = _get_session(service_name)
+    service = _get_service(service_name)
+
     operation = service.get_operation(operation_name)
     if not region:
         region = fileoperations.get_default_region()
@@ -77,7 +87,8 @@ def make_api_call(service_name, operation_name, region=None,
             return None
     except botocore.exceptions.NoCredentialsError as e:
         LOG.error('No credentials found')
-        raise e
+        raise CredentialsError('Operation Denied. You appear to have no'
+                               ' credentials')
     except botocore.exceptions.BotoCoreError as e:
         LOG.error('Botocore Error')
         raise e

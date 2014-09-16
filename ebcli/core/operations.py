@@ -19,9 +19,8 @@ from six.moves import urllib
 from six import iteritems
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
-from botocore.exceptions import NoCredentialsError
 
-from ebcli.lib import elasticbeanstalk, s3, iam
+from ebcli.lib import elasticbeanstalk, s3, iam, aws
 from ebcli.core import fileoperations, io
 from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.resources.strings import strings, responses
@@ -29,7 +28,7 @@ from ebcli.objects import region as regions
 from ebcli.lib import utils
 from ebcli.objects import configuration
 from ebcli.objects.exceptions import NoSourceControlError, \
-    ServiceError, TimeoutError
+    ServiceError, TimeoutError, CredentialsError
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.tier import Tier
 from ebcli.lib.aws import InvalidParameterValueError
@@ -183,7 +182,7 @@ def setup(app_name, region, solution):
     # try to get solution stacks to test for credentials
     try:
         elasticbeanstalk.get_available_solution_stacks(region)
-    except NoCredentialsError:
+    except CredentialsError:
         setup_aws_dir()  # fix credentials
 
     # Now that credentials are working, lets continue
@@ -204,20 +203,15 @@ def setup(app_name, region, solution):
 
 def setup_aws_dir():
     io.log_info('Setting up ~/aws/ directory with config file')
-    # ToDo: ignore prompting for creds if they exist in path.
-    # Maybe wait for an exception before bothering
 
-    access_key, secret_key = \
-        fileoperations.read_aws_config_credentials()
+    io.echo(strings['cred.prompt'])
 
-    change = False
-    if not access_key or not secret_key:
-        io.echo(strings['cred.prompt'])
+    access_key = io.prompt('aws-access-id', default='ENTER_AWS_ACCESS_ID_HERE')
+    secret_key = io.prompt('aws-secret-key', default='ENTER_SECRET_HERE')
 
-        access_key = io.prompt('aws-access-id')
-        secret_key = io.prompt('aws-secret-key')
+    fileoperations.save_to_aws_config(access_key, secret_key)
 
-        fileoperations.save_to_aws_config(access_key, secret_key)
+    aws.set_session_creds(access_key, secret_key)
 
 
 def create_app(app_name, region):
@@ -522,8 +516,6 @@ def status(app_name, env_name, region, verbose):
             io.echo('       ', i['Id'])
 
 
-
-
 def logs(env_name, region):
     # Request info
     result = elasticbeanstalk.request_environment_info(env_name, region)
@@ -558,20 +550,27 @@ def setenv(app_name, env_name, var_list, region):
     namespace = 'aws:elasticbeanstalk:application:environment'
 
     options = []
+    options_to_remove = []
     for pair in var_list:
         ## validate
-        if not re.match('^[\w\\_.:/+-@][^=]*=[\w\\_.:/+-@][^=]*$', pair):
+        if not re.match('^[\w\\_.:/+-@][^=]*=([\w\\_.:/+-@][^=]*)?$', pair):
             io.log_error('Must use format VAR_NAME=KEY. Variable and keys '
                          'cannot contain any spaces or =. They must start'
                          ' with a letter, number or one of \\_.:/+-@')
             return
         else:
             option_name, value = pair.split('=')
-            options.append({'Namespace': namespace,
-                            'OptionName': option_name,
-                            'Value': value})
+            d = {'Namespace': namespace,
+                 'OptionName': option_name}
 
-    result = elasticbeanstalk.update_environment(env_name, options, region)
+            if not value:
+                options_to_remove.append(d)
+            else:
+                d['Value'] = value
+                options.append(d)
+
+    result = elasticbeanstalk.update_environment(env_name, options, region,
+                                                 remove=options_to_remove)
     try:
         request_id = result['ResponseMetadata']['RequestId']
         wait_and_print_events(request_id, region, timeout_in_seconds=60*4)

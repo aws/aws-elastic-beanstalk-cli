@@ -34,7 +34,8 @@ strings = {
     'config.info': 'Config stuff',
     'error.nocreds': 'A credentials file can not be found. \n'
                      'Please place a credential file at ~/.aws/config',
-    'cred.prompt':  'It looks like your credentials are not yet set up \n'
+    'cred.prompt':  'It looks like your credentials are not yet set up '
+                    'or are incorrect \n'
                     'Please enter your credentials now',
     'prompt.invalid': 'Sorry, that choice is invalid.',
     'prompt.yes-or-no': 'Please enter either Y or N',

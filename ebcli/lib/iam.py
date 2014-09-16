@@ -11,8 +11,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import botocore.session
-import botocore.exceptions
 from cement.utils.misc import minimal_logger
 
 from ebcli.lib import aws
