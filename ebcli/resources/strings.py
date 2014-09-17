@@ -43,6 +43,8 @@ strings = {
     'env.description': 'Environment created from eb-cli tool using eb create',
     'env.exists': 'An environment with that name already exists, '
                   'please try another.',
+    'sstacks.notfound': 'No Solution Stacks found. It is possible this could '
+                        'be due to a permissions problem.',
     'sc.notfound': 'No source control found. '
                      'Will use system\'s zip for deploys.',
     'exit.notsetup': 'This directory does not appear to be setup with EB-CLI\n'

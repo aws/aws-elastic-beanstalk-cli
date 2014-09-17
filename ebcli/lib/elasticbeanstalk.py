@@ -24,6 +24,7 @@ from ebcli.lib import utils
 from ebcli.lib import aws
 from ebcli.objects.event import Event
 from ebcli.objects.environment import Environment
+from ebcli.resources.strings import strings
 
 LOG = minimal_logger(__name__)
 
@@ -193,6 +194,8 @@ def get_available_solution_stacks(region=None):
     stack_strings = result['SolutionStacks']
 
     LOG.debug('Solution Stack result size = ' + str(len(stack_strings)))
+    if len(stack_strings) == 0:
+        raise NotFoundException(strings['sstacks.notfound'])
 
     solution_stacks = []
     for s in stack_strings:

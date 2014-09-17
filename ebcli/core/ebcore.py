@@ -96,6 +96,9 @@ def main():
         sys.exit(1)
     except NoEnvironmentForBranchError:
         pass
+    except NotFoundException as e:
+        io.log_error(e.message)
+        sys.exit(1)
     except NotInitializedError:
         io.log_error(strings['exit.notsetup'])
         sys.exit(128)
