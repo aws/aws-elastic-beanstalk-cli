@@ -46,7 +46,7 @@ class CreateController(AbstractBaseController):
             (['-k', '--keyname'], dict(help='EC2 SSH KeyPair name')),
             (['-nh', '--nohang'], dict(action='store_true',
                                        help='Do not hang and wait for create '
-                                            'to be complete')),
+                                            'to be CompleterController')),
         ]
         usage = 'eb create [options ...]'
 
@@ -121,5 +121,5 @@ class CreateController(AbstractBaseController):
             pass
 
         operations.make_new_env(app_name, env_name, region, cname, solution,
-                                tier, label, profile, key_name, branch_default,
-                                sample, nohang)
+                                tier, label, profile, single, key_name,
+                                branch_default, sample, nohang)

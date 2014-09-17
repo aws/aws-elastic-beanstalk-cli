@@ -61,12 +61,28 @@ def create_application_version(app_name, vers_label, descrip, s3_bucket,
 
 
 def create_environment(app_name, env_name, cname, description, solution_stck,
-                       tier, label, key_name, profile, region=None):
+                       tier, label, single, key_name, profile, region=None):
+    """
+    Creates an Elastic Beanstalk environment
+    :param app_name: Name of application where environment will live
+    :param env_name: Desired name of environment
+    :param cname: cname prefix, if None, a cname will be auto-generated
+    :param description: a string description (optional)
+    :param solution_stck: a solution_stack object
+    :param tier: a tier object
+    :param label: version label of app version to deploy. If None, a
+                        sample app will be launched
+    :param single: True if you would like environment to be a SingleInstance.
+                            If False, the environment will be launched as LoadBalanced
+    :param key_name: EC2 SSH Keypair name
+    :param profile: IAM Instance profile name
+    :param region: region in which to create the environment
+    :return: environment_object, request_id
+    """
     LOG.debug('Inside create_environment api wrapper')
 
     assert app_name is not None, 'App name can not be empty'
     assert env_name is not None, 'Environment name can not be empty'
-    assert description is not None, 'Description can not be empty'
     assert solution_stck is not None, 'Solution stack can not be empty'
 
     settings = []
@@ -76,10 +92,11 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
     kwargs = {
         'application_name': app_name,
         'environment_name': env_name,
-        'description': description,
         'solution_stack_name': solution_stck.name,
         'option_settings': settings,
     }
+    if description:
+        kwargs['description'] = description
     if cname:
         kwargs['cname_prefix'] = cname
     if tier:
@@ -91,6 +108,12 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
             {'Namespace': 'aws:autoscaling:launchconfiguration',
              'OptionName': 'IamInstanceProfile',
              'Value': profile}
+        )
+    if single:
+        settings.append(
+            {'Namespace': 'aws:elasticbeanstalk:environment',
+             'OptionName': 'EnvironmentType',
+             'Value': 'SingleInstance'}
         )
     if key_name:
         settings.append(

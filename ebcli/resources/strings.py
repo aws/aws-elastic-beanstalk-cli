@@ -44,7 +44,8 @@ strings = {
     'env.exists': 'An environment with that name already exists, '
                   'please try another.',
     'sstacks.notfound': 'No Solution Stacks found. It is possible this could '
-                        'be due to a permissions problem.',
+                        'be due to a lack of permissions',
+    'timeout.error': 'Unknown state of environment. Operation timed out.',
     'sc.notfound': 'No source control found. '
                      'Will use system\'s zip for deploys.',
     'exit.notsetup': 'This directory does not appear to be setup with EB-CLI\n'
@@ -55,7 +56,23 @@ strings = {
                     ' specify an environment, i.e. eb {cmd} envName',
     'init.epilog': 'This command is safe when ran in a previously initialized'
                    ' directory. To re-initialize with different options, '
-                   'use the -i flag.'
+                   'use the -i flag.',
+    'env.updatesuccess': '-- The environment has been updated successfully! --',
+    'env.createsuccess': '-- The environment has been created successfully! --',
+    'env.createstarted': '-- The environment is being created. --',
+}
+prompts = {
+    'events.hanging': 'Hanging and waiting for events. Use CTRL + C to exit.',
+    'platform.validate': 'It appears you are using {platform}. Is this correct?',
+    'platform.prompt': 'Please choose a platform type',
+    'sstack.version': 'Please choose a version',
+    'scale.switchtoloadbalance': 'The environment is currently a Single Instance, would you'
+                                 ' like to switch to a Load Balanced environment?',
+    'cname.unavailable': 'The CNAME you provided is currently not available.\n'
+                         'Please try another',
+    'delete.confirm': 'This application has currently running environments, '
+                      'if you delete it, all environments will be terminated. '
+                      'Are you sure you want to delete the application?',
 }
 
 responses = {
@@ -65,7 +82,7 @@ responses = {
     'event.yellowmessage': 'Environment health has been set to YELLOW',
     'event.greenmessage': 'Environment health has been set to GREEN',
     'event.launchsuccess': 'Successfully launched environment:',
-    'event.launchbad': 'Create environment operation is complete, '
+    'event.launchbad': 'Create environment operation is CompleterController, '
                        'but with errors',
     'git.norepository': 'Error: Not a git repository ' \
                         '(or any of the parent directories): .git',

@@ -31,6 +31,7 @@ from ebcli.controllers.open import OpenController
 from ebcli.controllers.console import ConsoleController
 from ebcli.controllers.scale import ScaleController
 from ebcli.controllers.setenv import SetEnvController
+from ebcli.controllers.completer import CompleterController
 from ebcli.controllers.config import ConfigController
 from ebcli.controllers.sync import SyncController
 from ebcli.core import globals, base, io
@@ -66,6 +67,7 @@ class EB(foundation.CementApp):
         handler.register(ConsoleController)
         handler.register(ScaleController)
         handler.register(SetEnvController)
+        handler.register(CompleterController)
         # handler.register(ConfigController)  # ToDo: Do we want this command?
 
         super(EB, self).setup()
@@ -93,7 +95,7 @@ def main():
     # The fix needs to be changed once the next release of cement is out
     except CaughtSignal:
         io.echo()
-        sys.exit(1)
+        sys.exit(130)
     except NoEnvironmentForBranchError:
         pass
     except NotFoundException as e:
@@ -101,13 +103,13 @@ def main():
         sys.exit(1)
     except NotInitializedError:
         io.log_error(strings['exit.notsetup'])
-        sys.exit(128)
+        sys.exit(126)
     except NoSourceControlError:
         io.log_error(strings['git.notfound'])
-        sys.exit(129)
+        sys.exit(1)
     except NoRegionError:
         io.log_error(strings['exit.noregion'])
-        sys.exit(130)
+        sys.exit(1)
     except EBCLIException as e:
         io.log_error(e.__class__.__name__ + ": " + e.message)
     finally:

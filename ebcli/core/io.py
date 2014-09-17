@@ -49,6 +49,10 @@ def log_error(message):
 
 
 def get_input(output, default=None):
+    # importing readline module allows user to use bash commands
+    ## such as Ctrl+A etc.
+    import readline
+
     # Trim spaces
     result = input(output + ': ').strip()
     if not result:

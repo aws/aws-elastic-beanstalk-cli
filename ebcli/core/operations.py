@@ -23,7 +23,7 @@ from cement.utils.shell import exec_cmd
 from ebcli.lib import elasticbeanstalk, s3, iam, aws
 from ebcli.core import fileoperations, io
 from ebcli.objects.sourcecontrol import SourceControl
-from ebcli.resources.strings import strings, responses
+from ebcli.resources.strings import strings, responses, prompts
 from ebcli.objects import region as regions
 from ebcli.lib import utils
 from ebcli.objects import configuration
@@ -59,7 +59,7 @@ def wait_and_print_events(request_id, region,
             last_time = event.event_date
 
     if not finished:
-        raise TimeoutError('Timed out while waiting for command to complete')
+        raise TimeoutError('Timed out while waiting for command to CompleterController')
 
 
 def _is_success_string(message):
@@ -97,7 +97,7 @@ def log_event(event, echo=False):
 
 def print_events(app_name, env_name, region, follow):
     if follow:
-        io.echo('Hanging and waiting for events. Use CTRL + C to exit.')
+        io.echo(prompts['events.hanging'])
     last_time = ''
     while True:
         events = elasticbeanstalk.get_new_events(
@@ -128,12 +128,12 @@ def prompt_for_solution_stack(region):
     platform = heuristics.find_language_type()
 
     if platform is not None:
-        io.echo('It appears you are using ' + platform + '. Is this correct?')
+        io.echo(prompts['platform.validate'].replace('{platform}', platform))
         correct = get_boolean_response()
 
     if not platform or not correct:
         # ask for platform
-        io.echo('Please choose a platform type')
+        io.echo(prompts['platform.prompt'])
         platform = utils.prompt_for_item_in_list(platforms)
 
     # filter
@@ -147,7 +147,7 @@ def prompt_for_solution_stack(region):
 
     #now choose a version (if applicable)
     if len(versions) > 1:
-        io.echo('Please choose a version')
+        io.echo(prompts['sstack.version'])
         version = utils.prompt_for_item_in_list(versions)
     else:
         version = versions[0]
@@ -256,7 +256,7 @@ def sync_app(app_name, region):
     envs_remote = elasticbeanstalk.get_all_environments(app_name, region)
     env_names_remote = []
     for env in envs_remote or []:
-        env_name = env['EnvironmentName']
+        env_name = env.name
         env_names_remote.append(env_name)
         pull_down_env(app_name, env_name, region)
 
@@ -334,8 +334,7 @@ def scale(app_name, env_name, number, confirm, region):
     if value == 'SingleInstance':
         if not confirm:
             ## prompt to switch to LoadBalanced environment type
-            io.echo('The environment is currently a Single Instance, would you'
-                    ' like to switch to a Load Balanced environment?')
+            io.echo(prompts['scale.switchtoloadbalance'])
             switch = get_boolean_response()
             if not switch:
                 return
@@ -361,13 +360,13 @@ def scale(app_name, env_name, number, confirm, region):
         request_id = result['ResponseMetadata']['RequestId']
         wait_and_print_events(request_id, region, timeout_in_seconds=60*5)
         pull_down_env(app_name, env_name, region)
-        io.echo('-- The environment has been created successfully! --')
+        io.echo(strings['env.updatesuccess'])
     except TimeoutError:
-        io.log_error('Unknown state of environment. Operation timed out.')
+        io.log_error(strings['timeout.error'])
 
 
 def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
-                 label, profile, key_name, branch_default, sample, nohang):
+                 label, profile, single, key_name, branch_default, sample, nohang):
     if profile is None:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
@@ -381,7 +380,7 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
     # Create env
     io.log_info('Creating new environment')
     result, request_id = create_env(app_name, env_name, region, cname,
-                                    solution_stack, tier, label, key_name,
+                                    solution_stack, tier, label, single, key_name,
                                     profile)
 
     env_name = result.name  # get the (possibly) updated name
@@ -394,7 +393,7 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
         write_setting_to_current_branch('environment', env_name)
 
     # Print status of app
-    io.echo('-- The environment is being created. --')
+    io.echo(strings['env.createstarted'])
     print_env_details(result, health=False)
 
     if nohang:
@@ -404,9 +403,9 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
     try:
         wait_and_print_events(request_id, region)
         pull_down_env(app_name, env_name, region)
-        io.echo('-- The environment has been created successfully! --')
+        io.echo(strings['env.createsuccess'])
     except TimeoutError:
-        io.log_error('Unknown state of environment. Operation timed out.')
+        io.log_error(strings['timeout.error'])
 
 
 def print_env_details(env, health=True, verbose=False):
@@ -423,20 +422,20 @@ def print_env_details(env, health=True, verbose=False):
         io.echo('  Status:', env.status)
         io.echo('  Health:', env.health)
 
+
 def create_env(app_name, env_name, region, cname, solution_stack,
-               tier, label, key_name, profile):
+               tier, label, single, key_name, profile):
     description = strings['env.description']
 
     try:
         return elasticbeanstalk.create_environment(
             app_name, env_name, cname, description, solution_stack,
-            tier, label, key_name, profile, region=region)
+            tier, label, single, key_name, profile, region=region)
 
     except InvalidParameterValueError as e:
         LOG.debug('creating app returned error: ' + e.message)
         if re.match(responses['env.cnamenotavailable'], e.message):
-            io.echo('The CNAME you provided is currently not available.')
-            io.echo('Please try again')
+            io.echo(prompts['cname.unavailable'])
             cname = io.prompt_for_cname()
         elif re.match(responses['env.nameexists'], e.message):
             io.echo(strings['env.exists'])
@@ -457,9 +456,7 @@ def delete(app_name, region, confirm):
     ## Currently also catches "invalid app name"
     except InvalidParameterValueError:
         # Env's exist, let make sure the user is ok
-        io.echo('This application has currently running environments, '
-                'if you delete it, all environments will be terminated. '
-                'Are you sure you want to delete the application?')
+        io.echo(prompts['delete.confirm'])
         if not confirm:
             confirm = get_boolean_response()
 
@@ -683,9 +680,9 @@ def update_environment(app_name, env_name, region):
         request_id = result['ResponseMetadata']['RequestId']
         wait_and_print_events(request_id, region)
         pull_down_env(app_name, env_name, region)
-        io.echo('-- The environment has been created successfully! --')
+        io.echo(strings['env.updatesuccess'])
     except TimeoutError:
-        io.log_error('Unknown state of environment. Operation timed out.')
+        io.log_error(strings['timeout.error'])
 
 
 def remove_zip_file():
