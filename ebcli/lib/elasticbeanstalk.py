@@ -213,6 +213,7 @@ def describe_configuration_settings(app_name, env_name, region=None):
 
 
 def get_available_solution_stacks(region=None):
+    LOG.debug('Inside get_available_solution_stacks api wrapper')
     result = _make_api_call('list-available-solution-stacks', region=region)
     stack_strings = result['SolutionStacks']
 
@@ -226,6 +227,14 @@ def get_available_solution_stacks(region=None):
         solution_stacks.append(stack)
 
     return solution_stacks
+
+
+def get_application_versions(app_name, region=None):
+    LOG.debug('Inside get_application_versions api wrapper')
+    result = _make_api_call('describe-application-versions',
+                            application_name=app_name,
+                            region=region)
+    return result['ApplicationVersions']
 
 
 def get_all_environments(app_name, region=None):

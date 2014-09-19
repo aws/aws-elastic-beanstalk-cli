@@ -34,3 +34,6 @@ class SyncController(AbstractBaseController):
         app_name = fileoperations.get_application_name()
 
         operations.sync_app(app_name, region)
+
+    def complete_command(self, commands):
+        self.complete_region(commands)

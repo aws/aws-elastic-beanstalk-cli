@@ -84,3 +84,10 @@ class InitController(AbstractBaseController):
 
         #Do setup stuff
         operations.setup(app_name, region, solution)
+
+    def complete_command(self, commands):
+        self.complete_region(commands)
+        #Note, completing solution stacks is only going to work
+        ## if they already have their keys set up with region
+        if commands[-1] in ['-s', '--solution']:
+            io.echo(*elasticbeanstalk.get_available_solution_stacks())

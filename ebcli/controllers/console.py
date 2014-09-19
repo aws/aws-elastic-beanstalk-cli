@@ -22,7 +22,6 @@ class ConsoleController(AbstractBaseController):
         description = strings['console.info']
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 
-
     def do_command(self):
         region = self.app.pargs.region
         env_name = self.app.pargs.environment_name

@@ -39,3 +39,7 @@ class DeployController(AbstractBaseController):
         #     ## Right now you can only list one
 
         operations.deploy(app_name, env_name, region)
+
+    def complete_command(self, commands):
+        #ToDo, edit this if we ever support multiple deploys
+        super(DeployController, self).complete_command(commands)

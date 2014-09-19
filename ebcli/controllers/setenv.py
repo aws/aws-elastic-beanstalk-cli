@@ -37,3 +37,10 @@ class SetEnvController(AbstractBaseController):
         var_list = self.app.pargs.varKey
 
         operations.setenv(app_name, env_name, var_list, region)
+
+    def complete_command(self, commands):
+        self.complete_region(commands)
+        if commands[-1] in ['-e', '--environment']:
+            region = fileoperations.get_default_region()
+            app_name = fileoperations.get_application_name()
+            operations.list_env_names(app_name, region)

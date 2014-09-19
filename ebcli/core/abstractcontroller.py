@@ -18,6 +18,7 @@ from cement.ext.ext_logging import LoggingLogHandler
 from ebcli.core import io, fileoperations, operations
 from ebcli.objects.exceptions import NoEnvironmentForBranchError
 from ebcli.resources.strings import strings
+from ebcli.objects import region
 
 
 class AbstractBaseController(controller.CementBaseController):
@@ -28,7 +29,7 @@ class AbstractBaseController(controller.CementBaseController):
 
     """
     class Meta:
-        label = 'test'
+        label = 'abstract'
         stacked_on = 'base'
         stacked_type = 'nested'
         arguments = [
@@ -39,11 +40,6 @@ class AbstractBaseController(controller.CementBaseController):
         ]
         epilog = ''
         usage = 'eb {cmd} <environment_name> [options ...]'
-
-    def _setup(self, base_app):
-        self.Meta.usage = 'eb ' + self.Meta.label + ' {stuff}'
-        super(AbstractBaseController, self)._setup(base_app)
-        self.my_shared_obj = dict()
 
     def do_command(self):
         pass
@@ -89,3 +85,19 @@ class AbstractBaseController(controller.CementBaseController):
         if not region:
             region = fileoperations.get_default_region()
         return region
+
+    def complete_command(self, commands):
+        if not self.complete_region(commands):
+            if len(commands) == 1:  # They only have the main command so far
+                # lets complete for positional args
+                region = fileoperations.get_default_region()
+                app_name = fileoperations.get_application_name()
+                operations.list_env_names(app_name, region)
+
+    def complete_region(self, commands):
+        # we only care about top command
+        cmd = commands[-1]
+        if cmd == '-r' or cmd == '--region':
+            io.echo(*[r.name for r in region.get_all_regions()])
+            return True
+        return False

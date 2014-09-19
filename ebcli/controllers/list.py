@@ -12,27 +12,24 @@
 # language governing permissions and limitations under the License.
 
 from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings
 from ebcli.core import fileoperations, operations, io
 
 
-class CompleterController(AbstractBaseController):
+class ListController(AbstractBaseController):
     class Meta:
-        label = 'completer'
-        description = 'auto-completer: hidden command'
+        label = 'list'
+        description = strings['list.info']
+        usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
         arguments = [
-            (['commands'], dict(action='store', nargs='*',
-                             default=[],
-                             help='commands so far')),
-            (['--cmplt'], dict(help='Word to complete')),
+            (['-r', '--region'], dict(help='Region where environment lives')),
         ]
-        hide = True
 
     def do_command(self):
-        commands = self.app.pargs.commands
-        word = self.app.pargs.cmplt
+        app_name = self.get_app_name()
+        region = self.get_region()
+        operations.list_env_names(app_name, region)
 
-        # for c in commands:
-        #     io.echo(c)
-        # io.echo(word)
-        #Hardcode a couple for testing
-        io.echo('one two three')
+    def complete_command(self, commands):
+        # We only care about regions
+        self.complete_region(commands)

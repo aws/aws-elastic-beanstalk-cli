@@ -22,13 +22,16 @@ class DeleteController(AbstractBaseController):
         label = 'delete'
         description = strings['delete.info']
         arguments = [
-            (['-f'], dict(action='store_true',
+            (['-f', '--follow'], dict(action='store_true',
                           help='skip confirmation prompt')),
         ]
 
     def do_command(self):
-        confirm = self.app.pargs.f
+        confirm = self.app.pargs.follow
         # delete App
         app_name = fileoperations.get_application_name()
         region = fileoperations.get_default_region()
         operations.delete(app_name, region, confirm)
+
+    def complete_command(self, commands):
+        pass # Nothing to complete

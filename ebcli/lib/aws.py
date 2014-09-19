@@ -59,8 +59,9 @@ def make_api_call(service_name, operation_name, region=None,
 
     operation = service.get_operation(operation_name)
     if not region:
-        region = fileoperations.get_default_region()
-    endpoint = service.get_endpoint(region)
+        endpoint = service.get_endpoint()
+    else:
+        endpoint = service.get_endpoint(region)
 
     try:
         LOG.debug('Making api call: (' +

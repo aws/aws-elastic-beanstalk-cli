@@ -28,6 +28,7 @@ strings = {
     'scale.info': 'Change number of running instances',
     'status.info': 'Get Environment info and status',
     'setenv.info': 'Set environment variables',
+    'list.info': 'List all environments',
     'terminate.info': 'Terminate environment',
     'update.info': 'Update environment',
     'sync.info': 'Pull down environment configurations',

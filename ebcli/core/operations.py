@@ -114,6 +114,16 @@ def print_events(app_name, env_name, region, follow):
             break
 
 
+def list_env_names(app_name, region):
+    envs = elasticbeanstalk.get_all_environments(app_name, region)
+    for e in envs:
+        io.echo(e.name)
+
+
+def get_app_version_labels(app_name, region):
+    app_versions = elasticbeanstalk.get_application_versions(app_name, region)
+    return [v['VersionLabel'] for v in app_versions]
+
 def prompt_for_solution_stack(region):
 
     solution_stacks = elasticbeanstalk.get_available_solution_stacks(region)

@@ -123,3 +123,19 @@ class CreateController(AbstractBaseController):
         operations.make_new_env(app_name, env_name, region, cname, solution,
                                 tier, label, profile, single, key_name,
                                 branch_default, sample, nohang)
+
+    def complete_command(self, commands):
+        region = fileoperations.get_default_region()
+        app_name = fileoperations.get_application_name()
+
+        self.complete_region(commands)
+
+        # We only care about top command, because there are no positional
+        ## args for this command
+        cmd = commands[-1]
+        if cmd in ['-t', '--tier']:
+            io.echo(*Tier.get_all_tiers())
+        if cmd in ['-s', '--solution']:
+            io.echo(*elasticbeanstalk.get_available_solution_stacks(region))
+        if cmd in ['-vl', '--versionlabel']:
+            io.echo(*operations.get_app_version_labels(app_name, region))

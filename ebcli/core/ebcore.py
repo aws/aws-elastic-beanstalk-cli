@@ -31,7 +31,8 @@ from ebcli.controllers.open import OpenController
 from ebcli.controllers.console import ConsoleController
 from ebcli.controllers.scale import ScaleController
 from ebcli.controllers.setenv import SetEnvController
-from ebcli.controllers.completer import CompleterController
+from ebcli.controllers.list import ListController
+from ebcli.core.completer import CompleterController
 from ebcli.controllers.config import ConfigController
 from ebcli.controllers.sync import SyncController
 from ebcli.core import globals, base, io
@@ -67,6 +68,7 @@ class EB(foundation.CementApp):
         handler.register(ConsoleController)
         handler.register(ScaleController)
         handler.register(SetEnvController)
+        handler.register(ListController)
         handler.register(CompleterController)
         # handler.register(ConfigController)  # ToDo: Do we want this command?
 
