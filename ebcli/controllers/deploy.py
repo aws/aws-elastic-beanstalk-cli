@@ -33,6 +33,10 @@ class DeployController(AbstractBaseController):
         region = self.get_region()
         env_name = self.app.pargs.environment_name
 
+        if not env_name:
+            env_name = \
+                operations.get_setting_from_current_branch('environment')
+
         # ToDo add support for deploying to multiples?
         # for arg in self.app.pargs.environment_name:
         #     # deploy to every environment listed

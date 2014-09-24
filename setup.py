@@ -15,6 +15,9 @@ setup_options = dict(
     version=ebcli.__version__,
     description='Command Line Interface for AWS EB.',
     long_description=open('README.md').read(),
+    data_file=[
+        ('etc/bash_completion.d/', ['bin/completion.bash'])
+    ],
     author='Nick Humrich',
     author_email='humrichn@amazon.com',
     url='eb.example.com',

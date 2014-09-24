@@ -14,6 +14,7 @@
 import os
 import pickle
 import shutil
+import sys
 
 from yaml import load, dump, safe_dump
 from six.moves import configparser
@@ -55,6 +56,10 @@ def _get_option(config, section, key, default):
         return config.get(section, key)
     except (NoSectionError, NoOptionError):
         return default
+
+
+def is_git_directory_present():
+    return os.path.exists('.git')
 
 
 def clean_up():
@@ -266,6 +271,25 @@ def save_env_date(env):
     envlist.add_env(env_name, date)
 
     save_envlist(envlist)
+
+
+def get_editor():
+    editor = get_config_setting('global', 'editor')
+    if not editor:
+        editor = os.getenv('EDITOR')
+    if not editor:
+        platform = sys.platform
+        windows = platform.startswith('win')
+        if windows:
+            editor = None
+        else:
+            editor = 'nano'
+
+    return editor
+
+
+def get_file():
+    pass
 
 
 def save_env_file(env, public=False, paused=False):

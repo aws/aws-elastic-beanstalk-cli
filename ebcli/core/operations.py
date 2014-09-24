@@ -277,12 +277,12 @@ def sync_app(app_name, region):
             fileoperations.delete_env_file(env_name)
 
 
-def get_default_profile():
+def get_default_profile(region):
     """  Get the default elasticbeanstalk IAM profile,
             Create it if it doesn't exist """
 
     # get list of profiles
-    profile_names = iam.get_instance_profile_names()
+    profile_names = iam.get_instance_profile_names(region=region)
     profile = DEFAULT_ROLE_NAME
     if profile not in profile_names:
         iam.create_instance_profile(profile)
@@ -380,7 +380,7 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
     if profile is None:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
-        profile = get_default_profile()
+        profile = get_default_profile(region)
 
     # deploy code
     if not sample and not label:
@@ -454,8 +454,8 @@ def create_env(app_name, env_name, region, cname, solution_stack,
             raise e
 
         # Try again with new values
-        return create_env(app_name, env_name, region, cname,
-                          solution_stack, tier, label, profile)
+        return create_env(app_name, env_name, region, cname, solution_stack,
+                          tier, label, single, key_name, profile)
 
 
 def delete(app_name, region, confirm):
@@ -642,6 +642,7 @@ def create_app_version(app_name, region):
 
     #get description
     description = source_control.get_message()
+    io.log_info('Creating app_version archive' + version_label)
 
     # Create zip file
     file_name = version_label + '.zip'
@@ -652,10 +653,13 @@ def create_app_version(app_name, region):
     bucket = elasticbeanstalk.get_storage_location(region)
     # upload to s3
     key = app_name + '/' + file_name
+
+    io.log_info('Uploading archive to s3 location: ' + key)
     s3.upload_application_version(bucket, key, file_path,
                                                 region=region)
 
     try:
+        io.log_info('Creating AppVersion ' + version_label)
         elasticbeanstalk.create_application_version(
             app_name, version_label, description, bucket, key, region
         )

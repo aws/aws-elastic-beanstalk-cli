@@ -80,6 +80,8 @@ class NoSC(SourceControl):
 
     def _zipdir(self, path, zipf):
         for root, dirs, files in os.walk(path):
+            if '.elasticbeanstalk' in root:
+                continue
             for f in files:
                 zipf.write(os.path.join(root, f))
 
@@ -151,23 +153,7 @@ class Git(SourceControl):
         return stdout[:-1]  # strip new line
 
     def is_setup(self):
-        #   does the current directory have git set-up
-        # ToDo: We should instead check for a .git directory at the
-        ## same level as .elasticbeanstalk
-        # We want to enforce the same level for various reasons
-        # (i.e. git ignore) and a git command has potential to
-        # fail if in a detached HEAD state
-        stdout, stderr, exitcode = exec_cmd(['git status'], True)
-
-        try:
-            self._handle_exitcode(exitcode, stderr)
-        except NoSourceControlError:
-            return False
-        except CommandError:
-            # Default to False to be safe
-            return False
-
-        return True
+        return fileoperations.is_git_directory_present()
 
     def set_up_ignore_file(self):
         # if not os.path.exists('.gitignore')
