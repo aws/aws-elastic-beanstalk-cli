@@ -136,7 +136,7 @@ class Git(SourceControl):
             exec_cmd(['git rev-parse --abbrev-ref HEAD'], shell=True)
 
         self._handle_exitcode(exitcode, stderr)
-        return stdout[:-1] # strip new line
+        return stdout.rstrip()
 
     def do_zip(self, location):
         stdout, stderr, exitcode = \
@@ -148,7 +148,7 @@ class Git(SourceControl):
         stdout, stderr, exitcode = \
             exec_cmd(['git log --oneline -1'], shell=True)
         self._handle_exitcode(exitcode, stderr)
-        return stdout[:-1]  # strip new line
+        return stdout.rstrip()
 
     def is_setup(self):
         #   does the current directory have git set-up
