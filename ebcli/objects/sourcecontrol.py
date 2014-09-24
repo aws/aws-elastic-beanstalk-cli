@@ -125,7 +125,7 @@ class Git(SourceControl):
 
     def get_version_label(self):
         stdout, stderr, exitcode = \
-            exec_cmd('git describe --always --abbrev=4', True)
+            exec_cmd('git describe --always --abbrev=4', shell=True)
         self._handle_exitcode(exitcode, stderr)
 
         #Replace dots with underscores
@@ -133,7 +133,7 @@ class Git(SourceControl):
 
     def get_current_branch(self):
         stdout, stderr, exitcode = \
-            exec_cmd(['git rev-parse --abbrev-ref HEAD'], True)
+            exec_cmd(['git rev-parse --abbrev-ref HEAD'], shell=True)
 
         self._handle_exitcode(exitcode, stderr)
         return stdout[:-1] # strip new line
@@ -141,12 +141,12 @@ class Git(SourceControl):
     def do_zip(self, location):
         stdout, stderr, exitcode = \
             exec_cmd(['git archive --format=zip '
-                      '-o ' + location + ' HEAD'], True)
+                      '-o ' + location + ' HEAD'], shell=True)
         self._handle_exitcode(exitcode, stderr)
 
     def get_message(self):
         stdout, stderr, exitcode = \
-            exec_cmd(['git log --oneline -1'], True)
+            exec_cmd(['git log --oneline -1'], shell=True)
         self._handle_exitcode(exitcode, stderr)
         return stdout[:-1]  # strip new line
 
@@ -157,7 +157,7 @@ class Git(SourceControl):
         # We want to enforce the same level for various reasons
         # (i.e. git ignore) and a git command has potential to
         # fail if in a detached HEAD state
-        stdout, stderr, exitcode = exec_cmd(['git status'], True)
+        stdout, stderr, exitcode = exec_cmd(['git status'], shell=True)
 
         try:
             self._handle_exitcode(exitcode, stderr)

@@ -313,7 +313,7 @@ def open_webpage_in_browser(url, ssl=False):
         url = 'http://' + url
 
     stdout, stderr, exitcode = \
-        exec_cmd(['python -m webbrowser \'' + url + '\''], True)
+        exec_cmd(['python -m webbrowser \'' + url + '\''], shell=True)
 
     LOG.debug('browser stdout: ' + stdout)
     LOG.debug('browser stderr: ' + stderr)
