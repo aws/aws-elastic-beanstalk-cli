@@ -60,3 +60,7 @@ class NoRegionError(EBCLIException):
 class TimeoutError(EBCLIException):
     """ Operation timed out   """
     pass
+
+class InvalidStateError(EBCLIException):
+    """ Environment is in an updating state    """
+    pass

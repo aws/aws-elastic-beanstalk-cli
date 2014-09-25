@@ -288,10 +288,6 @@ def get_editor():
     return editor
 
 
-def get_file():
-    pass
-
-
 def save_env_file(env, public=False, paused=False):
     cwd = os.getcwd()
     save_env_date(env)
@@ -312,6 +308,8 @@ def save_env_file(env, public=False, paused=False):
 
     finally:
         os.chdir(cwd)
+
+    return file_name
 
 
 def write_config_setting(section, key_name, value):

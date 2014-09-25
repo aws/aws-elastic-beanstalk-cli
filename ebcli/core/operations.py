@@ -14,6 +14,7 @@
 from datetime import datetime, timedelta
 import time
 import re
+import os
 
 from six.moves import urllib
 from six import iteritems
@@ -28,7 +29,7 @@ from ebcli.objects import region as regions
 from ebcli.lib import utils
 from ebcli.objects import configuration
 from ebcli.objects.exceptions import NoSourceControlError, \
-    ServiceError, TimeoutError, CredentialsError
+    ServiceError, TimeoutError, CredentialsError, InvalidStateError
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.tier import Tier
 from ebcli.lib.aws import InvalidParameterValueError
@@ -246,22 +247,6 @@ def create_app(app_name, region):
         pass
 
 
-def pull_down_env(app_name, env_name, region):
-    # we need the last time the env was updated
-    env_details = elasticbeanstalk.get_environment(app_name,
-                                                   env_name, region)
-    api_model = elasticbeanstalk.describe_configuration_settings(
-        app_name, env_name, region=region
-    )
-
-    # move date updated over to api_model for merging
-    date = env_details.date_updated
-    api_model['DateUpdated'] = date
-
-    usr_model = configuration.convert_api_to_usr_model(api_model)
-    fileoperations.save_env_file(usr_model)
-
-
 def sync_app(app_name, region):
     envs_remote = elasticbeanstalk.get_all_environments(app_name, region)
     env_names_remote = []
@@ -409,10 +394,9 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
     if nohang:
         return
 
-    io.log_info('Printing Status:')
+    io.echo('Printing Status:')
     try:
         wait_and_print_events(request_id, region)
-        pull_down_env(app_name, env_name, region)
         io.echo(strings['env.createsuccess'])
     except TimeoutError:
         io.log_error(strings['timeout.error'])
@@ -610,6 +594,27 @@ def terminate(env_name, region):
                         timeout_in_seconds=60*5)
 
 
+def save_env_file(api_model):
+    usr_model = configuration.convert_api_to_usr_model(api_model)
+    file_location = fileoperations.save_env_file(usr_model)
+    return file_location
+
+def open_file_for_editing(file_location):
+
+    editor = fileoperations.get_editor()
+    if editor:
+        try:
+            os.system(editor + ' ' + file_location)
+        except OSError:
+            io.log_error(prompts['fileopen.error1'].replace('{editor}',
+                                                            editor))
+    else:
+        try:
+            os.system(file_location)
+        except OSError:
+            io.log_error(prompts['fileopen.error2'])
+
+
 def setup_directory(app_name, region, solution):
     io.log_info('Setting up .elasticbeanstalk directory')
     fileoperations.create_config_file(app_name, region, solution)
@@ -671,30 +676,34 @@ def create_app_version(app_name, region):
     return version_label
 
 
-def update_environment(app_name, env_name, region):
+def update_environment(app_name, env_name, region, nohang):
+    #get environment setting
+    api_model = elasticbeanstalk.describe_configuration_settings(
+        app_name, env_name, region=region
+    )
+
+    # Turn them into a yaml file and open
+    file_location = save_env_file(api_model)
+    open_file_for_editing(file_location)
+
+    # Update and delete file
     usr_model = fileoperations.get_environment_from_file(env_name)
-
-    # pull down env details from cloud
-    # check date of saved env and compare
-    env_details = elasticbeanstalk.get_environment(app_name, env_name, region)
-
-    if env_details['DateUpdated'] != usr_model['DateUpdated']:
-        io.echo('Your environments settings are out of date. \n'
-                'Please do an \'eb sync\' before updating environment')
+    changes = configuration.collect_changes(api_model, usr_model)
+    try:
+        request_id = elasticbeanstalk.update_environment(env_name, changes, region)
+    except InvalidStateError:
+        io.log_error(prompts['update.invalidstate'])
         return
 
-    api_model = elasticbeanstalk.describe_configuration_settings(
-        app_name, env_name, region
-    )
-    changes = configuration.collect_changes(api_model, usr_model)
-    result = elasticbeanstalk.update_environment(env_name, changes, region)
+    io.echo(strings['env.updatestarted'])
 
-    io.log_info('Printing Status:')
+    if nohang:
+        return
+
+    io.echo('Printing Status:')
     try:
-        request_id = result['ResponseMetadata']['RequestId']
         wait_and_print_events(request_id, region)
-        pull_down_env(app_name, env_name, region)
-        io.echo(strings['env.updatesuccess'])
+        io.echo(strings['env.createsuccess'])
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 

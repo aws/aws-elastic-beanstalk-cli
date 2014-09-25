@@ -61,6 +61,7 @@ strings = {
     'env.updatesuccess': '-- The environment has been updated successfully! --',
     'env.createsuccess': '-- The environment has been created successfully! --',
     'env.createstarted': '-- The environment is being created. --',
+    'env.updatestarted': '-- The environment is being updated. --',
 }
 prompts = {
     'events.hanging': 'Hanging and waiting for events. Use CTRL + C to exit.',
@@ -74,6 +75,9 @@ prompts = {
     'delete.confirm': 'This application has currently running environments, '
                       'if you delete it, all environments will be terminated. '
                       'Are you sure you want to delete the application?',
+    'fileopen.error1': 'Unable to open file with editor {editor}\nPlease check your settings and try again.',
+    'fileopen.error2': 'Unable to open environment file. Try setting the editor environment variable',
+    'update.invalidstate': 'Cannot update environment at this time. Wait for environment to finish its current operation.',
 }
 
 responses = {
@@ -91,7 +95,8 @@ responses = {
     'env.cnamenotavailable': 'DNS name \([^ ]+\) is not available.',
     'env.nameexists': 'Environment [^ ]+ already exists.',
     'logs.pulled': 'Pulled logs for environment instances.',
-    'env.terminated': 'terminateEnvironment completed successfully.'
+    'env.terminated': 'terminateEnvironment completed successfully.',
+    'env.invalidstate': 'Environment named {env-name} is in an invalid state for this operation. Must be Ready.'
 }
 git_ignore = [
     '# Elastic Beanstalk Files',        # comment line

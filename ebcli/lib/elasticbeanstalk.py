@@ -18,13 +18,13 @@ from cement.utils.misc import minimal_logger
 
 from ebcli.core import io
 from ebcli.objects.solutionstack import SolutionStack
-from ebcli.objects.exceptions import NotFoundException
+from ebcli.objects.exceptions import NotFoundException, InvalidStateError
 from ebcli.objects.tier import Tier
 from ebcli.lib import utils
 from ebcli.lib import aws
 from ebcli.objects.event import Event
 from ebcli.objects.environment import Environment
-from ebcli.resources.strings import strings
+from ebcli.resources.strings import strings, responses
 
 LOG = minimal_logger(__name__)
 
@@ -317,12 +317,17 @@ def get_storage_location(region=None):
 
 def update_environment(env_name, options, region=None, remove=[]):
     LOG.debug('Inside update_environment api wrapper')
-    response = _make_api_call('update-environment',
+    try:
+        response = _make_api_call('update-environment',
                               environment_name=env_name,
                               option_settings=options,
                               options_to_remove=remove,
                               region=region)
-    return response
+    except aws.InvalidParameterValueError as e:
+        if e.message == responses['env.invalidstate'].replace('{env-name}',
+                                                              env_name):
+            raise InvalidStateError()
+    return response['ResponseMetadata']['RequestId']
 
 
 def update_env_application_version(env_name,

@@ -46,7 +46,7 @@ class CreateController(AbstractBaseController):
             (['-k', '--keyname'], dict(help='EC2 SSH KeyPair name')),
             (['-nh', '--nohang'], dict(action='store_true',
                                        help='Do not hang and wait for create '
-                                            'to be CompleterController')),
+                                            'to be completed')),
         ]
         usage = 'eb create [options ...]'
 

@@ -21,12 +21,18 @@ class UpdateController(AbstractBaseController):
         label = 'update'
         description = strings['update.info']
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
+        arguments = AbstractBaseController.Meta.arguments + [
+            (['-nh', '--nohang'], dict(action='store_true',
+                                       help='Do not hang and wait for update '
+                                            'to be completed'))
+        ]
 
 
     def do_command(self):
         region = self.app.pargs.region
         env_name = self.app.pargs.environment_name
         #load default region
+        nohang = self.app.pargs.nohang
         if not region:
             region = fileoperations.get_default_region()
 
@@ -40,4 +46,4 @@ class UpdateController(AbstractBaseController):
             io.echo(strings['branch.noenv'])
             return
 
-        operations.update_environment(app_name, env_name, region)
+        operations.update_environment(app_name, env_name, region, nohang)
