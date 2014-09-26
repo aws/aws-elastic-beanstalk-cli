@@ -59,7 +59,7 @@ def _get_option(config, section, key, default):
 
 
 def is_git_directory_present():
-    return os.path.exists('.git')
+    return os.path.isdir('.git')
 
 
 def clean_up():
@@ -67,7 +67,7 @@ def clean_up():
     cwd = os.getcwd()
     try:
         _traverse_to_project_root()
-        if os.path.exists(beanstalk_directory):
+        if os.path.isdir(beanstalk_directory):
             shutil.rmtree(beanstalk_directory)
     finally:
         os.chdir(cwd)
@@ -91,7 +91,7 @@ def _set_not_none(config, section, option, value):
 def save_to_aws_config(access_key, secret_key):
     config = configparser.ConfigParser()
     configparser.DEFAULTSECT = 'default'
-    if not os.path.exists(aws_config_folder):
+    if not os.path.isdir(aws_config_folder):
         os.makedirs(aws_config_folder)
 
     config.read(aws_config_location)
@@ -143,7 +143,7 @@ def create_config_file(app_name, region, solution_stack):
     """
     LOG.debug('Creating config file at ' + os.getcwd())
 
-    if not os.path.exists(beanstalk_directory):
+    if not os.path.isdir(beanstalk_directory):
         os.makedirs(beanstalk_directory)
 
     # add to global without writing over any settings if they exist
@@ -154,7 +154,7 @@ def create_config_file(app_name, region, solution_stack):
 
 def _traverse_to_project_root():
     cwd = os.getcwd()
-    if not os.path.exists(beanstalk_directory):
+    if not os.path.isdir(beanstalk_directory):
         LOG.debug('beanstalk directory not found in ' + cwd +
                   '  -Going up a level')
         os.chdir(os.path.pardir)  # Go up one directory
@@ -173,7 +173,7 @@ def get_zip_location(file_name):
     cwd = os.getcwd()
     try:
         _traverse_to_project_root()
-        if not os.path.exists(app_version_folder):
+        if not os.path.isdir(app_version_folder):
             # create it
             os.makedirs(app_version_folder)
 

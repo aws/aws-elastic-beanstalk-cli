@@ -16,7 +16,8 @@ from cement.utils.misc import init_defaults
 from cement.ext.ext_logging import LoggingLogHandler
 
 from ebcli.core import io, fileoperations, operations
-from ebcli.objects.exceptions import NoEnvironmentForBranchError
+from ebcli.objects.exceptions import NoEnvironmentForBranchError, \
+    NotInitializedError
 from ebcli.resources.strings import strings
 from ebcli.objects import region
 
@@ -84,6 +85,8 @@ class AbstractBaseController(controller.CementBaseController):
         region = self.app.pargs.region
         if not region:
             region = fileoperations.get_default_region()
+        if not region:
+            raise NotInitializedError
         return region
 
     def complete_command(self, commands):

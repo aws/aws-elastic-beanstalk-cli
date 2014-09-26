@@ -17,7 +17,7 @@ class EBCLIException(Exception):
     pass
 
 
-class NotFoundException(EBCLIException):
+class NotFoundError(EBCLIException):
     pass
 
 

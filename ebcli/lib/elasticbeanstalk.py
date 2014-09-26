@@ -18,12 +18,13 @@ from cement.utils.misc import minimal_logger
 
 from ebcli.core import io
 from ebcli.objects.solutionstack import SolutionStack
-from ebcli.objects.exceptions import NotFoundException, InvalidStateError
+from ebcli.objects.exceptions import NotFoundError, InvalidStateError
 from ebcli.objects.tier import Tier
 from ebcli.lib import utils
 from ebcli.lib import aws
 from ebcli.objects.event import Event
 from ebcli.objects.environment import Environment
+from ebcli.objects.application import Application
 from ebcli.resources.strings import strings, responses
 
 LOG = minimal_logger(__name__)
@@ -219,7 +220,7 @@ def get_available_solution_stacks(region=None):
 
     LOG.debug('Solution Stack result size = ' + str(len(stack_strings)))
     if len(stack_strings) == 0:
-        raise NotFoundException(strings['sstacks.notfound'])
+        raise NotFoundError(strings['sstacks.notfound'])
 
     solution_stacks = []
     for s in stack_strings:
@@ -235,6 +236,35 @@ def get_application_versions(app_name, region=None):
                             application_name=app_name,
                             region=region)
     return result['ApplicationVersions']
+
+
+def get_all_applications(region=None):
+    LOG.debug('Insise get_all_applications api wrapper')
+    result = _make_api_call('describe-applications',
+                            region=region)
+    app_list = []
+    for app in result['Applications']:
+        try:
+            description = app['Description']
+        except KeyError:
+            description = None
+
+        try:
+            versions = app['Versions']
+        except KeyError:
+            versions = None
+        app_list.append(
+            Application(
+                name=app['ApplicationName'],
+                date_created=app['DateCreated'],
+                date_updated=app['DateUpdated'],
+                description=description,
+                versions=versions,
+                templates=app['ConfigurationTemplates'],
+            )
+        )
+
+    return app_list
 
 
 def get_all_environments(app_name, region=None):
@@ -297,13 +327,18 @@ def get_new_events(app_name, env_name, request_id,
         except KeyError:
             version_label = None
 
+        try:
+            environment_name = event['EnvironmentName']
+        except KeyError:
+            environment_name = None
+
         events.append(
-            Event(event['Message'],
-                  event['EventDate'],
-                  version_label,
-                  event['ApplicationName'],
-                  event['EnvironmentName'],
-                  event['Severity'],
+            Event(message=event['Message'],
+                  event_date=event['EventDate'],
+                  version_label=version_label,
+                  app_name=event['ApplicationName'],
+                  environment_name=environment_name,
+                  severity=event['Severity'],
                   )
         )
     return events
@@ -370,7 +405,7 @@ def get_solution_stack(string, region):
 
     #check for a valid result
     if len(solution_stacks) == 0:
-        raise NotFoundException('Solution stack not found')
+        raise NotFoundError('Provided Solution stack not found')
 
     #should only have 1 result
     if len(solution_stacks) > 1:

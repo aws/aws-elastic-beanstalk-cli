@@ -11,19 +11,16 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from mock import patch
 
-from ebcli.core.ebcore import EB
-from integration.baseinttest import BaseIntegrationTest
-from ebcli.resources.strings import strings
-from ebcli.core import fileoperations
-from ebcli.objects.sourcecontrol import NoSC
-from ebcli.objects.solutionstack import SolutionStack
+class Application():
+    def __init__(self, name=None, date_created=None, date_updated=None,
+                 description=None, versions=[], templates=[]):
+        self.name = name
+        self.date_created = date_created
+        self.date_updated = date_updated
+        self.description = description
+        self.versions = versions
+        self.templates = templates
 
-from ebcli.objects.exceptions import CredentialsError
-
-
-class TestInit(BaseIntegrationTest):
-
-    def test_init_standard(self):
-        pass
+    def __str__(self):
+        return 'Name: ' + self.name

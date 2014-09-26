@@ -11,7 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ebcli.objects.exceptions import NotFoundException
+from ebcli.objects.exceptions import NotFoundError
 
 
 class Tier():
@@ -64,4 +64,4 @@ class Tier():
                 return tier
 
         # tier not found
-        raise NotFoundException('Tier Not found')
+        raise NotFoundError('Tier Not found')

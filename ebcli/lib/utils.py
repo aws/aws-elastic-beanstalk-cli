@@ -14,22 +14,31 @@
 from ebcli.core import io
 
 
-def prompt_for_item_in_list(list, default=1):
-    for x in range(0, len(list)):
-        io.echo(str(x + 1) + ')', list[x])
+def prompt_for_item_in_list(lst, default=1):
+    for x in range(0, len(lst)):
+        io.echo(str(x + 1) + ')', lst[x])
 
     while True:
         try:
             choice = int(io.prompt('default is ' + str(default),
                                    default=default))
-            if not (0 < choice <= len(list)):
+            if not (0 < choice <= len(lst)):
                 raise ValueError  # Also thrown by non int numbers
             else:
                 break
         except ValueError:
             io.echo('Sorry, that is not a valid choice. '
                     'Please choose a number between 1 and ' +
-                    str(len(list)) + '.')
-    return list[choice - 1]
+                    str(len(lst)) + '.')
+    return lst[choice - 1]
 
+
+def get_unique_name(name, current_uniques):
+    base_name = name
+    number = 1
+    while base_name in current_uniques:
+        base_name = name + number
+        number += 1
+
+    return base_name
 

@@ -100,7 +100,7 @@ def main():
         app.close(130)
     except NoEnvironmentForBranchError:
         pass
-    except NotFoundException as e:
+    except NotFoundError as e:
         io.log_error(e.message)
         app.close(1)
     except NotInitializedError:

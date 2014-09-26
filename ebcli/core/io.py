@@ -64,6 +64,19 @@ def prompt(output, default=None):
     return get_input('(' + output + ')', default)
 
 
+def prompt_for_unique_name(default, unique_list):
+    assert default not in unique_list, 'Default name is not unique'
+
+    while True:
+        result = prompt('default is "' + default + '"', default=default)
+        if result in unique_list:
+            echo('Sorry that name already exists, try another.')
+        else:
+            break
+
+    return result
+
+
 def prompt_for_environment_name(default_name='myEnv'):
     # Validate env_name: Spec says:
     # Constraint: Must be from 4 to 23 characters in length.

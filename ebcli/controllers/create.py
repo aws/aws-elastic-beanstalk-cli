@@ -17,7 +17,7 @@ import sys
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 from ebcli.lib import elasticbeanstalk, iam
-from ebcli.objects.exceptions import NotFoundException, NotInitializedError
+from ebcli.objects.exceptions import NotFoundError, NotInitializedError
 from ebcli.core import io, fileoperations, operations
 from ebcli.objects.tier import Tier
 
@@ -82,14 +82,14 @@ class CreateController(AbstractBaseController):
             try:
                 solution = elasticbeanstalk.get_solution_stack(solution_string,
                                                                region)
-            except NotFoundException:
+            except NotFoundError:
                 io.log_error('Could not find specified solution stack')
                 sys.exit(127)
 
         if tier:
             try:
                 tier = Tier.parse_tier(tier)
-            except NotFoundException:
+            except NotFoundError:
                 io.log_error('Provided tier does not appear to be valid')
                 sys.exit(127)
 

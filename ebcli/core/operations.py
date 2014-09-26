@@ -48,6 +48,7 @@ def wait_and_print_events(request_id, region,
     last_time = ''
     while not finished and (datetime.now() - start) < timediff:
         time.sleep(sleep_time)
+
         events = elasticbeanstalk.get_new_events(
             None, None, request_id, last_event_time=last_time, region=region
         )
@@ -77,6 +78,8 @@ def _is_success_string(message):
     if message == responses['env.terminated']:
         return True
     if message == responses['env.updatesuccess']:
+        return True
+    if message == responses['app.deletesuccess']:
         return True
 
 
@@ -125,6 +128,7 @@ def get_app_version_labels(app_name, region):
     app_versions = elasticbeanstalk.get_application_versions(app_name, region)
     return [v['VersionLabel'] for v in app_versions]
 
+
 def prompt_for_solution_stack(region):
 
     solution_stacks = elasticbeanstalk.get_available_solution_stacks(region)
@@ -139,11 +143,13 @@ def prompt_for_solution_stack(region):
     platform = heuristics.find_language_type()
 
     if platform is not None:
+        io.echo()
         io.echo(prompts['platform.validate'].replace('{platform}', platform))
         correct = get_boolean_response()
 
     if not platform or not correct:
         # ask for platform
+        io.echo()
         io.echo(prompts['platform.prompt'])
         platform = utils.prompt_for_item_in_list(platforms)
 
@@ -158,6 +164,7 @@ def prompt_for_solution_stack(region):
 
     #now choose a version (if applicable)
     if len(versions) > 1:
+        io.echo()
         io.echo(prompts['sstack.version'])
         version = utils.prompt_for_item_in_list(versions)
     else:
@@ -172,11 +179,8 @@ def prompt_for_solution_stack(region):
         if stack.server not in servers:
             servers.append(stack.server)
 
-    #Default to latest version of server
-            # if len(servers) > 1:
-            #     io.echo('Please choose a server type')
-            #     server = utils.prompt_for_item_in_list(servers)
-            # else:
+    # Default to latest version of server
+    # We are assuming latest is always first in list.
     server = servers[0]
 
     #filter
@@ -189,20 +193,16 @@ def prompt_for_solution_stack(region):
     return solution_stacks[0]
 
 
-def setup(app_name, region, solution):
-    # try to get solution stacks to test for credentials
+def credentials_are_valid(region):
     try:
         elasticbeanstalk.get_available_solution_stacks(region)
+        return True
     except CredentialsError:
-        setup_aws_dir()  # fix credentials
+        return False
 
-    # Now that credentials are working, lets continue
-    if solution:
-        solution = elasticbeanstalk.get_solution_stack(solution, region)
-    else:
-        solution = prompt_for_solution_stack(region)
 
-    setup_directory(app_name, region, solution.string)
+def setup(app_name, region, solution):
+    setup_directory(app_name, region, solution)
 
     create_app(app_name, region)
 
@@ -212,7 +212,7 @@ def setup(app_name, region, solution):
         io.log_warning(strings['sc.notfound'])
 
 
-def setup_aws_dir():
+def setup_credentials():
     io.log_info('Setting up ~/aws/ directory with config file')
 
     io.echo(strings['cred.prompt'])
@@ -227,7 +227,7 @@ def setup_aws_dir():
 
 def create_app(app_name, region):
     # check if app exists
-    app_result = elasticbeanstalk.describe_application(app_name, region)
+    app_result = elasticbeanstalk.describe_application(app_name, region=region)
 
     if not app_result:  # no app found with that name
         # Create it
@@ -241,25 +241,8 @@ def create_app(app_name, region):
         io.echo('Application', app_name,
                 'has been created')
     else:
-        # App exists, pull down environments
-        io.log_warning('App Exists: Syncing existing Environments')
-        sync_app(app_name, region)
+        # App exists, do nothing
         pass
-
-
-def sync_app(app_name, region):
-    envs_remote = elasticbeanstalk.get_all_environments(app_name, region)
-    env_names_remote = []
-    for env in envs_remote or []:
-        env_name = env.name
-        env_names_remote.append(env_name)
-        pull_down_env(app_name, env_name, region)
-
-    envs_local = fileoperations.get_environments_from_files()
-    for env in envs_local:
-        env_name = env['EnvironmentName']
-        if env_name not in env_names_remote:
-            fileoperations.delete_env_file(env_name)
 
 
 def get_default_profile(region):
@@ -315,6 +298,12 @@ def open_webpage_in_browser(url, ssl=False):
         webbrowser.open(url)
 
 
+def get_application_names(region):
+    app_list = elasticbeanstalk.get_all_applications(region=region)
+
+    return [n.name for n in app_list]
+
+
 def scale(app_name, env_name, number, confirm, region):
     options = []
     # get environment
@@ -354,14 +343,14 @@ def scale(app_name, env_name, number, confirm, region):
     try:
         request_id = result['ResponseMetadata']['RequestId']
         wait_and_print_events(request_id, region, timeout_in_seconds=60*5)
-        pull_down_env(app_name, env_name, region)
         io.echo(strings['env.updatesuccess'])
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
 
 def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
-                 label, profile, single, key_name, branch_default, sample, nohang):
+                 label, profile, single, key_name, branch_default,
+                 sample, nohang):
     if profile is None:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
@@ -375,8 +364,8 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
     # Create env
     io.log_info('Creating new environment')
     result, request_id = create_env(app_name, env_name, region, cname,
-                                    solution_stack, tier, label, single, key_name,
-                                    profile)
+                                    solution_stack, tier, label, single,
+                                    key_name, profile)
 
     env_name = result.name  # get the (possibly) updated name
 
@@ -462,7 +451,8 @@ def delete(app_name, region, confirm):
 
     cleanup_ignore_file()
     fileoperations.clean_up()
-    wait_and_print_events(request_id, region, timeout_in_seconds=60*5)
+    wait_and_print_events(request_id, region, sleep_time=1,
+                          timeout_in_seconds=60*5)
 
 
 def deploy(app_name, env_name, region):
@@ -565,7 +555,6 @@ def setenv(app_name, env_name, var_list, region):
     try:
         request_id = result['ResponseMetadata']['RequestId']
         wait_and_print_events(request_id, region, timeout_in_seconds=60*4)
-        pull_down_env(app_name, env_name, region)
         io.echo('-- The environment has been created successfully! --')
     except TimeoutError:
         io.log_error('Unknown state of environment. Operation timed out.')

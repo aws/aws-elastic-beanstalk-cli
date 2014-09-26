@@ -78,6 +78,7 @@ prompts = {
     'fileopen.error1': 'Unable to open file with editor {editor}\nPlease check your settings and try again.',
     'fileopen.error2': 'Unable to open environment file. Try setting the editor environment variable',
     'update.invalidstate': 'Cannot update environment at this time. Wait for environment to finish its current operation.',
+    'sstack.invalid': 'Solution Stack provided is not valid. Please choose another.',
 }
 
 responses = {
@@ -94,6 +95,7 @@ responses = {
     'env.updatesuccess': 'Environment update completed successfully.',
     'env.cnamenotavailable': 'DNS name \([^ ]+\) is not available.',
     'env.nameexists': 'Environment [^ ]+ already exists.',
+    'app.deletesuccess': 'The application has been deleted successfully.',
     'logs.pulled': 'Pulled logs for environment instances.',
     'env.terminated': 'terminateEnvironment completed successfully.',
     'env.invalidstate': 'Environment named {env-name} is in an invalid state for this operation. Must be Ready.'
