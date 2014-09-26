@@ -96,6 +96,7 @@ responses = {
     'env.cnamenotavailable': 'DNS name \([^ ]+\) is not available.',
     'env.nameexists': 'Environment [^ ]+ already exists.',
     'app.deletesuccess': 'The application has been deleted successfully.',
+    'app.exists': 'Application {app-name} already exists.',
     'logs.pulled': 'Pulled logs for environment instances.',
     'env.terminated': 'terminateEnvironment completed successfully.',
     'env.invalidstate': 'Environment named {env-name} is in an invalid state for this operation. Must be Ready.'

@@ -47,6 +47,7 @@ class NoSourceControlError(EBCLIException):
      """
     pass
 
+
 class NoEnvironmentForBranchError(EBCLIException):
     """ No provided environment for the given Branch   """
     pass
@@ -61,6 +62,11 @@ class TimeoutError(EBCLIException):
     """ Operation timed out   """
     pass
 
+
 class InvalidStateError(EBCLIException):
     """ Environment is in an updating state    """
+    pass
+
+class AlreadyExistsError(EBCLIException):
+    """ The object already exists and can not be created  """
     pass

@@ -18,10 +18,12 @@ from cement.utils.misc import minimal_logger
 
 from ebcli.core import io
 from ebcli.objects.solutionstack import SolutionStack
-from ebcli.objects.exceptions import NotFoundError, InvalidStateError
+from ebcli.objects.exceptions import NotFoundError, InvalidStateError, \
+    AlreadyExistsError
 from ebcli.objects.tier import Tier
 from ebcli.lib import utils
 from ebcli.lib import aws
+from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.event import Event
 from ebcli.objects.environment import Environment
 from ebcli.objects.application import Application
@@ -43,10 +45,19 @@ def _make_api_call(operation_name, region=None, **operation_options):
 
 def create_application(app_name, descrip, region=None):
     LOG.debug('Inside create_application api wrapper')
-    return _make_api_call('create-application',
-                          application_name=app_name,
-                          description=descrip,
-                          region=region)
+    try:
+        result = _make_api_call('create-application',
+                                  application_name=app_name,
+                                  description=descrip,
+                                  region=region)
+    except InvalidParameterValueError as e:
+        if e.message == responses['app.exists'].replace('{app-name}',
+                                                        app_name):
+            raise AlreadyExistsError(e.message)
+
+    return result
+
+
 
 
 def create_application_version(app_name, vers_label, descrip, s3_bucket,

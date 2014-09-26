@@ -29,7 +29,8 @@ from ebcli.objects import region as regions
 from ebcli.lib import utils
 from ebcli.objects import configuration
 from ebcli.objects.exceptions import NoSourceControlError, \
-    ServiceError, TimeoutError, CredentialsError, InvalidStateError
+    ServiceError, TimeoutError, CredentialsError, InvalidStateError, \
+    AlreadyExistsError
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.tier import Tier
 from ebcli.lib.aws import InvalidParameterValueError
@@ -187,9 +188,8 @@ def prompt_for_solution_stack(region):
     solution_stacks = [x for x in solution_stacks if x.server == server]
 
     #should have 1 and only have 1 result
-    if len(solution_stacks) != 1:
-        LOG.error('Filtered Solution Stack list contains '
-                  'multiple results')
+    assert len(solution_stacks) == 1, 'Filtered Solution Stack list '\
+                                      'contains multiple results'
     return solution_stacks[0]
 
 
@@ -226,11 +226,8 @@ def setup_credentials():
 
 
 def create_app(app_name, region):
-    # check if app exists
-    app_result = elasticbeanstalk.describe_application(app_name, region=region)
-
-    if not app_result:  # no app found with that name
-        # Create it
+    # Attempt to create app
+    try:
         io.log_info('Creating application: ' + app_name)
         elasticbeanstalk.create_application(
             app_name,
@@ -240,7 +237,9 @@ def create_app(app_name, region):
 
         io.echo('Application', app_name,
                 'has been created')
-    else:
+
+    except AlreadyExistsError:
+        io.log_info('Application already exists.')
         # App exists, do nothing
         pass
 
