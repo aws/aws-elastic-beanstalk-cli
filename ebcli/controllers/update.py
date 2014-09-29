@@ -29,21 +29,9 @@ class UpdateController(AbstractBaseController):
 
 
     def do_command(self):
-        region = self.app.pargs.region
-        env_name = self.app.pargs.environment_name
-        #load default region
+        region = self.get_region()
+        env_name = self.get_env_name()
+        app_name = self.get_app_name()
         nohang = self.app.pargs.nohang
-        if not region:
-            region = fileoperations.get_default_region()
-
-        app_name = fileoperations.get_application_name()
-        if not env_name:
-            env_name = operations. \
-                get_setting_from_current_branch('environment')
-
-        if not env_name:
-            # ask for environment name
-            io.echo(strings['branch.noenv'])
-            return
 
         operations.update_environment(app_name, env_name, region, nohang)

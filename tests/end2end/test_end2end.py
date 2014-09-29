@@ -11,20 +11,29 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings
-from ebcli.core import operations, io
+"""
+Test order
+init - make sure application gets created and file is good
+create - make sure environment is created
+
+do tests on basic environment operations
+    events
+    status
+    status verbose
+    setenv
+    status verbose - make sure env was set
+    logs
+    scale
+    status verbose - make sure more instances were launched
 
 
-class LogsController(AbstractBaseController):
-    class Meta:
-        label = 'logs'
-        description = strings['logs.info']
-        usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
+    make a change
+    deploy
 
+    Cant really test for open or console because a CI wont be able to open browsers
 
-    def do_command(self):
-        region = self.get_region()
-        env_name = self.get_env_name()
+list
+terminate
+delete
 
-        operations.logs(env_name, region)
+"""

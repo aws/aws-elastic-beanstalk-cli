@@ -37,7 +37,7 @@ def get_unique_name(name, current_uniques):
     base_name = name
     number = 1
     while base_name in current_uniques:
-        base_name = name + number
+        base_name = name + str(number)
         number += 1
 
     return base_name

@@ -33,8 +33,6 @@ class TestFileOperations(unittest.TestCase):
         if not os.path.exists(fileoperations.beanstalk_directory):
             os.makedirs(fileoperations.beanstalk_directory)
 
-        # fileoperations.default_section = 'ebcli_test_default'
-
         #set up mock home dir
         if not os.path.exists('home'):
             os.makedirs('home')
@@ -162,7 +160,6 @@ class TestFileOperations(unittest.TestCase):
         self.assertEqual(access, access_result)
         self.assertEqual(secret, secret_result)
 
-
     def test_save_to_aws_config_standard(self):
         # write values
         access = '09876'
@@ -177,29 +174,9 @@ class TestFileOperations(unittest.TestCase):
         self.assertEqual(access, access_result)
         self.assertEqual(secret, secret_result)
 
-    # def test_save_and_read_to_real_credentials_file(self):
-    #     # change directory back to normal
-    #     fileoperations.aws_config_folder = fileoperations.get_aws_home()
-    #     fileoperations.aws_config_location \
-    #         = fileoperations.aws_config_folder + 'config'
-    #
-    #     access = '12345678'
-    #     secret = 'aBcdEfgh'
-    #
-    #     # save
-    #     fileoperations.save_to_aws_config(access, secret)
-    #     # read
-    #     access_result, secret_result \
-    #         = fileoperations.read_aws_config_credentials()
-    #
-    #     # Test
-    #     self.assertEqual(access, access_result)
-    #     self.assertEqual(secret, secret_result)
-
     def test_get_application_name(self):
         # wrapper of get_config_setting
         pass
-
 
     def test_create_config_file_no_file(self):
         # make sure file doesn't exist

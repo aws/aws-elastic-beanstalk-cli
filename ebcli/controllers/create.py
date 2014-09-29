@@ -50,10 +50,9 @@ class CreateController(AbstractBaseController):
         ]
         usage = 'eb create [options ...]'
 
-
     def do_command(self):
+        # save command line args
         env_name = self.app.pargs.env
-        region = self.app.pargs.region
         cname = self.app.pargs.cname
         tier = self.app.pargs.tier
         solution_string = self.app.pargs.solution
@@ -64,61 +63,58 @@ class CreateController(AbstractBaseController):
         key_name = self.app.pargs.keyname
         sample = self.app.pargs.sample
         nohang = self.app.pargs.nohang
+        provided_env_name = env_name is not None
 
+        if sample and label:
+            io.log_error(strings['create.sampleandlabel'])
+            return
 
-        # get application name
-        app_name = fileoperations.get_application_name()
-
-        #load default region
-        if not region:
-            region = fileoperations.get_default_region()
+        app_name = self.get_app_name()
+        region = self.get_region()
 
         #load solution stack
         if not solution_string:
             solution_string = fileoperations.get_default_solution_stack()
 
-        # Test out solution stack before we ask any questions (Fast Fail)
+        # Test out sstack and tier before we ask any questions (Fast Fail)
         if solution_string:
             try:
-                solution = elasticbeanstalk.get_solution_stack(solution_string,
+                solution = operations.get_solution_stack(solution_string,
                                                                region)
             except NotFoundError:
-                io.log_error('Could not find specified solution stack')
-                sys.exit(127)
+                raise NotFoundError('Solution stack ' + solution_string +
+                                    ' does not appear to be valid')
 
         if tier:
             try:
                 tier = Tier.parse_tier(tier)
             except NotFoundError:
-                io.log_error('Provided tier does not appear to be valid')
-                sys.exit(127)
+                raise NotFoundError('Provided tier ' + tier + ' does not '
+                                    'appear to be valid')
 
+        # If we still dont have what we need, ask for it
         if not env_name:
             # default is app-name plus '-dev'
             default_name = app_name + '-dev'
             env_name = io.prompt_for_environment_name(default_name)
 
-        if not cname:
-            cname = io.prompt_for_cname()
-            while cname and \
-                    (not elasticbeanstalk.is_cname_available(cname, region)):
-                io.echo('That cname is not available. '
-                        'Please choose another')
+        if not cname and not provided_env_name:
+            while True:
                 cname = io.prompt_for_cname()
+                if not cname:
+                    # Reverting to default
+                    break
+                if not operations.is_cname_available(cname, region):
+                    io.echo('That cname is not available. '
+                            'Please choose another')
+                else:
+                    break
 
-        if not solution_string:
+        if not solution:
             solution = operations.prompt_for_solution_stack(region)
 
         if not tier:
-            tier = elasticbeanstalk.select_tier()
-
-        if not label:
-            # Default to service, will launch sample app
-            pass
-
-        if not profile:
-            # Default to service
-            pass
+            tier = operations.select_tier()
 
         operations.make_new_env(app_name, env_name, region, cname, solution,
                                 tier, label, profile, single, key_name,

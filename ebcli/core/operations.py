@@ -119,10 +119,14 @@ def print_events(app_name, env_name, region, follow):
             break
 
 
-def list_env_names(app_name, region):
+def get_env_names(app_name, region):
     envs = elasticbeanstalk.get_all_environments(app_name, region)
-    for e in envs:
-        io.echo(e.name)
+    return [e.name for e in envs if not e.status == 'Terminated']
+
+
+def list_env_names(app_name, region):
+    for e in get_env_names(app_name, region):
+        io.echo(e)
 
 
 def get_app_version_labels(app_name, region):
@@ -338,9 +342,8 @@ def scale(app_name, env_name, number, confirm, region):
              'Value': str(number)
              }
         )
-    result = elasticbeanstalk.update_environment(env_name, options, region)
+    request_id = elasticbeanstalk.update_environment(env_name, options, region)
     try:
-        request_id = result['ResponseMetadata']['RequestId']
         wait_and_print_events(request_id, region, timeout_in_seconds=60*5)
         io.echo(strings['env.updatesuccess'])
     except TimeoutError:
@@ -375,7 +378,7 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
     if not default_env or branch_default:
         write_setting_to_current_branch('environment', env_name)
 
-    # Print status of app
+    # Print status of env
     io.echo(strings['env.createstarted'])
     print_env_details(result, health=False)
 
@@ -421,7 +424,10 @@ def create_env(app_name, env_name, region, cname, solution_stack,
             cname = io.prompt_for_cname()
         elif re.match(responses['env.nameexists'], e.message):
             io.echo(strings['env.exists'])
-            env_name = io.prompt_for_environment_name()
+            current_environments = get_env_names(app_name, region)
+            unique_name = utils.get_unique_name(app_name + '-dev',
+                                                current_environments)
+            env_name = io.prompt_for_environment_name(default_name=unique_name)
         else:
             raise e
 
@@ -552,7 +558,7 @@ def setenv(app_name, env_name, var_list, region):
     result = elasticbeanstalk.update_environment(env_name, options, region,
                                                  remove=options_to_remove)
     try:
-        request_id = result['ResponseMetadata']['RequestId']
+        request_id = result
         wait_and_print_events(request_id, region, timeout_in_seconds=60*4)
         io.echo('-- The environment has been created successfully! --')
     except TimeoutError:
@@ -565,7 +571,7 @@ def print_from_url(url):
 
 
 def terminate(env_name, region):
-    result = elasticbeanstalk.terminate_environment(env_name, region)
+    request_id = elasticbeanstalk.terminate_environment(env_name, region)
 
     # disassociate with branch if branch default
     ## Get default environment
@@ -573,11 +579,6 @@ def terminate(env_name, region):
     if default_env == env_name:
         write_setting_to_current_branch('environment', None)
 
-    # remove config file
-    fileoperations.delete_env_file(env_name)
-
-    # Wait for logs to finish tailing
-    request_id = result['ResponseMetadata']['RequestId']
     wait_and_print_events(request_id, region,
                         timeout_in_seconds=60*5)
 
@@ -738,3 +739,18 @@ def get_setting_from_current_branch(keyname):
             return branch_dict[keyname]
         except KeyError:
             return None
+
+
+def select_tier():
+    tier_list = Tier.get_latest_tiers()
+    io.echo('Please choose a tier')
+    tier = utils.prompt_for_item_in_list(tier_list)
+    return tier
+
+
+def get_solution_stack(solution_string, region):
+    return elasticbeanstalk.get_solution_stack(solution_string, region)
+
+
+def is_cname_available(cname, region):
+    return elasticbeanstalk.is_cname_available(cname, region)

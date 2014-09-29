@@ -44,8 +44,6 @@ class BaseControllerTest(test.CementTestCase):
         if not os.path.exists(fileoperations.beanstalk_directory):
             os.makedirs(fileoperations.beanstalk_directory)
 
-        fileoperations.default_section = 'ebcli_test_default'
-
         #set up mock home dir
         if not os.path.exists('home'):
             os.makedirs('home')

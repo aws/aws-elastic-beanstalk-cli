@@ -28,9 +28,9 @@ class DeleteController(AbstractBaseController):
 
     def do_command(self):
         confirm = self.app.pargs.follow
-        # delete App
-        app_name = fileoperations.get_application_name()
+        app_name = self.get_app_name()
         region = fileoperations.get_default_region()
+
         operations.delete(app_name, region, confirm)
 
     def complete_command(self, commands):

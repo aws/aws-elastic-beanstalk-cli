@@ -57,9 +57,6 @@ def create_application(app_name, descrip, region=None):
 
     return result
 
-
-
-
 def create_application_version(app_name, vers_label, descrip, s3_bucket,
                                s3_key, region=None):
     LOG.debug('Inside create_application_version api wrapper')
@@ -372,7 +369,7 @@ def update_environment(env_name, options, region=None, remove=[]):
     except aws.InvalidParameterValueError as e:
         if e.message == responses['env.invalidstate'].replace('{env-name}',
                                                               env_name):
-            raise InvalidStateError()
+            raise InvalidStateError(e.message)
     return response['ResponseMetadata']['RequestId']
 
 
@@ -406,7 +403,7 @@ def terminate_environment(env_name, region=None):
     result = _make_api_call('terminate-environment',
                             environment_name=env_name,
                             region=region)
-    return result
+    return result['ResponseMetadata']['RequestId']
 
 
 def get_solution_stack(string, region):
@@ -423,13 +420,6 @@ def get_solution_stack(string, region):
         LOG.error('Solution Stack list contains '
                   'multiple results')
     return solution_stacks[0]
-
-
-def select_tier():
-    tier_list = Tier.get_latest_tiers()
-    io.echo('Please choose a tier')
-    tier = utils.prompt_for_item_in_list(tier_list)
-    return tier
 
 
 

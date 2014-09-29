@@ -33,8 +33,6 @@ from ebcli.controllers.scale import ScaleController
 from ebcli.controllers.setenv import SetEnvController
 from ebcli.controllers.list import ListController
 from ebcli.core.completer import CompleterController
-from ebcli.controllers.config import ConfigController
-from ebcli.controllers.sync import SyncController
 from ebcli.core import globals, base, io
 from ebcli.objects.exceptions import *
 from ebcli.resources.strings import strings
@@ -44,12 +42,9 @@ class EB(foundation.CementApp):
     class Meta:
         label = 'eb'
         base_controller = base.EbBaseController
-        defaults = init_defaults('eb', 'log')
-        # ToDo: Verbose mode by default for development, uncomment below to fix
-        defaults['log']['level'] = 'WARN'
+        defaults = init_defaults('eb', 'log.logging')
+        defaults['log.logging']['level'] = 'WARN'
         config_defaults = defaults
-        # argument_handler = ArgParseHandler
-        # uncomment above if custom arg handler is needed
 
     def setup(self):
         # register all controllers
@@ -62,7 +57,6 @@ class EB(foundation.CementApp):
         handler.register(StatusController)
         handler.register(TerminateController)
         handler.register(UpdateController)
-        handler.register(SyncController)
         handler.register(PauseController)
         handler.register(OpenController)
         handler.register(ConsoleController)
@@ -70,7 +64,6 @@ class EB(foundation.CementApp):
         handler.register(SetEnvController)
         handler.register(ListController)
         handler.register(CompleterController)
-        # handler.register(ConfigController)  # ToDo: Do we want this command?
 
         super(EB, self).setup()
 
@@ -100,6 +93,9 @@ def main():
         app.close(130)
     except NoEnvironmentForBranchError:
         pass
+    except InvalidStateError:
+        io.log_error(strings['exit.invalidstate'])
+        app.close(1)
     except NotFoundError as e:
         io.log_error(e.message)
         app.close(1)

@@ -78,16 +78,30 @@ def prompt_for_unique_name(default, unique_list):
 
 
 def prompt_for_environment_name(default_name='myEnv'):
-    # Validate env_name: Spec says:
-    # Constraint: Must be from 4 to 23 characters in length.
-    # The name can contain only letters, numbers, and hyphens.
-    # It cannot start or end with a hyphen.
+    """ Validate env_name: Spec says:
+     Constraint: Must be from 4 to 23 characters in length.
+       The name can contain only letters, numbers, and hyphens.
+      It cannot start or end with a hyphen.
+    """
+    constraint_pattern = '^[a-z0-9][a-z0-9-]{2,21}[a-z0-9]$'
+    #  Edit default name to fit standards.
+
+    if not re.match(constraint_pattern, default_name):
+        if not re.match('^[a-z0-9].*', default_name):  # begins correctly
+            default_name = 'eb-' + default_name
+        default_name = default_name.replace('_', '-')
+        default_name = re.sub('[^a-z0-9A-Z-]', '', default_name)
+        if len(default_name) > 23:
+            default_name = default_name[:22]
+        if not re.match('.*[a-z0-9]$', default_name):  # end correctly
+            default_name += '0'
+
     while True:
         echo('Enter Environment Name')
         env_name = prompt('default is ' + default_name)
         if not env_name:
             return default_name
-        if re.match('^[a-z0-9][a-z0-9-]{2,21}[a-z0-9]$', env_name.lower()):
+        if re.match(constraint_pattern, env_name.lower()):
             break
         else:
             echo('Environment name must be 4 to 23 characters in length. It '
@@ -104,7 +118,7 @@ def prompt_for_cname(default=None):
     # It cannot start or end with a hyphen.
     while True:
         echo('Enter DNS CNAME prefix')
-        cname = prompt('default is auto-generated')
+        cname = prompt('defaults to an auto-generated value')
         if not cname:
             return default
         if re.match('^[a-z0-9][a-z0-9-]{2,61}[a-z0-9]$', cname.lower()):

@@ -25,16 +25,7 @@ class TerminateController(AbstractBaseController):
 
 
     def do_command(self):
-        region = self.app.pargs.region
-        env_name = self.app.pargs.environment_name
-
-        if not env_name:
-            env_name = operations. \
-                get_setting_from_current_branch('environment')
-
-        if not env_name:
-            # ask for environment name
-            io.echo(strings['branch.noenv'])
-            return
+        region = self.get_region()
+        env_name = self.get_env_name()
 
         operations.terminate(env_name, region)

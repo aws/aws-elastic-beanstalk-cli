@@ -19,6 +19,7 @@ strings = {
     'init.info': 'Initializes your directory with eb. '
                  'Sets up the app',
     'create.info': 'Create a new environment',
+    'create.sampleandlabel': 'Both sample and versionlabel cannot be used together',
     'delete.info': 'Completely remove application and all environments in it',
     'events.info': 'Get recent events',
     'open.info': 'Opens the environment app in a browser',
@@ -53,6 +54,7 @@ strings = {
                      'Have you ran eb init?',
     'exit.noregion': 'A default region can not be found. Please run eb init or'
                      ' add the region using --region',
+    'exit.invalidstate': 'The operation can not be completed at this time due to a pending operation. Please try again later.',
     'branch.noenv': 'No environment is registered with this branch. You must'
                     ' specify an environment, i.e. eb {cmd} envName',
     'init.epilog': 'This command is safe when ran in a previously initialized'
@@ -72,8 +74,8 @@ prompts = {
                                  ' like to switch to a Load Balanced environment?',
     'cname.unavailable': 'The CNAME you provided is currently not available.\n'
                          'Please try another',
-    'delete.confirm': 'This application has currently running environments, '
-                      'if you delete it, all environments will be terminated. '
+    'delete.confirm': 'This application has currently running environments. '
+                      'If you delete it, all environments will be terminated. '
                       'Are you sure you want to delete the application?',
     'fileopen.error1': 'Unable to open file with editor {editor}\nPlease check your settings and try again.',
     'fileopen.error2': 'Unable to open environment file. Try setting the editor environment variable',
@@ -104,6 +106,6 @@ responses = {
 git_ignore = [
     '# Elastic Beanstalk Files',        # comment line
     '.elasticbeanstalk/*',              # ignore eb files
-    '!.elasticbeanstalk/*.ebe.*',       # don't ignore shareable environments
-    '!.elasticbeanstalk/*.global.*',    # don't ignore global configurations
+    '!.elasticbeanstalk/*.env.yml',       # don't ignore shareable environments
+    '!.elasticbeanstalk/*.global.yml',    # don't ignore global configurations
 ]

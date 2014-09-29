@@ -45,5 +45,5 @@ class DeployController(AbstractBaseController):
         operations.deploy(app_name, env_name, region)
 
     def complete_command(self, commands):
-        #ToDo, edit this if we ever support multiple deploys
+        #ToDo, edit this if we ever support multiple env deploys
         super(DeployController, self).complete_command(commands)
