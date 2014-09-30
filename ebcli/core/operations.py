@@ -678,6 +678,12 @@ def update_environment(app_name, env_name, region, nohang):
     # Update and delete file
     usr_model = fileoperations.get_environment_from_file(env_name)
     changes = configuration.collect_changes(api_model, usr_model)
+
+    if not changes:
+        # no changes made, exit
+        io.log_warning('No changes made. Exiting.')
+        return
+
     try:
         request_id = elasticbeanstalk.update_environment(env_name, changes, region)
     except InvalidStateError:
