@@ -30,7 +30,9 @@ def echo(*args):
 def _convert_to_strings(list_of_things):
     scalar_types = six.string_types + six.integer_types
     for data in list_of_things:
-        if isinstance(data, scalar_types) or hasattr(data, '__str__'):
+        if isinstance(data, unicode):
+            yield data.encode('utf8')
+        elif isinstance(data, scalar_types) or hasattr(data, '__str__'):
             yield str(data)
         else:
             LOG.error('echo called with an unsupported data type')
