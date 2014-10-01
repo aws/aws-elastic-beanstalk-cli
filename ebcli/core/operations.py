@@ -678,6 +678,7 @@ def update_environment(app_name, env_name, region, nohang):
     # Update and delete file
     usr_model = fileoperations.get_environment_from_file(env_name)
     changes = configuration.collect_changes(api_model, usr_model)
+    fileoperations.delete_env_file(env_name)
 
     if not changes:
         # no changes made, exit

@@ -62,6 +62,10 @@ def convert_api_to_usr_model(api_model):
 
     for setting in api_model['OptionSettings']:
         namespace = setting['Namespace']
+        # ToDo: Exclude environment vars
+        # if namespace == 'aws:elasticbeanstalk:application:environment':
+        #     # Exclude environment variables
+        #     continue
 
         if namespace not in usr_model_settings:
             #create it
@@ -72,6 +76,7 @@ def convert_api_to_usr_model(api_model):
             value = setting['Value']
         else:
             value = None
+
         usr_model_settings[namespace][key] = value
 
     return usr_model
