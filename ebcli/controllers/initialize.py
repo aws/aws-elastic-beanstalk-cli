@@ -105,7 +105,7 @@ class InitController(AbstractBaseController):
                 io.echo(prompts['sstack.invalid'])
                 solution = None
 
-        if not solution:
+        if not solution or self.interactive:
             solution = operations.prompt_for_solution_stack(self.region)
 
         return solution
