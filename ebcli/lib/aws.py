@@ -31,7 +31,6 @@ def set_session_creds(id, key):
         service.session.set_credentials(id, key)
 
 
-
 def _set_user_agent_for_session(session):
     session.user_agent_name = 'eb-cli'
     session.user_agent_version = __version__
