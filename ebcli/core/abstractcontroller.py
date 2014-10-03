@@ -54,7 +54,6 @@ class AbstractBaseController(controller.CementBaseController):
         """
         if self.app.pargs.verbose:
             LoggingLogHandler.set_level(self.app.log, 'INFO')
-        io.log_info("Verbose Mode On")
         self.do_command()
 
     def get_app_name(self):
@@ -95,7 +94,7 @@ class AbstractBaseController(controller.CementBaseController):
                 # lets complete for positional args
                 region = fileoperations.get_default_region()
                 app_name = fileoperations.get_application_name()
-                operations.list_env_names(app_name, region)
+                io.echo(*operations.get_env_names(app_name, region))
 
     def complete_region(self, commands):
         # we only care about top command

@@ -28,8 +28,9 @@ class ListController(AbstractBaseController):
     def do_command(self):
         app_name = self.get_app_name()
         region = self.get_region()
+        verbose = self.app.pargs.verbose
 
-        operations.list_env_names(app_name, region)
+        operations.list_env_names(app_name, region, verbose)
 
     def complete_command(self, commands):
         # We only care about regions

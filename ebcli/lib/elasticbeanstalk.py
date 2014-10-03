@@ -54,6 +54,8 @@ def create_application(app_name, descrip, region=None):
         if e.message == responses['app.exists'].replace('{app-name}',
                                                         app_name):
             raise AlreadyExistsError(e.message)
+        else:
+            raise e
 
     return result
 

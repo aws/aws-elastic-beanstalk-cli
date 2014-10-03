@@ -124,9 +124,34 @@ def get_env_names(app_name, region):
     return [e.name for e in envs if not e.status == 'Terminated']
 
 
-def list_env_names(app_name, region):
-    for e in get_env_names(app_name, region):
-        io.echo(e)
+def list_env_names(app_name, region, verbose):
+    current_env = get_setting_from_current_branch('environment')
+    env_names = get_env_names(app_name, region)
+    env_names.sort()
+
+    if verbose:
+        io.echo('Application:', app_name)
+        io.echo('    Environments:', len(env_names))
+        for e in env_names:
+            env = elasticbeanstalk.get_environment_resources(e, region)
+            instances = env['EnvironmentResources']['Instances']
+            if e == current_env:
+                e = '* ' + e
+            io.echo('       ', e)
+            io.echo('            Instances:')
+            for i in instances:
+                io.echo('              ', i['Id'])
+
+    else:
+        for i in range(0, len(env_names)):
+            if env_names[i] == current_env:
+                env_names[i] = '* ' + env_names[i]
+
+        if len(env_names) <= 10:
+            for e in env_names:
+                io.echo(e)
+        else:
+            utils.print_list_in_columns(env_names)
 
 
 def get_app_version_labels(app_name, region):
@@ -529,6 +554,11 @@ def status(app_name, env_name, region, verbose):
     print_env_details(env, True)
 
     if verbose:
+        # Print number of running instances
+        env = elasticbeanstalk.get_environment_resources(env_name, region)
+        instances = env['EnvironmentResources']['Instances']
+        io.echo('  Running instances:', len(instances))
+
         # Print environment Variables
         settings = elasticbeanstalk.describe_configuration_settings(
             app_name, env_name, region
@@ -541,12 +571,6 @@ def status(app_name, env_name, region, verbose):
             key, value = utils.mask_vars(key, value)
             io.echo('       ', key, '=', value)
 
-        # Print environment instances
-        env = elasticbeanstalk.get_environment_resources(env_name, region)
-        instances = env['EnvironmentResources']['Instances']
-        io.echo('  Running instances:', len(instances))
-        for i in instances:
-            io.echo('       ', i['Id'])
 
 
 def logs(env_name, region):

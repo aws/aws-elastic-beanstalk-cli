@@ -62,7 +62,7 @@ class EB(foundation.CementApp):
         handler.register(ScaleController)
         handler.register(SetEnvController)
         handler.register(ListController)
-        handler.register(CloneController)
+        # handler.register(CloneController)
         handler.register(CompleterController)
 
         super(EB, self).setup()

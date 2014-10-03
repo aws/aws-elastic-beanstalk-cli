@@ -16,8 +16,8 @@ import sys
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
-from ebcli.lib import elasticbeanstalk, iam
-from ebcli.objects.exceptions import NotFoundError, NotInitializedError
+from ebcli.lib import elasticbeanstalk, utils
+from ebcli.objects.exceptions import NotFoundError
 from ebcli.core import io, fileoperations, operations
 from ebcli.objects.tier import Tier
 
@@ -96,10 +96,13 @@ class CreateController(AbstractBaseController):
         if not env_name:
             # default is app-name plus '-dev'
             default_name = app_name + '-dev'
-            env_name = io.prompt_for_environment_name(default_name)
+            current_environments = operations.get_env_names(app_name, region)
+            unique_name = utils.get_unique_name(default_name,
+                                                current_environments)
+            env_name = io.prompt_for_environment_name(unique_name)
 
         if not cname and not provided_env_name:
-            cname = get_cname()
+            cname = get_cname(region)
 
         if not solution:
             solution = operations.prompt_for_solution_stack(region)

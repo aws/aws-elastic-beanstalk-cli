@@ -37,7 +37,7 @@ def prompt_for_item_in_list(lst, default=1):
 
 def get_unique_name(name, current_uniques):
     base_name = name
-    number = 1
+    number = 2
     while base_name in current_uniques:
         base_name = name + str(number)
         number += 1
@@ -54,4 +54,37 @@ def mask_vars(key, value):
             value = "*****"
 
     return key, value
+
+
+def print_list_in_columns(lst):
+    lst = list_to_columns(lst)
+    index = 0
+    for x in range(0, len(lst[0])):
+        line = []
+        for i in range(0, len(lst)):
+            try:
+                line.append(lst[i][x])
+            except IndexError:
+                pass
+
+        #Note: This function is only intended for env_name, which are
+        ## Guaranteed to be 23 characters or less
+        io.echo_and_justify(25, *line)
+
+
+def list_to_columns(lst):
+    assert len(lst) > 4, "List size must be greater than 4"
+    COLUMN_NUM = 4
+    remainder = len(lst) % COLUMN_NUM
+    column_size = len(lst) // COLUMN_NUM
+    if remainder != 0:
+        column_size += 1
+    colunms = [[], [], [], []]
+    index = 0
+    stop = column_size
+    for x in range(0, COLUMN_NUM):
+        colunms[x] += lst[index:stop]
+        index = stop
+        stop += column_size
+    return colunms
 

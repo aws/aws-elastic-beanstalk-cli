@@ -45,4 +45,4 @@ class ScaleController(AbstractBaseController):
             if len(commands) == 2 and commands[-1].startswith('-'):
                 region = fileoperations.get_default_region()
                 app_name = fileoperations.get_application_name()
-                operations.list_env_names(app_name, region)
+                io.echo(*operations.get_env_names(app_name, region))

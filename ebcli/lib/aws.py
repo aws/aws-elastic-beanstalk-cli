@@ -67,7 +67,7 @@ def make_api_call(service_name, operation_name, region=None,
     try:
         LOG.debug('Making api call: (' +
                   service_name + ', ' + operation_name +
-                  ') to region: ' + region)
+                  ') to region: ' + region + ' with args:' + str(operation_options))
         http_response, response_data = operation.call(endpoint,
                                                       **operation_options)
         status = http_response.status_code
