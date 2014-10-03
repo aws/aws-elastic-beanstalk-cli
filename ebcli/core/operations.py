@@ -730,7 +730,7 @@ def create_app_version(app_name, region):
     io.log_info('Uploading archive to s3 location: ' + key)
     s3.upload_application_version(bucket, key, file_path,
                                                 region=region)
-
+    fileoperations.delete_app_versions()
     try:
         io.log_info('Creating AppVersion ' + version_label)
         elasticbeanstalk.create_application_version(

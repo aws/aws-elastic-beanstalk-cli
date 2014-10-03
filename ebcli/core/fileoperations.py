@@ -206,6 +206,16 @@ def get_environment_from_file(env_name):
     return env
 
 
+def delete_app_versions():
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        if os.path.isdir(app_version_folder):
+            shutil.rmtree(app_version_folder)
+    finally:
+        os.chdir(cwd)
+
+
 def get_environments_from_files():
     # get all saved environment names from stored envlist
     envlist = _get_envlist()
