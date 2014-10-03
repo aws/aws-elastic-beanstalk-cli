@@ -57,6 +57,7 @@ def create_application(app_name, descrip, region=None):
 
     return result
 
+
 def create_application_version(app_name, vers_label, descrip, s3_bucket,
                                s3_key, region=None):
     LOG.debug('Inside create_application_version api wrapper')
@@ -139,6 +140,34 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
     return env, request_id
 
 
+def clone_environment(app_name, env_name, clone_name, cname,
+                      description, region=None):
+    LOG.debug('Inside clone_environment api wrapper')
+
+    assert app_name is not None, 'App name can not be empty'
+    assert env_name is not None, 'Environment name can not be empty'
+    assert clone_name is not None, 'Clone name can not be empty'
+
+    settings = []
+
+    kwargs = {
+        'application_name': app_name,
+        'environment_name': clone_name,
+        'template-specification': [{'template-source':{'environment-name':env_name,}}],
+    }
+    if description:
+        kwargs['description'] = description
+    if cname:
+        kwargs['cname_prefix'] = cname
+
+    result = _make_api_call('create-environment', region=region, **kwargs)
+
+    # convert to object
+    env = _api_to_environment(result)
+    request_id = result['ResponseMetadata']['RequestId']
+    return env, request_id
+
+
 def _api_to_environment(api_dict):
     try:
         cname = api_dict['CNAME']
@@ -174,12 +203,14 @@ def _api_to_environment(api_dict):
     )
     return env
 
+
 def delete_application(app_name, region=None):
     LOG.debug('Inside delete_application api wrapper')
     result = _make_api_call('delete-application',
                             application_name=app_name,
                             region=region)
     return result['ResponseMetadata']['RequestId']
+
 
 def delete_application_and_envs(app_name, region=None):
     LOG.debug('Inside delete_application_and_envs')
@@ -293,7 +324,12 @@ def get_environment(app_name, env_name, region=None):
                           application_name=app_name,
                           environment_names=[env_name],
                           region=region)
-    return _api_to_environment(result['Environments'][0])
+
+    envs = result['Environments']
+    if len(envs) < 1:
+        raise NotFoundError('Environment ' + env_name + ' Not Found')
+    else:
+        return _api_to_environment(envs[0])
 
 
 def get_environment_resources(env_name, region=None):

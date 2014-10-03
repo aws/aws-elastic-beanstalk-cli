@@ -99,16 +99,7 @@ class CreateController(AbstractBaseController):
             env_name = io.prompt_for_environment_name(default_name)
 
         if not cname and not provided_env_name:
-            while True:
-                cname = io.prompt_for_cname()
-                if not cname:
-                    # Reverting to default
-                    break
-                if not operations.is_cname_available(cname, region):
-                    io.echo('That cname is not available. '
-                            'Please choose another')
-                else:
-                    break
+            cname = get_cname()
 
         if not solution:
             solution = operations.prompt_for_solution_stack(region)
@@ -135,3 +126,17 @@ class CreateController(AbstractBaseController):
             io.echo(*elasticbeanstalk.get_available_solution_stacks(region))
         if cmd in ['-vl', '--versionlabel']:
             io.echo(*operations.get_app_version_labels(app_name, region))
+
+
+def get_cname(region):
+    while True:
+        cname = io.prompt_for_cname()
+        if not cname:
+            # Reverting to default
+            break
+        if not operations.is_cname_available(cname, region):
+            io.echo('That cname is not available. '
+                    'Please choose another')
+        else:
+            break
+    return cname

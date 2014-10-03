@@ -17,11 +17,12 @@ import shutil
 import sys
 
 from yaml import load, dump, safe_dump
+from yaml.scanner import ScannerError
 from six.moves import configparser
 from six.moves.configparser import NoSectionError, NoOptionError
 from cement.utils.misc import minimal_logger
 
-from ebcli.objects.exceptions import NotInitializedError, NoRegionError
+from ebcli.objects.exceptions import NotInitializedError, InvalidSyntaxError
 from ebcli.objects.envlist import EnvList
 
 LOG = minimal_logger(__name__)
@@ -40,6 +41,7 @@ aws_config_folder = get_aws_home()
 aws_config_location = aws_config_folder + 'config'
 aws_access_key = 'aws_access_key_id'
 aws_secret_key = 'aws_secret_access_key'
+region_key = 'region'
 default_section = 'default'
 app_version_folder = beanstalk_directory + 'app_versions'
 
@@ -73,14 +75,13 @@ def clean_up():
         os.chdir(cwd)
 
 
-def read_aws_config_credentials():
+def read_aws_config_region():
     config = configparser.ConfigParser()
     config.read(aws_config_location)
 
-    access_key = _get_option(config, default_section, aws_access_key, None)
-    secret_key = _get_option(config, default_section, aws_secret_key, None)
+    region = _get_option(config, default_section, region_key, None)
 
-    return access_key, secret_key
+    return region
 
 
 def _set_not_none(config, section, option, value):
@@ -129,6 +130,7 @@ def get_application_name(default=_marker):
 
 def get_default_region():
     return get_config_setting('global', 'default_region')
+
 
 def get_default_solution_stack():
     return get_config_setting('global', 'default_solution_stack')
@@ -186,8 +188,6 @@ def get_zip_location(file_name):
 def get_environment_from_file(env_name):
     cwd = os.getcwd()
     file_name = beanstalk_directory + env_name
-    envlist = _get_envlist()
-    date = envlist.get_env_date(env_name)
 
     try:
         _traverse_to_project_root()
@@ -196,10 +196,13 @@ def get_environment_from_file(env_name):
             if os.path.exists(path):
                 with open(path, 'r') as f:
                     env = load(f)
+    except ScannerError:
+        raise InvalidSyntaxError("The environment file contains "
+                                 "invalid syntax")
+
     finally:
         os.chdir(cwd)
 
-    env['DateUpdated'] = date
     return env
 
 

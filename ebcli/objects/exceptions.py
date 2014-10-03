@@ -67,6 +67,12 @@ class InvalidStateError(EBCLIException):
     """ Environment is in an updating state    """
     pass
 
+
 class AlreadyExistsError(EBCLIException):
     """ The object already exists and can not be created  """
+    pass
+
+
+class InvalidSyntaxError(EBCLIException):
+    """ The file syntax is invalid  """
     pass

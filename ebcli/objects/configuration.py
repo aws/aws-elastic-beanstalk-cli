@@ -12,6 +12,8 @@
 # language governing permissions and limitations under the License.
 
 
+
+ENVIRONMENT_VAR_NAMESPACE = 'aws:elasticbeanstalk:application:environment'
 def collect_changes(api_model, usr_model):
     """
     Grabs all things in the usr_model that are different and
@@ -22,6 +24,7 @@ def collect_changes(api_model, usr_model):
     """
 
     changes = []
+    remove = []
 
     option_settings = api_model['OptionSettings']
     usr_options = usr_model['settings']
@@ -29,7 +32,16 @@ def collect_changes(api_model, usr_model):
         # Compare value for given optionName
         namespace = setting['Namespace']
         key = setting['OptionName']
-        usr_value = usr_options[namespace][key]
+
+        if namespace == ENVIRONMENT_VAR_NAMESPACE:
+            #ignore, these should be set with setenv
+            continue
+
+        try:
+            usr_value = usr_options[namespace][key]
+        except KeyError:
+            # user removed setting. We want to add to remove
+            remove.append({'Namespace': namespace, 'OptionName': key})
 
         # If they dont match, take the user value
         if 'Value' in setting:
@@ -41,7 +53,7 @@ def collect_changes(api_model, usr_model):
                 setting['Value'] = usr_value
                 changes.append(setting)
 
-    return changes
+    return changes, remove
 
 
 def convert_api_to_usr_model(api_model):
@@ -62,10 +74,9 @@ def convert_api_to_usr_model(api_model):
 
     for setting in api_model['OptionSettings']:
         namespace = setting['Namespace']
-        # ToDo: Exclude environment vars
-        # if namespace == 'aws:elasticbeanstalk:application:environment':
-        #     # Exclude environment variables
-        #     continue
+        if namespace == ENVIRONMENT_VAR_NAMESPACE:
+            # Exclude environment variables
+            continue
 
         if namespace not in usr_model_settings:
             #create it

@@ -17,7 +17,8 @@ import six
 from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
-from ebcli.objects.exceptions import ServiceError, CredentialsError
+from ebcli.objects.exceptions import ServiceError, CredentialsError, \
+    InvalidSyntaxError
 from ebcli.core import fileoperations
 
 LOG = minimal_logger(__name__)
@@ -90,6 +91,9 @@ def make_api_call(service_name, operation_name, region=None,
         LOG.error('No credentials found')
         raise CredentialsError('Operation Denied. You appear to have no'
                                ' credentials')
+    except botocore.exceptions.ValidationError as e:
+        raise InvalidSyntaxError(e.message)
+
     except botocore.exceptions.BotoCoreError as e:
         LOG.error('Botocore Error')
         raise e

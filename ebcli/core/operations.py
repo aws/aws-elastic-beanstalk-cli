@@ -30,7 +30,7 @@ from ebcli.lib import utils
 from ebcli.objects import configuration
 from ebcli.objects.exceptions import NoSourceControlError, \
     ServiceError, TimeoutError, CredentialsError, InvalidStateError, \
-    AlreadyExistsError
+    AlreadyExistsError, InvalidSyntaxError
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.tier import Tier
 from ebcli.lib.aws import InvalidParameterValueError
@@ -418,14 +418,14 @@ def create_env(app_name, env_name, region, cname, solution_stack,
             tier, label, single, key_name, profile, region=region)
 
     except InvalidParameterValueError as e:
-        LOG.debug('creating app returned error: ' + e.message)
+        LOG.debug('creating env returned error: ' + e.message)
         if re.match(responses['env.cnamenotavailable'], e.message):
             io.echo(prompts['cname.unavailable'])
             cname = io.prompt_for_cname()
         elif re.match(responses['env.nameexists'], e.message):
             io.echo(strings['env.exists'])
             current_environments = get_env_names(app_name, region)
-            unique_name = utils.get_unique_name(app_name + '-dev',
+            unique_name = utils.get_unique_name(env_name,
                                                 current_environments)
             env_name = io.prompt_for_environment_name(default_name=unique_name)
         else:
@@ -434,6 +434,52 @@ def create_env(app_name, env_name, region, cname, solution_stack,
         # Try again with new values
         return create_env(app_name, env_name, region, cname, solution_stack,
                           tier, label, single, key_name, profile)
+
+
+def make_cloned_env(app_name, env_name, clone_name, cname, region, nohang):
+    io.log_info('Cloning environment')
+    result, request_id = clone_env(app_name, env_name, clone_name,
+                                   cname, region)
+
+    # Print status of env
+    io.echo(strings['env.createstarted'])
+    print_env_details(result, health=False)
+
+    if nohang:
+        return
+
+    io.echo('Printing Status:')
+    try:
+        wait_and_print_events(request_id, region)
+        io.echo(strings['env.createsuccess'])
+    except TimeoutError:
+        io.log_error(strings['timeout.error'])
+
+
+def clone_env(app_name, env_name, clone_name, cname, region):
+    description = strings['env.clonedescription'].replace('{env-name}',
+                                                          env_name)
+
+    try:
+        return elasticbeanstalk.clone_environment(
+            app_name, env_name, clone_name, cname, description, region=region)
+
+    except InvalidParameterValueError as e:
+        LOG.debug('cloning env returned error: ' + e.message)
+        if re.match(responses['env.cnamenotavailable'], e.message):
+            io.echo(prompts['cname.unavailable'])
+            cname = io.prompt_for_cname()
+        elif re.match(responses['env.nameexists'], e.message):
+            io.echo(strings['env.exists'])
+            current_environments = get_env_names(app_name, region)
+            unique_name = utils.get_unique_name(clone_name,
+                                                current_environments)
+            clone_name = io.prompt_for_environment_name(default_name=unique_name)
+        else:
+            raise e
+
+        #try again
+        clone_env(app_name, env_name, clone_name, cname, region)
 
 
 def delete(app_name, region, confirm):
@@ -492,6 +538,7 @@ def status(app_name, env_name, region, verbose):
                 if n["Namespace"] == namespace}
         io.echo('  Environment Variables:')
         for key, value in vars.iteritems():
+            key, value = utils.mask_vars(key, value)
             io.echo('       ', key, '=', value)
 
         # Print environment instances
@@ -588,6 +635,7 @@ def save_env_file(api_model):
     file_location = fileoperations.save_env_file(usr_model)
     return file_location
 
+
 def open_file_for_editing(file_location):
 
     editor = fileoperations.get_editor()
@@ -676,19 +724,29 @@ def update_environment(app_name, env_name, region, nohang):
     open_file_for_editing(file_location)
 
     # Update and delete file
-    usr_model = fileoperations.get_environment_from_file(env_name)
-    changes = configuration.collect_changes(api_model, usr_model)
-    fileoperations.delete_env_file(env_name)
+    try:
+        usr_model = fileoperations.get_environment_from_file(env_name)
+        changes, remove = configuration.collect_changes(api_model, usr_model)
+        fileoperations.delete_env_file(env_name)
+    except InvalidSyntaxError:
+        io.log_error(prompts['update.invalidsyntax'])
+        return
 
-    if not changes:
+    if not changes and not remove:
         # no changes made, exit
         io.log_warning('No changes made. Exiting.')
         return
 
     try:
-        request_id = elasticbeanstalk.update_environment(env_name, changes, region)
+        request_id = elasticbeanstalk.update_environment(env_name, changes,
+                                                         region=region,
+                                                         remove=remove)
     except InvalidStateError:
         io.log_error(prompts['update.invalidstate'])
+        return
+    except InvalidSyntaxError as e:
+        io.log_error(prompts['update.invalidsyntax'] +
+                     '\nError = ' + e.message)
         return
 
     io.echo(strings['env.updatestarted'])

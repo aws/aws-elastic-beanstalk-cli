@@ -26,12 +26,12 @@ from ebcli.controllers.deploy import DeployController
 from ebcli.controllers.status import StatusController
 from ebcli.controllers.terminate import TerminateController
 from ebcli.controllers.update import UpdateController
-from ebcli.controllers.pause import PauseController
 from ebcli.controllers.open import OpenController
 from ebcli.controllers.console import ConsoleController
 from ebcli.controllers.scale import ScaleController
 from ebcli.controllers.setenv import SetEnvController
 from ebcli.controllers.list import ListController
+from ebcli.controllers.clone import CloneController
 from ebcli.core.completer import CompleterController
 from ebcli.core import globals, base, io
 from ebcli.objects.exceptions import *
@@ -57,19 +57,19 @@ class EB(foundation.CementApp):
         handler.register(StatusController)
         handler.register(TerminateController)
         handler.register(UpdateController)
-        handler.register(PauseController)
         handler.register(OpenController)
         handler.register(ConsoleController)
         handler.register(ScaleController)
         handler.register(SetEnvController)
         handler.register(ListController)
+        handler.register(CloneController)
         handler.register(CompleterController)
 
         super(EB, self).setup()
 
         #Register global arguments
-        self.add_arg('--verbose', action='store_true',
-                         help='toggle verbose ouput')
+        self.add_arg('-v', '--verbose',
+                     action='store_true', help='toggle verbose output')
 
         globals.app = self
 

@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 import ebcli
 
 requires = ['botocore>=0.53.0',
-            'cement>=2.4',
+            'cement=2.4',
             'six',
             'pyyaml']
 
@@ -16,7 +16,7 @@ setup_options = dict(
     description='Command Line Interface for AWS EB.',
     long_description=open('README.md').read(),
     data_file=[
-        ('etc/bash_completion.d/', ['bin/completion.bash'])
+        ('/etc/bash_completion.d/', ['bin/eb-completion.bash'])
     ],
     author='Nick Humrich',
     author_email='humrichn@amazon.com',

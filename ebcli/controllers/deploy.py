@@ -13,7 +13,7 @@
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
-from ebcli.core import io, operations, fileoperations
+from ebcli.core import operations
 
 
 class DeployController(AbstractBaseController):
@@ -36,6 +36,8 @@ class DeployController(AbstractBaseController):
         if not env_name:
             env_name = \
                 operations.get_setting_from_current_branch('environment')
+
+        # ToDo prompt for envs if env_name is still empty
 
         # ToDo add support for deploying to multiples?
         # for arg in self.app.pargs.environment_name:

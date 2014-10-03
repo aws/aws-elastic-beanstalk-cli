@@ -30,8 +30,8 @@ class EbBaseController(controller.CementBaseController):
         description = strings['base.info']
         # usage = eb {cmd} --option
         arguments = [
-            (['-v', '--version'], dict(action='store_true',
-                                       help='show application/version info')),
+            (['--version'], dict(action='store_true',
+                                 help='show application/version info')),
         ]
         epilog = strings['base.epilog']
 

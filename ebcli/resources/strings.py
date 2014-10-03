@@ -24,6 +24,7 @@ strings = {
     'events.info': 'Get recent events',
     'open.info': 'Opens the environment app in a browser',
     'console.info': 'Opens the Environments AWS console in a browser',
+    'clone.info': 'Clone an environment',
     'logs.info': 'Get recent logs',
     'deploy.info': 'Deploys your current branch to the environment',
     'scale.info': 'Change number of running instances',
@@ -43,6 +44,7 @@ strings = {
     'prompt.yes-or-no': 'Please enter either Y or N',
     'app.description': 'Application created from eb-cli tool using eb init',
     'env.description': 'Environment created from eb-cli tool using eb create',
+    'env.clonedescription': 'Environment clone of {env-name}. Created by the eb-cli tool using eb clone',
     'env.exists': 'An environment with that name already exists, '
                   'please try another.',
     'sstacks.notfound': 'No Solution Stacks found. It is possible this could '
@@ -56,7 +58,7 @@ strings = {
                      ' add the region using --region',
     'exit.invalidstate': 'The operation can not be completed at this time due to a pending operation. Please try again later.',
     'branch.noenv': 'No environment is registered with this branch. You must'
-                    ' specify an environment, i.e. eb {cmd} envName',
+                    ' specify an environment, i.e. eb {cmd} my-env-name',
     'init.epilog': 'This command is safe when ran in a previously initialized'
                    ' directory. To re-initialize with different options, '
                    'use the -i flag.',
@@ -80,6 +82,7 @@ prompts = {
     'fileopen.error1': 'Unable to open file with editor {editor}\nPlease check your settings and try again.',
     'fileopen.error2': 'Unable to open environment file. Try setting the editor environment variable',
     'update.invalidstate': 'Cannot update environment at this time. Wait for environment to finish its current operation.',
+    'update.invalidsyntax': 'The updated settings contained an error. Environment will not be updated.',
     'sstack.invalid': 'Solution Stack provided is not valid. Please choose another.',
 }
 

@@ -79,7 +79,8 @@ def prompt_for_unique_name(default, unique_list):
     return result
 
 
-def prompt_for_environment_name(default_name='myEnv'):
+def prompt_for_environment_name(default_name='myEnv',
+                                prompt_text='Enter Environment Name'):
     """ Validate env_name: Spec says:
      Constraint: Must be from 4 to 23 characters in length.
        The name can contain only letters, numbers, and hyphens.
@@ -99,7 +100,7 @@ def prompt_for_environment_name(default_name='myEnv'):
             default_name += '0'
 
     while True:
-        echo('Enter Environment Name')
+        echo(prompt_text)
         env_name = prompt('default is ' + default_name)
         if not env_name:
             return default_name

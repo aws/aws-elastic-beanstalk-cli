@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import re
+
 from ebcli.core import io
 
 
@@ -41,4 +43,15 @@ def get_unique_name(name, current_uniques):
         number += 1
 
     return base_name
+
+
+def mask_vars(key, value):
+    if (re.match('.*_CONNECTION_STRING', key) or
+                key == 'AWS_ACCESS_KEY_ID' or
+                key == 'AWS_SECRET_KEY' or
+                key == 'RDS_') \
+        and value is not None:
+            value = "*****"
+
+    return key, value
 
