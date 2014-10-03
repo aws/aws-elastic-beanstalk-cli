@@ -76,9 +76,11 @@ prompts = {
                                  ' like to switch to a Load Balanced environment?',
     'cname.unavailable': 'The CNAME you provided is currently not available.\n'
                          'Please try another',
-    'delete.confirm': 'This application has currently running environments. '
-                      'If you delete it, all environments will be terminated. '
-                      'Are you sure you want to delete the application?',
+    'delete.confirm': 'You are about to delete the application {app-name} and all its resources.\n'
+                      'This app currently has the following,\n'
+                      'Running environments: {env-num}\n'
+                      'Configuration Templates: {config-num}\n'
+                      'Application Versions: {version-num}\n',
     'fileopen.error1': 'Unable to open file with editor {editor}\nPlease check your settings and try again.',
     'fileopen.error2': 'Unable to open environment file. Try setting the editor environment variable',
     'update.invalidstate': 'Cannot update environment at this time. Wait for environment to finish its current operation.',

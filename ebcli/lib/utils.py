@@ -48,8 +48,7 @@ def get_unique_name(name, current_uniques):
 def mask_vars(key, value):
     if (re.match('.*_CONNECTION_STRING', key) or
                 key == 'AWS_ACCESS_KEY_ID' or
-                key == 'AWS_SECRET_KEY' or
-                key == 'RDS_') \
+                key == 'AWS_SECRET_KEY') \
         and value is not None:
             value = "*****"
 

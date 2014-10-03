@@ -19,7 +19,6 @@ from cement.core.exc import CaughtSignal
 
 from ebcli.controllers.initialize import InitController
 from ebcli.controllers.create import CreateController
-from ebcli.controllers.delete import DeleteController
 from ebcli.controllers.events import EventsController
 from ebcli.controllers.logs import LogsController
 from ebcli.controllers.deploy import DeployController
@@ -50,7 +49,6 @@ class EB(foundation.CementApp):
         # register all controllers
         handler.register(InitController)
         handler.register(CreateController)
-        handler.register(DeleteController)
         handler.register(EventsController)
         handler.register(LogsController)
         handler.register(DeployController)

@@ -507,22 +507,29 @@ def clone_env(app_name, env_name, clone_name, cname, region):
         clone_env(app_name, env_name, clone_name, cname, region)
 
 
-def delete(app_name, region, confirm):
-    try:
-        request_id = elasticbeanstalk.delete_application(app_name, region)
+def delete_app(app_name, region, force):
+    app = elasticbeanstalk.describe_application(app_name, region)
 
-    #ToDo catch more explicit
-    ## Currently also catches "invalid app name"
-    except InvalidParameterValueError:
-        # Env's exist, let make sure the user is ok
-        io.echo(prompts['delete.confirm'])
-        if not confirm:
-            confirm = get_boolean_response()
+    if not force:
+        #Confirm
+        envs = get_env_names(app_name, region)
+        confirm_message = prompts['delete.confirm'].replace(
+            '{app-name}', app_name)
+        confirm_message = confirm_message.replace('{env-num}', str(len(envs)))
+        confirm_message = confirm_message.replace(
+            '{config-num}', str(len(app['ConfigurationTemplates'])))
+        confirm_message = confirm_message.replace(
+            '{version-num}', str(len(app['Versions'])))
+        io.echo()
+        io.echo(confirm_message)
+        result = io.get_input('Enter application name as shown to confirm')
 
-        if not confirm:
+        if result != app_name:
+            io.log_error('Names do not match. Exiting')
             return
 
-        request_id = elasticbeanstalk.delete_application_and_envs(app_name,
+
+    request_id = elasticbeanstalk.delete_application_and_envs(app_name,
                                                                   region)
 
     cleanup_ignore_file()

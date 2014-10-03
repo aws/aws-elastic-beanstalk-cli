@@ -228,7 +228,10 @@ def describe_application(app_name, region=None):
     result = _make_api_call('describe-applications',
                             application_names=[app_name],
                             region=region)
-    return result['Applications']
+    apps = result['Applications']
+    if len(apps) != 1:
+        raise NotFoundError('Application not found')
+    return apps[0]
 
 
 def is_cname_available(cname, region=None):

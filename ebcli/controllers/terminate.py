@@ -15,17 +15,45 @@ import time
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 from ebcli.core import operations, io
+from ebcli.objects.exceptions import NotFoundError
 
 
 class TerminateController(AbstractBaseController):
     class Meta:
         label = 'terminate'
         description = strings['terminate.info']
+        arguments = AbstractBaseController.Meta.arguments + [
+            (['--force'], dict(action='store_true',
+                               help='skip confimation prompt')),
+            (['--all'], dict(action='store_true',
+                             help='Terminate everything'))
+        ]
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 
 
     def do_command(self):
         region = self.get_region()
+        app_name = self.get_app_name()
         env_name = self.get_env_name()
+        force = self.app.pargs.force
+        all = self.app.pargs.all
 
-        operations.terminate(env_name, region)
+        if all:
+            operations.delete_app(app_name, region, force)
+
+        else:
+            if not force:
+                # make sure env exists
+                env_names = operations.get_env_names(app_name, region)
+                if env_name not in env_names:
+                    raise NotFoundError('Environment ' +
+                                        env_name + ' not found')
+                io.echo('You are about to terminate environment:', env_name)
+                result = io.get_input('Enter environment name '
+                                      'as shown to confirm')
+
+                if result != env_name:
+                    io.log_error('Names do not match. Exiting.')
+                    return
+
+            operations.terminate(env_name, region)
