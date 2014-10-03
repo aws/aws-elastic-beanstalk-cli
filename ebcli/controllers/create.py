@@ -41,7 +41,7 @@ class CreateController(AbstractBaseController):
             (['-d', '--branch_default'], dict(action='store_true',
                                               help='Set as branches default '
                                                    'environment')),
-            (['-p', '--profile'], dict(help='Instance profile')),
+            (['-i', '--instance_profile'], dict(help='Instance profile')),
             (['-vl', '--versionlabel'], dict(help='Version label to deploy')),
             (['-k', '--keyname'], dict(help='EC2 SSH KeyPair name')),
             (['-nh', '--nohang'], dict(action='store_true',

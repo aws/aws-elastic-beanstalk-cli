@@ -134,13 +134,11 @@ def list_env_names(app_name, region, verbose):
         io.echo('    Environments:', len(env_names))
         for e in env_names:
             env = elasticbeanstalk.get_environment_resources(e, region)
-            instances = env['EnvironmentResources']['Instances']
+            instances = [i['Id'] for i in env['EnvironmentResources']['Instances']]
             if e == current_env:
                 e = '* ' + e
-            io.echo('       ', e)
-            io.echo('            Instances:')
-            for i in instances:
-                io.echo('              ', i['Id'])
+
+            io.echo('       ', e, ':', instances)
 
     else:
         for i in range(0, len(env_names)):

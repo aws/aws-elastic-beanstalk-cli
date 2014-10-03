@@ -14,6 +14,8 @@
 
 
 ENVIRONMENT_VAR_NAMESPACE = 'aws:elasticbeanstalk:application:environment'
+CLOUDFORMATION_TEMPLATE = 'aws:cloudformation:template:parameter'
+
 def collect_changes(api_model, usr_model):
     """
     Grabs all things in the usr_model that are different and
@@ -33,8 +35,9 @@ def collect_changes(api_model, usr_model):
         namespace = setting['Namespace']
         key = setting['OptionName']
 
-        if namespace == ENVIRONMENT_VAR_NAMESPACE:
-            #ignore, these should be set with setenv
+        if namespace == ENVIRONMENT_VAR_NAMESPACE \
+                    or namespace == CLOUDFORMATION_TEMPLATE:
+            #ignore
             continue
 
         try:
@@ -74,8 +77,9 @@ def convert_api_to_usr_model(api_model):
 
     for setting in api_model['OptionSettings']:
         namespace = setting['Namespace']
-        if namespace == ENVIRONMENT_VAR_NAMESPACE:
-            # Exclude environment variables
+        if namespace == ENVIRONMENT_VAR_NAMESPACE \
+                    or namespace == CLOUDFORMATION_TEMPLATE:
+            # Exclude
             continue
 
         if namespace not in usr_model_settings:
