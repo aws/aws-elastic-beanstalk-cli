@@ -13,6 +13,7 @@
 
 from cement.core import controller, handler
 from ebcli.core import fileoperations, operations, io
+from ebcli.lib import aws
 
 
 class CompleterController(controller.CementBaseController):
@@ -37,6 +38,12 @@ class CompleterController(controller.CementBaseController):
          Results must be printed through stdin for the completer module
          to read then.
         """
+        #Set up aws profile just in case we need to make a service call
+        profile = fileoperations.get_config_setting('global', 'profile')
+        aws.set_profile(profile)
+
+        ##################
+
         commands = self.app.pargs.cmplt.strip('"')
 
         # Get commands, filter out last one
@@ -65,7 +72,7 @@ class CompleterController(controller.CementBaseController):
             else:
                 # A command has been provided. Complete at a deeper level
 
-                ctrlr = ctrlr() # Instantiate so we can read all arguments
+                ctrlr = ctrlr()  # Instantiate so we can read all arguments
 
                 if not hasattr(ctrlr, 'complete_command'):
                     return  # Controller does not support completion

@@ -43,6 +43,7 @@ aws_access_key = 'aws_access_key_id'
 aws_secret_key = 'aws_secret_access_key'
 region_key = 'region'
 default_section = 'default'
+ebcli_section = 'profile eb-cli'
 app_version_folder = beanstalk_directory + 'app_versions'
 
 
@@ -91,18 +92,16 @@ def _set_not_none(config, section, option, value):
 
 def save_to_aws_config(access_key, secret_key):
     config = configparser.ConfigParser()
-    configparser.DEFAULTSECT = 'default'
     if not os.path.isdir(aws_config_folder):
         os.makedirs(aws_config_folder)
 
     config.read(aws_config_location)
 
-    if default_section.lower() != 'default' and \
-                    default_section not in config.sections():
-        config.add_section(default_section)
+    if ebcli_section not in config.sections():
+        config.add_section(ebcli_section)
 
-    _set_not_none(config, default_section, aws_access_key, access_key)
-    _set_not_none(config, default_section, aws_secret_key, secret_key)
+    _set_not_none(config, ebcli_section, aws_access_key, access_key)
+    _set_not_none(config, ebcli_section, aws_secret_key, secret_key)
 
     with open(aws_config_location, 'w') as f:
         config.write(f)

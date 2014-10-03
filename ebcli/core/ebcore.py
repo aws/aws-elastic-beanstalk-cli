@@ -68,6 +68,8 @@ class EB(foundation.CementApp):
         #Register global arguments
         self.add_arg('-v', '--verbose',
                      action='store_true', help='toggle verbose output')
+        self.add_arg('--profile', help='Use a specific profile '
+                                       'from your credential file')
 
         globals.app = self
 

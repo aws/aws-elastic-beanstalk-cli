@@ -20,6 +20,7 @@ from ebcli.objects.exceptions import NoEnvironmentForBranchError, \
     NotInitializedError
 from ebcli.resources.strings import strings
 from ebcli.objects import region
+from ebcli.lib import aws
 
 
 class AbstractBaseController(controller.CementBaseController):
@@ -54,6 +55,7 @@ class AbstractBaseController(controller.CementBaseController):
         """
         if self.app.pargs.verbose:
             LoggingLogHandler.set_level(self.app.log, 'INFO')
+        self.set_profile()
         self.do_command()
 
     def get_app_name(self):
@@ -87,6 +89,17 @@ class AbstractBaseController(controller.CementBaseController):
         if not region:
             raise NotInitializedError
         return region
+
+    def set_profile(self):
+        profile = self.app.pargs.profile
+        if profile:
+            aws.set_profile_override(profile)
+        else:
+            profile = fileoperations.get_config_setting('global', 'profile')
+
+            aws.set_profile(profile)
+
+
 
     def complete_command(self, commands):
         if not self.complete_region(commands):

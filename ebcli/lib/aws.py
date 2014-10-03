@@ -24,12 +24,26 @@ from ebcli.core import fileoperations
 LOG = minimal_logger(__name__)
 
 _api_sessions = {}
+_profile = None
+_profile_env_var = 'AWS_EB_PROFILE'
 
 
 def set_session_creds(id, key):
     global _api_sessions
     for k, service in six.iteritems(_api_sessions):
         service.session.set_credentials(id, key)
+
+
+def set_profile(profile):
+    global _profile
+    _profile = profile
+
+
+def set_profile_override(profile):
+    global _profile
+    global _profile_env_var
+    _profile = profile
+    _profile_env_var = None
 
 
 def _set_user_agent_for_session(session):
@@ -39,11 +53,12 @@ def _set_user_agent_for_session(session):
 
 def _get_service(service_name):
     global _api_sessions
+    global _profile
     if service_name in _api_sessions:
         return _api_sessions[service_name]
 
     LOG.debug('Creating new Botocore Session')
-    session = botocore.session.get_session()
+    session = botocore.session.Session(session_vars={'profile': (None, _profile_env_var, _profile)})
     _set_user_agent_for_session(session)
 
     service = session.get_service(service_name)
@@ -53,7 +68,7 @@ def _get_service(service_name):
     return service
 
 
-def make_api_call(service_name, operation_name, region=None,
+def make_api_call(service_name, operation_name, region=None, profile=None,
                   **operation_options):
     service = _get_service(service_name)
 

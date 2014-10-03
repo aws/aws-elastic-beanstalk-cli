@@ -250,6 +250,7 @@ def setup_credentials():
     secret_key = io.prompt('aws-secret-key', default='ENTER_SECRET_HERE')
 
     fileoperations.save_to_aws_config(access_key, secret_key)
+    fileoperations.write_config_setting('global', 'profile', 'eb-cli')
 
     aws.set_session_creds(access_key, secret_key)
 
