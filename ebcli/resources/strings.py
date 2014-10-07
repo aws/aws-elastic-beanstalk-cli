@@ -33,10 +33,9 @@ strings = {
     'setenv.info': 'Set environment variables',
     'list.info': 'List all environments',
     'terminate.info': 'Terminate environment',
-    'update.info': 'Update environment',
+    'config.info': 'Update environment configuration',
     'sync.info': 'Pull down environment configurations',
     'ssh.info': 'SSH into environment instance',
-    'config.info': 'Config stuff',
     'error.nocreds': 'A credentials file can not be found. \n'
                      'Please place a credential file at ~/.aws/config',
     'cred.prompt':  'It looks like your credentials are not yet set up '

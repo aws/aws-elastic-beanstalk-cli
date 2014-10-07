@@ -126,7 +126,7 @@ def prompt_for_cname(default=None):
     while True:
         echo('Enter DNS CNAME prefix')
         if default:
-            cname = prompt('defaults is ' + default)
+            cname = prompt('default is ' + default)
         else:
             cname = prompt('defaults to an auto-generated value')
         if not cname:

@@ -24,7 +24,7 @@ from ebcli.controllers.logs import LogsController
 from ebcli.controllers.deploy import DeployController
 from ebcli.controllers.status import StatusController
 from ebcli.controllers.terminate import TerminateController
-from ebcli.controllers.update import UpdateController
+from ebcli.controllers.config import ConfigController
 from ebcli.controllers.open import OpenController
 from ebcli.controllers.console import ConsoleController
 from ebcli.controllers.scale import ScaleController
@@ -55,7 +55,7 @@ class EB(foundation.CementApp):
         handler.register(DeployController)
         handler.register(StatusController)
         handler.register(TerminateController)
-        handler.register(UpdateController)
+        handler.register(ConfigController)
         handler.register(OpenController)
         handler.register(ConsoleController)
         handler.register(ScaleController)

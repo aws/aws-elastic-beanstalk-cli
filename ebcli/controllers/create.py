@@ -119,7 +119,6 @@ class CreateController(AbstractBaseController):
                     raise AlreadyExistsError('The cname prefix "' + env_name +
                                              '" is not available.')
 
-
         if not solution:
             solution = operations.prompt_for_solution_stack(region)
 

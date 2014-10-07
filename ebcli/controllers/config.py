@@ -16,10 +16,10 @@ from ebcli.resources.strings import strings
 from ebcli.core import io, fileoperations, operations
 
 
-class UpdateController(AbstractBaseController):
+class ConfigController(AbstractBaseController):
     class Meta:
-        label = 'update'
-        description = strings['update.info']
+        label = 'config'
+        description = strings['config.info']
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
         arguments = AbstractBaseController.Meta.arguments + [
             (['-nh', '--nohang'], dict(action='store_true',
