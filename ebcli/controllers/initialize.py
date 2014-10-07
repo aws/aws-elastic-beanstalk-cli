@@ -31,7 +31,7 @@ class InitController(AbstractBaseController):
             (['-s', '--solution'], dict(help='Default Solution stack')),
             (['-k', '--keyname'], dict(help='Default EC2 key name')),
             (['-i', '--interactive'], dict(action='store_true',
-                                           help='Force interactive mode'))
+                                           help='Force interactive mode')),
         ]
         usage = 'eb init [options ...]'
         epilog = strings['init.epilog']
@@ -40,12 +40,20 @@ class InitController(AbstractBaseController):
         # get arguments
         self.interactive = self.app.pargs.interactive
         self.region = self.get_region()
+        self.flag = False
+        if self.app.pargs.application_name and self.app.pargs.solution:
+            self.flag = True
 
         if not operations.credentials_are_valid(self.region):
             operations.setup_credentials()
 
-        self.app_name = self.get_app_name()
         self.solution = self.get_solution_stack()
+        self.app_name = self.get_app_name()
+
+        if not self.solution or self.interactive:
+            result = operations.prompt_for_solution_stack(self.region)
+            self.solution = result.version
+
         self.keyname = self.get_keyname()
 
         operations.setup(self.app_name, self.region, self.solution,
@@ -100,19 +108,11 @@ class InitController(AbstractBaseController):
             except NotInitializedError:
                 solution_string = None
 
-        solution = None
         if solution_string:
-            try:
-                solution = operations.get_solution_stack(solution_string,
-                                                               self.region)
-            except NotFoundError:
-                io.echo(prompts['sstack.invalid'])
-                solution = None
+            operations.get_solution_stack(solution_string, self.region)
 
-        if not solution or self.interactive:
-            solution = operations.prompt_for_solution_stack(self.region)
+        return solution_string
 
-        return solution
 
     def get_keyname(self):
         keyname = self.app.pargs.keyname
@@ -123,6 +123,9 @@ class InitController(AbstractBaseController):
                 keyname = fileoperations.get_default_keyname()
             except NotInitializedError:
                 keyname = None
+
+        if self.flag and not self.interactive:
+            return keyname
 
         if not keyname or self.interactive:
             # Prompt for one

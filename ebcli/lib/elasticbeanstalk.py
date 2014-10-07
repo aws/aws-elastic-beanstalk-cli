@@ -346,15 +346,14 @@ def get_environment_resources(env_name, region=None):
 
 
 def get_new_events(app_name, env_name, request_id,
-                   last_event_time='', region=None):
+                   last_event_time=None, region=None):
     LOG.debug('Inside get_new_events api wrapper')
     # make call
-    if last_event_time is not '':
-        time = dateutil.parser.parse(last_event_time)
+    if last_event_time is not None:
+        time = last_event_time
         new_time = time + datetime.timedelta(0, 0, 1000)
-        timestamp = new_time.isoformat()[0:-9] + 'Z'
     else:
-        timestamp = ''
+        new_time = None
     kwargs = {}
     if app_name:
         kwargs['application_name'] = app_name
@@ -362,7 +361,8 @@ def get_new_events(app_name, env_name, request_id,
         kwargs['environment_name'] = env_name
     if request_id:
         kwargs['request_id'] = request_id
-    kwargs['start_time'] = timestamp
+    if new_time:
+        kwargs['start_time'] = str(new_time)
 
     result = _make_api_call('describe-events',
                           region=region,

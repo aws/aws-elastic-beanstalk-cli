@@ -59,6 +59,9 @@ class ExampleController(AbstractBaseController):
         ]
 
     def do_command(self):
+        """
+        This method actually does the command
+        """
         io.echo('Hello World!')
 
         for arg in self.app.pargs.positional_arg:
@@ -72,3 +75,15 @@ class ExampleController(AbstractBaseController):
 
         if self.app.pargs.hidden:
             io.echo('The hidden flag was set')
+
+    def complete_command(self, commands):
+        """
+        Implement this method for autocompletion to work
+        You do not have to worry about the --flags, only positional arguments
+
+        :param commands: A list of commands on the command line so fat
+        """
+        # Print out all possible options. The completer function is smart
+        ## enough to filter out the ones that dont match
+        io.echo('option1')
+        io.echo('option2')

@@ -93,28 +93,23 @@ def main():
     # The fix needs to be changed once the next release of cement is out
     except CaughtSignal:
         io.echo()
-        app.close(130)
+        app.close(5)
     except NoEnvironmentForBranchError:
         pass
     except InvalidStateError:
         io.log_error(strings['exit.invalidstate'])
-        app.close(1)
-    except NotFoundError as e:
-        io.log_error(e.message)
-        app.close(1)
-    except AlreadyExistsError as e:
-        io.log_error(e.message)
-        app.close(1)
+        app.close(3)
     except NotInitializedError:
         io.log_error(strings['exit.notsetup'])
         app.close(126)
     except NoSourceControlError:
         io.log_error(strings['git.notfound'])
-        app.close(1)
+        app.close(3)
     except NoRegionError:
         io.log_error(strings['exit.noregion'])
-        app.close(1)
+        app.close(3)
     except EBCLIException as e:
         io.log_error(e.__class__.__name__ + ": " + e.message)
+        app.close(3)
     finally:
         app.close()

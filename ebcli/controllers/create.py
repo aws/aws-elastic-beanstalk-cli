@@ -17,7 +17,8 @@ import sys
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 from ebcli.lib import elasticbeanstalk, utils
-from ebcli.objects.exceptions import NotFoundError, AlreadyExistsError
+from ebcli.objects.exceptions import NotFoundError, AlreadyExistsError, \
+    InvalidOptionsError
 from ebcli.core import io, fileoperations, operations
 from ebcli.objects.tier import Tier
 
@@ -68,8 +69,7 @@ class CreateController(AbstractBaseController):
         provided_env_name = env_name is not None
 
         if sample and label:
-            io.log_error(strings['create.sampleandlabel'])
-            return
+            raise InvalidOptionsError(strings['create.sampleandlabel'])
 
         app_name = self.get_app_name()
         region = self.get_region()
@@ -88,6 +88,9 @@ class CreateController(AbstractBaseController):
                                     ' does not appear to be valid')
 
         if tier:
+            if 'worker' in tier.lower() and cname:
+                raise InvalidOptionsError('Worker tiers do not '
+                                          'support a cname')
             try:
                 tier = Tier.parse_tier(tier)
             except NotFoundError:
@@ -108,19 +111,20 @@ class CreateController(AbstractBaseController):
                                                 current_environments)
             env_name = io.prompt_for_environment_name(unique_name)
 
-        if not cname and not provided_env_name:
-            cname = get_cname(env_name, region)
-        elif not cname:
-            if not operations.is_cname_available(env_name, region):
-                raise AlreadyExistsError('The cname prefix "' + env_name +
-                                         '" is not available.')
+        if not tier or tier.name.lower() == 'webserver':
+            if not cname and not provided_env_name:
+                cname = get_cname(env_name, region)
+            elif not cname:
+                if not operations.is_cname_available(env_name, region):
+                    raise AlreadyExistsError('The cname prefix "' + env_name +
+                                             '" is not available.')
 
 
         if not solution:
             solution = operations.prompt_for_solution_stack(region)
 
-        if not tier:
-            tier = operations.select_tier()
+        # if not tier:
+        #     tier = operations.select_tier()
 
         if not key_name:
             key_name = fileoperations.get_default_keyname()

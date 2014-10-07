@@ -76,3 +76,7 @@ class AlreadyExistsError(EBCLIException):
 class InvalidSyntaxError(EBCLIException):
     """ The file syntax is invalid  """
     pass
+
+class InvalidOptionsError(EBCLIException):
+    """ Options given through command line are invalid  """
+    pass

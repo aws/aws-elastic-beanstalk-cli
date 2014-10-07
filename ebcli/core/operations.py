@@ -46,13 +46,13 @@ def wait_and_print_events(request_id, region,
     timediff = timedelta(seconds=timeout_in_seconds)
 
     finished = False
-    last_time = ''
+    last_time = None
 
     #Get first events
     events = []
     while not events:
         events = elasticbeanstalk.get_new_events(
-            None, None, request_id, last_event_time='', region=region
+            None, None, request_id, last_event_time=None, region=region
         )
 
         if len(events) > 0:
@@ -118,7 +118,8 @@ def log_event(event, echo=False):
     severity = event.severity
     date = event.event_date
     if echo:
-        io.echo(date.ljust(26) + severity.ljust(8) + message)
+        io.echo(date.strftime("%Y-%m-%d %H:%M:%S").ljust(26) +
+                severity.ljust(8) + message)
     elif severity == 'INFO':
         io.echo('INFO:', message)
     elif severity == 'WARN':
@@ -132,7 +133,7 @@ def log_event(event, echo=False):
 def print_events(app_name, env_name, region, follow):
     if follow:
         io.echo(prompts['events.hanging'])
-    last_time = ''
+    last_time = None
     while True:
         events = elasticbeanstalk.get_new_events(
             app_name, env_name, None, last_event_time=last_time, region=region
@@ -257,10 +258,10 @@ def credentials_are_valid(region):
 
 
 def setup(app_name, region, solution, keyname):
-    setup_directory(app_name, region, solution.string, keyname)
+    setup_directory(app_name, region, solution, keyname)
 
     # Handle tomcat special case
-    if solution.platform == 'Tomcat' and \
+    if 'tomcat' in solution.lower() and \
             heuristics.has_tomcat_war_file():
         war_file = fileoperations.get_war_file_location()
         fileoperations.write_config_setting('deploy', 'artifact', war_file)
@@ -951,20 +952,39 @@ def select_tier():
 
 
 def get_solution_stack(solution_string, region):
+    solution_string = solution_string.lower()
     solution_stacks = elasticbeanstalk.get_available_solution_stacks(region)
-    # filter
-    solution_stacks = [x for x in solution_stacks if x.string == solution_string]
 
-    #check for a valid result
-    if len(solution_stacks) == 0:
-        raise NotFoundError('Provided Solution stack not found')
+    # check for exact string
+    stacks = [x for x in solution_stacks if x.name.lower() == solution_string]
+
+    if len(stacks) == 1:
+        return stacks[0]
 
     #should only have 1 result
-    if len(solution_stacks) > 1:
+    if len(stacks) > 1:
         LOG.error('Solution Stack list contains '
                   'multiple results')
-    return solution_stacks[0]
+        return None
 
+    # No exact match, check for versions
+    string = solution_string.replace('-', ' ')
+    string = re.sub(r'([a-z])([0-9])', '\\1 \\2', string)
+    stacks = [x for x in solution_stacks if x.version.lower() == string]
+
+    if len(stacks) > 0:
+        # Give the latest version. Latest is always first in list
+        return stacks[0]
+
+    # No exact match, check for platforms
+    stacks = [x for x in solution_stacks if x.platform.lower() == string]
+
+    if len(stacks) > 0:
+        # Give the latest version. Latest is always first in list
+        return stacks[0]
+
+    raise NotFoundError('Solution stack not found for given key "'
+                        + solution_string + '"')
 
 def is_cname_available(cname, region):
     return elasticbeanstalk.is_cname_available(cname, region)

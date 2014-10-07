@@ -22,24 +22,10 @@ class SolutionStack():
         self.platform = self.get_platform(ss_string)
         self.version = self.get_version(ss_string)
         self.server = self.get_server(ss_string)
-        self.string = self.create_string()
+        self.string = self.name
 
     def __str__(self):
         return self.string
-
-    def create_string(self):
-    #  note: platform, version, and server should all exist already
-        # handle custom stack case
-        if self.version == self.platform == self.server:
-            return self.pythonify(self.platform)
-
-        # handle all other cases
-        string = self.version + ' ' + self.server[0:5]
-        if 'v' in self.server:
-            string += ' ' + self.server[-6:]
-        else:
-            string += ' old'
-        return self.pythonify(string)
 
     @staticmethod
     def get_platform(ss_string):
@@ -67,7 +53,3 @@ class SolutionStack():
             eb.app.log.debug("Can not find a server in string: " + ss_string)
             return ss_string
         return matcher.group(1)
-
-    @staticmethod
-    def pythonify(string):
-        return string.lower().replace(' ', '-')

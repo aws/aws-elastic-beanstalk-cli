@@ -4,7 +4,7 @@ import sys
 from setuptools import setup, find_packages
 import ebcli
 
-requires = ['botocore>=0.53.0',
+requires = ['botocore=0.64.0',
             'cement=2.4',
             'six',
             'pyyaml']

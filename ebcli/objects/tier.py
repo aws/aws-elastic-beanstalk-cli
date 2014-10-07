@@ -31,7 +31,7 @@ class Tier():
     def __str__(self):
         return (self.name + '-' +
             self.type + '-' +
-            self.version).lower()
+            self.version)
 
     def __eq__(self, other):
         return self.string.lower() == other.string.lower()
@@ -55,6 +55,12 @@ class Tier():
 
     @staticmethod
     def parse_tier(string):
+        if string.lower() == 'web' or string.lower() == 'webserver':
+            return Tier('WebServer', 'Standard', '1.0')
+        if string.lower() == 'worker':
+            return Tier('Worker', 'SQS/HTTP', '1.1')
+
+
         name, typ, version = string.split('-')
         result = Tier(name, typ, version)
 
