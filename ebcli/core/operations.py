@@ -780,6 +780,11 @@ def cleanup_ignore_file():
 
 
 def create_app_version(app_name, region):
+    if heuristics.directory_is_empty():
+        io.log_warning('Can not find any code. Launching Sample application')
+        return None
+
+
     #get version_label
     source_control = SourceControl.get_source_control()
     version_label = source_control.get_version_label()

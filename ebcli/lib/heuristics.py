@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 
 import glob
+import os
 
 
 def find_language_type():
@@ -31,6 +32,11 @@ def find_language_type():
         return 'IIS'
     if smells_of_tomcat():
         return 'Tomcat'
+
+    # We cant smell its type
+    ## If there is just an index.html, php will work
+    if has_index_html():
+        return 'PHP'
 
     return None
 
@@ -63,6 +69,23 @@ def smells_of_php():
     """
     return _contains_file_types('*.php')
 
+
+def has_index_html():
+    """
+    True if directory contains index.html
+    """
+    return _contains_file_types('index.html')
+
+
+def directory_is_empty():
+    """
+    Directory containes no files or folders (ignote dot-files)
+    """
+    lst = [f for f in os.listdir('./') if not f.startswith('.')]
+    if len(lst) < 1:
+        return True
+    else:
+        return False
 
 def smells_of_node_js():
     """

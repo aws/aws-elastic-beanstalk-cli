@@ -28,7 +28,7 @@ class CreateController(AbstractBaseController):
         description = strings['create.info']
         arguments = [
             (['environment_name'], dict(action='store', nargs='?',
-                                        default=[],
+                                        default=None,
                                         help='Desired Environment name')),
             (['-r', '--region'], dict(help='Region which environment '
                                            'will be created in')),
