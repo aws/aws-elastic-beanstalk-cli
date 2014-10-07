@@ -28,6 +28,7 @@ from ebcli.controllers.update import UpdateController
 from ebcli.controllers.open import OpenController
 from ebcli.controllers.console import ConsoleController
 from ebcli.controllers.scale import ScaleController
+from ebcli.controllers.ssh import SSHController
 from ebcli.controllers.setenv import SetEnvController
 from ebcli.controllers.list import ListController
 from ebcli.controllers.clone import CloneController
@@ -58,6 +59,7 @@ class EB(foundation.CementApp):
         handler.register(OpenController)
         handler.register(ConsoleController)
         handler.register(ScaleController)
+        handler.register(SSHController)
         handler.register(SetEnvController)
         handler.register(ListController)
         # handler.register(CloneController)

@@ -424,18 +424,18 @@ def update_env_application_version(env_name,
     return response['ResponseMetadata']['RequestId']
 
 
-def request_environment_info(env_name, region=None):
+def request_environment_info(env_name, info_type, region=None):
     result = _make_api_call('request-environment-info',
                           environment_name=env_name,
-                          info_type='tail',
+                          info_type=info_type,
                           region=region)
     return result
 
 
-def retrieve_environment_info(env_name, region=None):
+def retrieve_environment_info(env_name, info_type, region=None):
     result = _make_api_call('retrieve-environment-info',
                           environment_name=env_name,
-                          info_type='tail',
+                          info_type=info_type,
                           region=region)
     return result
 

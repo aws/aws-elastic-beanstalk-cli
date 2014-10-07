@@ -26,6 +26,7 @@ strings = {
     'console.info': 'Opens the Environments AWS console in a browser',
     'clone.info': 'Clone an environment',
     'logs.info': 'Get recent logs',
+    'logs.epilog': 'Defaults to the recent logs. If you would instead like to retrieve all the logs, please use the "--all" flag.',
     'deploy.info': 'Deploys your current branch to the environment',
     'scale.info': 'Change number of running instances',
     'status.info': 'Get Environment info and status',
@@ -34,6 +35,7 @@ strings = {
     'terminate.info': 'Terminate environment',
     'update.info': 'Update environment',
     'sync.info': 'Pull down environment configurations',
+    'ssh.info': 'SSH into environment instance',
     'config.info': 'Config stuff',
     'error.nocreds': 'A credentials file can not be found. \n'
                      'Please place a credential file at ~/.aws/config',
@@ -66,6 +68,7 @@ strings = {
     'env.createsuccess': '-- The environment has been created successfully! --',
     'env.createstarted': '-- The environment is being created. --',
     'env.updatestarted': '-- The environment is being updated. --',
+    'ssh.notpresent': 'You do not seem to have ssh installed. Please install before continuing.',
 }
 prompts = {
     'events.hanging': 'Hanging and waiting for events. Use CTRL + C to exit.',
@@ -97,7 +100,7 @@ responses = {
     'event.launchsuccess': 'Successfully launched environment:',
     'event.launchbad': 'Create environment operation is CompleterController, '
                        'but with errors',
-    'git.norepository': 'Error: Not a git repository ' \
+    'git.norepository': 'Error: Not a git repository '
                         '(or any of the parent directories): .git',
     'env.updatesuccess': 'Environment update completed successfully.',
     'env.cnamenotavailable': 'DNS name \([^ ]+\) is not available.',
@@ -105,6 +108,8 @@ responses = {
     'app.deletesuccess': 'The application has been deleted successfully.',
     'app.exists': 'Application {app-name} already exists.',
     'logs.pulled': 'Pulled logs for environment instances.',
+    'logs.successtail': 'Successfully finished tailing',
+    'logs.successbundle': 'Successfully finished bundling',
     'env.terminated': 'terminateEnvironment completed successfully.',
     'env.invalidstate': 'Environment named {env-name} is in an invalid state for this operation. Must be Ready.'
 }

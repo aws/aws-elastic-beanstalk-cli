@@ -19,9 +19,9 @@ import os
 from six.moves import urllib
 from six import iteritems
 from cement.utils.misc import minimal_logger
-from cement.utils.shell import exec_cmd
+from cement.utils.shell import exec_cmd, exec_cmd2
 
-from ebcli.lib import elasticbeanstalk, s3, iam, aws
+from ebcli.lib import elasticbeanstalk, s3, iam, aws, ec2
 from ebcli.core import fileoperations, io
 from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.resources.strings import strings, responses, prompts
@@ -47,11 +47,31 @@ def wait_and_print_events(request_id, region,
 
     finished = False
     last_time = ''
+
+    #Get first events
+    events = []
+    while not events:
+        events = elasticbeanstalk.get_new_events(
+            None, None, request_id, last_event_time='', region=region
+        )
+
+        if len(events) > 0:
+            event = events[-1]
+            app_name = event.app_name
+            env_name = event.environment_name
+
+            log_event(event)
+            # Test event message for success string
+            finished = _is_success_string(event.message)
+            last_time = event.event_date
+        else:
+            time.sleep(sleep_time)
+
     while not finished and (datetime.now() - start) < timediff:
         time.sleep(sleep_time)
 
         events = elasticbeanstalk.get_new_events(
-            None, None, request_id, last_event_time=last_time, region=region
+            app_name, env_name, None, last_event_time=last_time, region=region
         )
 
         for event in reversed(events):
@@ -60,6 +80,9 @@ def wait_and_print_events(request_id, region,
             # Test event message for success string
             finished = _is_success_string(event.message)
             last_time = event.event_date
+
+            if finished:
+                break
 
     if not finished:
         raise TimeoutError('Timed out while waiting for command to CompleterController')
@@ -82,6 +105,12 @@ def _is_success_string(message):
         return True
     if message == responses['app.deletesuccess']:
         return True
+    if responses['logs.successtail'] in message:
+        return True
+    if responses['logs.successbundle'] in message:
+        return True
+
+    return False
 
 
 def log_event(event, echo=False):
@@ -133,8 +162,7 @@ def list_env_names(app_name, region, verbose):
         io.echo('Application:', app_name)
         io.echo('    Environments:', len(env_names))
         for e in env_names:
-            env = elasticbeanstalk.get_environment_resources(e, region)
-            instances = [i['Id'] for i in env['EnvironmentResources']['Instances']]
+            instances = get_instance_ids(app_name, e, region)
             if e == current_env:
                 e = '* ' + e
 
@@ -228,8 +256,8 @@ def credentials_are_valid(region):
         return False
 
 
-def setup(app_name, region, solution):
-    setup_directory(app_name, region, solution)
+def setup(app_name, region, solution, keyname):
+    setup_directory(app_name, region, solution, keyname)
 
     create_app(app_name, region)
 
@@ -319,7 +347,7 @@ def open_webpage_in_browser(url, ssl=False):
     LOG.debug('browser exitcode: ' + str(exitcode))
 
     if exitcode == 127:
-        # python probably isnt on path
+        # python probably isn't on path
         ## try to run webbrowser internally
         import webbrowser
         webbrowser.open(url)
@@ -561,8 +589,7 @@ def status(app_name, env_name, region, verbose):
 
     if verbose:
         # Print number of running instances
-        env = elasticbeanstalk.get_environment_resources(env_name, region)
-        instances = env['EnvironmentResources']['Instances']
+        instances = get_instance_ids(app_name, env_name, region)
         io.echo('  Running instances:', len(instances))
 
         # Print environment Variables
@@ -578,22 +605,26 @@ def status(app_name, env_name, region, verbose):
             io.echo('       ', key, '=', value)
 
 
-
-def logs(env_name, region):
+def logs(env_name, info_type, region, zip=False):
     # Request info
-    result = elasticbeanstalk.request_environment_info(env_name, region)
+    result = elasticbeanstalk.request_environment_info(env_name, info_type,
+                                                       region=region)
 
-    # Wait for logs to finish tailing
+    # Wait for logs to finish
     request_id = result['ResponseMetadata']['RequestId']
     wait_and_print_events(request_id, region,
-                        timeout_in_seconds=60, sleep_time=1)
+                        timeout_in_seconds=60*2, sleep_time=1)
 
-    return print_logs(env_name, region)
+    get_logs(env_name, info_type, region)
+    if zip:
+        #zip up logs
+        pass
 
 
-def print_logs(env_name, region):
+def get_logs(env_name, info_type, region):
     # Get logs
-    result = elasticbeanstalk.retrieve_environment_info(env_name, region)
+    result = elasticbeanstalk.retrieve_environment_info(env_name, info_type,
+                                                        region)
 
     """
     Results are ordered with latest last, we just want the latest
@@ -604,9 +635,24 @@ def print_logs(env_name, region):
         url = log['Message']
         log_list[instance_id] = url
 
-    for instance_id, url in iteritems(log_list):
-        io.echo('================ ' + instance_id + '=================')
-        print_from_url(url)
+    if info_type == 'bundle':
+        # save file, unzip, place in logs directory
+        logs_folder_name = datetime.now().strftime("%y%m%d_%H%M%S")
+        logs_location = fileoperations.get_logs_location(logs_folder_name)
+        for instance_id, url in iteritems(log_list):
+            zip_location = save_file_from_url(url, logs_location,
+                                              instance_id + '.zip')
+            instance_folder = os.path.join(logs_location, instance_id)
+            fileoperations.upzip_folder(zip_location, instance_folder)
+            fileoperations.delete_file(zip_location)
+
+        io.echo('Logs saved at', logs_location)
+
+    else:
+        # print logs
+        for instance_id, url in iteritems(log_list):
+            io.echo('================', instance_id, '=================')
+            print_from_url(url)
 
 
 def setenv(app_name, env_name, var_list, region):
@@ -646,6 +692,11 @@ def print_from_url(url):
     result = urllib.request.urlopen(url).read()
     io.echo(result)
 
+def save_file_from_url(url, location, filename):
+    result = urllib.request.urlopen(url).read()
+
+    return fileoperations.save_to_file(result, location, filename)
+
 
 def terminate(env_name, region):
     request_id = elasticbeanstalk.terminate_environment(env_name, region)
@@ -658,6 +709,25 @@ def terminate(env_name, region):
 
     wait_and_print_events(request_id, region,
                         timeout_in_seconds=60*5)
+
+
+def ssh_into_instance(instance_id, region):
+    instance = ec2.describe_instance(instance_id, region)
+    keypair_name = instance['KeyName']
+    ip = instance['PublicIpAddress']
+
+    user = 'ec2-user'
+
+    #ToDo: Check for private key file in ssh directory
+    ## Throw error if not present
+
+    ident_file = fileoperations.get_ssh_folder() + keypair_name
+
+    returncode = exec_cmd2('ssh -i ' + ident_file + ' ' + user + '@' + ip,
+                           shell=True)
+
+    if returncode != 0:
+        io.log_error(strings['ssh.notpresent'])
 
 
 def save_env_file(api_model):
@@ -682,9 +752,11 @@ def open_file_for_editing(file_location):
             io.log_error(prompts['fileopen.error2'])
 
 
-def setup_directory(app_name, region, solution):
+def setup_directory(app_name, region, solution, keyname):
     io.log_info('Setting up .elasticbeanstalk directory')
     fileoperations.create_config_file(app_name, region, solution)
+    fileoperations.write_config_setting('global', 'default_ec2_keyname',
+                                        keyname)
 
 
 def setup_ignore_file():
@@ -792,10 +864,6 @@ def update_environment(app_name, env_name, region, nohang):
         io.log_error(strings['timeout.error'])
 
 
-def remove_zip_file():
-    pass
-
-
 def get_boolean_response():
     response = io.prompt('y/n', default='y').lower()
     while response not in ('y', 'n', 'yes', 'no'):
@@ -836,6 +904,31 @@ def get_setting_from_current_branch(keyname):
             return None
 
 
+def prompt_for_ec2_keyname(region):
+    io.echo('Would you like to set up ssh for your instances?')
+    ssh = get_boolean_response()
+
+    if not ssh:
+        return None
+
+    keys = ec2.get_key_pairs(region)
+
+    if len(keys) < 1:
+        keyname = _generate_and_upload_keypair(region)
+
+    else:
+        keys = [k['KeyName'] for k in keys]
+        new_key_option = '[ Create new KeyPair ]'
+        keys.append(new_key_option)
+        io.echo()
+        io.echo('Choose a keypair')
+        keyname = utils.prompt_for_item_in_list(keys, default=len(keys))
+
+        if keyname == new_key_option:
+            keyname = _generate_and_upload_keypair(region)
+
+    return keyname
+
 def select_tier():
     tier_list = Tier.get_latest_tiers()
     io.echo('Please choose a tier')
@@ -849,3 +942,31 @@ def get_solution_stack(solution_string, region):
 
 def is_cname_available(cname, region):
     return elasticbeanstalk.is_cname_available(cname, region)
+
+
+def get_instance_ids(app_name, env_name, region):
+    env = elasticbeanstalk.get_environment_resources(env_name, region)
+    instances = [i['Id'] for i in env['EnvironmentResources']['Instances']]
+    return instances
+
+
+
+def _generate_and_upload_keypair(region):
+    # Get filename
+    io.echo()
+    io.echo('Enter keypair name')
+    keyname = io.prompt('Default is aws-eb', default='aws-eb')
+    file_name = fileoperations.get_ssh_folder() + keyname
+
+    exitcode = exec_cmd2('ssh-keygen -f ' + file_name, shell=True)
+
+    if exitcode != 0:
+        LOG.debug('ssh-keygen returned exitcode: ' + str(exitcode) +
+                   ' with filename: ' + file_name)
+        io.log_error(strings['ssh.notpresent'])
+        return None
+    else:
+        key_material = open(file_name + '.pub', 'r').read()
+        ec2.import_key_pair(keyname, key_material, region=region)
+
+        return keyname

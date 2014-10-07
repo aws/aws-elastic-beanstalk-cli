@@ -110,6 +110,9 @@ class CreateController(AbstractBaseController):
         if not tier:
             tier = operations.select_tier()
 
+        if not key_name:
+            key_name = fileoperations.get_default_keyname()
+
         operations.make_new_env(app_name, env_name, region, cname, solution,
                                 tier, label, profile, single, key_name,
                                 branch_default, sample, nohang)

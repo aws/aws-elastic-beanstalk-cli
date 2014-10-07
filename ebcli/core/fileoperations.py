@@ -12,8 +12,8 @@
 # language governing permissions and limitations under the License.
 
 import os
-import pickle
 import shutil
+import zipfile
 import sys
 
 from yaml import load, dump, safe_dump
@@ -23,7 +23,6 @@ from six.moves.configparser import NoSectionError, NoOptionError
 from cement.utils.misc import minimal_logger
 
 from ebcli.objects.exceptions import NotInitializedError, InvalidSyntaxError
-from ebcli.objects.envlist import EnvList
 
 LOG = minimal_logger(__name__)
 
@@ -31,6 +30,12 @@ LOG = minimal_logger(__name__)
 def get_aws_home():
     sep = os.path.sep
     p = '~' + sep + '.aws' + sep
+    return os.path.expanduser(p)
+
+
+def get_ssh_folder():
+    sep = os.path.sep
+    p = '~' + sep + '.ssh' + sep
     return os.path.expanduser(p)
 
 
@@ -45,13 +50,7 @@ region_key = 'region'
 default_section = 'default'
 ebcli_section = 'profile eb-cli'
 app_version_folder = beanstalk_directory + 'app_versions'
-
-
-def _get_envlist():
-    if not EnvList.envlist:
-        EnvList.envlist = load_envlist()
-
-    return EnvList.envlist
+logs_folder = beanstalk_directory + 'logs' + os.path.sep
 
 
 def _get_option(config, section, key, default):
@@ -135,6 +134,10 @@ def get_default_solution_stack():
     return get_config_setting('global', 'default_solution_stack')
 
 
+def get_default_keyname():
+    return get_config_setting('global', 'default_ec2_keyname')
+
+
 def create_config_file(app_name, region, solution_stack):
     """
         We want to make sure we do not override the file if it already exists,
@@ -184,6 +187,25 @@ def get_zip_location(file_name):
         os.chdir(cwd)
 
 
+def get_logs_location(folder_name):
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        if not os.path.isdir(logs_folder):
+            # create it
+            os.makedirs(logs_folder)
+
+        return os.path.abspath(os.path.join(logs_folder, folder_name))
+
+    finally:
+        os.chdir(cwd)
+
+
+def delete_file(location):
+    if os.path.exists(location):
+        os.remove(location)
+
+
 def get_environment_from_file(env_name):
     cwd = os.getcwd()
     file_name = beanstalk_directory + env_name
@@ -215,42 +237,61 @@ def delete_app_versions():
         os.chdir(cwd)
 
 
-def get_environments_from_files():
-    # get all saved environment names from stored envlist
-    envlist = _get_envlist()
+def zip_up_folder(directory, location):
+    zipf = zipfile.ZipFile(location, 'w', zipfile.ZIP_DEFLATED)
+    _zipdir(directory, zipf)
+    zipf.close()
 
-    return map(get_environment_from_file, envlist.get_env_names())
 
-
-def save_envlist(envlist):
-    file_location = beanstalk_directory + '.ebdata'
+def zip_up_project(location):
     cwd = os.getcwd()
+
     try:
         _traverse_to_project_root()
-        pickle.dump(envlist, open(file_location, 'wb'), 2)
+
+        zip_up_folder('./', location)
+
     finally:
         os.chdir(cwd)
 
 
-def load_envlist():
-    file_location = beanstalk_directory + '.ebdata'
+def _zipdir(path, zipf):
+    for root, dirs, files in os.walk(path):
+        if '.elasticbeanstalk' in root:
+            continue
+        for f in files:
+            zipf.write(os.path.join(root, f))
 
-    cwd = os.getcwd()
-    try:
-        _traverse_to_project_root()
-        if os.path.exists(file_location):
-            return pickle.load(open(file_location, 'r'))
-        else:
-            return EnvList()
-    finally:
-        os.chdir(cwd)
+
+def upzip_folder(file_location, directory):
+    if not os.path.isdir(directory):
+        os.makedirs(directory)
+
+    zip = zipfile.ZipFile(file_location, 'r')
+    for cur_file in zip.namelist():
+        if not cur_file.endswith('/'):
+            root, name = os.path.split(cur_file)
+            path = os.path.normpath(os.path.join(directory, root))
+            if not os.path.isdir(path):
+                os.makedirs(path)
+            file(os.path.join(path, name), 'wb').write(zip.read(cur_file))
+
+
+def save_to_file(data, location, filename):
+    if not os.path.isdir(location):
+        os.makedirs(location)
+
+    file_location = os.path.join(location, filename)
+    data_file = open(file_location, 'wb')
+    data_file.write(data)
+
+    data_file.close()
+    return file_location
 
 
 def delete_env_file(env_name):
     cwd = os.getcwd()
     file_name = beanstalk_directory + env_name
-    envlist = _get_envlist()
-    envlist.remove_env(env_name)
 
     try:
         _traverse_to_project_root()
@@ -260,29 +301,6 @@ def delete_env_file(env_name):
                 os.remove(path)
     finally:
         os.chdir(cwd)
-
-
-def get_env_date(env):
-    envlist = _get_envlist()
-
-    env_name = env['EnvironmentName']
-    date = envlist.get_env_date(env_name)
-
-    env['DateUpdated'] = date
-
-
-def save_env_date(env):
-    # load envlist
-    envlist = _get_envlist()
-
-    # strip out date
-    env_name = env['EnvironmentName']
-    date = env['DateUpdated']
-    del env['DateUpdated']
-
-    envlist.add_env(env_name, date)
-
-    save_envlist(envlist)
 
 
 def get_editor():
@@ -302,7 +320,6 @@ def get_editor():
 
 def save_env_file(env, public=False, paused=False):
     cwd = os.getcwd()
-    save_env_date(env)
     env_name = env['EnvironmentName']
     if public:
         file_name = env_name + '.ebe.yml'

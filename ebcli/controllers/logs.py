@@ -21,10 +21,31 @@ class LogsController(AbstractBaseController):
         label = 'logs'
         description = strings['logs.info']
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
+        arguments = AbstractBaseController.Meta.arguments + [
+            (['-a', '--all'], dict(action='store_true',
+                                      help='Retrieve all logs')),
+            (['-z', '--all_zip'], dict(action='store_true',
+                                          help='Retrieve all logs as .zip'))
+        ]
+        epilog = strings['logs.epilog']
 
 
     def do_command(self):
         region = self.get_region()
         env_name = self.get_env_name()
+        all = self.app.pargs.all
+        all_zip = self.app.pargs.all_zip
 
-        operations.logs(env_name, region)
+        if all and all_zip:
+            io.log_error('Please select either --all or --all_zip, not both')
+            return
+        if all:
+            info_type = 'bundle'
+            zip = False
+        elif all_zip:
+            info_type = 'bundle'
+            zip = True
+        else:
+            info_type = 'tail'
+            zip = False
+        operations.logs(env_name, info_type, region, zip=zip)

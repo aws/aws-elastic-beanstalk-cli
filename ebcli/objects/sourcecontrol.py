@@ -13,7 +13,6 @@
 
 from __future__ import print_function
 import os
-import zipfile
 import fileinput
 import datetime
 
@@ -40,7 +39,7 @@ class SourceControl():
     def get_current_branch(self):
         pass
 
-    def do_zip(self):
+    def do_zip(self, location):
         pass
 
     def set_up_ignore_file(self):
@@ -78,17 +77,8 @@ class NoSC(SourceControl):
     def get_current_branch(self):
         return 'default'
 
-    def _zipdir(self, path, zipf):
-        for root, dirs, files in os.walk(path):
-            if '.elasticbeanstalk' in root:
-                continue
-            for f in files:
-                zipf.write(os.path.join(root, f))
-
     def do_zip(self, location):
-        zipf = zipfile.ZipFile(location, 'w', zipfile.ZIP_DEFLATED)
-        self._zipdir('./', zipf)
-        zipf.close()
+        fileoperations.zip_up_project(location)
 
     def get_message(self):
         return 'EB-CLI deploy'

@@ -27,7 +27,8 @@ class InitController(AbstractBaseController):
         arguments = [
             (['-a', '--app'], dict(help='Application name')),
             (['-r', '--region'], dict(help='Default Region')),
-            (['-s', '--solution'], dict(help='Solution stack')),
+            (['-s', '--solution'], dict(help='Default Solution stack')),
+            (['-k', '--keyname'], dict(help='Default EC2 key name')),
             (['-i', '--interactive'], dict(action='store_true',
                                            help='Force interactive mode'))
         ]
@@ -44,8 +45,10 @@ class InitController(AbstractBaseController):
 
         self.app_name = self.get_app_name()
         self.solution = self.get_solution_stack()
+        self.keyname = self.get_keyname()
 
-        operations.setup(self.app_name, self.region, self.solution.string)
+        operations.setup(self.app_name, self.region, self.solution.string,
+                         self.keyname)
 
     def get_app_name(self):
         # Get app name from command line arguments
@@ -99,7 +102,7 @@ class InitController(AbstractBaseController):
         solution = None
         if solution_string:
             try:
-                solution = elasticbeanstalk.get_solution_stack(solution_string,
+                solution = operations.get_solution_stack(solution_string,
                                                                self.region)
             except NotFoundError:
                 io.echo(prompts['sstack.invalid'])
@@ -109,6 +112,24 @@ class InitController(AbstractBaseController):
             solution = operations.prompt_for_solution_stack(self.region)
 
         return solution
+
+    def get_keyname(self):
+        keyname = self.app.pargs.keyname
+
+        # Get keyname from config file, if exists
+        if not keyname:
+            try:
+                keyname = fileoperations.get_default_keyname()
+            except NotInitializedError:
+                keyname = None
+
+        if not keyname or self.interactive:
+            # Prompt for one
+            keyname = operations.prompt_for_ec2_keyname(self.region)
+
+        return keyname
+
+
 
     def complete_command(self, commands):
         self.complete_region(commands)

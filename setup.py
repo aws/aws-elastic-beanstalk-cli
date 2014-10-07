@@ -11,11 +11,11 @@ requires = ['botocore>=0.53.0',
 
 
 setup_options = dict(
-    name='nicksEB',
+    name='aws-eb-cli',
     version=ebcli.__version__,
     description='Command Line Interface for AWS EB.',
     long_description=open('README.md').read(),
-    data_file=[
+    data_files=[
         ('/etc/bash_completion.d/', ['bin/eb-completion.bash'])
     ],
     author='Nick Humrich',
