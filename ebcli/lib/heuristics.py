@@ -106,15 +106,23 @@ def smells_of_tomcat():
     """
     True of directory has a jsp file or a WEB-INF directory
     """
-    #ToDo, check for a build directory and a .war file inside somewhere
-    ## typically build/lib/*.war
+
+    if has_tomcat_war_file():
+        return True
     return _contains_file_types('*.jsp', 'WEB-INF')
+
+
+def has_tomcat_war_file():
+    """
+    True if there is a war file located at ./build/lib/*.war
+    """
+    return _contains_file_types('build/libs/*.war')
 
 
 def _get_file_list(*args):
     lst = []
     for a in args:
-        lst = lst + glob.glob(a)
+        lst += glob.glob(a)
     return lst
 
 

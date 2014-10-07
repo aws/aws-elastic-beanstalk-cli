@@ -48,7 +48,7 @@ class InitController(AbstractBaseController):
         self.solution = self.get_solution_stack()
         self.keyname = self.get_keyname()
 
-        operations.setup(self.app_name, self.region, self.solution.string,
+        operations.setup(self.app_name, self.region, self.solution,
                          self.keyname)
 
     def get_app_name(self):
@@ -129,8 +129,6 @@ class InitController(AbstractBaseController):
             keyname = operations.prompt_for_ec2_keyname(self.region)
 
         return keyname
-
-
 
     def complete_command(self, commands):
         self.complete_region(commands)

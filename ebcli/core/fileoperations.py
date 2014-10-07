@@ -15,6 +15,7 @@ import os
 import shutil
 import zipfile
 import sys
+import glob
 
 from yaml import load, dump, safe_dump
 from yaml.scanner import ScannerError
@@ -22,7 +23,8 @@ from six.moves import configparser
 from six.moves.configparser import NoSectionError, NoOptionError
 from cement.utils.misc import minimal_logger
 
-from ebcli.objects.exceptions import NotInitializedError, InvalidSyntaxError
+from ebcli.objects.exceptions import NotInitializedError, InvalidSyntaxError, \
+    NotFoundError
 
 LOG = minimal_logger(__name__)
 
@@ -87,6 +89,21 @@ def read_aws_config_region():
 def _set_not_none(config, section, option, value):
     if value:
         config.set(section, option, value)
+
+
+def get_war_file_location():
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        lst = glob.glob('build/libs/*.war')
+        try:
+            return os.path.join(os.getcwd(), lst[0])
+        except IndexError:
+            raise NotFoundError('Can not find .war artifact in build' +
+                                os.path.sep + 'libs' + os.path.sep)
+    finally:
+        os.chdir(cwd)
+
 
 
 def save_to_aws_config(access_key, secret_key):

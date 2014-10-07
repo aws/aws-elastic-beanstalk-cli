@@ -257,7 +257,13 @@ def credentials_are_valid(region):
 
 
 def setup(app_name, region, solution, keyname):
-    setup_directory(app_name, region, solution, keyname)
+    setup_directory(app_name, region, solution.string, keyname)
+
+    # Handle tomcat special case
+    if solution.platform == 'Tomcat' and \
+            heuristics.has_tomcat_war_file():
+        war_file = fileoperations.get_war_file_location()
+        fileoperations.write_config_setting('deploy', 'artifact', war_file)
 
     create_app(app_name, region)
 
@@ -784,7 +790,6 @@ def create_app_version(app_name, region):
         io.log_warning('Can not find any code. Launching Sample application')
         return None
 
-
     #get version_label
     source_control = SourceControl.get_source_control()
     version_label = source_control.get_version_label()
@@ -793,10 +798,17 @@ def create_app_version(app_name, region):
     description = source_control.get_message()
     io.log_info('Creating app_version archive' + version_label)
 
-    # Create zip file
-    file_name = version_label + '.zip'
-    file_path = fileoperations.get_zip_location(file_name)
-    source_control.do_zip(file_path)
+    # Check for zip or artifact deploy
+    artifact = fileoperations.get_config_setting('deploy', 'artifact')
+    if artifact:
+        dirname, filename = os.path.split(os.getcwd())
+        file_name = filename
+        file_path = artifact
+    else:
+        # Create zip file
+        file_name = version_label + '.zip'
+        file_path = fileoperations.get_zip_location(file_name)
+        source_control.do_zip(file_path)
 
     # Get s3 location
     bucket = elasticbeanstalk.get_storage_location(region)
@@ -939,7 +951,19 @@ def select_tier():
 
 
 def get_solution_stack(solution_string, region):
-    return elasticbeanstalk.get_solution_stack(solution_string, region)
+    solution_stacks = elasticbeanstalk.get_available_solution_stacks(region)
+    # filter
+    solution_stacks = [x for x in solution_stacks if x.string == solution_string]
+
+    #check for a valid result
+    if len(solution_stacks) == 0:
+        raise NotFoundError('Provided Solution stack not found')
+
+    #should only have 1 result
+    if len(solution_stacks) > 1:
+        LOG.error('Solution Stack list contains '
+                  'multiple results')
+    return solution_stacks[0]
 
 
 def is_cname_available(cname, region):
@@ -950,7 +974,6 @@ def get_instance_ids(app_name, env_name, region):
     env = elasticbeanstalk.get_environment_resources(env_name, region)
     instances = [i['Id'] for i in env['EnvironmentResources']['Instances']]
     return instances
-
 
 
 def _generate_and_upload_keypair(region, keys):

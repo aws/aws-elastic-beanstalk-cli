@@ -445,28 +445,3 @@ def terminate_environment(env_name, region=None):
                             environment_name=env_name,
                             region=region)
     return result['ResponseMetadata']['RequestId']
-
-
-def get_solution_stack(string, region):
-    solution_stacks = get_available_solution_stacks(region)
-    # filter
-    solution_stacks = [x for x in solution_stacks if x.string == string]
-
-    #check for a valid result
-    if len(solution_stacks) == 0:
-        raise NotFoundError('Provided Solution stack not found')
-
-    #should only have 1 result
-    if len(solution_stacks) > 1:
-        LOG.error('Solution Stack list contains '
-                  'multiple results')
-    return solution_stacks[0]
-
-
-
-
-
-
-
-
-
