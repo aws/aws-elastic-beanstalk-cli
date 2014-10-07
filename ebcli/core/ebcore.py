@@ -62,6 +62,7 @@ class EB(foundation.CementApp):
         handler.register(SSHController)
         handler.register(SetEnvController)
         handler.register(ListController)
+        # Clone not yet ready
         # handler.register(CloneController)
         handler.register(CompleterController)
 
@@ -99,6 +100,9 @@ def main():
         io.log_error(strings['exit.invalidstate'])
         app.close(1)
     except NotFoundError as e:
+        io.log_error(e.message)
+        app.close(1)
+    except AlreadyExistsError as e:
         io.log_error(e.message)
         app.close(1)
     except NotInitializedError:

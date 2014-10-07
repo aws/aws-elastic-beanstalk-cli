@@ -25,7 +25,8 @@ class InitController(AbstractBaseController):
         help = 'blarg!!'
         description = strings['init.info']
         arguments = [
-            (['-a', '--app'], dict(help='Application name')),
+            (['application_name'], dict(help='Application name',
+                                        nargs='?', default=[])),
             (['-r', '--region'], dict(help='Default Region')),
             (['-s', '--solution'], dict(help='Default Solution stack')),
             (['-k', '--keyname'], dict(help='Default EC2 key name')),
@@ -52,7 +53,7 @@ class InitController(AbstractBaseController):
 
     def get_app_name(self):
         # Get app name from command line arguments
-        app_name = self.app.pargs.app
+        app_name = self.app.pargs.application_name
 
         # Get app name from config file, if exists
         if not app_name:

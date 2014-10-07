@@ -64,11 +64,9 @@ strings = {
     'init.epilog': 'This command is safe when ran in a previously initialized'
                    ' directory. To re-initialize with different options, '
                    'use the -i flag.',
-    'env.updatesuccess': '-- The environment has been updated successfully! --',
-    'env.createsuccess': '-- The environment has been created successfully! --',
-    'env.createstarted': '-- The environment is being created. --',
-    'env.updatestarted': '-- The environment is being updated. --',
     'ssh.notpresent': 'You do not seem to have ssh installed. Please install before continuing.',
+    'ssh.filenotfound': 'Can not find your ssh key file for keyname "{key-name}".'
+                        ' Please make sure it is located in your .ssh folder in your home directory.',
 }
 prompts = {
     'events.hanging': 'Hanging and waiting for events. Use CTRL + C to exit.',
@@ -79,7 +77,7 @@ prompts = {
                                  ' like to switch to a Load Balanced environment?',
     'cname.unavailable': 'The CNAME you provided is currently not available.\n'
                          'Please try another',
-    'delete.confirm': 'You are about to delete the application {app-name} and all its resources.\n'
+    'delete.confirm': 'You are about to delete the application "{app-name}" and all its resources.\n'
                       'This app currently has the following,\n'
                       'Running environments: {env-num}\n'
                       'Configuration Templates: {config-num}\n'

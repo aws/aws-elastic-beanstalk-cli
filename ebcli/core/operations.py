@@ -30,7 +30,7 @@ from ebcli.lib import utils
 from ebcli.objects import configuration
 from ebcli.objects.exceptions import NoSourceControlError, \
     ServiceError, TimeoutError, CredentialsError, InvalidStateError, \
-    AlreadyExistsError, InvalidSyntaxError
+    AlreadyExistsError, InvalidSyntaxError, NotFoundError
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.tier import Tier
 from ebcli.lib.aws import InvalidParameterValueError
@@ -397,7 +397,6 @@ def scale(app_name, env_name, number, confirm, region):
     request_id = elasticbeanstalk.update_environment(env_name, options, region)
     try:
         wait_and_print_events(request_id, region, timeout_in_seconds=60*5)
-        io.echo(strings['env.updatesuccess'])
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
@@ -431,7 +430,6 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
         write_setting_to_current_branch('environment', env_name)
 
     # Print status of env
-    io.echo(strings['env.createstarted'])
     print_env_details(result, health=False)
 
     if nohang:
@@ -440,7 +438,6 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
     io.echo('Printing Status:')
     try:
         wait_and_print_events(request_id, region)
-        io.echo(strings['env.createsuccess'])
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
@@ -494,7 +491,6 @@ def make_cloned_env(app_name, env_name, clone_name, cname, region, nohang):
                                    cname, region)
 
     # Print status of env
-    io.echo(strings['env.createstarted'])
     print_env_details(result, health=False)
 
     if nohang:
@@ -503,7 +499,6 @@ def make_cloned_env(app_name, env_name, clone_name, cname, region, nohang):
     io.echo('Printing Status:')
     try:
         wait_and_print_events(request_id, region)
-        io.echo(strings['env.createsuccess'])
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
@@ -615,13 +610,10 @@ def logs(env_name, info_type, region, zip=False):
     wait_and_print_events(request_id, region,
                         timeout_in_seconds=60*2, sleep_time=1)
 
-    get_logs(env_name, info_type, region)
-    if zip:
-        #zip up logs
-        pass
+    get_logs(env_name, info_type, region, zip=zip)
 
 
-def get_logs(env_name, info_type, region):
+def get_logs(env_name, info_type, region, zip=False):
     # Get logs
     result = elasticbeanstalk.retrieve_environment_info(env_name, info_type,
                                                         region)
@@ -645,6 +637,11 @@ def get_logs(env_name, info_type, region):
             instance_folder = os.path.join(logs_location, instance_id)
             fileoperations.upzip_folder(zip_location, instance_folder)
             fileoperations.delete_file(zip_location)
+
+        if zip:
+            fileoperations.zip_up_folder(logs_location, logs_location + '.zip')
+            fileoperations.delete_directory(logs_location)
+            logs_location += '.zip'
 
         io.echo('Logs saved at', logs_location)
 
@@ -683,7 +680,6 @@ def setenv(app_name, env_name, var_list, region):
     try:
         request_id = result
         wait_and_print_events(request_id, region, timeout_in_seconds=60*4)
-        io.echo('-- The environment has been created successfully! --')
     except TimeoutError:
         io.log_error('Unknown state of environment. Operation timed out.')
 
@@ -718,10 +714,14 @@ def ssh_into_instance(instance_id, region):
 
     user = 'ec2-user'
 
-    #ToDo: Check for private key file in ssh directory
-    ## Throw error if not present
-
     ident_file = fileoperations.get_ssh_folder() + keypair_name
+    if not os.path.exists(ident_file):
+        if os.path.exists(ident_file + '.pem'):
+            ident_file += '.pem'
+        else:
+            raise NotFoundError(strings['ssh.filenotfound'].replace(
+                '{key-name}', keypair_name)
+            )
 
     returncode = exec_cmd2('ssh -i ' + ident_file + ' ' + user + '@' + ip,
                            shell=True)
@@ -851,15 +851,12 @@ def update_environment(app_name, env_name, region, nohang):
                      '\nError = ' + e.message)
         return
 
-    io.echo(strings['env.updatestarted'])
-
     if nohang:
         return
 
     io.echo('Printing Status:')
     try:
         wait_and_print_events(request_id, region)
-        io.echo(strings['env.createsuccess'])
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
@@ -925,7 +922,7 @@ def prompt_for_ec2_keyname(region):
         keyname = utils.prompt_for_item_in_list(keys, default=len(keys))
 
         if keyname == new_key_option:
-            keyname = _generate_and_upload_keypair(region)
+            keyname = _generate_and_upload_keypair(region, keys)
 
     return keyname
 
@@ -951,11 +948,12 @@ def get_instance_ids(app_name, env_name, region):
 
 
 
-def _generate_and_upload_keypair(region):
+def _generate_and_upload_keypair(region, keys):
     # Get filename
     io.echo()
     io.echo('Enter keypair name')
-    keyname = io.prompt('Default is aws-eb', default='aws-eb')
+    unique = utils.get_unique_name('aws-eb', keys)
+    keyname = io.prompt('Default is ' + unique, default=unique)
     file_name = fileoperations.get_ssh_folder() + keyname
 
     exitcode = exec_cmd2('ssh-keygen -f ' + file_name, shell=True)

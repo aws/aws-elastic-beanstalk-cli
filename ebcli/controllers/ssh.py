@@ -46,8 +46,8 @@ class SSHController(AbstractBaseController):
             if number is not None:
                 if number > len(instances) or number < 1:
                     io.log_error('Invalid index number (' + str(number) +
-                                 ') for environment with ' + str(len(instances))
-                                 + ' instances')
+                                 ') for environment with ' +
+                                 str(len(instances)) + ' instances')
                     return
                 else:
                     instance = instances[number - 1]
@@ -56,7 +56,7 @@ class SSHController(AbstractBaseController):
                 instance = instances[0]
             else:
                 io.echo()
-                io.echo('Select and instance to ssh into')
+                io.echo('Select an instance to ssh into')
                 instance = utils.prompt_for_item_in_list(instances)
 
             operations.ssh_into_instance(instance, region)

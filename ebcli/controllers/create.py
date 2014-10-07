@@ -17,7 +17,7 @@ import sys
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 from ebcli.lib import elasticbeanstalk, utils
-from ebcli.objects.exceptions import NotFoundError
+from ebcli.objects.exceptions import NotFoundError, AlreadyExistsError
 from ebcli.core import io, fileoperations, operations
 from ebcli.objects.tier import Tier
 
@@ -27,7 +27,9 @@ class CreateController(AbstractBaseController):
         label = 'create'
         description = strings['create.info']
         arguments = [
-            (['-e', '--env_name'], dict(dest='env', help='Environment name')),
+            (['environment_name'], dict(action='store', nargs='?',
+                                        default=[],
+                                        help='Desired Environment name')),
             (['-r', '--region'], dict(help='Region which environment '
                                            'will be created in')),
             (['-c', '--cname'], dict(help='Cname prefix')),
@@ -52,7 +54,7 @@ class CreateController(AbstractBaseController):
 
     def do_command(self):
         # save command line args
-        env_name = self.app.pargs.env
+        env_name = self.app.pargs.environment_name
         cname = self.app.pargs.cname
         tier = self.app.pargs.tier
         solution_string = self.app.pargs.solution
@@ -92,6 +94,11 @@ class CreateController(AbstractBaseController):
                 raise NotFoundError('Provided tier ' + tier + ' does not '
                                     'appear to be valid')
 
+        if cname:
+            if not operations.is_cname_available(cname, region):
+                raise AlreadyExistsError('The cname prefix "' + cname +
+                                         '" is not available.')
+
         # If we still dont have what we need, ask for it
         if not env_name:
             # default is app-name plus '-dev'
@@ -102,7 +109,12 @@ class CreateController(AbstractBaseController):
             env_name = io.prompt_for_environment_name(unique_name)
 
         if not cname and not provided_env_name:
-            cname = get_cname(region)
+            cname = get_cname(env_name, region)
+        elif not cname:
+            if not operations.is_cname_available(env_name, region):
+                raise AlreadyExistsError('The cname prefix "' + env_name +
+                                         '" is not available.')
+
 
         if not solution:
             solution = operations.prompt_for_solution_stack(region)
@@ -134,9 +146,9 @@ class CreateController(AbstractBaseController):
             io.echo(*operations.get_app_version_labels(app_name, region))
 
 
-def get_cname(region):
+def get_cname(env_name, region):
     while True:
-        cname = io.prompt_for_cname()
+        cname = io.prompt_for_cname(default=env_name)
         if not cname:
             # Reverting to default
             break

@@ -125,7 +125,10 @@ def prompt_for_cname(default=None):
     # It cannot start or end with a hyphen.
     while True:
         echo('Enter DNS CNAME prefix')
-        cname = prompt('defaults to an auto-generated value')
+        if default:
+            cname = prompt('defaults is ' + default)
+        else:
+            cname = prompt('defaults to an auto-generated value')
         if not cname:
             return default
         if re.match('^[a-z0-9][a-z0-9-]{2,61}[a-z0-9]$', cname.lower()):

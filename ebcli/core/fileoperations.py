@@ -206,6 +206,11 @@ def delete_file(location):
         os.remove(location)
 
 
+def delete_directory(location):
+    if os.path.isdir(location):
+        shutil.rmtree(location)
+
+
 def get_environment_from_file(env_name):
     cwd = os.getcwd()
     file_name = beanstalk_directory + env_name
@@ -231,17 +236,20 @@ def delete_app_versions():
     cwd = os.getcwd()
     try:
         _traverse_to_project_root()
-        if os.path.isdir(app_version_folder):
-            shutil.rmtree(app_version_folder)
+        delete_directory(app_version_folder)
     finally:
         os.chdir(cwd)
 
 
 def zip_up_folder(directory, location):
-    zipf = zipfile.ZipFile(location, 'w', zipfile.ZIP_DEFLATED)
-    _zipdir(directory, zipf)
-    zipf.close()
-
+    cwd = os.getcwd()
+    try:
+        os.chdir(directory)
+        zipf = zipfile.ZipFile(location, 'w', zipfile.ZIP_DEFLATED)
+        _zipdir('./', zipf)
+        zipf.close()
+    finally:
+        os.chdir(cwd)
 
 def zip_up_project(location):
     cwd = os.getcwd()
@@ -297,8 +305,7 @@ def delete_env_file(env_name):
         _traverse_to_project_root()
         for file_ext in ['.ebe.yml', '.env.yml']:
             path = file_name + file_ext
-            if os.path.exists(path):
-                os.remove(path)
+            delete_file(path)
     finally:
         os.chdir(cwd)
 

@@ -99,8 +99,6 @@ class AbstractBaseController(controller.CementBaseController):
 
             aws.set_profile(profile)
 
-
-
     def complete_command(self, commands):
         if not self.complete_region(commands):
             if len(commands) == 1:  # They only have the main command so far
