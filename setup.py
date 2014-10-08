@@ -4,20 +4,29 @@ import sys
 from setuptools import setup, find_packages
 import ebcli
 
-requires = ['botocore=0.64.0',
-            'cement=2.4',
+requires = ['botocore==0.64.0',
+            'cement==2.4',
             'six',
             'pyyaml']
 
+try:
+    with open('/etc/bash_completion.d/eb_completion.bash', 'w') as eo:
+        eo.write('test')
+        data_files = [
+            ('/etc/bash_completion.d/', ['bin/eb_completion.bash'])
+            ('/etc/bash_completion.d/', ['bin/eb_completion.bash'])
+        ]
+except:
+    print('User does not have write access to /etc. Completion will not work')
+    data_files = []
 
 setup_options = dict(
     name='aws-eb-cli',
     version=ebcli.__version__,
     description='Command Line Interface for AWS EB.',
     long_description=open('README.md').read(),
-    data_files=[
-        ('/etc/bash_completion.d/', ['bin/eb-completion.bash'])
-    ],
+    scripts=['bin/eb_completion.bash'],
+    data_files=data_files,
     author='Nick Humrich',
     author_email='humrichn@amazon.com',
     url='eb.example.com',
