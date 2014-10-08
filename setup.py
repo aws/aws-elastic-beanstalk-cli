@@ -14,7 +14,6 @@ try:
         eo.write('test')
         data_files = [
             ('/etc/bash_completion.d/', ['bin/eb_completion.bash'])
-            ('/etc/bash_completion.d/', ['bin/eb_completion.bash'])
         ]
 except:
     print('User does not have write access to /etc. Completion will not work')
