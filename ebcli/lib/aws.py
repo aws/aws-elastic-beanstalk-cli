@@ -17,8 +17,8 @@ import six
 from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
-from ebcli.objects.exceptions import ServiceError, CredentialsError, \
-    InvalidSyntaxError
+from ebcli.objects.exceptions import ServiceError, NotAuthorizedError, \
+    InvalidSyntaxError, CredentialsError
 from ebcli.core import fileoperations
 
 LOG = minimal_logger(__name__)
@@ -26,12 +26,16 @@ LOG = minimal_logger(__name__)
 _api_sessions = {}
 _profile = None
 _profile_env_var = 'AWS_EB_PROFILE'
+_id = None
+_key = None
 
 
 def set_session_creds(id, key):
-    global _api_sessions
+    global _api_sessions, _id, _key
+    _id = id
+    _key = key
     for k, service in six.iteritems(_api_sessions):
-        service.session.set_credentials(id, key)
+        service.session.set_credentials(_id, _key)
 
 
 def set_profile(profile):
@@ -64,6 +68,8 @@ def _get_service(service_name):
     service = session.get_service(service_name)
     LOG.debug('Successfully created session for ' + service_name)
 
+    if _id and _key:
+        service.session.set_credentials(_id, _key)
     _api_sessions[service_name] = service
     return service
 
@@ -96,8 +102,8 @@ def make_api_call(service_name, operation_name, region=None, profile=None,
                 raise _get_400_error(response_data)
             elif status == 403:
                 LOG.debug('Received a 403')
-                raise CredentialsError('Operation Denied. Are your '
-                                       'credentials correct?')
+                raise NotAuthorizedError('Operation Denied. Are your '
+                                       'permissions correct?')
             else:
                 LOG.error('API Call unsuccessful. '
                           'Status code returned ' + str(status))
@@ -107,7 +113,7 @@ def make_api_call(service_name, operation_name, region=None, profile=None,
         raise CredentialsError('Operation Denied. You appear to have no'
                                ' credentials')
     except botocore.exceptions.ValidationError as e:
-        raise InvalidSyntaxError(e.message)
+        raise InvalidSyntaxError(str(e))
 
     except botocore.exceptions.BotoCoreError as e:
         LOG.error('Botocore Error')
@@ -115,15 +121,15 @@ def make_api_call(service_name, operation_name, region=None, profile=None,
 
     except IOError as error:
         LOG.error('Error while contacting Elastic Beanstalk Service')
-        LOG.debug('error: ' + str(error.message))
-        raise ServiceError(error.message)
+        LOG.debug('error:' + str(error))
+        raise ServiceError(error)
 
     return response_data
 
 
 def _get_400_error(response_data):
-    code = response_data['Errors'][0]['Code']
-    message = response_data['Errors'][0]['Message']
+    code = response_data['Error']['Code']
+    message = response_data['Error']['Message']
     if code == 'InvalidParameterValue':
         return InvalidParameterValueError(message)
     elif code == 'InvalidQueryParameter':

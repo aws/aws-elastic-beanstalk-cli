@@ -85,31 +85,25 @@ def main():
         app.run()
 
     # Handle General Exceptions
-
-    # ToDo: the safer way of closing would be
-    # app.close(129) rather than app.close(129)
-    # But this is not currently available in the current version of cement
-    # A patch has been submitted and excepted
-    # The fix needs to be changed once the next release of cement is out
     except CaughtSignal:
         io.echo()
-        app.close(5)
+        app.close(code=5)
     except NoEnvironmentForBranchError:
         pass
     except InvalidStateError:
         io.log_error(strings['exit.invalidstate'])
-        app.close(3)
+        app.close(code=3)
     except NotInitializedError:
         io.log_error(strings['exit.notsetup'])
-        app.close(126)
+        app.close(code=126)
     except NoSourceControlError:
         io.log_error(strings['git.notfound'])
-        app.close(3)
+        app.close(code=3)
     except NoRegionError:
         io.log_error(strings['exit.noregion'])
-        app.close(3)
+        app.close(code=3)
     except EBCLIException as e:
-        io.log_error(e.__class__.__name__ + ": " + e.message)
-        app.close(3)
+        io.log_error(e.__class__.__name__ + ": " + str(e))
+        app.close(code=3)
     finally:
         app.close()

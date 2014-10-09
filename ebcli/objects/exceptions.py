@@ -36,6 +36,10 @@ class CredentialsError(EBCLIException):
     pass
 
 
+class NotAuthorizedError(EBCLIException):
+    pass
+
+
 class NotInitializedError(EBCLIException):
     """  The eb directory can not be found.  """
     pass

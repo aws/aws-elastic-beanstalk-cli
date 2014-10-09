@@ -24,20 +24,25 @@ LOG = logging.getLogger(__name__)
 
 
 def echo_and_justify(justify, *args):
-    print_(*_convert_to_strings(args, justify=justify))
+    sep = ' '
+    for x in range(1, justify):
+        sep += ' '
+    print_(*_convert_to_strings(args), sep=sep)
 
 
 def echo(*args):
     print_(*_convert_to_strings(args), sep=' ')
 
 
-def _convert_to_strings(list_of_things, justify=0):
+def _convert_to_strings(list_of_things):
     scalar_types = six.string_types + six.integer_types
     for data in list_of_things:
-        if isinstance(data, unicode):
-            yield data.encode('utf8').ljust(justify)
+        if isinstance(data, six.binary_type):
+            yield data.decode('utf8')
+        elif isinstance(data, six.text_type):
+            yield data
         elif isinstance(data, scalar_types) or hasattr(data, '__str__'):
-            yield str(data).ljust(justify)
+            yield str(data)
         else:
             LOG.error('echo called with an unsupported data type')
 

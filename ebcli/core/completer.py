@@ -38,11 +38,6 @@ class CompleterController(controller.CementBaseController):
          Results must be printed through stdin for the completer module
          to read then.
         """
-        #Set up aws profile just in case we need to make a service call
-        profile = fileoperations.get_config_setting('global', 'profile')
-        aws.set_profile(profile)
-
-        ##################
 
         commands = self.app.pargs.cmplt.strip('"')
 
@@ -78,6 +73,10 @@ class CompleterController(controller.CementBaseController):
                     return  # Controller does not support completion
 
                 try:
+                    #Set up aws profile just in case we need to make a service call
+                    profile = fileoperations.get_default_profile()
+                    if profile:
+                        aws.set_profile(profile)
                     ctrlr.complete_command(commands)
                 except:
                     #We want to swallow ALL exceptions. We can
@@ -86,7 +85,8 @@ class CompleterController(controller.CementBaseController):
                     ## completion candidates
                     ### Exceptions here are normally thrown because the service
                     ### can not be contacted for things such as environment
-                    ### list and solution stack list
+                    ### list and solution stack list. Typically, credentials
+                    ### are not set up yet
                     pass
 
     def complete_options(self, controller):

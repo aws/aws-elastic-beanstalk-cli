@@ -34,7 +34,6 @@ class TerminateController(AbstractBaseController):
     def do_command(self):
         region = self.get_region()
         app_name = self.get_app_name()
-        env_name = self.get_env_name()
         force = self.app.pargs.force
         all = self.app.pargs.all
 
@@ -42,6 +41,7 @@ class TerminateController(AbstractBaseController):
             operations.delete_app(app_name, region, force)
 
         else:
+            env_name = self.get_env_name()
             if not force:
                 # make sure env exists
                 env_names = operations.get_env_names(app_name, region)

@@ -16,6 +16,7 @@ import shutil
 import zipfile
 import sys
 import glob
+import stat
 
 from yaml import load, dump, safe_dump
 from yaml.scanner import ScannerError
@@ -105,7 +106,6 @@ def get_war_file_location():
         os.chdir(cwd)
 
 
-
 def save_to_aws_config(access_key, secret_key):
     config = configparser.ConfigParser()
     if not os.path.isdir(aws_config_folder):
@@ -121,6 +121,8 @@ def save_to_aws_config(access_key, secret_key):
 
     with open(aws_config_location, 'w') as f:
         config.write(f)
+
+    os.chmod(aws_config_location, stat.S_IRUSR | stat.S_IWUSR)
 
 
 _marker = object()
@@ -153,6 +155,18 @@ def get_default_solution_stack():
 
 def get_default_keyname():
     return get_config_setting('global', 'default_ec2_keyname')
+
+
+def get_default_profile():
+    try:
+        return get_config_setting('global', 'profile')
+    except NotInitializedError:
+        return None
+
+
+def touch_config_folder():
+    if not os.path.isdir(beanstalk_directory):
+        os.makedirs(beanstalk_directory)
 
 
 def create_config_file(app_name, region, solution_stack):
@@ -288,7 +302,7 @@ def _zipdir(path, zipf):
             zipf.write(os.path.join(root, f))
 
 
-def upzip_folder(file_location, directory):
+def unzip_folder(file_location, directory):
     if not os.path.isdir(directory):
         os.makedirs(directory)
 
@@ -299,7 +313,7 @@ def upzip_folder(file_location, directory):
             path = os.path.normpath(os.path.join(directory, root))
             if not os.path.isdir(path):
                 os.makedirs(path)
-            file(os.path.join(path, name), 'wb').write(zip.read(cur_file))
+            open(os.path.join(path, name), 'wb').write(zip.read(cur_file))
 
 
 def save_to_file(data, location, filename):

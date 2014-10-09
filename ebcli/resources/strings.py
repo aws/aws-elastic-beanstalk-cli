@@ -97,6 +97,7 @@ responses = {
     'event.launchsuccess': 'Successfully launched environment:',
     'event.launchbad': 'Create environment operation is CompleterController, '
                        'but with errors',
+    'event.updatebad': 'Update environment operation is complete, but with errors.',
     'git.norepository': 'Error: Not a git repository '
                         '(or any of the parent directories): .git',
     'env.updatesuccess': 'Environment update completed successfully.',

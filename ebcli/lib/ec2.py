@@ -29,7 +29,8 @@ def get_key_pairs(region=None):
 
 def import_key_pair(keyname, key_material, region=None):
     result = _make_api_call('import-key-pair', key_name=keyname,
-                            public_key_material=key_material)
+                            public_key_material=key_material,
+                            region=region)
 
     return result
 

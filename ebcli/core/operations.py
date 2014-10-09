@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 import time
 import re
 import os
+import dateutil
 
 from six.moves import urllib
 from six import iteritems
@@ -29,8 +30,8 @@ from ebcli.objects import region as regions
 from ebcli.lib import utils
 from ebcli.objects import configuration
 from ebcli.objects.exceptions import NoSourceControlError, \
-    ServiceError, TimeoutError, CredentialsError, InvalidStateError, \
-    AlreadyExistsError, InvalidSyntaxError, NotFoundError
+    ServiceError, TimeoutError, NotAuthorizedError, InvalidStateError, \
+    AlreadyExistsError, InvalidSyntaxError, NotFoundError, CredentialsError
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.tier import Tier
 from ebcli.lib.aws import InvalidParameterValueError
@@ -97,6 +98,8 @@ def _is_success_string(message):
         raise ServiceError(message)
     if message.startswith(responses['event.launchbad']):
         raise ServiceError(message)
+    if message.startswith(responses['event.updatebad']):
+        raise ServiceError(message)
     if message == responses['logs.pulled']:
         return True
     if message == responses['env.terminated']:
@@ -118,7 +121,11 @@ def log_event(event, echo=False):
     severity = event.severity
     date = event.event_date
     if echo:
-        io.echo(date.strftime("%Y-%m-%d %H:%M:%S").ljust(26) +
+        # python2 uses date utils and python3 uses strings.
+        ## Convert to string and back for compatibility
+        date = str(date)
+        date = dateutil.parser.parse(date)
+        io.echo(date.strftime("%Y-%m-%d %H:%M:%S").ljust(24) +
                 severity.ljust(8) + message)
     elif severity == 'INFO':
         io.echo('INFO:', message)
@@ -283,6 +290,8 @@ def setup_credentials():
     secret_key = io.prompt('aws-secret-key', default='ENTER_SECRET_HERE')
 
     fileoperations.save_to_aws_config(access_key, secret_key)
+
+    fileoperations.touch_config_folder()
     fileoperations.write_config_setting('global', 'profile', 'eb-cli')
 
     aws.set_session_creds(access_key, secret_key)
@@ -312,10 +321,14 @@ def get_default_profile(region):
             Create it if it doesn't exist """
 
     # get list of profiles
-    profile_names = iam.get_instance_profile_names(region=region)
-    profile = DEFAULT_ROLE_NAME
-    if profile not in profile_names:
-        iam.create_instance_profile(profile)
+    try:
+        profile = DEFAULT_ROLE_NAME
+        profile_names = iam.get_instance_profile_names(region=region)
+        if profile not in profile_names:
+            iam.create_instance_profile(profile)
+    except NotAuthorizedError:
+        # Not a root account. Just assume role exists
+        return DEFAULT_ROLE_NAME
 
     return profile
 
@@ -331,7 +344,7 @@ def open_console(app_name, env_name, region):
     #Get environment id
     env = elasticbeanstalk.get_environment(app_name, env_name, region)
 
-    console_url = 'console.aws.amazon.com/elasticbeanstalk/home?region' +\
+    console_url = 'console.aws.amazon.com/elasticbeanstalk/home?region=' +\
                 region + \
                 '#/environment/dashboard?applicationName=' + app_name + \
                   '&environmentId=' + env.id
@@ -349,8 +362,8 @@ def open_webpage_in_browser(url, ssl=False):
     stdout, stderr, exitcode = \
         exec_cmd(['python -m webbrowser \'' + url + '\''], shell=True)
 
-    LOG.debug('browser stdout: ' + stdout)
-    LOG.debug('browser stderr: ' + stderr)
+    LOG.debug('browser stdout: ' + str(stdout))
+    LOG.debug('browser stderr: ' + str(stderr))
     LOG.debug('browser exitcode: ' + str(exitcode))
 
     if exitcode == 127:
@@ -474,11 +487,11 @@ def create_env(app_name, env_name, region, cname, solution_stack,
             tier, label, single, key_name, profile, region=region)
 
     except InvalidParameterValueError as e:
-        LOG.debug('creating env returned error: ' + e.message)
-        if re.match(responses['env.cnamenotavailable'], e.message):
+        LOG.debug('creating env returned error: ' + str(e))
+        if re.match(responses['env.cnamenotavailable'], str(e)):
             io.echo(prompts['cname.unavailable'])
             cname = io.prompt_for_cname()
-        elif re.match(responses['env.nameexists'], e.message):
+        elif re.match(responses['env.nameexists'], str(e)):
             io.echo(strings['env.exists'])
             current_environments = get_env_names(app_name, region)
             unique_name = utils.get_unique_name(env_name,
@@ -519,11 +532,11 @@ def clone_env(app_name, env_name, clone_name, cname, region):
             app_name, env_name, clone_name, cname, description, region=region)
 
     except InvalidParameterValueError as e:
-        LOG.debug('cloning env returned error: ' + e.message)
-        if re.match(responses['env.cnamenotavailable'], e.message):
+        LOG.debug('cloning env returned error: ' + str(e))
+        if re.match(responses['env.cnamenotavailable'], str(e)):
             io.echo(prompts['cname.unavailable'])
             cname = io.prompt_for_cname()
-        elif re.match(responses['env.nameexists'], e.message):
+        elif re.match(responses['env.nameexists'], str(e)):
             io.echo(strings['env.exists'])
             current_environments = get_env_names(app_name, region)
             unique_name = utils.get_unique_name(clone_name,
@@ -564,7 +577,7 @@ def delete_app(app_name, region, force):
     cleanup_ignore_file()
     fileoperations.clean_up()
     wait_and_print_events(request_id, region, sleep_time=1,
-                          timeout_in_seconds=60*5)
+                          timeout_in_seconds=60*15)
 
 
 def deploy(app_name, env_name, region):
@@ -602,7 +615,7 @@ def status(app_name, env_name, region, verbose):
         vars = {n['OptionName']: n['Value'] for n in settings
                 if n["Namespace"] == namespace}
         io.echo('  Environment Variables:')
-        for key, value in vars.iteritems():
+        for key, value in iteritems(vars):
             key, value = utils.mask_vars(key, value)
             io.echo('       ', key, '=', value)
 
@@ -642,7 +655,7 @@ def get_logs(env_name, info_type, region, zip=False):
             zip_location = save_file_from_url(url, logs_location,
                                               instance_id + '.zip')
             instance_folder = os.path.join(logs_location, instance_id)
-            fileoperations.upzip_folder(zip_location, instance_folder)
+            fileoperations.unzip_folder(zip_location, instance_folder)
             fileoperations.delete_file(zip_location)
 
         if zip:
@@ -826,8 +839,8 @@ def create_app_version(app_name, region):
             app_name, version_label, description, bucket, key, region
         )
     except InvalidParameterValueError as e:
-        if e.message.startswith('Application Version ') and \
-                e.message.endswith(' already exists.'):
+        if str(e).startswith('Application Version ') and \
+                str(e).endswith(' already exists.'):
             # we must be deploying with an existing app version
             io.log_warning('Deploying a previously deployed commit')
     return version_label
@@ -866,7 +879,7 @@ def update_environment(app_name, env_name, region, nohang):
         return
     except InvalidSyntaxError as e:
         io.log_error(prompts['update.invalidsyntax'] +
-                     '\nError = ' + e.message)
+                     '\nError = ' + str(e))
         return
 
     if nohang:
@@ -926,10 +939,10 @@ def prompt_for_ec2_keyname(region):
     if not ssh:
         return None
 
-    keys = ec2.get_key_pairs(region)
+    keys = ec2.get_key_pairs(region=region)
 
     if len(keys) < 1:
-        keyname = _generate_and_upload_keypair(region)
+        keyname = _generate_and_upload_keypair(region, keys)
 
     else:
         keys = [k['KeyName'] for k in keys]

@@ -51,9 +51,9 @@ def create_application(app_name, descrip, region=None):
                                   description=descrip,
                                   region=region)
     except InvalidParameterValueError as e:
-        if e.message == responses['app.exists'].replace('{app-name}',
+        if str(e) == responses['app.exists'].replace('{app-name}',
                                                         app_name):
-            raise AlreadyExistsError(e.message)
+            raise AlreadyExistsError(e)
         else:
             raise e
 
@@ -350,7 +350,10 @@ def get_new_events(app_name, env_name, request_id,
     LOG.debug('Inside get_new_events api wrapper')
     # make call
     if last_event_time is not None:
-        time = last_event_time
+        # In python 2 time is a datetime, in 3 it is a string
+        ## Convert to string for compatibility
+        time = str(last_event_time)
+        time = dateutil.parser.parse(time)
         new_time = time + datetime.timedelta(0, 0, 1000)
     else:
         new_time = None
@@ -408,9 +411,9 @@ def update_environment(env_name, options, region=None, remove=[]):
                               options_to_remove=remove,
                               region=region)
     except aws.InvalidParameterValueError as e:
-        if e.message == responses['env.invalidstate'].replace('{env-name}',
+        if str(e) == responses['env.invalidstate'].replace('{env-name}',
                                                               env_name):
-            raise InvalidStateError(e.message)
+            raise InvalidStateError(e)
     return response['ResponseMetadata']['RequestId']
 
 

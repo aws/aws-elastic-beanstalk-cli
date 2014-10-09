@@ -32,12 +32,15 @@ class InitController(AbstractBaseController):
             (['-k', '--keyname'], dict(help='Default EC2 key name')),
             (['-i', '--interactive'], dict(action='store_true',
                                            help='Force interactive mode')),
+            (['--nossh'], dict(action='store_true',
+                               help='Dont  setup ssh'))
         ]
         usage = 'eb init [options ...]'
         epilog = strings['init.epilog']
 
     def do_command(self):
         # get arguments
+        self.nossh = self.app.pargs.nossh
         self.interactive = self.app.pargs.interactive
         self.region = self.get_region()
         self.flag = False
@@ -113,8 +116,10 @@ class InitController(AbstractBaseController):
 
         return solution_string
 
-
     def get_keyname(self):
+        if self.nossh:
+            return None
+
         keyname = self.app.pargs.keyname
 
         # Get keyname from config file, if exists

@@ -95,7 +95,7 @@ class AbstractBaseController(controller.CementBaseController):
         if profile:
             aws.set_profile_override(profile)
         else:
-            profile = fileoperations.get_config_setting('global', 'profile')
+            profile = fileoperations.get_default_profile()
 
             aws.set_profile(profile)
 

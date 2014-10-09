@@ -115,8 +115,9 @@ class CreateController(AbstractBaseController):
             if not cname and not provided_env_name:
                 cname = get_cname(env_name, region)
             elif not cname:
-                if not operations.is_cname_available(env_name, region):
-                    raise AlreadyExistsError('The cname prefix "' + env_name +
+                cname = env_name
+                if not operations.is_cname_available(cname, region):
+                    raise AlreadyExistsError('The cname prefix "' + cname +
                                              '" is not available.')
 
         if not solution:

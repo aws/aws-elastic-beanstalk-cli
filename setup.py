@@ -4,14 +4,14 @@ import sys
 from setuptools import setup, find_packages
 import ebcli
 
-requires = ['botocore==0.64.0',
+requires = ['botocore==0.65.0',
             'cement==2.4',
             'six',
             'pyyaml']
 
 try:
-    with open('/etc/bash_completion.d/eb_completion.bash', 'w') as eo:
-        eo.write('test')
+    with open('/etc/bash_completion.d/eb_completion.extra', 'w') as eo:
+        eo.write('')
         data_files = [
             ('/etc/bash_completion.d/', ['bin/eb_completion.bash'])
         ]
