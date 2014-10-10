@@ -22,7 +22,7 @@ from six import iteritems
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd, exec_cmd2
 
-from ebcli.lib import elasticbeanstalk, s3, iam, aws, ec2
+from ebcli.lib import elasticbeanstalk, s3, iam, aws, ec2, elb
 from ebcli.core import fileoperations, io
 from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.resources.strings import strings, responses, prompts
@@ -466,6 +466,7 @@ def print_env_details(env, health=True, verbose=False):
 
     io.echo('Environment details for:', env.name)
     io.echo('  App name:', env.app_name)
+    io.echo('  Deployed Version:', env.version_label)
     io.echo('  Environment ID:', env.id)
     io.echo('  Solution Stack:', env.solution_stack)
     io.echo('  Tier:', env.tier)
@@ -604,8 +605,25 @@ def status(app_name, env_name, region, verbose):
 
     if verbose:
         # Print number of running instances
-        instances = get_instance_ids(app_name, env_name, region)
+        env = elasticbeanstalk.get_environment_resources(env_name, region)
+        instances = [i['Id'] for i in env['EnvironmentResources']['Instances']]
         io.echo('  Running instances:', len(instances))
+        #Get elb health
+        load_balancer_name = [i['Name'] for i in
+                              env['EnvironmentResources']['LoadBalancers']][0]
+        instance_states = elb.get_health_of_instances(load_balancer_name)
+        for i in instance_states:
+            instance_id = i['InstanceId']
+            state = i['State']
+            descrip = i['Description']
+            if state == 'Unknown':
+                state += '(' + descrip + ')'
+            io.echo('     ', instance_id + ':', state)
+        for i in instances:
+            if i not in [x['InstanceId'] for x in instance_states]:
+                io.echo('     ', i + ':', 'N/A (Not registered with Load Balancer)')
+
+
 
         # Print environment Variables
         settings = elasticbeanstalk.describe_configuration_settings(

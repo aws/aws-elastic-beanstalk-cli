@@ -7,7 +7,11 @@ import ebcli
 requires = ['botocore==0.65.0',
             'cement==2.4',
             'six',
-            'pyyaml']
+            'pyyaml',
+            ## For botocore we need the following
+            #'python-dateutil',
+            #'jmespath'
+            ]
 
 try:
     with open('/etc/bash_completion.d/eb_completion.extra', 'w') as eo:
