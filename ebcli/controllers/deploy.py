@@ -14,6 +14,8 @@
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 from ebcli.core import operations
+from ebcli.objects.exceptions import NoEnvironmentForBranchError
+from ebcli.core import io
 
 
 class DeployController(AbstractBaseController):
@@ -37,7 +39,11 @@ class DeployController(AbstractBaseController):
             env_name = \
                 operations.get_setting_from_current_branch('environment')
 
-        # ToDo prompt for envs if env_name is still empty
+        if not env_name:
+            message = strings['branch.noenv'].replace('eb {cmd}',
+                                                      self.Meta.label)
+            io.log_error(message)
+            raise NoEnvironmentForBranchError()
 
         # ToDo add support for deploying to multiples?
         # for arg in self.app.pargs.environment_name:

@@ -11,10 +11,14 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import sys
+import logging
+
 from cement.core import controller
 from cement.utils.misc import init_defaults
 from cement.ext.ext_logging import LoggingLogHandler
 
+import ebcli
 from ebcli.core import io, fileoperations, operations
 from ebcli.objects.exceptions import NoEnvironmentForBranchError, \
     NotInitializedError
@@ -53,6 +57,10 @@ class AbstractBaseController(controller.CementBaseController):
         from here.  It can also be overridden in the sub-class
 
         """
+        if self.app.pargs.debug:
+            io.echo('-- EBCLI Version:', ebcli.__version__)
+            io.echo('-- Python Version:', sys.version)
+
         if self.app.pargs.verbose:
             LoggingLogHandler.set_level(self.app.log, 'INFO')
         self.set_profile()
@@ -62,7 +70,7 @@ class AbstractBaseController(controller.CementBaseController):
         app_name = fileoperations.get_application_name()
         return app_name
 
-    def get_env_name(self, cmd_example=None):
+    def get_env_name(self, cmd_example=None, noerror=False):
         env_name = self.app.pargs.environment_name
         if not env_name:
             #If env name not provided, grab branch default
@@ -71,6 +79,9 @@ class AbstractBaseController(controller.CementBaseController):
 
         if not env_name:
             # No default env, lets ask for one
+            if noerror:
+                return None
+
             if not cmd_example:
                 message = strings['branch.noenv'].replace('{cmd}',
                                                           self.Meta.label)

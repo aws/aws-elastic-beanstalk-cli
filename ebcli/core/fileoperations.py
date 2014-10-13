@@ -24,6 +24,7 @@ from six.moves import configparser
 from six.moves.configparser import NoSectionError, NoOptionError
 from cement.utils.misc import minimal_logger
 
+from ebcli.core import io
 from ebcli.objects.exceptions import NotInitializedError, InvalidSyntaxError, \
     NotFoundError
 
@@ -122,10 +123,31 @@ def save_to_aws_config(access_key, secret_key):
     with open(aws_config_location, 'w') as f:
         config.write(f)
 
-    os.chmod(aws_config_location, stat.S_IRUSR | stat.S_IWUSR)
+    set_user_only_permissions(aws_config_location)
 
 
 _marker = object()
+
+
+def set_user_only_permissions(location):
+    if os.path.isdir(location):
+
+        for root, dirs, files in os.walk(location):
+            for d in dirs:
+                pass
+                _set_user_only_permissions_file(os.path.join(root, d), ex=True)
+            for f in files:
+                _set_user_only_permissions_file(os.path.join(root, f))
+
+    else:
+        _set_user_only_permissions_file(location)
+
+
+def _set_user_only_permissions_file(location, ex=False):
+    permission = stat.S_IRUSR | stat.S_IWUSR
+    if ex:
+        permission |= stat.S_IXUSR
+    os.chmod(location, permission)
 
 
 def get_current_directory_name():
@@ -276,6 +298,7 @@ def zip_up_folder(directory, location):
     cwd = os.getcwd()
     try:
         os.chdir(directory)
+        io.log_info('Zipping up folder at location: ' + str(os.getcwd()))
         zipf = zipfile.ZipFile(location, 'w', zipfile.ZIP_DEFLATED)
         _zipdir('./', zipf)
         zipf.close()
@@ -297,9 +320,12 @@ def zip_up_project(location):
 def _zipdir(path, zipf):
     for root, dirs, files in os.walk(path):
         if '.elasticbeanstalk' in root:
+            io.log_info('  -skipping: ' + str(root))
             continue
         for f in files:
-            zipf.write(os.path.join(root, f))
+            file = os.path.join(root, f)
+            io.log_info('  +adding: ' + str(file))
+            zipf.write(file)
 
 
 def unzip_folder(file_location, directory):

@@ -121,10 +121,6 @@ def log_event(event, echo=False):
     severity = event.severity
     date = event.event_date
     if echo:
-        # python2 uses date utils and python3 uses strings.
-        ## Convert to string and back for compatibility
-        date = str(date)
-        date = dateutil.parser.parse(date)
         io.echo(date.strftime("%Y-%m-%d %H:%M:%S").ljust(24) +
                 severity.ljust(8) + message)
     elif severity == 'INFO':
@@ -342,12 +338,22 @@ def open_app(app_name, env_name, region):
 
 def open_console(app_name, env_name, region):
     #Get environment id
-    env = elasticbeanstalk.get_environment(app_name, env_name, region)
+    env = None
+    if env_name is not None:
+        env = elasticbeanstalk.get_environment(app_name, env_name, region)
+
+    if env is not None:
+        page = 'environment/dashboard'
+    else:
+        page = 'application/overview'
 
     console_url = 'console.aws.amazon.com/elasticbeanstalk/home?region=' +\
                 region + \
-                '#/environment/dashboard?applicationName=' + app_name + \
-                  '&environmentId=' + env.id
+                '#/' + page + \
+                '?applicationName=' + app_name
+
+    if env is not None:
+        console_url += '&environmentId=' + env.id
 
     open_webpage_in_browser(console_url, ssl=True)
 
@@ -394,6 +400,7 @@ def scale(app_name, env_name, number, confirm, region):
         if not confirm:
             ## prompt to switch to LoadBalanced environment type
             io.echo(prompts['scale.switchtoloadbalance'])
+            io.log_warning(prompts['scale.switchtoloadbalancewarn'])
             switch = get_boolean_response()
             if not switch:
                 return
@@ -609,21 +616,26 @@ def status(app_name, env_name, region, verbose):
         instances = [i['Id'] for i in env['EnvironmentResources']['Instances']]
         io.echo('  Running instances:', len(instances))
         #Get elb health
-        load_balancer_name = [i['Name'] for i in
+        try:
+            load_balancer_name = [i['Name'] for i in
                               env['EnvironmentResources']['LoadBalancers']][0]
-        instance_states = elb.get_health_of_instances(load_balancer_name)
-        for i in instance_states:
-            instance_id = i['InstanceId']
-            state = i['State']
-            descrip = i['Description']
-            if state == 'Unknown':
-                state += '(' + descrip + ')'
-            io.echo('     ', instance_id + ':', state)
-        for i in instances:
-            if i not in [x['InstanceId'] for x in instance_states]:
-                io.echo('     ', i + ':', 'N/A (Not registered with Load Balancer)')
+            instance_states = elb.get_health_of_instances(load_balancer_name,
+                                                          region=region)
+            for i in instance_states:
+                instance_id = i['InstanceId']
+                state = i['State']
+                descrip = i['Description']
+                if state == 'Unknown':
+                    state += '(' + descrip + ')'
+                io.echo('     ', instance_id + ':', state)
+            for i in instances:
+                if i not in [x['InstanceId'] for x in instance_states]:
+                    io.echo('     ', i + ':', 'N/A (Not registered '
+                                              'with Load Balancer)')
 
-
+        except (IndexError, KeyError):
+            #No load balancer. Dont show instance status
+            pass
 
         # Print environment Variables
         settings = elasticbeanstalk.describe_configuration_settings(
@@ -676,10 +688,13 @@ def get_logs(env_name, info_type, region, zip=False):
             fileoperations.unzip_folder(zip_location, instance_folder)
             fileoperations.delete_file(zip_location)
 
+        fileoperations.set_user_only_permissions(logs_location)
         if zip:
             fileoperations.zip_up_folder(logs_location, logs_location + '.zip')
             fileoperations.delete_directory(logs_location)
+
             logs_location += '.zip'
+            fileoperations.set_user_only_permissions(logs_location)
 
         io.echo('Logs saved at', logs_location)
 
@@ -819,7 +834,7 @@ def cleanup_ignore_file():
 
 def create_app_version(app_name, region):
     if heuristics.directory_is_empty():
-        io.log_warning('Can not find any code. Launching Sample application')
+        io.log_warning(strings['appversion.none'])
         return None
 
     #get version_label
@@ -828,7 +843,7 @@ def create_app_version(app_name, region):
 
     #get description
     description = source_control.get_message()
-    io.log_info('Creating app_version archive' + version_label)
+    io.log_info('Creating app_version archive "' + version_label + '"')
 
     # Check for zip or artifact deploy
     artifact = fileoperations.get_config_setting('deploy', 'artifact')
@@ -951,7 +966,7 @@ def get_setting_from_current_branch(keyname):
 
 
 def prompt_for_ec2_keyname(region):
-    io.echo('Would you like to set up ssh for your instances?')
+    io.echo(prompts['ssh.setup'])
     ssh = get_boolean_response()
 
     if not ssh:

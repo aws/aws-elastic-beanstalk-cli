@@ -352,8 +352,7 @@ def get_new_events(app_name, env_name, request_id,
     if last_event_time is not None:
         # In python 2 time is a datetime, in 3 it is a string
         ## Convert to string for compatibility
-        time = str(last_event_time)
-        time = dateutil.parser.parse(time)
+        time = last_event_time
         new_time = time + datetime.timedelta(0, 0, 1000)
     else:
         new_time = None

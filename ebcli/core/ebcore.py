@@ -11,11 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import sys
+import logging
 
 from cement.core import foundation, handler
 from cement.utils.misc import init_defaults
 from cement.core.exc import CaughtSignal
+from six import iteritems
 
 from ebcli.controllers.initialize import InitController
 from ebcli.controllers.create import CreateController
@@ -78,6 +79,14 @@ class EB(foundation.CementApp):
 
 
 def main():
+    # Squash cement logging
+    ######
+    for d, k in iteritems(logging.Logger.manager.loggerDict):
+        # io.echo(d, k, type(d), type(k))
+        if d.startswith('cement') and isinstance(k, logging.Logger):
+            k.setLevel('ERROR')
+    #######
+
     app = EB()
 
     try:

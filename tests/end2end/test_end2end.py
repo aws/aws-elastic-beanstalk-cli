@@ -153,7 +153,7 @@ class TestEnd2End(test.CementTestCase):
 
     def do_list(self):
         print_('starting list')
-        self._run_app(['list'])
+        self._run_app(['list', '-v'])
         #ToDo: Check and make sure output is ok
 
     def do_terminate(self):

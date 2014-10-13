@@ -42,7 +42,7 @@ class ScaleController(AbstractBaseController):
         if not self.complete_region(commands):
             # Environment names are the second positional argument in this
             ## controller, so we only complete if its the second
-            if len(commands) == 2 and commands[-1].startswith('-'):
+            if len(commands) == 2 and not commands[-1].startswith('-'):
                 region = fileoperations.get_default_region()
                 app_name = fileoperations.get_application_name()
                 io.echo(*operations.get_env_names(app_name, region))

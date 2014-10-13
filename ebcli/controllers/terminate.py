@@ -15,7 +15,7 @@ import time
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 from ebcli.core import operations, io
-from ebcli.objects.exceptions import NotFoundError
+from ebcli.objects.exceptions import NotFoundError, NoEnvironmentForBranchError
 
 
 class TerminateController(AbstractBaseController):
@@ -29,7 +29,7 @@ class TerminateController(AbstractBaseController):
                              help='Terminate everything'))
         ]
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
-
+        epilog = strings['terminate.epilog']
 
     def do_command(self):
         region = self.get_region()
@@ -41,7 +41,12 @@ class TerminateController(AbstractBaseController):
             operations.delete_app(app_name, region, force)
 
         else:
-            env_name = self.get_env_name()
+            try:
+                env_name = self.get_env_name()
+            except NoEnvironmentForBranchError as e:
+                io.echo(strings['terminate.noenv'])
+                raise e
+
             if not force:
                 # make sure env exists
                 env_names = operations.get_env_names(app_name, region)

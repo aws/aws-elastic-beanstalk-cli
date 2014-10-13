@@ -34,6 +34,8 @@ class Tier():
             self.version)
 
     def __eq__(self, other):
+        if not isinstance(other, Tier):
+            return False
         return self.string.lower() == other.string.lower()
 
     @staticmethod

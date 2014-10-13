@@ -19,6 +19,7 @@ from ebcli.core.ebcore import EB
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.core import fileoperations
 from ebcli.objects.tier import Tier
+from ebcli.objects.exceptions import InvalidOptionsError
 
 
 class TestCreate(BaseControllerTest):
@@ -41,8 +42,7 @@ class TestCreate(BaseControllerTest):
                 2. Prompt for environment tier
             """
         env_name = 'my-awesome-env'
-        cname_prefix = 'myenv-cname'
-        self.mock_operations.select_tier.return_value = self.tier
+        cname_prefix = env_name
         self.mock_operations.get_solution_stack.return_value = self.solution
         self.mock_operations.is_cname_available.return_value = True
 
@@ -65,7 +65,7 @@ class TestCreate(BaseControllerTest):
             'us-west-2',  # region
             cname_prefix,  # cname
             self.solution,  # solution
-            self.tier,  #tier
+            None,  #tier
             None,  # label
             None,  # profile
             False,  # single
@@ -83,7 +83,6 @@ class TestCreate(BaseControllerTest):
             """
         env_name = 'my-awesome-env'
         cname_prefix = 'myenv-cname'
-        self.mock_operations.select_tier.return_value = self.tier
         self.mock_operations.get_solution_stack.return_value = self.solution
         self.mock_operations.is_cname_available.return_value = True
 
@@ -100,9 +99,9 @@ class TestCreate(BaseControllerTest):
             self.app_name,  #app name
             self.app_name + '-dev',   # env name
             'us-west-2',  # region
-            None,  # cname
+            self.app_name + '-dev',   # cname = env name
             self.solution,  # solution
-            self.tier,  #tier
+            None,  #tier
             None,  # label
             None,  # profile
             False,  # single
@@ -127,10 +126,14 @@ class TestCreate(BaseControllerTest):
         self.mock_input.return_value = None
 
         # run cmd
-        self.app = EB(argv=['create', '--sample', '--versionlabel', 'myVers'])
-        self.app.setup()
-        self.app.run()
-        self.app.close()
+        try:
+            self.app = EB(argv=['create', '--sample', '--versionlabel', 'myVers'])
+            self.app.setup()
+            self.app.run()
+            self.app.close()
+        except InvalidOptionsError:
+            #Expected
+            pass
 
         # Make sure error happened
         mock_error.assert_called()
@@ -145,8 +148,7 @@ class TestCreate(BaseControllerTest):
         self.mock_operations.select_tier.return_value = self.tier
         self.mock_operations.get_solution_stack.return_value = self.solution
 
-        self.app = EB(argv=['create', '--env_name', env_name, '--tier',
-                            self.tier.string])
+        self.app = EB(argv=['create', env_name])
         self.app.setup()
         self.app.run()
         self.app.close()

@@ -22,7 +22,7 @@ from cement.utils.shell import exec_cmd
 from ebcli.resources.strings import git_ignore
 from ebcli.core.fileoperations import get_config_setting
 from ebcli.objects.exceptions import NoSourceControlError, CommandError
-from ebcli.core import fileoperations
+from ebcli.core import fileoperations, io
 
 LOG = minimal_logger(__name__)
 
@@ -78,6 +78,7 @@ class NoSC(SourceControl):
         return 'default'
 
     def do_zip(self, location):
+        io.log_info('Creating zip using systems zip')
         fileoperations.zip_up_project(location)
 
     def get_message(self):
@@ -116,31 +117,37 @@ class Git(SourceControl):
         raise CommandError
 
     def get_version_label(self):
+        io.echo('Getting version label from git with git-describe')
         stdout, stderr, exitcode = \
             exec_cmd('git describe --always --abbrev=4', shell=True)
         self._handle_exitcode(exitcode, stderr)
 
+
         #Replace dots with underscores
-        return stdout[:-1].replace('.', '_')
+        return stdout.decode('utf8')[:-1].replace('.', '_')
 
     def get_current_branch(self):
         stdout, stderr, exitcode = \
             exec_cmd(['git rev-parse --abbrev-ref HEAD'], shell=True)
 
         self._handle_exitcode(exitcode, stderr)
-        return stdout.rstrip()
+
+        return stdout.rstrip().decode('utf8')
 
     def do_zip(self, location):
+        io.log_info('creating zip using git archive HEAD')
         stdout, stderr, exitcode = \
-            exec_cmd(['git archive --format=zip '
+            exec_cmd(['git archive -v --format=zip '
                       '-o ' + location + ' HEAD'], shell=True)
         self._handle_exitcode(exitcode, stderr)
+        io.log_info('git archive output: ' + stderr.decode('utf8'))
+
 
     def get_message(self):
         stdout, stderr, exitcode = \
             exec_cmd(['git log --oneline -1'], shell=True)
         self._handle_exitcode(exitcode, stderr)
-        return stdout.rstrip()
+        return stdout.rstrip().decode('utf8')
 
     def is_setup(self):
         return fileoperations.is_git_directory_present()

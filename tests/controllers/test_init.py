@@ -41,13 +41,14 @@ class TestInit(BaseControllerTest):
         self.mock_operations.credentials_are_valid.return_value = True
         self.mock_operations.prompt_for_solution_stack.return_value = \
             self.solution
-
+        self.mock_operations.prompt_for_ec2_keyname.return_value = 'test'
 
         self.mock_input.side_effect = [
             '3',  # region number
             self.app_name,  # Application name
             '1',  # Solution stack platform selection
             '1',  # Solution stack version selection
+            'n',  # Set up ssh selection
         ]
 
         # run cmd
@@ -59,7 +60,8 @@ class TestInit(BaseControllerTest):
         # make sure setup was called correctly
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
-                                                      self.solution.string)
+                                                      'PHP 5.5',
+                                                      'test')
 
     def test_init_interactive(self):
         """
@@ -77,12 +79,14 @@ class TestInit(BaseControllerTest):
         self.mock_operations.credentials_are_valid.return_value = True
         self.mock_operations.prompt_for_solution_stack.return_value = \
             self.solution
+        self.mock_operations.prompt_for_ec2_keyname.return_value = 'test'
 
         self.mock_input.side_effect = [
             '3',  # region number
             self.app_name,  # Application name
             '1',  # Solution stack platform selection
-            '1',  # Solution stack version selection
+            '1',  # Solution stack version selection'
+            'n',  # Set up ssh selection
         ]
 
         # run cmd
@@ -94,7 +98,8 @@ class TestInit(BaseControllerTest):
         # make sure setup was called correctly
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
-                                                      self.solution.string)
+                                                      'PHP 5.5',
+                                                      'test')
 
     def test_init_no_creds(self):
         """
@@ -105,11 +110,11 @@ class TestInit(BaseControllerTest):
         self.mock_operations.credentials_are_valid.return_value = False
         self.mock_operations.prompt_for_solution_stack.return_value = \
             self.solution
-
+        self.mock_operations.prompt_for_ec2_keyname.return_value = 'test'
 
         # run cmd
         self.app = EB(argv=['init',
-                            '-a', self.app_name,
+                            self.app_name,
                             '-r', 'us-west-2'])
         self.app.setup()
         self.app.run()
@@ -119,4 +124,5 @@ class TestInit(BaseControllerTest):
         self.mock_operations.setup_credentials.assert_called()
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
-                                                      self.solution.string)
+                                                      'PHP 5.5',
+                                                      'test')

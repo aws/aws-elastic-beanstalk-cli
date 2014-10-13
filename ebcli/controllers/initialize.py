@@ -35,7 +35,7 @@ class InitController(AbstractBaseController):
             (['--nossh'], dict(action='store_true',
                                help='Dont  setup ssh'))
         ]
-        usage = 'eb init [options ...]'
+        usage = 'eb init <application_name> [options ...]'
         epilog = strings['init.epilog']
 
     def do_command(self):

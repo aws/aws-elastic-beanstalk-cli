@@ -12,9 +12,8 @@
 # language governing permissions and limitations under the License.
 
 import textwrap
-import argparse
 
-from cement.core import foundation, controller, handler
+from cement.core import controller
 
 import ebcli
 from ebcli.resources.strings import strings

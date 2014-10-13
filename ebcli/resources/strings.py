@@ -12,14 +12,20 @@
 # language governing permissions and limitations under the License.
 
 strings = {
+    # Version message got 'eb --version'
     'app.version_message': 'EBCLI - AWS Elastic Beanstalk CLI - Version:',
+    # Initial text that you see on a 'eb --help'
     'base.info': "Welcome to EB. Please "
                  "use 'eb {cmd} --help' for more info",
+    # Initial epilog (last line) that you see on 'eb --help'
     'base.epilog': "To get started please use 'eb init' followed by 'eb create' and 'eb open'",
-    'init.info': 'Initializes your directory with eb. '
-                 'Sets up the app',
+
+    # All .infos are for --help text. All .epilogs are the epilogs shown on the given command
+    'init.info': 'Initializes your directory with eb. Sets up the app',
+    'init.epilog': 'This command is safe when ran in a previously initialized'
+                   ' directory. To re-initialize with different options, '
+                   'use the -i flag.',
     'create.info': 'Create a new environment',
-    'create.sampleandlabel': 'Both sample and versionlabel cannot be used together',
     'delete.info': 'Completely remove application and all environments in it',
     'events.info': 'Get recent events',
     'open.info': 'Opens the environment app in a browser',
@@ -33,36 +39,44 @@ strings = {
     'setenv.info': 'Set environment variables',
     'list.info': 'List all environments',
     'terminate.info': 'Terminate environment',
+    'terminate.epilog': 'In order to terminate the application and everything in it, use the --all flag',
     'config.info': 'Update environment configuration',
     'sync.info': 'Pull down environment configurations',
     'ssh.info': 'SSH into environment instance',
-    'error.nocreds': 'A credentials file can not be found. \n'
-                     'Please place a credential file at ~/.aws/config',
+
+    # Error when --sample and --label falg are both used on create
+    'create.sampleandlabel': 'Both sample and versionlabel cannot be used together',
+    # Text shown if 'eb terminate' is called while no environment is selected as default
+    'terminate.noenv': 'To delete the application and all application versions, use "eb terminate --all"',
+
     'cred.prompt':  'It looks like your credentials are not yet set up '
                     'or are incorrect \n'
                     'Please enter your credentials now',
     'prompt.invalid': 'Sorry, that choice is invalid.',
     'prompt.yes-or-no': 'Please enter either Y or N',
+    # Default description for apps created with cli
     'app.description': 'Application created from eb-cli tool using eb init',
+    # Default description for environment created with cli
     'env.description': 'Environment created from eb-cli tool using eb create',
+    # Same as above but for cloned environments
     'env.clonedescription': 'Environment clone of {env-name}. Created by the eb-cli tool using eb clone',
     'env.exists': 'An environment with that name already exists, '
                   'please try another.',
+    # When create is called, if we cant find any files, we say this
+    'appversion.none': 'Cannot find any code. Launching Sample application.',
+    # Error, no solution stacks returned. Almost always due to permissions
     'sstacks.notfound': 'No Solution Stacks found. It is possible this could '
                         'be due to a lack of permissions',
     'timeout.error': 'Unknown state of environment. Operation timed out.',
-    'sc.notfound': 'No source control found. '
-                     'Will use system\'s zip for deploys.',
+    'sc.notfound': 'No source control found. Will use system\'s zip for deploys.',
     'exit.notsetup': 'This directory does not appear to be setup with EB-CLI\n'
                      'Have you ran eb init?',
     'exit.noregion': 'A default region can not be found. Please run eb init or'
                      ' add the region using --region',
+    # Typical response when an environment is in pending state
     'exit.invalidstate': 'The operation can not be completed at this time due to a pending operation. Please try again later.',
     'branch.noenv': 'No environment is registered with this branch. You must'
                     ' specify an environment, i.e. eb {cmd} my-env-name',
-    'init.epilog': 'This command is safe when ran in a previously initialized'
-                   ' directory. To re-initialize with different options, '
-                   'use the -i flag.',
     'ssh.notpresent': 'You do not seem to have ssh installed. Please install before continuing.',
     'ssh.filenotfound': 'Can not find your ssh key file for keyname "{key-name}".'
                         ' Please make sure it is located in your .ssh folder in your home directory.',
@@ -74,6 +88,7 @@ prompts = {
     'sstack.version': 'Please choose a version',
     'scale.switchtoloadbalance': 'The environment is currently a Single Instance, would you'
                                  ' like to switch to a Load Balanced environment?',
+    'scale.switchtoloadbalancewarn': 'By choosing yes, the environment will terminate and your application will be temporarily unavailable.',
     'cname.unavailable': 'The CNAME you provided is currently not available.\n'
                          'Please try another',
     'delete.confirm': 'You are about to delete the application "{app-name}" and all its resources.\n'
@@ -85,6 +100,7 @@ prompts = {
     'fileopen.error2': 'Unable to open environment file. Try setting the editor environment variable',
     'update.invalidstate': 'Cannot update environment at this time. Wait for environment to finish its current operation.',
     'update.invalidsyntax': 'The updated settings contained an error. Environment will not be updated.',
+    'ssh.setup': 'Would you like to set up ssh for your instances?',
     'sstack.invalid': 'Solution Stack provided is not valid. Please choose another.',
 }
 

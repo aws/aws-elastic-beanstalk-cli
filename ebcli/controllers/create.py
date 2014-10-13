@@ -51,7 +51,6 @@ class CreateController(AbstractBaseController):
                                        help='Do not hang and wait for create '
                                             'to be completed')),
         ]
-        usage = 'eb create [options ...]'
 
     def do_command(self):
         # save command line args
