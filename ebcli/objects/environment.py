@@ -31,3 +31,6 @@ class Environment():
         self.date_created = date_created
         self.tier = tier
         self.cname = cname
+
+    def __str__(self):
+        return self.name

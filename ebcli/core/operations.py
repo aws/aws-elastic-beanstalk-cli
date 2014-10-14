@@ -86,7 +86,7 @@ def wait_and_print_events(request_id, region,
                 break
 
     if not finished:
-        raise TimeoutError('Timed out while waiting for command to CompleterController')
+        raise TimeoutError('Timed out while waiting for command to Complete')
 
 
 def _is_success_string(message):
@@ -269,8 +269,6 @@ def setup(app_name, region, solution, keyname):
         war_file = fileoperations.get_war_file_location()
         fileoperations.write_config_setting('deploy', 'artifact', war_file)
 
-    create_app(app_name, region)
-
     try:
         setup_ignore_file()
     except NoSourceControlError:
@@ -305,11 +303,43 @@ def create_app(app_name, region):
 
         io.echo('Application', app_name,
                 'has been created')
+        return None, None
 
     except AlreadyExistsError:
         io.log_info('Application already exists.')
-        # App exists, do nothing
-        pass
+        return pull_down_app_info(app_name, region)
+
+
+def pull_down_app_info(app_name, region):
+    # App exists, set up default environment
+    envs = elasticbeanstalk.get_all_environments(app_name, region)
+    if len(envs) == 0:
+        # no envs to set as default
+        return None, None
+    elif len(envs) == 1:
+        # Set only env as default
+        env = envs[0]
+        io.log_info('Setting only environment "' +
+                    env.name + '" as default')
+    elif len(envs) > 1:
+        # Prompt for default
+        io.echo(prompts['init.selectdefaultenv'])
+        env = utils.prompt_for_item_in_list(envs)
+
+    write_setting_to_current_branch('environment', env.name)
+
+    io.log_info('Pulling down defaults from environment ' + env.name)
+    # Get keyname
+    instances = get_instance_ids(app_name, env.name, region)
+    if len(instances) < 1:
+        return env.solution_stack, None
+
+    instance = ec2.describe_instance(instances[0], region)
+    try:
+        keypair_name = instance['KeyName']
+        return env.solution_stack, keypair_name
+    except KeyError:
+        return env.solution_stack, None
 
 
 def get_default_profile(region):
@@ -495,11 +525,11 @@ def create_env(app_name, env_name, region, cname, solution_stack,
             tier, label, single, key_name, profile, region=region)
 
     except InvalidParameterValueError as e:
-        LOG.debug('creating env returned error: ' + str(e))
-        if re.match(responses['env.cnamenotavailable'], str(e)):
+        LOG.debug('creating env returned error: ' + e.message)
+        if re.match(responses['env.cnamenotavailable'], e.message):
             io.echo(prompts['cname.unavailable'])
             cname = io.prompt_for_cname()
-        elif re.match(responses['env.nameexists'], str(e)):
+        elif re.match(responses['env.nameexists'], e.message):
             io.echo(strings['env.exists'])
             current_environments = get_env_names(app_name, region)
             unique_name = utils.get_unique_name(env_name,
@@ -540,11 +570,11 @@ def clone_env(app_name, env_name, clone_name, cname, region):
             app_name, env_name, clone_name, cname, description, region=region)
 
     except InvalidParameterValueError as e:
-        LOG.debug('cloning env returned error: ' + str(e))
-        if re.match(responses['env.cnamenotavailable'], str(e)):
+        LOG.debug('cloning env returned error: ' + e.message)
+        if re.match(responses['env.cnamenotavailable'], e.message):
             io.echo(prompts['cname.unavailable'])
             cname = io.prompt_for_cname()
-        elif re.match(responses['env.nameexists'], str(e)):
+        elif re.match(responses['env.nameexists'], e.message):
             io.echo(strings['env.exists'])
             current_environments = get_env_names(app_name, region)
             unique_name = utils.get_unique_name(clone_name,
@@ -575,7 +605,7 @@ def delete_app(app_name, region, force):
         result = io.get_input('Enter application name as shown to confirm')
 
         if result != app_name:
-            io.log_error('Names do not match. Exiting')
+            io.log_error(prompts['terminate.nomatch'])
             return
 
 
@@ -633,7 +663,7 @@ def status(app_name, env_name, region, verbose):
                     io.echo('     ', i + ':', 'N/A (Not registered '
                                               'with Load Balancer)')
 
-        except (IndexError, KeyError):
+        except (IndexError, KeyError, NotFoundError):
             #No load balancer. Dont show instance status
             pass
 
@@ -696,7 +726,7 @@ def get_logs(env_name, info_type, region, zip=False):
             logs_location += '.zip'
             fileoperations.set_user_only_permissions(logs_location)
 
-        io.echo('Logs saved at', logs_location)
+        io.echo(strings['logs.location'].replace('{location}', logs_location))
 
     else:
         # print logs
@@ -713,9 +743,7 @@ def setenv(app_name, env_name, var_list, region):
     for pair in var_list:
         ## validate
         if not re.match('^[\w\\_.:/+-@][^=]*=([\w\\_.:/+-@][^=]*)?$', pair):
-            io.log_error('Must use format VAR_NAME=KEY. Variable and keys '
-                         'cannot contain any spaces or =. They must start'
-                         ' with a letter, number or one of \\_.:/+-@')
+            io.log_error(strings['setenv.invalidformat'])
             return
         else:
             option_name, value = pair.split('=')
@@ -734,7 +762,7 @@ def setenv(app_name, env_name, var_list, region):
         request_id = result
         wait_and_print_events(request_id, region, timeout_in_seconds=60*4)
     except TimeoutError:
-        io.log_error('Unknown state of environment. Operation timed out.')
+        io.log_error(strings['timeout.error'])
 
 
 def print_from_url(url):
@@ -872,8 +900,8 @@ def create_app_version(app_name, region):
             app_name, version_label, description, bucket, key, region
         )
     except InvalidParameterValueError as e:
-        if str(e).startswith('Application Version ') and \
-                str(e).endswith(' already exists.'):
+        if e.message.startswith('Application Version ') and \
+                e.message.endswith(' already exists.'):
             # we must be deploying with an existing app version
             io.log_warning('Deploying a previously deployed commit')
     return version_label
@@ -912,7 +940,7 @@ def update_environment(app_name, env_name, region, nohang):
         return
     except InvalidSyntaxError as e:
         io.log_error(prompts['update.invalidsyntax'] +
-                     '\nError = ' + str(e))
+                     '\nError = ' + e.message)
         return
 
     if nohang:
@@ -982,7 +1010,7 @@ def prompt_for_ec2_keyname(region):
         new_key_option = '[ Create new KeyPair ]'
         keys.append(new_key_option)
         io.echo()
-        io.echo('Choose a keypair')
+        io.echo(prompts['keypair.prompt'])
         keyname = utils.prompt_for_item_in_list(keys, default=len(keys))
 
         if keyname == new_key_option:
@@ -992,7 +1020,7 @@ def prompt_for_ec2_keyname(region):
 
 def select_tier():
     tier_list = Tier.get_latest_tiers()
-    io.echo('Please choose a tier')
+    io.echo(prompts['tier.prompt'])
     tier = utils.prompt_for_item_in_list(tier_list)
     return tier
 
@@ -1029,8 +1057,8 @@ def get_solution_stack(solution_string, region):
         # Give the latest version. Latest is always first in list
         return stacks[0]
 
-    raise NotFoundError('Solution stack not found for given key "'
-                        + solution_string + '"')
+    raise NotFoundError(prompts['sstack.invalidkey'].replace('{string}',
+                                                             solution_string))
 
 def is_cname_available(cname, region):
     return elasticbeanstalk.is_cname_available(cname, region)
@@ -1045,7 +1073,7 @@ def get_instance_ids(app_name, env_name, region):
 def _generate_and_upload_keypair(region, keys):
     # Get filename
     io.echo()
-    io.echo('Enter keypair name')
+    io.echo(prompts['keypair.nameprompt'])
     unique = utils.get_unique_name('aws-eb', keys)
     keyname = io.prompt('Default is ' + unique, default=unique)
     file_name = fileoperations.get_ssh_folder() + keyname

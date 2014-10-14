@@ -14,6 +14,8 @@
 from cement.utils.misc import minimal_logger
 
 from ebcli.lib import aws
+from ebcli.objects.exceptions import ServiceError, NotFoundError
+from ebcli.resources.strings import responses
 
 LOG = minimal_logger(__name__)
 
@@ -23,7 +25,11 @@ def _make_api_call(operation_name, **operation_options):
 
 
 def get_health_of_instances(load_balancer_name, region=None):
-    result = _make_api_call('describe-instance-health',
+    try:
+        result = _make_api_call('describe-instance-health',
                             load_balancer_name=load_balancer_name,
                             region=region)
+    except ServiceError as e:
+        if e.message.startswith(responses['loadbalancer.notfound']):
+            raise NotFoundError(e)
     return result['InstanceStates']

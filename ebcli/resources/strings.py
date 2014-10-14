@@ -32,6 +32,7 @@ strings = {
     'console.info': 'Opens the Environments AWS console in a browser',
     'clone.info': 'Clone an environment',
     'logs.info': 'Get recent logs',
+    'use.info': 'Set default environment',
     'logs.epilog': 'Defaults to the recent logs. If you would instead like to retrieve all the logs, please use the "--all" flag.',
     'deploy.info': 'Deploys your current branch to the environment',
     'scale.info': 'Change number of running instances',
@@ -76,16 +77,23 @@ strings = {
     # Typical response when an environment is in pending state
     'exit.invalidstate': 'The operation can not be completed at this time due to a pending operation. Please try again later.',
     'branch.noenv': 'No environment is registered with this branch. You must'
-                    ' specify an environment, i.e. eb {cmd} my-env-name',
+                    ' specify an environment, i.e. eb {cmd} my-env-name\n'
+                    'Alternatively you can register an environment with "eb use my-env-name"',
     'ssh.notpresent': 'You do not seem to have ssh installed. Please install before continuing.',
     'ssh.filenotfound': 'Can not find your ssh key file for keyname "{key-name}".'
                         ' Please make sure it is located in your .ssh folder in your home directory.',
+    'logs.location': 'Logs saved at {location}',
+    'setenv.invalidformat': 'Must use format VAR_NAME=KEY. Variable and keys '
+                            'cannot contain any spaces or =. They must start'
+                            ' with a letter, number or one of \\_.:/+-@',
 }
 prompts = {
     'events.hanging': 'Hanging and waiting for events. Use CTRL + C to exit.',
     'platform.validate': 'It appears you are using {platform}. Is this correct?',
     'platform.prompt': 'Please choose a platform type',
     'sstack.version': 'Please choose a version',
+    'init.selectdefaultenv': 'Select an environment to set as branch default. \n'
+                             'Note, you can change this in the future by using "eb use [environment_name]"',
     'scale.switchtoloadbalance': 'The environment is currently a Single Instance, would you'
                                  ' like to switch to a Load Balanced environment?',
     'scale.switchtoloadbalancewarn': 'By choosing yes, the environment will terminate and your application will be temporarily unavailable.',
@@ -102,6 +110,12 @@ prompts = {
     'update.invalidsyntax': 'The updated settings contained an error. Environment will not be updated.',
     'ssh.setup': 'Would you like to set up ssh for your instances?',
     'sstack.invalid': 'Solution Stack provided is not valid. Please choose another.',
+    'sstack.invalidkey': 'Solution stack not found for given key "{string}"',
+    'keypair.prompt': 'Choose a keypair',
+    'keypair.nameprompt': 'Enter keypair name',
+    'tier.prompt': 'Please choose a tier',
+    # Error given on terminate when the user input does not match name
+    'terminate.nomatch': 'Names do not match. Exiting',
 }
 
 responses = {
@@ -125,7 +139,8 @@ responses = {
     'logs.successtail': 'Successfully finished tailing',
     'logs.successbundle': 'Successfully finished bundling',
     'env.terminated': 'terminateEnvironment completed successfully.',
-    'env.invalidstate': 'Environment named {env-name} is in an invalid state for this operation. Must be Ready.'
+    'env.invalidstate': 'Environment named {env-name} is in an invalid state for this operation. Must be Ready.',
+    'loadbalancer.notfound': 'There is no ACTIVE Load Balancer named',
 }
 git_ignore = [
     '# Elastic Beanstalk Files',        # comment line

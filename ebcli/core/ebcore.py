@@ -28,6 +28,7 @@ from ebcli.controllers.terminate import TerminateController
 from ebcli.controllers.config import ConfigController
 from ebcli.controllers.open import OpenController
 from ebcli.controllers.console import ConsoleController
+from ebcli.controllers.use import UseController
 from ebcli.controllers.scale import ScaleController
 from ebcli.controllers.ssh import SSHController
 from ebcli.controllers.setenv import SetEnvController
@@ -61,6 +62,7 @@ class EB(foundation.CementApp):
         handler.register(ConsoleController)
         handler.register(ScaleController)
         handler.register(SSHController)
+        handler.register(UseController)
         handler.register(SetEnvController)
         handler.register(ListController)
         # Clone not yet ready
@@ -112,7 +114,7 @@ def main():
         io.log_error(strings['exit.noregion'])
         app.close(code=3)
     except EBCLIException as e:
-        io.log_error(e.__class__.__name__ + ": " + str(e))
+        io.log_error(e.__class__.__name__ + ": " + e.message)
         app.close(code=3)
     finally:
         app.close()

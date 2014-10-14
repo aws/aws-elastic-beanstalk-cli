@@ -12,6 +12,8 @@
 # language governing permissions and limitations under the License.
 
 import re
+import warnings
+import sys
 
 from ebcli.core import io
 
@@ -36,13 +38,19 @@ def prompt_for_item_in_list(lst, default=1):
 
 
 def get_unique_name(name, current_uniques):
-    base_name = name
-    number = 2
-    while base_name in current_uniques:
-        base_name = name + str(number)
-        number += 1
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        if sys.version_info[0] >= 3:
+            base_name = name
+        else:
+            base_name = name.decode('utf8')
 
-    return base_name
+        number = 2
+        while base_name in current_uniques:
+            base_name = name + str(number)
+            number += 1
+
+        return base_name
 
 
 def mask_vars(key, value):

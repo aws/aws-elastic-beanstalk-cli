@@ -12,9 +12,9 @@
 # language governing permissions and limitations under the License.
 
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings, prompts
+from ebcli.resources.strings import strings
 from ebcli.core import fileoperations, io, operations
-from ebcli.objects.exceptions import NotInitializedError, NotFoundError
+from ebcli.objects.exceptions import NotInitializedError, NoRegionError
 from ebcli.objects import region as regions
 from ebcli.lib import utils, elasticbeanstalk
 
@@ -42,10 +42,16 @@ class InitController(AbstractBaseController):
         # get arguments
         self.nossh = self.app.pargs.nossh
         self.interactive = self.app.pargs.interactive
-        self.region = self.get_region()
+        self.region = self.app.pargs.region
         self.flag = False
         if self.app.pargs.application_name and self.app.pargs.solution:
             self.flag = True
+
+        try:
+            # Note, region is None unless explicitely set
+            operations.credentials_are_valid(self.region)
+        except NoRegionError:
+            self.region = self.get_region()
 
         if not operations.credentials_are_valid(self.region):
             operations.setup_credentials()
@@ -53,11 +59,19 @@ class InitController(AbstractBaseController):
         self.solution = self.get_solution_stack()
         self.app_name = self.get_app_name()
 
+
+        # Create application
+        fileoperations.touch_config_folder()
+        sstack, key = operations.create_app(self.app_name, self.region)
+
+        if not self.solution:
+            self.solution = sstack.name
+
         if not self.solution or self.interactive:
             result = operations.prompt_for_solution_stack(self.region)
             self.solution = result.version
 
-        self.keyname = self.get_keyname()
+        self.keyname = self.get_keyname(default=key)
 
         operations.setup(self.app_name, self.region, self.solution,
                          self.keyname)
@@ -116,11 +130,14 @@ class InitController(AbstractBaseController):
 
         return solution_string
 
-    def get_keyname(self):
+    def get_keyname(self, default=None):
         if self.nossh:
             return None
 
         keyname = self.app.pargs.keyname
+
+        if not keyname:
+            keyname = default
 
         # Get keyname from config file, if exists
         if not keyname:

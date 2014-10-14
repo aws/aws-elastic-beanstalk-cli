@@ -117,7 +117,7 @@ class Git(SourceControl):
         raise CommandError
 
     def get_version_label(self):
-        io.echo('Getting version label from git with git-describe')
+        io.log_info('Getting version label from git with git-describe')
         stdout, stderr, exitcode = \
             exec_cmd('git describe --always --abbrev=4', shell=True)
         self._handle_exitcode(exitcode, stderr)
@@ -132,7 +132,7 @@ class Git(SourceControl):
 
         self._handle_exitcode(exitcode, stderr)
 
-        return stdout.rstrip().decode('utf8')
+        return stdout.rstrip()
 
     def do_zip(self, location):
         io.log_info('creating zip using git archive HEAD')

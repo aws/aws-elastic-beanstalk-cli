@@ -97,8 +97,6 @@ class AbstractBaseController(controller.CementBaseController):
         region = self.app.pargs.region
         if not region:
             region = fileoperations.get_default_region()
-        if not region:
-            raise NotInitializedError
         return region
 
     def set_profile(self):
@@ -107,7 +105,8 @@ class AbstractBaseController(controller.CementBaseController):
             aws.set_profile_override(profile)
         else:
             profile = fileoperations.get_default_profile()
-
+            if not profile:
+                profile = 'eb-cli'  # default
             aws.set_profile(profile)
 
     def complete_command(self, commands):

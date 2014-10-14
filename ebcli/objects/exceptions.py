@@ -11,10 +11,22 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import sys
+
 
 class EBCLIException(Exception):
     """ Base exception for all EB-CLI exceptions """
-    pass
+
+    ''' Python 3 removes the .message property
+        This causes some weird unicode issues.
+        A message for a python 2 exception could be in unicode.
+        Using str(e) and comparing results is problematic with unicode in
+        python 2. However using the .message works just fine. So we add the
+        .message back into 3 to solve compatibility problems'''
+    if sys.version_info[0] >= 3:
+        @property
+        def message(self):
+            return str(self)
 
 
 class NotFoundError(EBCLIException):

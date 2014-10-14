@@ -17,6 +17,7 @@ import zipfile
 import sys
 import glob
 import stat
+import codecs
 
 from yaml import load, dump, safe_dump
 from yaml.scanner import ScannerError
@@ -273,7 +274,7 @@ def get_environment_from_file(env_name):
         for file_ext in ['.ebe.yml', '.env.yml', '.paused-env.yml']:
             path = file_name + file_ext
             if os.path.exists(path):
-                with open(path, 'r') as f:
+                with codecs.open(path, 'r', encoding='utf8') as f:
                     env = load(f)
     except ScannerError:
         raise InvalidSyntaxError("The environment file contains "
@@ -396,7 +397,7 @@ def save_env_file(env, public=False, paused=False):
     try:
         _traverse_to_project_root()
 
-        with open(file_name, 'w') as f:
+        with codecs.open(file_name, 'w', encoding='utf8') as f:
             f.write(safe_dump(env, default_flow_style=False))
 
     finally:
@@ -415,7 +416,7 @@ def write_config_setting(section, key_name, value):
             config = {}
         config.setdefault(section, {})[key_name] = value
 
-        with open(local_config_file, 'w') as f:
+        with codecs.open(local_config_file, 'w', encoding='utf8') as f:
             f.write(dump(config, default_flow_style=False))
 
     finally:
@@ -450,7 +451,7 @@ def get_config_setting(section, key_name):
 
 def _get_yaml_dict(filename):
     try:
-        with open(filename, 'r') as f:
+        with codecs.open(filename, 'r', encoding='utf8') as f:
             return load(f)
     except IOError:
         return {}

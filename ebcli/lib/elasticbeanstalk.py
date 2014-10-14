@@ -51,8 +51,8 @@ def create_application(app_name, descrip, region=None):
                                   description=descrip,
                                   region=region)
     except InvalidParameterValueError as e:
-        if str(e) == responses['app.exists'].replace('{app-name}',
-                                                        app_name):
+        string = responses['app.exists'].replace('{app-name}', app_name)
+        if e.message == string:
             raise AlreadyExistsError(e)
         else:
             raise e
@@ -410,7 +410,7 @@ def update_environment(env_name, options, region=None, remove=[]):
                               options_to_remove=remove,
                               region=region)
     except aws.InvalidParameterValueError as e:
-        if str(e) == responses['env.invalidstate'].replace('{env-name}',
+        if e.message == responses['env.invalidstate'].replace('{env-name}',
                                                               env_name):
             raise InvalidStateError(e)
     return response['ResponseMetadata']['RequestId']

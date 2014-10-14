@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 
 import re
+import warnings
 
 import six
 from six import print_
@@ -81,16 +82,19 @@ def prompt(output, default=None):
 
 
 def prompt_for_unique_name(default, unique_list):
-    assert default not in unique_list, 'Default name is not unique'
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
 
-    while True:
-        result = prompt('default is "' + default + '"', default=default)
-        if result in unique_list:
-            echo('Sorry that name already exists, try another.')
-        else:
-            break
+        assert default not in unique_list, 'Default name is not unique'
 
-    return result
+        while True:
+            result = prompt('default is "' + default + '"', default=default)
+            if result in unique_list:
+                echo('Sorry that name already exists, try another.')
+            else:
+                break
+
+        return result
 
 
 def prompt_for_environment_name(default_name='myEnv',
