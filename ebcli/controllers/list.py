@@ -22,15 +22,24 @@ class ListController(AbstractBaseController):
         description = strings['list.info']
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
         arguments = [
-            (['-r', '--region'], dict(help='Region where environment lives')),
+            (['-r', '--region'], dict(help='Region where environments live')),
+            (['-a', '--all'], dict(action='store_true',
+                                   help='Show environments for all '
+                                        'applications'))
         ]
 
     def do_command(self):
-        app_name = self.get_app_name()
+        all_apps = self.app.pargs.all
+        # No need to get app name if all flag is present
+        ## By not getting it, we can do a list in a non-initialized location
+        if not all_apps:
+            app_name = self.get_app_name()
+        else:
+            app_name = None
         region = self.get_region()
         verbose = self.app.pargs.verbose
 
-        operations.list_env_names(app_name, region, verbose)
+        operations.list_env_names(app_name, region, verbose, all_apps)
 
     def complete_command(self, commands):
         # We only care about regions

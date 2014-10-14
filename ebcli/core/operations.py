@@ -157,7 +157,15 @@ def get_env_names(app_name, region):
     return [e.name for e in envs if not e.status == 'Terminated']
 
 
-def list_env_names(app_name, region, verbose):
+def list_env_names(app_name, region, verbose, all_apps):
+    if all_apps:
+        for app_name in get_application_names(region):
+            list_env_names_for_app(app_name, region, verbose)
+    else:
+        list_env_names_for_app(app_name, region, verbose)
+
+
+def list_env_names_for_app(app_name, region, verbose):
     current_env = get_setting_from_current_branch('environment')
     env_names = get_env_names(app_name, region)
     env_names.sort()
