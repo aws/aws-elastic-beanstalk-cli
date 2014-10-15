@@ -35,6 +35,8 @@ class CreateController(AbstractBaseController):
                                            'will be created in')),
             (['-c', '--cname'], dict(help='Cname prefix')),
             (['-t', '--tier'], dict(help='Environment tier type')),
+            (['-i', '--instance_type'], dict(help='Instance Type '
+                                                  'i.e. t1.micro')),
             (['-s', '--solution'], dict(help='Solution stack')),
             (['--single'], dict(action='store_true',
                                 help='Environment will use a Single '
@@ -44,8 +46,8 @@ class CreateController(AbstractBaseController):
             (['-d', '--branch_default'], dict(action='store_true',
                                               help='Set as branches default '
                                                    'environment')),
-            (['-i', '--instance_profile'], dict(help='Instance profile')),
-            (['-vl', '--versionlabel'], dict(help='Version label to deploy')),
+            (['-ip', '--instance_profile'], dict(help='EC2 Instance profile')),
+            (['--version'], dict(help='Version label to deploy')),
             (['-k', '--keyname'], dict(help='EC2 SSH KeyPair name')),
             (['-nh', '--nohang'], dict(action='store_true',
                                        help='Do not hang and wait for create '
@@ -57,10 +59,11 @@ class CreateController(AbstractBaseController):
         env_name = self.app.pargs.environment_name
         cname = self.app.pargs.cname
         tier = self.app.pargs.tier
+        itype = self.app.pargs.instance_type
         solution_string = self.app.pargs.solution
         single = self.app.pargs.single
-        profile = self.app.pargs.profile
-        label = self.app.pargs.versionlabel
+        iprofile = self.app.pargs.instance_profile
+        label = self.app.pargs.version
         branch_default = self.app.pargs.branch_default
         key_name = self.app.pargs.keyname
         sample = self.app.pargs.sample
@@ -129,7 +132,7 @@ class CreateController(AbstractBaseController):
             key_name = fileoperations.get_default_keyname()
 
         operations.make_new_env(app_name, env_name, region, cname, solution,
-                                tier, label, profile, single, key_name,
+                                tier, itype, label, iprofile, single, key_name,
                                 branch_default, sample, nohang)
 
     def complete_command(self, commands):

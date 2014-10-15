@@ -16,16 +16,15 @@ from ebcli.resources.strings import strings
 from ebcli.core import operations
 
 
-class StatusController(AbstractBaseController):
+class PrintEnvController(AbstractBaseController):
     class Meta:
-        label = 'status'
-        description = strings['status.info']
+        label = 'printenv'
+        description = strings['printenv.info']
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 
     def do_command(self):
         app_name = self.get_app_name()
         region = self.get_region()
         env_name = self.get_env_name()
-        verbose = self.app.pargs.verbose
 
-        operations.status(app_name, env_name, region, verbose)
+        operations.print_environment_vars(app_name, env_name, region)

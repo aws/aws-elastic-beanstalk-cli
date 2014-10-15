@@ -73,7 +73,8 @@ def create_application_version(app_name, vers_label, descrip, s3_bucket,
 
 
 def create_environment(app_name, env_name, cname, description, solution_stck,
-                       tier, label, single, key_name, profile, region=None):
+                       tier, itype, label, single, key_name, profile,
+                       region=None):
     """
     Creates an Elastic Beanstalk environment
     :param app_name: Name of application where environment will live
@@ -120,6 +121,12 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
             {'Namespace': 'aws:autoscaling:launchconfiguration',
              'OptionName': 'IamInstanceProfile',
              'Value': profile}
+        )
+    if itype:
+        settings.append(
+            {'Namespace': 'aws:autoscaling:launchconfiguration',
+             'OptionName': 'InstanceType',
+             'Value': itype}
         )
     if single:
         settings.append(

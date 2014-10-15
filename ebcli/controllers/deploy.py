@@ -14,7 +14,8 @@
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 from ebcli.core import operations
-from ebcli.objects.exceptions import NoEnvironmentForBranchError
+from ebcli.objects.exceptions import NoEnvironmentForBranchError, \
+    InvalidOptionsError
 from ebcli.core import io
 
 
@@ -27,6 +28,9 @@ class DeployController(AbstractBaseController):
                                         default=[],
                                         help='Environment name')),
             (['-r', '--region'], dict(help='Region where environment lives')),
+            (['--version'], dict(help='Existing version label to deploy')),
+            (['-l', '--label'], dict(help='Label to give version')),
+            (['-m', '--message'], dict(help='Message/Description for version'))
         ]
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 
@@ -34,6 +38,12 @@ class DeployController(AbstractBaseController):
         app_name = self.get_app_name()
         region = self.get_region()
         env_name = self.app.pargs.environment_name
+        version = self.app.pargs.version
+        label = self.app.pargs.label
+        message = self.app.pargs.message
+
+        if version and (message or label):
+            raise InvalidOptionsError(strings['deploy.invalidoptions'])
 
         if not env_name:
             env_name = \
@@ -50,8 +60,11 @@ class DeployController(AbstractBaseController):
         #     # deploy to every environment listed
         #     ## Right now you can only list one
 
-        operations.deploy(app_name, env_name, region)
+        operations.deploy(app_name, env_name, region, version, label, message)
 
     def complete_command(self, commands):
         #ToDo, edit this if we ever support multiple env deploys
         super(DeployController, self).complete_command(commands)
+
+        #ToDo, eventually add support for autocompleting
+        ## versionlabels on --version

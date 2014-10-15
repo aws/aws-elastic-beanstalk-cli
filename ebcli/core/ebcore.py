@@ -33,6 +33,7 @@ from ebcli.controllers.scale import ScaleController
 from ebcli.controllers.ssh import SSHController
 from ebcli.controllers.setenv import SetEnvController
 from ebcli.controllers.list import ListController
+from ebcli.controllers.printenv import PrintEnvController
 from ebcli.controllers.clone import CloneController
 from ebcli.core.completer import CompleterController
 from ebcli.core import globals, base, io
@@ -64,6 +65,7 @@ class EB(foundation.CementApp):
         handler.register(SSHController)
         handler.register(UseController)
         handler.register(SetEnvController)
+        handler.register(PrintEnvController)
         handler.register(ListController)
         # Clone not yet ready
         # handler.register(CloneController)

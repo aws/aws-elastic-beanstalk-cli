@@ -385,10 +385,10 @@ def open_console(app_name, env_name, region):
     else:
         page = 'application/overview'
 
-    console_url = 'console.aws.amazon.com/elasticbeanstalk/home?region=' +\
-                region + \
-                '#/' + page + \
-                '?applicationName=' + app_name
+    console_url = 'console.aws.amazon.com/elasticbeanstalk/home?'
+    if region:
+        console_url += 'region=' + region
+    console_url += '#/' + page + '?applicationName=' + app_name
 
     if env is not None:
         console_url += '&environmentId=' + env.id
@@ -467,7 +467,7 @@ def scale(app_name, env_name, number, confirm, region):
 
 
 def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
-                 label, profile, single, key_name, branch_default,
+                 itype, label, profile, single, key_name, branch_default,
                  sample, nohang):
     if profile is None:
         # Service supports no profile, however it is not good/recommended
@@ -482,7 +482,7 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
     # Create env
     io.log_info('Creating new environment')
     result, request_id = create_env(app_name, env_name, region, cname,
-                                    solution_stack, tier, label, single,
+                                    solution_stack, tier, itype, label, single,
                                     key_name, profile)
 
     env_name = result.name  # get the (possibly) updated name
@@ -524,13 +524,13 @@ def print_env_details(env, health=True, verbose=False):
 
 
 def create_env(app_name, env_name, region, cname, solution_stack,
-               tier, label, single, key_name, profile):
+               tier, itype, label, single, key_name, profile):
     description = strings['env.description']
 
     try:
         return elasticbeanstalk.create_environment(
             app_name, env_name, cname, description, solution_stack,
-            tier, label, single, key_name, profile, region=region)
+            tier, itype, label, single, key_name, profile, region=region)
 
     except InvalidParameterValueError as e:
         LOG.debug('creating env returned error: ' + e.message)
@@ -626,7 +626,7 @@ def delete_app(app_name, region, force):
                           timeout_in_seconds=60*15)
 
 
-def deploy(app_name, env_name, region):
+def deploy(app_name, env_name, region, version, label, message):
     if region:
         region_name = region
     else:
@@ -634,8 +634,12 @@ def deploy(app_name, env_name, region):
 
     io.log_info('Deploying code to ' + env_name + " in region " + region_name)
 
-    # Create app version
-    app_version_label = create_app_version(app_name, region)
+    if version:
+        app_version_label = version
+    else:
+        # Create app version
+        app_version_label = create_app_version(app_name, region,
+                                               label=label, message=message)
 
     # swap env to new app version
     request_id = elasticbeanstalk.update_env_application_version(env_name,
@@ -675,18 +679,18 @@ def status(app_name, env_name, region, verbose):
             #No load balancer. Dont show instance status
             pass
 
-        # Print environment Variables
-        settings = elasticbeanstalk.describe_configuration_settings(
-            app_name, env_name, region
-        )['OptionSettings']
-        namespace = 'aws:elasticbeanstalk:application:environment'
-        vars = {n['OptionName']: n['Value'] for n in settings
-                if n["Namespace"] == namespace}
-        io.echo('  Environment Variables:')
-        for key, value in iteritems(vars):
-            key, value = utils.mask_vars(key, value)
-            io.echo('       ', key, '=', value)
 
+def print_environment_vars(app_name, env_name, region):
+    settings = elasticbeanstalk.describe_configuration_settings(
+        app_name, env_name, region
+    )['OptionSettings']
+    namespace = 'aws:elasticbeanstalk:application:environment'
+    vars = {n['OptionName']: n['Value'] for n in settings
+            if n["Namespace"] == namespace}
+    io.echo(' Environment Variables:')
+    for key, value in iteritems(vars):
+        key, value = utils.mask_vars(key, value)
+        io.echo('    ', key, '=', value)
 
 def logs(env_name, info_type, region, zip=False):
     # Request info
@@ -868,17 +872,24 @@ def cleanup_ignore_file():
         fileoperations.write_config_setting('global', 'sc', None)
 
 
-def create_app_version(app_name, region):
+def create_app_version(app_name, region, label=None, message=None):
     if heuristics.directory_is_empty():
         io.log_warning(strings['appversion.none'])
         return None
 
-    #get version_label
     source_control = SourceControl.get_source_control()
-    version_label = source_control.get_version_label()
+    #get version_label
+    if label:
+        version_label = label
+    else:
+        version_label = source_control.get_version_label()
 
     #get description
-    description = source_control.get_message()
+    if message:
+        description = message
+    else:
+        description = source_control.get_message()
+
     io.log_info('Creating app_version archive "' + version_label + '"')
 
     # Check for zip or artifact deploy

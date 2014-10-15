@@ -44,6 +44,7 @@ strings = {
     'config.info': 'Update environment configuration',
     'sync.info': 'Pull down environment configurations',
     'ssh.info': 'SSH into environment instance',
+    'printenv.info': 'Show environment variables',
 
     # Error when --sample and --label falg are both used on create
     'create.sampleandlabel': 'Both sample and versionlabel cannot be used together',
@@ -86,6 +87,7 @@ strings = {
     'setenv.invalidformat': 'Must use format VAR_NAME=KEY. Variable and keys '
                             'cannot contain any spaces or =. They must start'
                             ' with a letter, number or one of \\_.:/+-@',
+    'deploy.invalidoptions': '--version flag cannot be used with --message or --label flag'
 }
 prompts = {
     'events.hanging': 'Hanging and waiting for events. Use CTRL + C to exit.',
