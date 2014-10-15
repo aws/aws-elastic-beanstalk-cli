@@ -1107,5 +1107,6 @@ def _generate_and_upload_keypair(region, keys):
     else:
         key_material = open(file_name + '.pub', 'r').read()
         ec2.import_key_pair(keyname, key_material, region=region)
+        io.log_warning('Added public key for ' + keyname + ' to EC2')
 
         return keyname
