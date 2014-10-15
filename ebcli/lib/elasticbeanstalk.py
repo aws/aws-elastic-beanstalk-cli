@@ -73,8 +73,8 @@ def create_application_version(app_name, vers_label, descrip, s3_bucket,
 
 
 def create_environment(app_name, env_name, cname, description, solution_stck,
-                       tier, itype, label, single, key_name, profile,
-                       region=None):
+                       tier, itype, label, single, key_name, profile, tags,
+                       region=None, database=None):
     """
     Creates an Elastic Beanstalk environment
     :param app_name: Name of application where environment will live
@@ -100,8 +100,6 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
 
     settings = []
 
-    # ToDo : should we default to t2.micro?
-
     kwargs = {
         'application_name': app_name,
         'environment_name': env_name,
@@ -116,6 +114,8 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
         kwargs['tier'] = tier.to_struct()
     if label:
         kwargs['version_label'] = label
+    if tags:
+        kwargs['tags'] = tags
     if profile:
         settings.append(
             {'Namespace': 'aws:autoscaling:launchconfiguration',
@@ -139,6 +139,75 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
             {'Namespace': 'aws:autoscaling:launchconfiguration',
             'OptionName': 'EC2KeyName',
             'Value': key_name},
+        )
+
+    # add client defaults
+    settings.append(
+        {'Namespace': 'aws:elasticbeanstalk:command',
+         'OptionName': 'BatchSize',
+         'Value': '30'}
+    )
+    settings.append(
+        {'Namespace': 'aws:elasticbeanstalk:command',
+         'OptionName': 'BatchSizeType',
+         'Value': 'Percentage'}
+    )
+    settings.append(
+        {'Namespace': 'aws:elb:policies',
+         'OptionName': 'ConnectionDrainingEnabled',
+         'Value': 'true'}
+    )
+    settings.append(
+        {'Namespace': 'aws:elb:healthcheck',
+         'OptionName': 'Interval',
+         'Value': '30'}
+    )
+    if database:
+        #Database should probably be a tuple
+        database_user, database_pass,  = database
+        #ToDo: add args for templateSpecification to add database
+
+        # Add to option settings
+        settings.append(
+            {'Namespace': 'aws:rds:dbinstance',
+             'OptionName': 'DBPassword',
+             'Value': database_pass}
+        )
+        settings.append(
+            {'Namespace': 'aws:rds:dbinstance',
+             'OptionName': 'DBUser',
+             'Value': database_user}
+        )
+        # add client db defaults
+        settings.append(
+            {'Namespace': 'aws:rds:dbinstance',
+             'OptionName': 'DBInstanceClass',
+             'Value': 'db.t1.micro'}
+        )
+        settings.append(
+            {'Namespace': 'aws:rds:dbinstance',
+             'OptionName': 'DBAllocatedStorage',
+             'Value': '5'}
+        )
+        settings.append(
+            {'Namespace': 'aws:rds:dbinstance',
+             'OptionName': 'MultiAZDatabase',
+             'Value': 'false'}
+        )
+        settings.append(
+            {'Namespace': 'aws:rds:dbinstance',
+             'OptionName': 'DBEngineVersion',
+             'Value': '5.5'}
+        )
+        settings.append(
+            {'Namespace': 'aws:rds:dbinstance',
+             'OptionName': 'DBEngine',
+             'Value': 'mysql'}
+        )
+        settings.append(
+            {'Namespace': 'aws:rds:dbinstance',
+             'OptionName': 'DBDeletionPolicy',
+             'Value': 'Snapshot'}
         )
 
     result = _make_api_call('create-environment', region=region, **kwargs)

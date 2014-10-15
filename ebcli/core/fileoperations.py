@@ -19,10 +19,12 @@ import glob
 import stat
 import codecs
 
+
 from yaml import load, dump, safe_dump
 from yaml.scanner import ScannerError
 from six.moves import configparser
 from six.moves.configparser import NoSectionError, NoOptionError
+from six import StringIO
 from cement.utils.misc import minimal_logger
 
 from ebcli.core import io
@@ -106,6 +108,43 @@ def get_war_file_location():
                                 os.path.sep + 'libs' + os.path.sep)
     finally:
         os.chdir(cwd)
+
+
+def old_eb_config_present():
+    return os.path.exists(beanstalk_directory + 'config')
+
+
+def get_values_from_old_eb():
+    old_config_file = beanstalk_directory + 'config'
+    config = configparser.ConfigParser()
+    config.read(old_config_file)
+
+    app_name = _get_option(config, 'global', 'ApplicationName', None)
+    cred_file = _get_option(config, 'global', 'AwsCredentialFile', None)
+    default_env = _get_option(config, 'global', 'EnvironmentName', None)
+    solution_stack_name = _get_option(config, 'global', 'SolutionStack', None)
+    region = _get_option(config, 'global', 'Region', None)
+
+    access_id, secret_key = read_old_credentials(cred_file)
+    return {'app_name': app_name,
+            'access_id': access_id,
+            'secret_key': secret_key,
+            'default_env': default_env,
+            'solution_stack_name': solution_stack_name,
+            'region': region,
+            }
+
+
+def read_old_credentials(file_location):
+    config_str = '[default]\n' + open(file_location, 'r').read()
+    config_fp = StringIO(config_str)
+
+    config = configparser.ConfigParser()
+    config.readfp(config_fp)
+
+    access_id = _get_option(config, 'default', 'AWSAccessKeyId', None)
+    secret_key = _get_option(config, 'default', 'AWSSecretKey', None)
+    return access_id, secret_key
 
 
 def save_to_aws_config(access_key, secret_key):

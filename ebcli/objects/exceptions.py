@@ -93,6 +93,12 @@ class InvalidSyntaxError(EBCLIException):
     """ The file syntax is invalid  """
     pass
 
+
 class InvalidOptionsError(EBCLIException):
     """ Options given through command line are invalid  """
+    pass
+
+
+class NoKeypairError(EBCLIException):
+    """ Instance/environment has no associated keypair    """
     pass

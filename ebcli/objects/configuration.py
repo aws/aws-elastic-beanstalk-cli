@@ -16,6 +16,7 @@
 ENVIRONMENT_VAR_NAMESPACE = 'aws:elasticbeanstalk:application:environment'
 CLOUDFORMATION_TEMPLATE = 'aws:cloudformation:template:parameter'
 
+
 def collect_changes(api_model, usr_model):
     """
     Grabs all things in the usr_model that are different and
@@ -50,7 +51,10 @@ def collect_changes(api_model, usr_model):
         if 'Value' in setting:
             if setting['Value'] != usr_value:
                 setting['Value'] = usr_value
-                changes.append(setting)
+                if usr_value:
+                    changes.append(setting)
+                else:
+                    remove.append({'Namespace': namespace, 'OptionName': key})
         else:
             if usr_value is not None:
                 setting['Value'] = usr_value

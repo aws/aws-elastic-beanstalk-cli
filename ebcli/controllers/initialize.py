@@ -47,8 +47,11 @@ class InitController(AbstractBaseController):
         if self.app.pargs.application_name and self.app.pargs.solution:
             self.flag = True
 
+        default_env = self.get_old_values()
+
         try:
             # Note, region is None unless explicitely set
+            ## or read from old eb
             operations.credentials_are_valid(self.region)
         except NoRegionError:
             self.region = self.get_region()
@@ -62,7 +65,8 @@ class InitController(AbstractBaseController):
 
         # Create application
         fileoperations.touch_config_folder()
-        sstack, key = operations.create_app(self.app_name, self.region)
+        sstack, key = operations.create_app(self.app_name, self.region,
+                                            default_env=default_env)
 
         if not self.solution:
             self.solution = sstack.name
@@ -162,22 +166,50 @@ class InitController(AbstractBaseController):
         if commands[-1] in ['-s', '--solution']:
             io.echo(*elasticbeanstalk.get_available_solution_stacks())
 
+    def get_old_values(self):
+        if fileoperations.old_eb_config_present():
+            old_values = fileoperations.get_values_from_old_eb()
+            region = old_values['region']
+            access_id = old_values['access_id']
+            secret_key = old_values['secret_key']
+            solution_stack = old_values['solution_stack_name']
+            app_name = old_values['app_name']
+            default_env = old_values['default_env']
+
+            io.echo(strings['init.getvarsfromoldeb'])
+            if self.region is None:
+                self.region = region
+            if not self.app.pargs.application_name:
+                self.app.pargs.application_name = app_name
+            if self.app.pargs.solution is None:
+                self.app.pargs.solution = solution_stack
+
+            operations.setup_credentials(access_id=access_id,
+                                         secret_key=secret_key)
+            return default_env
+
+        return None
+
 
 def _get_application_name_interactive(region):
     app_list = operations.get_application_names(region)
+    file_name = fileoperations.get_current_directory_name()
     new_app = False
     if len(app_list) > 0:
         io.echo()
         io.echo('Select an application to use')
         new_app_option = '[ Create new Application ]'
         app_list.append(new_app_option)
+        try:
+            default_option = app_list.index(file_name)
+        except ValueError:
+            default_option = len(app_list)
         app_name = utils.prompt_for_item_in_list(app_list,
-                                                 default=len(app_list))
+                                                 default=default_option)
         if app_name == new_app_option:
             new_app = True
 
     if len(app_list) == 0 or new_app:
-        file_name = fileoperations.get_current_directory_name()
         io.echo()
         io.echo('Enter Application Name')
         unique_name = utils.get_unique_name(file_name, app_list)

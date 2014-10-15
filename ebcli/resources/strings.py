@@ -38,6 +38,12 @@ strings = {
     'scale.info': 'Change number of running instances',
     'status.info': 'Get Environment info and status',
     'setenv.info': 'Set environment variables',
+    'setenv.epilog': 'Use a space separated list of key=value pairs to set the environment variables.\n'
+                     'For example, if I wanted to set HeapSize to 256m and Site_Url to mysite.elasticbeanstalk.com I would use:\n'
+                     '  eb setenv HeapSize=256m Site_Url=mysite.elasticbeanstalk.com\n'
+                     'You can also remove environment variables by setting the key to nothing, for example:\n'
+                     '  eb setenv HeapSize= Site_Url=\n'
+                     'would remove the environment variables.',
     'list.info': 'List all environments',
     'terminate.info': 'Terminate environment',
     'terminate.epilog': 'In order to terminate the application and everything in it, use the --all flag',
@@ -87,7 +93,13 @@ strings = {
     'setenv.invalidformat': 'Must use format VAR_NAME=KEY. Variable and keys '
                             'cannot contain any spaces or =. They must start'
                             ' with a letter, number or one of \\_.:/+-@',
-    'deploy.invalidoptions': '--version flag cannot be used with --message or --label flag'
+    'tags.invalidformat': 'Tags must use format name=value as a semi-colon seperated list. '
+                          'Tags may only contain letters, numbers, and the following symbols: / _ . : + - @',
+    'tags.max': 'Elastic Beanstalk only supports 7 tags maximum',
+    'deploy.invalidoptions': '--version flag cannot be used with --message or --label flag',
+    'init.getvarsfromoldeb': 'It looks like you had a previous version of eb. Pulling in options from .elasticbeanstalk/config.\n'
+                             'Credentials will now be stored at ~/.aws/config',
+    'ssh.noip': 'No Public IP for this instance found. It is possible the instance is going down.',
 }
 prompts = {
     'events.hanging': 'Hanging and waiting for events. Use CTRL + C to exit.',
@@ -118,6 +130,8 @@ prompts = {
     'tier.prompt': 'Please choose a tier',
     # Error given on terminate when the user input does not match name
     'terminate.nomatch': 'Names do not match. Exiting',
+    'ssh.nokey': 'This environment is not set up for ssh. Use "eb ssh --setup" to set up ssh for the environment.',
+    'ssh.setupwarn': 'If you continue, your instances will be recreated and the environment will be temporarily unavailable.',
 }
 
 responses = {

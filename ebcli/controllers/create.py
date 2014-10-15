@@ -11,8 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import time
-import sys
+import re
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
@@ -52,6 +51,8 @@ class CreateController(AbstractBaseController):
             (['-nh', '--nohang'], dict(action='store_true',
                                        help='Do not hang and wait for create '
                                             'to be completed')),
+            (['--tags'], dict(help='A semi-colon separated list of tags '
+                                   'as key=value pairs'))
         ]
 
     def do_command(self):
@@ -68,6 +69,7 @@ class CreateController(AbstractBaseController):
         key_name = self.app.pargs.keyname
         sample = self.app.pargs.sample
         nohang = self.app.pargs.nohang
+        tags = self.app.pargs.tags
         provided_env_name = env_name is not None
 
         if sample and label:
@@ -75,6 +77,9 @@ class CreateController(AbstractBaseController):
 
         app_name = self.get_app_name()
         region = self.get_region()
+
+        # get tags
+        tags = self.get_and_validate_tags(tags)
 
         #load solution stack
         if not solution_string:
@@ -133,7 +138,29 @@ class CreateController(AbstractBaseController):
 
         operations.make_new_env(app_name, env_name, region, cname, solution,
                                 tier, itype, label, iprofile, single, key_name,
-                                branch_default, sample, nohang)
+                                branch_default, sample, tags, nohang)
+
+    def get_and_validate_tags(self, tags):
+        if not tags:
+            return []
+
+        tags = tags.strip().strip('"').strip('\'')
+        tags = tags.split(';')
+        tag_list = []
+        if len(tags) > 7:
+            raise InvalidOptionsError(strings['tags.max'])
+        for t in tags:
+            # validate
+            if not re.match('^[\w.:/+@-]+=[\w.:/+@-]+$', t):
+                raise InvalidOptionsError(strings['tags.invalidformat'])
+            else:
+                # build tag
+                key, value = t.split('=')
+                tag_list.append(
+                    {'Key': key,
+                     'Value': value}
+                )
+        return tag_list
 
     def complete_command(self, commands):
         region = fileoperations.get_default_region()

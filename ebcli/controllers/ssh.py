@@ -12,9 +12,10 @@
 # language governing permissions and limitations under the License.
 
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings
+from ebcli.resources.strings import strings, prompts
 from ebcli.core import fileoperations, operations, io
 from ebcli.lib import utils
+from ebcli.objects.exceptions import NoKeypairError
 
 
 class SSHController(AbstractBaseController):
@@ -26,6 +27,8 @@ class SSHController(AbstractBaseController):
             (['-n', '--number'], dict(help='Number of instance in list',
                                       type=int)),
             (['-i', '--instance'], dict(help='Instance id')),
+            (['--setup'], dict(action='store_true',
+                               help='Setup SSH for the environment'))
         ]
 
     def do_command(self):
@@ -34,14 +37,17 @@ class SSHController(AbstractBaseController):
         number = self.app.pargs.number
         env_name = self.get_env_name()
         instance = self.app.pargs.instance
+        setup = self.app.pargs.setup
+
+        if setup:
+            self.setup_ssh(env_name, region)
+            return
 
         if instance and number:
             io.log_error('Please provide either instance or number, not both')
             return
 
-        if instance:
-            operations.ssh_into_instance(instance, region)
-        else:
+        if not instance:
             instances = operations.get_instance_ids(app_name, env_name, region)
             if number is not None:
                 if number > len(instances) or number < 1:
@@ -59,7 +65,23 @@ class SSHController(AbstractBaseController):
                 io.echo('Select an instance to ssh into')
                 instance = utils.prompt_for_item_in_list(instances)
 
-            operations.ssh_into_instance(instance, region)
+            try:
+                operations.ssh_into_instance(instance, region)
+            except NoKeypairError:
+                io.log_error(prompts['ssh.nokey'])
+
+    def setup_ssh(self, env_name, region):
+        # Instance does not have a keypair
+        io.log_warning(prompts['ssh.setupwarn'])
+        keyname = operations.prompt_for_ec2_keyname(region)
+        if keyname:
+            options = [
+                {'Namespace': 'aws:autoscaling:launchconfiguration',
+                 'OptionName': 'EC2KeyName',
+                 'Value': keyname}
+            ]
+            operations.update_environment(env_name, options,
+                                          region, False)
 
     def complete_command(self, commands):
         if not self.complete_region(commands):

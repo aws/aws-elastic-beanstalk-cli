@@ -29,9 +29,7 @@ from ebcli.resources.strings import strings, responses, prompts
 from ebcli.objects import region as regions
 from ebcli.lib import utils
 from ebcli.objects import configuration
-from ebcli.objects.exceptions import NoSourceControlError, \
-    ServiceError, TimeoutError, NotAuthorizedError, InvalidStateError, \
-    AlreadyExistsError, InvalidSyntaxError, NotFoundError, CredentialsError
+from ebcli.objects.exceptions import *
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.tier import Tier
 from ebcli.lib.aws import InvalidParameterValueError
@@ -283,23 +281,27 @@ def setup(app_name, region, solution, keyname):
         io.log_warning(strings['sc.notfound'])
 
 
-def setup_credentials():
+def setup_credentials(access_id=None, secret_key=None):
     io.log_info('Setting up ~/aws/ directory with config file')
 
-    io.echo(strings['cred.prompt'])
+    if access_id is None or secret_key is None:
+        io.echo(strings['cred.prompt'])
 
-    access_key = io.prompt('aws-access-id', default='ENTER_AWS_ACCESS_ID_HERE')
-    secret_key = io.prompt('aws-secret-key', default='ENTER_SECRET_HERE')
+    if access_id is None:
+        access_id = io.prompt('aws-access-id',
+                              default='ENTER_AWS_ACCESS_ID_HERE')
+    if secret_key is None:
+        secret_key = io.prompt('aws-secret-key', default='ENTER_SECRET_HERE')
 
-    fileoperations.save_to_aws_config(access_key, secret_key)
+    fileoperations.save_to_aws_config(access_id, secret_key)
 
     fileoperations.touch_config_folder()
     fileoperations.write_config_setting('global', 'profile', 'eb-cli')
 
-    aws.set_session_creds(access_key, secret_key)
+    aws.set_session_creds(access_id, secret_key)
 
 
-def create_app(app_name, region):
+def create_app(app_name, region, default_env=None):
     # Attempt to create app
     try:
         io.log_info('Creating application: ' + app_name)
@@ -315,10 +317,10 @@ def create_app(app_name, region):
 
     except AlreadyExistsError:
         io.log_info('Application already exists.')
-        return pull_down_app_info(app_name, region)
+        return pull_down_app_info(app_name, region, default_env=default_env)
 
 
-def pull_down_app_info(app_name, region):
+def pull_down_app_info(app_name, region, default_env=None):
     # App exists, set up default environment
     envs = elasticbeanstalk.get_all_environments(app_name, region)
     if len(envs) == 0:
@@ -330,9 +332,12 @@ def pull_down_app_info(app_name, region):
         io.log_info('Setting only environment "' +
                     env.name + '" as default')
     elif len(envs) > 1:
-        # Prompt for default
-        io.echo(prompts['init.selectdefaultenv'])
-        env = utils.prompt_for_item_in_list(envs)
+        if default_env:
+            env = next((env for env in envs if env.name == default_env), None)
+        else:
+            # Prompt for default
+            io.echo(prompts['init.selectdefaultenv'])
+            env = utils.prompt_for_item_in_list(envs)
 
     write_setting_to_current_branch('environment', env.name)
 
@@ -468,7 +473,7 @@ def scale(app_name, env_name, number, confirm, region):
 
 def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
                  itype, label, profile, single, key_name, branch_default,
-                 sample, nohang):
+                 sample, tags, nohang):
     if profile is None:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
@@ -483,7 +488,7 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
     io.log_info('Creating new environment')
     result, request_id = create_env(app_name, env_name, region, cname,
                                     solution_stack, tier, itype, label, single,
-                                    key_name, profile)
+                                    key_name, profile, tags)
 
     env_name = result.name  # get the (possibly) updated name
 
@@ -524,13 +529,13 @@ def print_env_details(env, health=True, verbose=False):
 
 
 def create_env(app_name, env_name, region, cname, solution_stack,
-               tier, itype, label, single, key_name, profile):
+               tier, itype, label, single, key_name, profile, tags):
     description = strings['env.description']
 
     try:
         return elasticbeanstalk.create_environment(
             app_name, env_name, cname, description, solution_stack,
-            tier, itype, label, single, key_name, profile, region=region)
+            tier, itype, label, single, key_name, profile, tags, region=region)
 
     except InvalidParameterValueError as e:
         LOG.debug('creating env returned error: ' + e.message)
@@ -723,6 +728,7 @@ def get_logs(env_name, info_type, region, zip=False):
         # save file, unzip, place in logs directory
         logs_folder_name = datetime.now().strftime("%y%m%d_%H%M%S")
         logs_location = fileoperations.get_logs_location(logs_folder_name)
+        #get logs for each instance
         for instance_id, url in iteritems(log_list):
             zip_location = save_file_from_url(url, logs_location,
                                               instance_id + '.zip')
@@ -737,8 +743,25 @@ def get_logs(env_name, info_type, region, zip=False):
 
             logs_location += '.zip'
             fileoperations.set_user_only_permissions(logs_location)
-
-        io.echo(strings['logs.location'].replace('{location}', logs_location))
+            io.echo(strings['logs.location'].replace('{location}',
+                                                     logs_location))
+        else:
+            io.echo(strings['logs.location'].replace('{location}',
+                                                     logs_location))
+            # create symlink to logs/latest
+            latest_location = fileoperations.get_logs_location('latest')
+            try:
+                os.unlink(latest_location)
+            except OSError:
+                # doesn't exist. Ignore
+                pass
+            try:
+                os.symlink(logs_location, latest_location)
+                io.echo('Updated symlink at', latest_location)
+            except OSError:
+                #Oh well.. we tried.
+                ## Probably on windows, or logs/latest is not a symlink
+                pass
 
     else:
         # print logs
@@ -754,7 +777,7 @@ def setenv(app_name, env_name, var_list, region):
     options_to_remove = []
     for pair in var_list:
         ## validate
-        if not re.match('^[\w\\_.:/+-@][^=]*=([\w\\_.:/+-@][^=]*)?$', pair):
+        if not re.match('^[\w\\_.:/+@-][^=]*=([\w\\_.:/+@-][^=]*)?$', pair):
             io.log_error(strings['setenv.invalidformat'])
             return
         else:
@@ -802,8 +825,14 @@ def terminate(env_name, region):
 
 def ssh_into_instance(instance_id, region):
     instance = ec2.describe_instance(instance_id, region)
-    keypair_name = instance['KeyName']
-    ip = instance['PublicIpAddress']
+    try:
+        keypair_name = instance['KeyName']
+    except KeyError:
+        raise NoKeypairError()
+    try:
+        ip = instance['PublicIpAddress']
+    except KeyError:
+        raise NotFoundError(strings['ssh.noip'])
 
     user = 'ec2-user'
 
@@ -926,7 +955,7 @@ def create_app_version(app_name, region, label=None, message=None):
     return version_label
 
 
-def update_environment(app_name, env_name, region, nohang):
+def update_environment_configuration(app_name, env_name, region, nohang):
     #get environment setting
     api_model = elasticbeanstalk.describe_configuration_settings(
         app_name, env_name, region=region
@@ -950,6 +979,10 @@ def update_environment(app_name, env_name, region, nohang):
         io.log_warning('No changes made. Exiting.')
         return
 
+    update_environment(env_name, changes, region, nohang, remove=remove)
+
+
+def update_environment(env_name, changes, region, nohang, remove=[]):
     try:
         request_id = elasticbeanstalk.update_environment(env_name, changes,
                                                          region=region,
@@ -1079,6 +1112,7 @@ def get_solution_stack(solution_string, region):
     raise NotFoundError(prompts['sstack.invalidkey'].replace('{string}',
                                                              solution_string))
 
+
 def is_cname_available(cname, region):
     return elasticbeanstalk.is_cname_available(cname, region)
 
@@ -1099,14 +1133,18 @@ def _generate_and_upload_keypair(region, keys):
 
     exitcode = exec_cmd2('ssh-keygen -f ' + file_name, shell=True)
 
-    if exitcode != 0:
+    if exitcode == 0 or exitcode == 1:
+        # if exitcode is 1, they file most likely exists, and they are
+        ## just uploading it
+        key_material = open(file_name + '.pub', 'r').read()
+        ec2.import_key_pair(keyname, key_material, region=region)
+        io.log_warning('Uploaded ' + keyname + '.pub into EC2 as SSH key')
+        return keyname
+    else:
         LOG.debug('ssh-keygen returned exitcode: ' + str(exitcode) +
                    ' with filename: ' + file_name)
+    if exitcode == 127 or exitcode == 9009:
         io.log_error(strings['ssh.notpresent'])
         return None
     else:
-        key_material = open(file_name + '.pub', 'r').read()
-        ec2.import_key_pair(keyname, key_material, region=region)
-        io.log_warning('Added public key for ' + keyname + ' to EC2')
-
-        return keyname
+        raise CommandError('An error occurred while running ssh-keygen')

@@ -29,6 +29,7 @@ class SetEnvController(AbstractBaseController):
                                         help='Environment\'s name')),
             (['-r', '--region'], dict(help='Region where environment lives')),
         ]
+        epilog = strings['setenv.epilog']
 
     def do_command(self):
         app_name = self.get_app_name()

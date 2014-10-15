@@ -34,4 +34,5 @@ class ConfigController(AbstractBaseController):
         app_name = self.get_app_name()
         nohang = self.app.pargs.nohang
 
-        operations.update_environment(app_name, env_name, region, nohang)
+        operations.update_environment_configuration(app_name, env_name,
+                                                    region, nohang)
