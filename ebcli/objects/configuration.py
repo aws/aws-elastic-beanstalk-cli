@@ -15,6 +15,7 @@
 
 ENVIRONMENT_VAR_NAMESPACE = 'aws:elasticbeanstalk:application:environment'
 CLOUDFORMATION_TEMPLATE = 'aws:cloudformation:template:parameter'
+DATABASE_NAMESPACE = 'aws:rds:dbinstance'
 
 
 def collect_changes(api_model, usr_model):
@@ -26,6 +27,8 @@ def collect_changes(api_model, usr_model):
     :return: api_model
     """
 
+    api_model = remove_unwanted_settings(api_model)
+
     changes = []
     remove = []
 
@@ -35,11 +38,6 @@ def collect_changes(api_model, usr_model):
         # Compare value for given optionName
         namespace = setting['Namespace']
         key = setting['OptionName']
-
-        if namespace == ENVIRONMENT_VAR_NAMESPACE \
-                    or namespace == CLOUDFORMATION_TEMPLATE:
-            #ignore
-            continue
 
         try:
             usr_value = usr_options[namespace][key]
@@ -70,7 +68,7 @@ def convert_api_to_usr_model(api_model):
     :param api_model:  Api model of environment
     :return: a user model
     """
-
+    api_model = remove_unwanted_settings(api_model)
     usr_model = dict()
     # Grab only data we care about
     _get_key('ApplicationName', usr_model, api_model)
@@ -81,10 +79,6 @@ def convert_api_to_usr_model(api_model):
 
     for setting in api_model['OptionSettings']:
         namespace = setting['Namespace']
-        if namespace == ENVIRONMENT_VAR_NAMESPACE \
-                    or namespace == CLOUDFORMATION_TEMPLATE:
-            # Exclude
-            continue
 
         if namespace not in usr_model_settings:
             #create it
@@ -99,6 +93,21 @@ def convert_api_to_usr_model(api_model):
         usr_model_settings[namespace][key] = value
 
     return usr_model
+
+
+def remove_unwanted_settings(api_model):
+    option_settings = api_model['OptionSettings']
+    api_model['OptionSettings'] = [
+        setting for setting in option_settings if
+            setting['Namespace'] != ENVIRONMENT_VAR_NAMESPACE and
+            setting['Namespace'] != CLOUDFORMATION_TEMPLATE and
+            not (setting['Namespace'] == DATABASE_NAMESPACE
+                and (setting['OptionName'] == 'DBEngineVersion' or
+                     setting['OptionName'] == 'DBUser' or
+                     setting['OptionName'] == 'DBEngine'))
+
+    ]
+    return api_model
 
 
 def _get_key(KeyName, usr_model, api_model):

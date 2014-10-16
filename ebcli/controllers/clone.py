@@ -14,8 +14,9 @@
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 from ebcli.core import operations, io
-from ebcli.lib import utils
+from ebcli.lib import utils, elasticbeanstalk
 from ebcli.controllers.create import get_cname
+from ebcli.objects.exceptions import InvalidOptionsError, AlreadyExistsError
 
 
 class CloneController(AbstractBaseController):
@@ -45,6 +46,18 @@ class CloneController(AbstractBaseController):
         nohang = self.app.pargs.nohang
         provided_clone_name = clone_name is not None
 
+        # Get tier of original environment
+        env = elasticbeanstalk.get_environment(app_name, env_name, region)
+        tier = env.tier
+        if 'worker' in tier.name.lower() and cname:
+            raise InvalidOptionsError(strings['worker.cname'])
+
+        if cname:
+            if not operations.is_cname_available(cname, region):
+                raise AlreadyExistsError(strings['cname.unavailable'].
+                                         replace('{cname}', cname))
+
+        # Get env_name for clone
         if not clone_name:
             if len(env_name) < 16:
                 unique_name = env_name + '-clone'
@@ -60,8 +73,16 @@ class CloneController(AbstractBaseController):
                 prompt_text='Enter name for Environment Clone'
             )
 
-        if not cname and not provided_clone_name:
-            cname = get_cname(region)
+        if tier.name.lower() == 'webserver':
+            if not cname and not provided_clone_name:
+                cname = get_cname(clone_name, region)
+            elif not cname:
+                cname = clone_name
+                if not operations.is_cname_available(cname, region):
+                    raise AlreadyExistsError(strings['cname.unavailable'].
+                                             replace('{cname}', cname))
+
+
 
         operations.make_cloned_env(app_name, env_name, clone_name, cname,
                              region, nohang)

@@ -69,7 +69,7 @@ class InitController(AbstractBaseController):
                                             default_env=default_env)
 
         if not self.solution:
-            self.solution = sstack.name
+            self.solution = sstack
 
         if not self.solution or self.interactive:
             result = operations.prompt_for_solution_stack(self.region)
@@ -201,7 +201,7 @@ def _get_application_name_interactive(region):
         new_app_option = '[ Create new Application ]'
         app_list.append(new_app_option)
         try:
-            default_option = app_list.index(file_name)
+            default_option = app_list.index(file_name) + 1
         except ValueError:
             default_option = len(app_list)
         app_name = utils.prompt_for_item_in_list(app_list,

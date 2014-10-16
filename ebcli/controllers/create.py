@@ -12,9 +12,10 @@
 # language governing permissions and limitations under the License.
 
 import re
+import argparse
 
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings
+from ebcli.resources.strings import strings, prompts
 from ebcli.lib import elasticbeanstalk, utils
 from ebcli.objects.exceptions import NotFoundError, AlreadyExistsError, \
     InvalidOptionsError
@@ -48,11 +49,25 @@ class CreateController(AbstractBaseController):
             (['-ip', '--instance_profile'], dict(help='EC2 Instance profile')),
             (['--version'], dict(help='Version label to deploy')),
             (['-k', '--keyname'], dict(help='EC2 SSH KeyPair name')),
+            (['--size'], dict(type=int, help='Number of desired instances')),
             (['-nh', '--nohang'], dict(action='store_true',
                                        help='Do not hang and wait for create '
                                             'to be completed')),
             (['--tags'], dict(help='A semi-colon separated list of tags '
-                                   'as key=value pairs'))
+                                   'as key=value pairs')),
+            (['-db', '--database'], dict(action="store_true",
+                                         help='Create a Database')),
+            ## Add addition hidden db commands
+            (['-db.user', '--database.username'], dict(dest='db_user',
+                                                   help=argparse.SUPPRESS)),
+            (['-db.pass', '--database.password'],
+                dict(dest='db_pass', help=argparse.SUPPRESS)),
+            (['-db.i', '--database.instance'],
+                dict(dest='db_instance', help=argparse.SUPPRESS)),
+            (['-db.size', '--database.size'],
+                dict(dest='db_size', help=argparse.SUPPRESS)),
+            (['-db.engine', '--database.engine'],
+                dict(dest='db_engine', help=argparse.SUPPRESS)),
         ]
 
     def do_command(self):
@@ -70,6 +85,9 @@ class CreateController(AbstractBaseController):
         sample = self.app.pargs.sample
         nohang = self.app.pargs.nohang
         tags = self.app.pargs.tags
+        size = self.app.pargs.size
+
+
         provided_env_name = env_name is not None
 
         if sample and label:
@@ -96,8 +114,7 @@ class CreateController(AbstractBaseController):
 
         if tier:
             if 'worker' in tier.lower() and cname:
-                raise InvalidOptionsError('Worker tiers do not '
-                                          'support a cname')
+                raise InvalidOptionsError(strings['worker.cname'])
             try:
                 tier = Tier.parse_tier(tier)
             except NotFoundError:
@@ -106,8 +123,8 @@ class CreateController(AbstractBaseController):
 
         if cname:
             if not operations.is_cname_available(cname, region):
-                raise AlreadyExistsError('The cname prefix "' + cname +
-                                         '" is not available.')
+                raise AlreadyExistsError(strings['cname.unavailable'].
+                                         replace('{cname}', cname))
 
         # If we still dont have what we need, ask for it
         if not env_name:
@@ -124,8 +141,8 @@ class CreateController(AbstractBaseController):
             elif not cname:
                 cname = env_name
                 if not operations.is_cname_available(cname, region):
-                    raise AlreadyExistsError('The cname prefix "' + cname +
-                                             '" is not available.')
+                    raise AlreadyExistsError(strings['cname.unavailable'].
+                                             replace('{cname}', cname))
 
         if not solution:
             solution = operations.prompt_for_solution_stack(region)
@@ -136,9 +153,14 @@ class CreateController(AbstractBaseController):
         if not key_name:
             key_name = fileoperations.get_default_keyname()
 
+
+        database = self.form_database_object()
+
+
         operations.make_new_env(app_name, env_name, region, cname, solution,
                                 tier, itype, label, iprofile, single, key_name,
-                                branch_default, sample, tags, nohang)
+                                branch_default, sample, tags, size,
+                                database, nohang)
 
     def get_and_validate_tags(self, tags):
         if not tags:
@@ -177,6 +199,36 @@ class CreateController(AbstractBaseController):
             io.echo(*elasticbeanstalk.get_available_solution_stacks(region))
         if cmd in ['-vl', '--versionlabel']:
             io.echo(*operations.get_app_version_labels(app_name, region))
+
+    def form_database_object(self):
+        create_db = self.app.pargs.database
+        username = self.app.pargs.db_user
+        password = self.app.pargs.db_pass
+        engine = self.app.pargs.db_engine
+        size = self.app.pargs.db_size
+        instance = self.app.pargs.db_instance
+
+        # Do we want a database?
+        if create_db or username or password or engine or size or instance:
+            db_object = dict()
+            if not username:
+                io.echo()
+                username = io.get_input(prompts['rds.username'],
+                                        default='admin')
+            if not password:
+                password = io.get_pass(prompts['rds.password'])
+            db_object['username'] = username
+            db_object['password'] = password
+            db_object['engine'] = engine
+            db_object['size'] = size
+            db_object['instance'] = instance
+            return db_object
+        else:
+            return False
+
+
+
+
 
 
 def get_cname(env_name, region):

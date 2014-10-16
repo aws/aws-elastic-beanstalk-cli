@@ -408,18 +408,18 @@ def open_webpage_in_browser(url, ssl=False):
     else:
         url = 'http://' + url
 
-    stdout, stderr, exitcode = \
-        exec_cmd(['python -m webbrowser \'' + url + '\''], shell=True)
+    if fileoperations.program_is_installed('python'):
+        #By running as a subprocess, we can capture stdout
+        from subprocess import Popen, PIPE
 
-    LOG.debug('browser stdout: ' + str(stdout))
-    LOG.debug('browser stderr: ' + str(stderr))
-    LOG.debug('browser exitcode: ' + str(exitcode))
+        Popen(['python -m webbrowser \'' + url + '\''], stderr=PIPE,
+              stdout=PIPE, shell=True)
 
-    if exitcode == 127:
+    else:
         # python probably isn't on path
         ## try to run webbrowser internally
         import webbrowser
-        webbrowser.open(url)
+        webbrowser.open_new_tab(url)
 
 
 def get_application_names(region):
@@ -473,7 +473,7 @@ def scale(app_name, env_name, number, confirm, region):
 
 def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
                  itype, label, profile, single, key_name, branch_default,
-                 sample, tags, nohang):
+                 sample, tags, size, database, nohang):
     if profile is None:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
@@ -488,7 +488,7 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
     io.log_info('Creating new environment')
     result, request_id = create_env(app_name, env_name, region, cname,
                                     solution_stack, tier, itype, label, single,
-                                    key_name, profile, tags)
+                                    key_name, profile, tags, size, database)
 
     env_name = result.name  # get the (possibly) updated name
 
@@ -528,14 +528,15 @@ def print_env_details(env, health=True, verbose=False):
         io.echo('  Health:', env.health)
 
 
-def create_env(app_name, env_name, region, cname, solution_stack,
-               tier, itype, label, single, key_name, profile, tags):
+def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
+               label, single, key_name, profile, tags, size, database):
     description = strings['env.description']
 
     try:
         return elasticbeanstalk.create_environment(
             app_name, env_name, cname, description, solution_stack,
-            tier, itype, label, single, key_name, profile, tags, region=region)
+            tier, itype, label, single, key_name, profile, tags,
+            region=region, database=database, size=size)
 
     except InvalidParameterValueError as e:
         LOG.debug('creating env returned error: ' + e.message)
@@ -1124,12 +1125,17 @@ def get_instance_ids(app_name, env_name, region):
 
 
 def _generate_and_upload_keypair(region, keys):
+    if not fileoperations.program_is_installed('ssh-keygen'):
+        io.log_error(['ssh.notpresent'])
+        return None
+
     # Get filename
     io.echo()
     io.echo(prompts['keypair.nameprompt'])
     unique = utils.get_unique_name('aws-eb', keys)
     keyname = io.prompt('Default is ' + unique, default=unique)
     file_name = fileoperations.get_ssh_folder() + keyname
+
 
     exitcode = exec_cmd2('ssh-keygen -f ' + file_name, shell=True)
 
@@ -1143,8 +1149,4 @@ def _generate_and_upload_keypair(region, keys):
     else:
         LOG.debug('ssh-keygen returned exitcode: ' + str(exitcode) +
                    ' with filename: ' + file_name)
-    if exitcode == 127 or exitcode == 9009:
-        io.log_error(strings['ssh.notpresent'])
-        return None
-    else:
         raise CommandError('An error occurred while running ssh-keygen')

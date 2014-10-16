@@ -13,6 +13,7 @@
 
 import re
 import warnings
+import getpass
 
 import six
 from six import print_
@@ -130,6 +131,16 @@ def prompt_for_environment_name(default_name='myEnv',
                  'start or end with a hyphen')
 
     return env_name
+
+
+def get_pass(output):
+    while True:
+        result = getpass.getpass(output + ': ')
+        if result == getpass.getpass('Retype password to confirm: '):
+            return result
+        else:
+            echo()
+            log_error('Passwords do not match')
 
 
 def prompt_for_cname(default=None):

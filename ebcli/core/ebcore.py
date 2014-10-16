@@ -67,8 +67,7 @@ class EB(foundation.CementApp):
         handler.register(SetEnvController)
         handler.register(PrintEnvController)
         handler.register(ListController)
-        # Clone not yet ready
-        # handler.register(CloneController)
+        handler.register(CloneController)
         handler.register(CompleterController)
 
         super(EB, self).setup()

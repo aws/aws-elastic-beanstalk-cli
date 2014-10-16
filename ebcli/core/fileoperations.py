@@ -43,7 +43,10 @@ def get_aws_home():
 def get_ssh_folder():
     sep = os.path.sep
     p = '~' + sep + '.ssh' + sep
-    return os.path.expanduser(p)
+    p = os.path.expanduser(p)
+    if not os.path.exists(p):
+        os.makedirs(p)
+    return p
 
 
 beanstalk_directory = '.elasticbeanstalk' + os.path.sep
@@ -292,6 +295,18 @@ def get_logs_location(folder_name):
 
     finally:
         os.chdir(cwd)
+
+
+def program_is_installed(program):
+    return False if os_which(program) is None else True
+
+
+def os_which(program):
+    path=os.getenv('PATH')
+    for p in path.split(os.path.pathsep):
+        p=os.path.join(p, program)
+        if os.path.exists(p) and os.access(p,os.X_OK):
+            return p
 
 
 def delete_file(location):

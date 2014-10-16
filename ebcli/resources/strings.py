@@ -86,7 +86,7 @@ strings = {
     'branch.noenv': 'No environment is registered with this branch. You must'
                     ' specify an environment, i.e. eb {cmd} my-env-name\n'
                     'Alternatively you can register an environment with "eb use my-env-name"',
-    'ssh.notpresent': 'You do not seem to have ssh installed. Please install before continuing.',
+    'ssh.notpresent': 'You do not seem to have ssh installed. Please install before setting up ssh.',
     'ssh.filenotfound': 'Can not find your ssh key file for keyname "{key-name}".'
                         ' Please make sure it is located in your .ssh folder in your home directory.',
     'logs.location': 'Logs saved at {location}',
@@ -100,6 +100,10 @@ strings = {
     'init.getvarsfromoldeb': 'It looks like you had a previous version of eb. Pulling in options from .elasticbeanstalk/config.\n'
                              'Credentials will now be stored at ~/.aws/config',
     'ssh.noip': 'No Public IP for this instance found. It is possible the instance is going down.',
+    # Error thrown when someone provides a cname with a worker tier
+    'worker.cname': 'Worker tiers do not support a cname',
+    # Error thrown when available cname is not available
+    'cname.unavailable': 'The cname prefix {cname} is not available',
 }
 prompts = {
     'events.hanging': 'Hanging and waiting for events. Use CTRL + C to exit.',
@@ -132,6 +136,8 @@ prompts = {
     'terminate.nomatch': 'Names do not match. Exiting',
     'ssh.nokey': 'This environment is not set up for ssh. Use "eb ssh --setup" to set up ssh for the environment.',
     'ssh.setupwarn': 'If you continue, your instances will be recreated and the environment will be temporarily unavailable.',
+    'rds.username':'Enter an RDS DB Username (default is "admin")',
+    'rds.password': 'Enter an RDS DB master password',
 }
 
 responses = {

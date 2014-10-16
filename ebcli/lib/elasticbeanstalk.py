@@ -74,7 +74,7 @@ def create_application_version(app_name, vers_label, descrip, s3_bucket,
 
 def create_environment(app_name, env_name, cname, description, solution_stck,
                        tier, itype, label, single, key_name, profile, tags,
-                       region=None, database=None):
+                       region=None, database=None, size=None):
     """
     Creates an Elastic Beanstalk environment
     :param app_name: Name of application where environment will live
@@ -140,6 +140,17 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
             'OptionName': 'EC2KeyName',
             'Value': key_name},
         )
+    if size:
+        settings.append(
+            {'Namespace': 'aws:autoscaling:asg',
+             'OptionName': 'MaxSize',
+             'Value': size},
+        )
+        settings.append(
+            {'Namespace': 'aws:autoscaling:asg',
+             'OptionName': 'MinSize',
+             'Value': size},
+        )
 
     # add client defaults
     settings.append(
@@ -163,47 +174,46 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
          'Value': '30'}
     )
     if database:
-        #Database should probably be a tuple
-        database_user, database_pass,  = database
-        #ToDo: add args for templateSpecification to add database
+        #Database is a dictionary
+        kwargs['template_specification'] = {
+            'TemplateSnippets': [
+                {'SnippetName': 'RdsExtensionEB',
+                 'Order': 10000,
+                 'SourceUrl': 'https://s3.amazonaws.com/'
+                              'elasticbeanstalk-env-resources-us-west-2/'
+                              'eb_snippets/rds/rds.json'}
+            ]
+        }
 
         # Add to option settings
         settings.append(
             {'Namespace': 'aws:rds:dbinstance',
              'OptionName': 'DBPassword',
-             'Value': database_pass}
+             'Value': database['password']}
         )
         settings.append(
             {'Namespace': 'aws:rds:dbinstance',
              'OptionName': 'DBUser',
-             'Value': database_user}
+             'Value': database['username']}
         )
-        # add client db defaults
-        settings.append(
-            {'Namespace': 'aws:rds:dbinstance',
-             'OptionName': 'DBInstanceClass',
-             'Value': 'db.t1.micro'}
-        )
-        settings.append(
-            {'Namespace': 'aws:rds:dbinstance',
-             'OptionName': 'DBAllocatedStorage',
-             'Value': '5'}
-        )
-        settings.append(
-            {'Namespace': 'aws:rds:dbinstance',
-             'OptionName': 'MultiAZDatabase',
-             'Value': 'false'}
-        )
-        settings.append(
-            {'Namespace': 'aws:rds:dbinstance',
-             'OptionName': 'DBEngineVersion',
-             'Value': '5.5'}
-        )
-        settings.append(
-            {'Namespace': 'aws:rds:dbinstance',
-             'OptionName': 'DBEngine',
-             'Value': 'mysql'}
-        )
+        if database['instance']:
+            settings.append(
+                {'Namespace': 'aws:rds:dbinstance',
+                 'OptionName': 'DBInstanceClass',
+                 'Value': database['instance']}
+            )
+        if database['size']:
+            settings.append(
+                {'Namespace': 'aws:rds:dbinstance',
+                 'OptionName': 'DBAllocatedStorage',
+                 'Value': database['size']}
+            )
+        if database['engine']:
+            settings.append(
+                {'Namespace': 'aws:rds:dbinstance',
+                 'OptionName': 'DBEngine',
+                 'Value': database['engine']}
+            )
         settings.append(
             {'Namespace': 'aws:rds:dbinstance',
              'OptionName': 'DBDeletionPolicy',
@@ -231,7 +241,7 @@ def clone_environment(app_name, env_name, clone_name, cname,
     kwargs = {
         'application_name': app_name,
         'environment_name': clone_name,
-        'template-specification': [{'template-source':{'environment-name':env_name,}}],
+        'template_specification': {'TemplateSource': {'EnvironmentName': env_name,}},
     }
     if description:
         kwargs['description'] = description
