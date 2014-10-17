@@ -13,6 +13,9 @@ To get more info on a specific command use:
     eb {cmd} --help
 
 
+please see `Official Documentation <http://my.example.com>`__
+
+
 Installation
 ====
 You will need administrator/sudo privileges. (unless you install into a virtualenv)
@@ -185,6 +188,3 @@ For example
     eb use dev
 
 Now whenever you switch branches, your default environment will also switch!
-
-
-please see `Official Documentation <http://my.example.com>`__
