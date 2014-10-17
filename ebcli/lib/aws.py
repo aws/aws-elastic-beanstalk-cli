@@ -60,13 +60,8 @@ def _get_service(service_name):
         return _api_sessions[service_name]
 
     LOG.debug('Creating new Botocore Session')
-    if _profile:
-        session = botocore_eb.session.Session(session_vars={
-            'profile': (None, _profile_env_var, _profile)})
-    else:
-        session = botocore_eb.session.Session(session_vars={
-            'profile': (None, _profile_env_var, None)})
-    _set_user_agent_for_session(session)
+    session = botocore_eb.session.Session(session_vars={
+        'profile': (None, _profile_env_var, _profile)})
 
     try:
         service = session.get_service(service_name)

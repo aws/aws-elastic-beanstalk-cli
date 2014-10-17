@@ -104,7 +104,8 @@ def remove_unwanted_settings(api_model):
             not (setting['Namespace'] == DATABASE_NAMESPACE
                 and (setting['OptionName'] == 'DBEngineVersion' or
                      setting['OptionName'] == 'DBUser' or
-                     setting['OptionName'] == 'DBEngine'))
+                     setting['OptionName'] == 'DBEngine' or
+                     setting['OptionName'] == 'DBPassword'))
 
     ]
     return api_model

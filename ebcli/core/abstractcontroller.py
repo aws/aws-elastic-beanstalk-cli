@@ -105,9 +105,8 @@ class AbstractBaseController(controller.CementBaseController):
             aws.set_profile_override(profile)
         else:
             profile = fileoperations.get_default_profile()
-            if not profile:
-                profile = 'eb-cli'  # default
-            aws.set_profile(profile)
+            if profile:
+                aws.set_profile(profile)
 
     def complete_command(self, commands):
         if not self.complete_region(commands):

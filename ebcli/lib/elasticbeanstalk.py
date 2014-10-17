@@ -222,6 +222,11 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
              'OptionName': 'DBDeletionPolicy',
              'Value': 'Snapshot'}
         )
+        settings.append(
+            {'Namespace': 'aws:elb:loadbalancer',
+             'OptionName': 'CrossZone',
+             'Value': 'true'}
+        )
 
     result = _make_api_call('create-environment', region=region, **kwargs)
 

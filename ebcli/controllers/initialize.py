@@ -51,6 +51,9 @@ class InitController(AbstractBaseController):
         default_env = self.get_old_values()
         fileoperations.touch_config_folder()
 
+        if self.interactive:
+            self.region = self.get_region()
+
         self.set_up_credentials()
 
         self.solution = self.get_solution_stack()
@@ -79,9 +82,8 @@ class InitController(AbstractBaseController):
         operations.setup(self.app_name, self.region, self.solution,
                          self.keyname)
 
-    def set_up_credentials(self):
+    def check_credentials(self, profile):
         given_profile = self.app.pargs.profile
-
         try:
             # Note, region is None unless explicitly set
             ## or read from old eb
@@ -93,16 +95,28 @@ class InitController(AbstractBaseController):
                 # Provided profile is invalid, raise exception
                 raise
             else:
-                # default profile doesnt exist, revert to default
-                aws.set_profile(None)
+                # eb-cli profile doesnt exist, revert to default
                 # try again
-                self.set_up_credentials()
+                profile = None
+                aws.set_profile(profile)
+                self.check_credentials(profile)
+
+    def set_up_credentials(self):
+        given_profile = self.app.pargs.profile
+        if given_profile:
+            ## Profile already set at abstractController
+            profile = given_profile
+        else:
+            profile = 'eb-cli'
+            aws.set_profile(profile)
+
+        self.check_credentials(profile)
 
         if not operations.credentials_are_valid(self.region):
             operations.setup_credentials()
         elif given_profile:
             fileoperations.write_config_setting('global', 'profile',
-                                                given_profile)
+                                                profile)
 
     def get_app_name(self):
         # Get app name from command line arguments
