@@ -143,6 +143,8 @@ prompts = {
     'rds.password': 'Enter an RDS DB master password',
 }
 
+
+### The below are programatic and are not intended to be edited unless the service response changes
 responses = {
     'event.redmessage': 'Environment health has been set to RED',
     'event.redtoyellowmessage': 'Environment health has transitioned '

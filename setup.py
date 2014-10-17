@@ -4,9 +4,9 @@ import sys
 from setuptools import setup, find_packages
 import ebcli
 
-requires = ['cement==2.4',
+requires = ['pyyaml',
             'six',
-            'pyyaml',
+            'cement==2.4',
             ## For botocore we need the following
             'python-dateutil',
             'jmespath'
@@ -26,7 +26,7 @@ setup_options = dict(
     name='aws-eb-cli',
     version=ebcli.__version__,
     description='Command Line Interface for AWS EB.',
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
     scripts=['bin/eb_completion.bash'],
     data_files=data_files,
     author='Nick Humrich',
