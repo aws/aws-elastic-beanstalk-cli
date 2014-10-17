@@ -22,19 +22,19 @@ import os
 import platform
 import shlex
 
-from botocore import __version__
-import botocore.config
-import botocore.credentials
-import botocore.client
-from botocore.endpoint import EndpointCreator
-from botocore.exceptions import EventNotFound, ConfigNotFound, ProfileNotFound
-from botocore import handlers
-from botocore.hooks import HierarchicalEmitter, first_non_none_response
-from botocore.loaders import Loader
-from botocore.provider import get_provider
-from botocore import regions
-from botocore.model import ServiceModel
-import botocore.service
+from botocore_eb import __version__
+import botocore_eb.config
+import botocore_eb.credentials
+import botocore_eb.client
+from botocore_eb.endpoint import EndpointCreator
+from botocore_eb.exceptions import EventNotFound, ConfigNotFound, ProfileNotFound
+from botocore_eb import handlers
+from botocore_eb.hooks import HierarchicalEmitter, first_non_none_response
+from botocore_eb.loaders import Loader
+from botocore_eb.provider import get_provider
+from botocore_eb import regions
+from botocore_eb.model import ServiceModel
+import botocore_eb.service
 
 
 class Session(object):
@@ -181,7 +181,7 @@ class Session(object):
     def _register_credential_provider(self):
         self._components.lazy_register_component(
             'credential_provider',
-            lambda:  botocore.credentials.create_credential_resolver(self))
+            lambda:  botocore_eb.credentials.create_credential_resolver(self))
 
     def _register_data_loader(self):
         self._components.lazy_register_component(
@@ -373,7 +373,7 @@ class Session(object):
         if self._config is None:
             try:
                 config_file = self.get_config_variable('config_file')
-                self._config = botocore.config.load_config(config_file)
+                self._config = botocore_eb.config.load_config(config_file)
             except ConfigNotFound:
                 self._config = {'profiles': {}}
             try:
@@ -383,7 +383,7 @@ class Session(object):
                 # can validate the user is not referring to a nonexistent
                 # profile.
                 cred_file = self.get_config_variable('credentials_file')
-                cred_profiles = botocore.config.raw_config_parse(cred_file)
+                cred_profiles = botocore_eb.config.raw_config_parse(cred_file)
                 for profile in cred_profiles:
                     cred_vars = cred_profiles[profile]
                     if profile not in self._config['profiles']:
@@ -411,7 +411,7 @@ class Session(object):
         :param token: An option session token used by STS session
             credentials.
         """
-        self._credentials = botocore.credentials.Credentials(access_key,
+        self._credentials = botocore_eb.credentials.Credentials(access_key,
                                                              secret_key,
                                                              token)
 
@@ -515,9 +515,9 @@ class Session(object):
         :type service_name: str
         :param service_name: The name of the service (e.g. 'ec2')
 
-        :returns: :class:`botocore.service.Service`
+        :returns: :class:`botocore_eb.service.Service`
         """
-        service = botocore.service.get_service(self, service_name,
+        service = botocore_eb.service.get_service(self, service_name,
                                                self.provider,
                                                api_version=api_version)
         event = self.create_event('service-created')
@@ -771,7 +771,7 @@ class Session(object):
         """
         loader = self.get_component('data_loader')
         endpoint_creator = self._create_endpoint_creator()
-        client_creator = botocore.client.ClientCreator(loader, endpoint_creator)
+        client_creator = botocore_eb.client.ClientCreator(loader, endpoint_creator)
         client = client_creator.create_client(service_name, region_name, use_ssl,
                                               endpoint_url, verify)
         return client

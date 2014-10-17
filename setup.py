@@ -4,13 +4,12 @@ import sys
 from setuptools import setup, find_packages
 import ebcli
 
-requires = ['botocore==0.65.0',
-            'cement==2.4',
+requires = ['cement==2.4',
             'six',
             'pyyaml',
             ## For botocore we need the following
-            #'python-dateutil',
-            #'jmespath'
+            'python-dateutil',
+            'jmespath'
             ]
 
 try:
@@ -34,7 +33,11 @@ setup_options = dict(
     author_email='humrichn@amazon.com',
     url='eb.example.com',
     packages=find_packages('.', exclude=['tests*', 'docs*', 'sampleApps*']),
-    package_dir={'ebcli': 'ebcli'},
+    package_dir={'ebcli': 'ebcli',
+                 'botocore_eb': 'botocore_eb'},
+    package_data={
+        'botocore_eb': ['data/*.json', 'data/aws/*.json', 'data/aws/*/*.json'],
+        'botocore_eb.vendored.requests': ['*.pem']},
     install_requires=requires,
     license="Apache License 2.0",
     classifiers=(
@@ -58,3 +61,4 @@ setup_options = dict(
 )
 
 setup(**setup_options)
+

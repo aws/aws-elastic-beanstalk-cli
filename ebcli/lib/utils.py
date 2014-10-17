@@ -14,8 +14,9 @@
 import re
 import warnings
 import sys
+import os
 
-from ebcli.core import io
+from ..core import io
 
 
 def prompt_for_item_in_list(lst, default=1):
@@ -95,3 +96,6 @@ def list_to_columns(lst):
         stop += column_size
     return colunms
 
+
+def is_ssh():
+    return "SSH_CLIENT" in os.environ or "SSH_TTY" in os.environ

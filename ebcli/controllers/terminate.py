@@ -12,10 +12,10 @@
 # language governing permissions and limitations under the License.
 
 import time
-from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings
-from ebcli.core import operations, io
-from ebcli.objects.exceptions import NotFoundError, NoEnvironmentForBranchError
+from ..core.abstractcontroller import AbstractBaseController
+from ..resources.strings import strings
+from ..core import operations, io
+from ..objects.exceptions import NotFoundError, NoEnvironmentForBranchError
 
 
 class TerminateController(AbstractBaseController):

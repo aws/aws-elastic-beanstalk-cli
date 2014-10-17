@@ -19,10 +19,10 @@ import datetime
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
 
-from ebcli.resources.strings import git_ignore
-from ebcli.core.fileoperations import get_config_setting
-from ebcli.objects.exceptions import NoSourceControlError, CommandError
-from ebcli.core import fileoperations, io
+from ..resources.strings import git_ignore
+from ..core.fileoperations import get_config_setting
+from ..objects.exceptions import NoSourceControlError, CommandError
+from ..core import fileoperations, io
 
 LOG = minimal_logger(__name__)
 

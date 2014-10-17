@@ -11,11 +11,11 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings, prompts
-from ebcli.core import fileoperations, operations, io
-from ebcli.lib import utils
-from ebcli.objects.exceptions import NoKeypairError
+from ..core.abstractcontroller import AbstractBaseController
+from ..resources.strings import strings, prompts
+from ..core import fileoperations, operations, io
+from ..lib import utils
+from ..objects.exceptions import NoKeypairError
 
 
 class SSHController(AbstractBaseController):

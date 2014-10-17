@@ -14,13 +14,13 @@
 
 import logging
 
-from .endpoint import EndpointCreator
-from .operation import Operation
-from .waiter import Waiter
-from .exceptions import ServiceNotInRegionError, NoRegionError
-from .exceptions import UnknownEndpointError
-from .model import ServiceModel, OperationModel
-from .translate import denormalize_waiters
+from botocore_eb.endpoint import EndpointCreator
+from botocore_eb.operation import Operation
+from botocore_eb.waiter import Waiter
+from botocore_eb.exceptions import ServiceNotInRegionError, NoRegionError
+from botocore_eb.exceptions import UnknownEndpointError
+from botocore_eb.model import ServiceModel, OperationModel
+from botocore_eb.translate import denormalize_waiters
 
 
 logger = logging.getLogger(__name__)

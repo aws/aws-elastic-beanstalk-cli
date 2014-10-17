@@ -14,7 +14,7 @@
 
 from cement.utils.misc import minimal_logger
 
-from ebcli.lib import aws
+from ..lib import aws
 
 LOG = minimal_logger(__name__)
 

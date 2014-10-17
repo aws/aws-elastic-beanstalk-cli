@@ -22,18 +22,18 @@ from six import iteritems
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd, exec_cmd2
 
-from ebcli.lib import elasticbeanstalk, s3, iam, aws, ec2, elb
-from ebcli.core import fileoperations, io
-from ebcli.objects.sourcecontrol import SourceControl
-from ebcli.resources.strings import strings, responses, prompts
-from ebcli.objects import region as regions
-from ebcli.lib import utils
-from ebcli.objects import configuration
-from ebcli.objects.exceptions import *
-from ebcli.objects.solutionstack import SolutionStack
-from ebcli.objects.tier import Tier
-from ebcli.lib.aws import InvalidParameterValueError
-from ebcli.lib import heuristics
+from ..lib import elasticbeanstalk, s3, iam, aws, ec2, elb
+from ..core import fileoperations, io
+from ..objects.sourcecontrol import SourceControl
+from ..resources.strings import strings, responses, prompts
+from ..objects import region as regions
+from ..lib import utils
+from ..objects import configuration
+from ..objects.exceptions import *
+from ..objects.solutionstack import SolutionStack
+from ..objects.tier import Tier
+from ..lib.aws import InvalidParameterValueError
+from ..lib import heuristics
 
 LOG = minimal_logger(__name__)
 DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
@@ -380,6 +380,10 @@ def open_app(app_name, env_name, region):
 
 
 def open_console(app_name, env_name, region):
+    if utils.is_ssh():
+        raise NotSupportedError('The console command is not supported'
+                                ' in an ssh type session')
+
     #Get environment id
     env = None
     if env_name is not None:
@@ -408,18 +412,18 @@ def open_webpage_in_browser(url, ssl=False):
     else:
         url = 'http://' + url
 
-    if fileoperations.program_is_installed('python'):
+    if (not fileoperations.program_is_installed('python')) or \
+            utils.is_ssh():
+        # python probably isn't on path
+        ## try to run webbrowser internally
+        import webbrowser
+        webbrowser.open_new_tab(url)
+    else:
         #By running as a subprocess, we can capture stdout
         from subprocess import Popen, PIPE
 
         Popen(['python -m webbrowser \'' + url + '\''], stderr=PIPE,
               stdout=PIPE, shell=True)
-
-    else:
-        # python probably isn't on path
-        ## try to run webbrowser internally
-        import webbrowser
-        webbrowser.open_new_tab(url)
 
 
 def get_application_names(region):

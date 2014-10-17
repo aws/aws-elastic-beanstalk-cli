@@ -18,13 +18,13 @@ from cement.core import controller
 from cement.utils.misc import init_defaults
 from cement.ext.ext_logging import LoggingLogHandler
 
-import ebcli
-from ebcli.core import io, fileoperations, operations
-from ebcli.objects.exceptions import NoEnvironmentForBranchError, \
+from ebcli import __version__
+from ..core import io, fileoperations, operations
+from ..objects.exceptions import NoEnvironmentForBranchError, \
     NotInitializedError
-from ebcli.resources.strings import strings
-from ebcli.objects import region
-from ebcli.lib import aws
+from ..resources.strings import strings
+from ..objects import region
+from ..lib import aws
 
 
 class AbstractBaseController(controller.CementBaseController):
@@ -58,7 +58,7 @@ class AbstractBaseController(controller.CementBaseController):
 
         """
         if self.app.pargs.debug:
-            io.echo('-- EBCLI Version:', ebcli.__version__)
+            io.echo('-- EBCLI Version:', __version__)
             io.echo('-- Python Version:', sys.version)
 
         if self.app.pargs.verbose:

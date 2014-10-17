@@ -14,13 +14,13 @@
 import re
 import argparse
 
-from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings, prompts
-from ebcli.lib import elasticbeanstalk, utils
-from ebcli.objects.exceptions import NotFoundError, AlreadyExistsError, \
+from ..core.abstractcontroller import AbstractBaseController
+from ..resources.strings import strings, prompts
+from ..lib import elasticbeanstalk, utils
+from ..objects.exceptions import NotFoundError, AlreadyExistsError, \
     InvalidOptionsError
-from ebcli.core import io, fileoperations, operations
-from ebcli.objects.tier import Tier
+from ..core import io, fileoperations, operations
+from ..objects.tier import Tier
 
 
 class CreateController(AbstractBaseController):

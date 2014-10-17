@@ -20,7 +20,7 @@ from six import print_
 from six.moves import input
 import logging
 
-from ebcli.core import globals
+from ..core import globals
 
 LOG = logging.getLogger(__name__)
 

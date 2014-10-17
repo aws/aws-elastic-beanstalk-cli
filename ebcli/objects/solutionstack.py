@@ -13,7 +13,7 @@
 
 import re
 
-import ebcli.core.globals as eb
+from ..core import globals as eb
 
 
 class SolutionStack():

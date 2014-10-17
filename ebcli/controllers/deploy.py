@@ -11,12 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings
-from ebcli.core import operations
-from ebcli.objects.exceptions import NoEnvironmentForBranchError, \
+from ..core.abstractcontroller import AbstractBaseController
+from ..resources.strings import strings
+from ..core import operations
+from ..objects.exceptions import NoEnvironmentForBranchError, \
     InvalidOptionsError
-from ebcli.core import io
+from ..core import io
 
 
 class DeployController(AbstractBaseController):

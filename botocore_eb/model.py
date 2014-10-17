@@ -1,8 +1,8 @@
 """Abstractions to interact with service models."""
 from collections import defaultdict
 
-from botocore.utils import CachedProperty
-from botocore.compat import OrderedDict
+from botocore_eb.utils import CachedProperty
+from botocore_eb.compat import OrderedDict
 
 
 NOT_SET = object()

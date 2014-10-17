@@ -16,7 +16,7 @@ import logging
 import time
 
 
-from .exceptions import WaiterError
+from botocore_eb.exceptions import WaiterError
 
 
 logger = logging.getLogger(__name__)

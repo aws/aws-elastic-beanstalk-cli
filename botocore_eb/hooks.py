@@ -14,7 +14,7 @@
 import six
 import logging
 from collections import defaultdict, deque
-from botocore.compat import accepts_kwargs
+from botocore_eb.compat import accepts_kwargs
 
 logger = logging.getLogger(__name__)
 

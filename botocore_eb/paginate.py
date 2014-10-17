@@ -14,9 +14,9 @@
 from itertools import tee
 
 import jmespath
-from botocore.exceptions import PaginationError
-from botocore.compat import zip
-from botocore.utils import set_value_from_jmespath, merge_dicts
+from botocore_eb.exceptions import PaginationError
+from botocore_eb.compat import zip
+from botocore_eb.utils import set_value_from_jmespath, merge_dicts
 
 
 class PageIterator(object):

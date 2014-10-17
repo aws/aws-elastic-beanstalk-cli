@@ -16,11 +16,11 @@ import sys
 import xml.etree.cElementTree
 import logging
 
-from botocore import ScalarTypes
-from botocore.hooks import first_non_none_response
-from botocore.compat import json, set_socket_timeout, XMLParseError
-from botocore.exceptions import IncompleteReadError
-from botocore import parsers
+from botocore_eb import ScalarTypes
+from botocore_eb.hooks import first_non_none_response
+from botocore_eb.compat import json, set_socket_timeout, XMLParseError
+from botocore_eb.exceptions import IncompleteReadError
+from botocore_eb import parsers
 
 
 logger = logging.getLogger(__name__)

@@ -11,12 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings
-from ebcli.core import operations, io
-from ebcli.lib import utils, elasticbeanstalk
-from ebcli.controllers.create import get_cname
-from ebcli.objects.exceptions import InvalidOptionsError, AlreadyExistsError
+from ..core.abstractcontroller import AbstractBaseController
+from ..resources.strings import strings
+from ..core import operations, io
+from ..lib import utils, elasticbeanstalk
+from ..controllers.create import get_cname
+from ..objects.exceptions import InvalidOptionsError, AlreadyExistsError
 
 
 class CloneController(AbstractBaseController):

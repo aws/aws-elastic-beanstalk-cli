@@ -98,7 +98,7 @@ import logging
 
 from six.moves import http_client
 
-from botocore.utils import parse_timestamp
+from botocore_eb.utils import parse_timestamp
 
 LOG = logging.getLogger(__name__)
 

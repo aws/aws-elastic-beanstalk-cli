@@ -24,10 +24,10 @@ import xml.etree.cElementTree
 
 import six
 
-from botocore.compat import urlsplit, urlunsplit, unquote, json, quote
-from botocore import retryhandler
-from botocore import translate
-import botocore.auth
+from botocore_eb.compat import urlsplit, urlunsplit, unquote, json, quote
+from botocore_eb import retryhandler
+from botocore_eb import translate
+import botocore_eb.auth
 
 
 logger = logging.getLogger(__name__)
@@ -170,7 +170,7 @@ def fix_s3_host(event_name, endpoint, request, auth, **kwargs):
     parts = urlsplit(request.url)
     auth.auth_path = parts.path
     path_parts = parts.path.split('/')
-    if isinstance(auth, botocore.auth.SigV4Auth):
+    if isinstance(auth, botocore_eb.auth.SigV4Auth):
         return
     if len(path_parts) > 1:
         bucket_name = path_parts[1]
@@ -289,7 +289,7 @@ def copy_snapshot_encrypted(operation, params, endpoint, **kwargs):
     # url based on the source endpoint.
     region = params['SourceRegion']
     source_endpoint = operation.service.get_endpoint(region)
-    presigner = botocore.auth.SigV4QueryAuth(
+    presigner = botocore_eb.auth.SigV4QueryAuth(
         credentials=source_endpoint.auth.credentials,
         region_name=region,
         service_name='ec2',

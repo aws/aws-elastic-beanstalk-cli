@@ -47,10 +47,10 @@ from xml.etree import ElementTree
 from dateutil.tz import tzutc
 import six
 
-from botocore.compat import json, formatdate
-from botocore.utils import parse_timestamp
-from botocore.utils import percent_encode
-from botocore import validate
+from botocore_eb.compat import json, formatdate
+from botocore_eb.utils import parse_timestamp
+from botocore_eb.utils import percent_encode
+from botocore_eb import validate
 
 
 # From the spec, the default timestamp format if not specified is iso8601.

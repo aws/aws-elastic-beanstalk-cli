@@ -19,9 +19,9 @@ from copy import deepcopy
 
 import jmespath
 
-from botocore.compat import OrderedDict, json
-from botocore.utils import merge_dicts
-from botocore import xform_name
+from botocore_eb.compat import OrderedDict, json
+from botocore_eb.utils import merge_dicts
+from botocore_eb import xform_name
 
 
 class ModelFiles(object):

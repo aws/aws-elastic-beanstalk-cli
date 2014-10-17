@@ -27,8 +27,8 @@ from six.moves.configparser import NoSectionError, NoOptionError
 from six import StringIO
 from cement.utils.misc import minimal_logger
 
-from ebcli.core import io
-from ebcli.objects.exceptions import NotInitializedError, InvalidSyntaxError, \
+from ..core import io
+from ..objects.exceptions import NotInitializedError, InvalidSyntaxError, \
     NotFoundError
 
 LOG = minimal_logger(__name__)

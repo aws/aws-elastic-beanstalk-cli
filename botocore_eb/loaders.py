@@ -1,11 +1,11 @@
 import glob
 import os
 
-from botocore import BOTOCORE_ROOT
-from botocore.compat import json
-from botocore.compat import OrderedDict
-from botocore.exceptions import ApiVersionNotFoundError
-from botocore.exceptions import DataNotFoundError
+from botocore_eb import BOTOCORE_ROOT
+from botocore_eb.compat import json
+from botocore_eb.compat import OrderedDict
+from botocore_eb.exceptions import ApiVersionNotFoundError
+from botocore_eb.exceptions import DataNotFoundError
 
 
 def cachable(func):
@@ -143,14 +143,14 @@ class Loader(object):
         Usage::
 
             # Default:
-            >>> loader = Loader('/path/to/botocore/data')
+            >>> loader = Loader('/path/to/botocore_eb/data')
             >>> loader.get_search_paths()
             [
                 '/path/to/botocore/data',
             ]
 
             # User-added paths
-            >>> loader = Loader('~/.botocore/my_overrides:/path/to/botocore/data')
+            >>> loader = Loader('~/.botocore_eb/my_overrides:/path/to/botocore_eb/data')
             >>> loader.get_search_paths()
             [
                 '/home/somebody/.botocore/my_overrides',
@@ -322,7 +322,7 @@ class Loader(object):
 
         Usage::
 
-            >>> loader = Loader('~/.botocore/my_overrides:/path/to/botocore/data')
+            >>> loader = Loader('~/.botocore_eb/my_overrides:/path/to/botocore_eb/data')
 
             # Just grabs the latest.
             >>> loader.determine_latest('aws/rds')

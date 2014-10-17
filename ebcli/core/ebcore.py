@@ -18,27 +18,27 @@ from cement.utils.misc import init_defaults
 from cement.core.exc import CaughtSignal
 from six import iteritems
 
-from ebcli.controllers.initialize import InitController
-from ebcli.controllers.create import CreateController
-from ebcli.controllers.events import EventsController
-from ebcli.controllers.logs import LogsController
-from ebcli.controllers.deploy import DeployController
-from ebcli.controllers.status import StatusController
-from ebcli.controllers.terminate import TerminateController
-from ebcli.controllers.config import ConfigController
-from ebcli.controllers.open import OpenController
-from ebcli.controllers.console import ConsoleController
-from ebcli.controllers.use import UseController
-from ebcli.controllers.scale import ScaleController
-from ebcli.controllers.ssh import SSHController
-from ebcli.controllers.setenv import SetEnvController
-from ebcli.controllers.list import ListController
-from ebcli.controllers.printenv import PrintEnvController
-from ebcli.controllers.clone import CloneController
-from ebcli.core.completer import CompleterController
-from ebcli.core import globals, base, io
-from ebcli.objects.exceptions import *
-from ebcli.resources.strings import strings
+from ..controllers.initialize import InitController
+from ..controllers.create import CreateController
+from ..controllers.events import EventsController
+from ..controllers.logs import LogsController
+from ..controllers.deploy import DeployController
+from ..controllers.status import StatusController
+from ..controllers.terminate import TerminateController
+from ..controllers.config import ConfigController
+from ..controllers.open import OpenController
+from ..controllers.console import ConsoleController
+from ..controllers.use import UseController
+from ..controllers.scale import ScaleController
+from ..controllers.ssh import SSHController
+from ..controllers.setenv import SetEnvController
+from ..controllers.list import ListController
+from ..controllers.printenv import PrintEnvController
+from ..controllers.clone import CloneController
+from ..core.completer import CompleterController
+from ..core import globals, base, io
+from ..objects.exceptions import *
+from ..resources.strings import strings
 
 
 class EB(foundation.CementApp):
@@ -115,7 +115,8 @@ def main():
         io.log_error(strings['exit.noregion'])
         app.close(code=3)
     except EBCLIException as e:
-        io.log_error(e.__class__.__name__ + ": " + e.message)
+        e = next(io._convert_to_strings([e]))
+        io.log_error(e.__class__.__name__ + ": " + e)
         app.close(code=3)
     finally:
         app.close()

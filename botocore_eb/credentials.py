@@ -19,12 +19,12 @@ import os
 
 from six.moves import configparser
 
-import botocore.config
-from botocore.compat import total_seconds
-from botocore.exceptions import UnknownCredentialError
-from botocore.exceptions import PartialCredentialsError
-from botocore.exceptions import ConfigNotFound
-from botocore.utils import InstanceMetadataFetcher, parse_key_val_file
+import botocore_eb.config
+from botocore_eb.compat import total_seconds
+from botocore_eb.exceptions import UnknownCredentialError
+from botocore_eb.exceptions import PartialCredentialsError
+from botocore_eb.exceptions import ConfigNotFound
+from botocore_eb.utils import InstanceMetadataFetcher, parse_key_val_file
 
 
 logger = logging.getLogger(__name__)
@@ -364,7 +364,7 @@ class SharedCredentialProvider(CredentialProvider):
 
     ACCESS_KEY = 'aws_access_key_id'
     SECRET_KEY = 'aws_secret_access_key'
-    # Same deal as the EnvProvider above.  Botocore originally supported
+    # Same deal as the EnvProvider above.  botocore_eb originally supported
     # aws_security_token, but the SDKs are standardizing on aws_session_token
     # so we support both.
     TOKENS = ['aws_security_token', 'aws_session_token']
@@ -375,7 +375,7 @@ class SharedCredentialProvider(CredentialProvider):
             profile_name = 'default'
         self._profile_name = profile_name
         if ini_parser is None:
-            ini_parser = botocore.config.raw_config_parse
+            ini_parser = botocore_eb.config.raw_config_parse
         self._ini_parser = ini_parser
 
     def load(self):
@@ -406,7 +406,7 @@ class ConfigProvider(CredentialProvider):
 
     ACCESS_KEY = 'aws_access_key_id'
     SECRET_KEY = 'aws_secret_access_key'
-    # Same deal as the EnvProvider above.  Botocore originally supported
+    # Same deal as the EnvProvider above.  botocore_eb originally supported
     # aws_security_token, but the SDKs are standardizing on aws_session_token
     # so we support both.
     TOKENS = ['aws_security_token', 'aws_session_token']
@@ -423,7 +423,7 @@ class ConfigProvider(CredentialProvider):
         self._config_filename = config_filename
         self._profile_name = profile_name
         if config_parser is None:
-            config_parser = botocore.config.load_config
+            config_parser = botocore_eb.config.load_config
         self._config_parser = config_parser
 
     def load(self):
@@ -466,7 +466,7 @@ class BotoProvider(CredentialProvider):
         if environ is None:
             environ = os.environ
         if ini_parser is None:
-            ini_parser = botocore.config.raw_config_parse
+            ini_parser = botocore_eb.config.raw_config_parse
         self._environ = environ
         self._ini_parser = ini_parser
 

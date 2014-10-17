@@ -11,12 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings
-from ebcli.core import fileoperations, io, operations
-from ebcli.objects.exceptions import NotInitializedError, NoRegionError
-from ebcli.objects import region as regions
-from ebcli.lib import utils, elasticbeanstalk
+from ..core.abstractcontroller import AbstractBaseController
+from ..resources.strings import strings
+from ..core import fileoperations, io, operations
+from ..objects.exceptions import NotInitializedError, NoRegionError
+from ..objects import region as regions
+from ..lib import utils, elasticbeanstalk
 
 
 class InitController(AbstractBaseController):

@@ -17,7 +17,7 @@ import copy
 
 from six.moves import configparser
 
-import botocore.exceptions
+import botocore_eb.exceptions
 
 
 def multi_file_load_config(*filenames):
@@ -73,7 +73,7 @@ def multi_file_load_config(*filenames):
     for filename in filenames:
         try:
             loaded = load_config(filename)
-        except botocore.exceptions.ConfigNotFound:
+        except botocore_eb.exceptions.ConfigNotFound:
             continue
         profiles.append(loaded.pop('profiles'))
         configs.append(loaded)
@@ -124,12 +124,12 @@ def raw_config_parse(config_filename):
         path = os.path.expandvars(path)
         path = os.path.expanduser(path)
         if not os.path.isfile(path):
-            raise botocore.exceptions.ConfigNotFound(path=path)
+            raise botocore_eb.exceptions.ConfigNotFound(path=path)
         cp = configparser.RawConfigParser()
         try:
             cp.read(path)
         except configparser.Error:
-            raise botocore.exceptions.ConfigParseError(path=path)
+            raise botocore_eb.exceptions.ConfigParseError(path=path)
         else:
             config['_path'] = path
             for section in cp.sections():
@@ -143,7 +143,7 @@ def raw_config_parse(config_filename):
                         try:
                             config_value = _parse_nested(config_value)
                         except ValueError:
-                            raise botocore.exceptions.ConfigParseError(
+                            raise botocore_eb.exceptions.ConfigParseError(
                                 path=path)
                     config[section][option] = config_value
     return config

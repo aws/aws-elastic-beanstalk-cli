@@ -17,7 +17,7 @@ In a nutshell, you give it some input data (a service name, a
 region name, and a scheme) and it gives you a complete url.
 
 """
-from botocore.exceptions import UnknownEndpointError
+from botocore_eb.exceptions import UnknownEndpointError
 
 
 class EndpointResolver(object):

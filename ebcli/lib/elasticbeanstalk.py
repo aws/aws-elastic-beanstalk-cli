@@ -16,18 +16,18 @@ import datetime
 
 from cement.utils.misc import minimal_logger
 
-from ebcli.core import io
-from ebcli.objects.solutionstack import SolutionStack
-from ebcli.objects.exceptions import NotFoundError, InvalidStateError, \
+from ..core import io
+from ..objects.solutionstack import SolutionStack
+from ..objects.exceptions import NotFoundError, InvalidStateError, \
     AlreadyExistsError
-from ebcli.objects.tier import Tier
-from ebcli.lib import utils
-from ebcli.lib import aws
-from ebcli.lib.aws import InvalidParameterValueError
-from ebcli.objects.event import Event
-from ebcli.objects.environment import Environment
-from ebcli.objects.application import Application
-from ebcli.resources.strings import strings, responses
+from ..objects.tier import Tier
+from ..lib import utils
+from ..lib import aws
+from ..lib.aws import InvalidParameterValueError
+from ..objects.event import Event
+from ..objects.environment import Environment
+from ..objects.application import Application
+from ..resources.strings import strings, responses
 
 LOG = minimal_logger(__name__)
 

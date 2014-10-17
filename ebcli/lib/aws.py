@@ -11,15 +11,14 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import botocore.session
-import botocore.exceptions
+import botocore_eb.session
+import botocore_eb.exceptions
 import six
 from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
-from ebcli.objects.exceptions import ServiceError, NotAuthorizedError, \
+from ..objects.exceptions import ServiceError, NotAuthorizedError, \
     InvalidSyntaxError, CredentialsError, NoRegionError
-from ebcli.core import fileoperations
 
 LOG = minimal_logger(__name__)
 
@@ -61,9 +60,9 @@ def _get_service(service_name):
         return _api_sessions[service_name]
 
     LOG.debug('Creating new Botocore Session')
-    session = botocore.session.Session(session_vars={'profile': (None, _profile_env_var, _profile)})
+    session = botocore_eb.session.Session(session_vars={'profile': (None, _profile_env_var, _profile)})
     if _profile not in session.available_profiles:
-        session = botocore.session.get_session()
+        session = botocore_eb.session.get_session()
     _set_user_agent_for_session(session)
 
     service = session.get_service(service_name)
@@ -86,9 +85,9 @@ def make_api_call(service_name, operation_name, region=None, profile=None,
             region = 'default'
         else:
             endpoint = service.get_endpoint(region)
-    except botocore.exceptions.UnknownEndpointError as e:
+    except botocore_eb.exceptions.UnknownEndpointError as e:
         raise NoRegionError(e)
-    except botocore.exceptions.PartialCredentialsError as e:
+    except botocore_eb.exceptions.PartialCredentialsError as e:
         LOG.debug('Credentials incomplete')
         raise CredentialsError('Your credentials are not valid')
 
@@ -115,18 +114,18 @@ def make_api_call(service_name, operation_name, region=None, profile=None,
                 LOG.error('API Call unsuccessful. '
                           'Status code returned ' + str(status))
             return None
-    except botocore.exceptions.NoCredentialsError as e:
+    except botocore_eb.exceptions.NoCredentialsError as e:
         LOG.debug('No credentials found')
         raise CredentialsError('Operation Denied. You appear to have no'
                                ' credentials')
-    except botocore.exceptions.PartialCredentialsError as e:
+    except botocore_eb.exceptions.PartialCredentialsError as e:
         LOG.debug('Credentials incomplete')
         raise CredentialsError('Your credentials are not valid')
 
-    except botocore.exceptions.ValidationError as e:
+    except botocore_eb.exceptions.ValidationError as e:
         raise InvalidSyntaxError(e)
 
-    except botocore.exceptions.BotoCoreError as e:
+    except botocore_eb.exceptions.BotoCoreError as e:
         LOG.error('Botocore Error')
         raise e
 

@@ -25,13 +25,13 @@ import time
 
 import six
 
-from botocore.exceptions import NoCredentialsError
-from botocore.utils import normalize_url_path, percent_encode_sequence
-from botocore.utils import percent_encode
-from botocore.compat import HTTPHeaders
-from botocore.compat import quote, unquote, urlsplit, parse_qs
-from botocore.compat import urlunsplit
-from botocore.compat import encodebytes
+from botocore_eb.exceptions import NoCredentialsError
+from botocore_eb.utils import normalize_url_path, percent_encode_sequence
+from botocore_eb.utils import percent_encode
+from botocore_eb.compat import HTTPHeaders
+from botocore_eb.compat import quote, unquote, urlsplit, parse_qs
+from botocore_eb.compat import urlunsplit
+from botocore_eb.compat import encodebytes
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,11 @@
-from botocore.model import ServiceModel
-from botocore.exceptions import ParamValidationError
-from botocore.exceptions import DataNotFoundError
-from botocore.exceptions import OperationNotPageableError
-from botocore import xform_name
-from botocore.paginate import Paginator
-import botocore.validate
-import botocore.serialize
+from botocore_eb.model import ServiceModel
+from botocore_eb.exceptions import ParamValidationError
+from botocore_eb.exceptions import DataNotFoundError
+from botocore_eb.exceptions import OperationNotPageableError
+from botocore_eb import xform_name
+from botocore_eb.paginate import Paginator
+import botocore_eb.validate
+import botocore_eb.serialize
 
 
 class ClientError(Exception):
@@ -120,12 +120,12 @@ class ClientCreator(object):
         # * endpoint
         # * response parser
         protocol = service_model.metadata['protocol']
-        serializer = botocore.serialize.create_serializer(
+        serializer = botocore_eb.serialize.create_serializer(
             protocol, include_validation=True)
         endpoint = self._endpoint_creator.create_endpoint(
             service_model, region_name, is_secure=is_secure,
             endpoint_url=endpoint_url, verify=verify)
-        response_parser = botocore.parsers.create_parser(protocol)
+        response_parser = botocore_eb.parsers.create_parser(protocol)
         return {
             'serializer': serializer,
             'endpoint': endpoint,

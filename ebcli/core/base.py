@@ -15,9 +15,9 @@ import textwrap
 
 from cement.core import controller
 
-import ebcli
-from ebcli.resources.strings import strings
-from ebcli.core import io
+from ebcli import __version__
+from ..resources.strings import strings
+from ..core import io
 
 class EbBaseController(controller.CementBaseController):
     """
@@ -37,8 +37,7 @@ class EbBaseController(controller.CementBaseController):
     @controller.expose(hide=True)
     def default(self):
         if self.app.pargs.version:
-            io.echo(strings['app.version_message'],
-                                      ebcli.__version__)
+            io.echo(strings['app.version_message'], __version__)
         else:
             self.app.args.print_help()
 

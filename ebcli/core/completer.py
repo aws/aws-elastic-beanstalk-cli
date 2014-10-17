@@ -12,8 +12,8 @@
 # language governing permissions and limitations under the License.
 
 from cement.core import controller, handler
-from ebcli.core import fileoperations, operations, io
-from ebcli.lib import aws
+from ..core import fileoperations, operations, io
+from ..lib import aws
 
 
 class CompleterController(controller.CementBaseController):

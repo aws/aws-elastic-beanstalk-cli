@@ -17,9 +17,9 @@ from six import string_types, text_type
 import dateutil.parser
 from dateutil.tz import tzlocal
 
-from botocore.exceptions import InvalidExpressionError, ConfigNotFound
-from botocore.compat import json, quote
-from botocore.vendored import requests
+from botocore_eb.exceptions import InvalidExpressionError, ConfigNotFound
+from botocore_eb.compat import json, quote
+from botocore_eb.vendored import requests
 
 
 logger = logging.getLogger(__name__)
