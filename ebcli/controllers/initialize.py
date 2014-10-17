@@ -14,9 +14,10 @@
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings
 from ..core import fileoperations, io, operations
-from ..objects.exceptions import NotInitializedError, NoRegionError
+from ..objects.exceptions import NotInitializedError, NoRegionError, \
+    InvalidProfileError
 from ..objects import region as regions
-from ..lib import utils, elasticbeanstalk
+from ..lib import utils, elasticbeanstalk, aws
 
 
 class InitController(AbstractBaseController):
@@ -48,23 +49,21 @@ class InitController(AbstractBaseController):
             self.flag = True
 
         default_env = self.get_old_values()
+        fileoperations.touch_config_folder()
 
-        try:
-            # Note, region is None unless explicitely set
-            ## or read from old eb
-            operations.credentials_are_valid(self.region)
-        except NoRegionError:
-            self.region = self.get_region()
-
-        if not operations.credentials_are_valid(self.region):
-            operations.setup_credentials()
+        self.set_up_credentials()
 
         self.solution = self.get_solution_stack()
         self.app_name = self.get_app_name()
 
+        if not default_env:
+            # try to get default env from config file if exists
+            try:
+                default_env = operations.get_current_branch_environment()
+            except NotInitializedError:
+                default_env = None
 
         # Create application
-        fileoperations.touch_config_folder()
         sstack, key = operations.create_app(self.app_name, self.region,
                                             default_env=default_env)
 
@@ -79,6 +78,31 @@ class InitController(AbstractBaseController):
 
         operations.setup(self.app_name, self.region, self.solution,
                          self.keyname)
+
+    def set_up_credentials(self):
+        given_profile = self.app.pargs.profile
+
+        try:
+            # Note, region is None unless explicitly set
+            ## or read from old eb
+            operations.credentials_are_valid(self.region)
+        except NoRegionError:
+            self.region = self.get_region()
+        except InvalidProfileError:
+            if given_profile:
+                # Provided profile is invalid, raise exception
+                raise
+            else:
+                # default profile doesnt exist, revert to default
+                aws.set_profile(None)
+                # try again
+                self.set_up_credentials()
+
+        if not operations.credentials_are_valid(self.region):
+            operations.setup_credentials()
+        elif given_profile:
+            fileoperations.write_config_setting('global', 'profile',
+                                                given_profile)
 
     def get_app_name(self):
         # Get app name from command line arguments

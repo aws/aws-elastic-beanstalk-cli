@@ -29,4 +29,4 @@ class UseController(AbstractBaseController):
     def do_command(self):
         env_name = self.app.pargs.environment_name[0]
 
-        operations.write_setting_to_current_branch('environment', env_name)
+        operations.set_environment_for_current_branch(env_name)

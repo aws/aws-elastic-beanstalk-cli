@@ -13,7 +13,7 @@
 
 import time
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
+from ..resources.strings import strings, prompts
 from ..core import operations, io
 from ..objects.exceptions import NotFoundError, NoEnvironmentForBranchError
 
@@ -53,9 +53,9 @@ class TerminateController(AbstractBaseController):
                 if env_name not in env_names:
                     raise NotFoundError('Environment ' +
                                         env_name + ' not found')
-                io.echo('You are about to terminate environment:', env_name)
-                result = io.get_input('Enter environment name '
-                                      'as shown to confirm')
+                io.echo(prompts['terminate.confirm'].replace('{env-name}',
+                                                             env_name))
+                result = io.get_input(prompts['terminate.validate'])
 
                 if result != env_name:
                     io.log_error('Names do not match. Exiting.')

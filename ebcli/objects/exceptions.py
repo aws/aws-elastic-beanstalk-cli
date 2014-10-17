@@ -103,5 +103,11 @@ class NoKeypairError(EBCLIException):
     """ Instance/environment has no associated keypair    """
     pass
 
+
 class NotSupportedError(EBCLIException):
     """  Operation not supported   """
+
+
+class InvalidProfileError(EBCLIException):
+    """ Given profile is invalid  """
+

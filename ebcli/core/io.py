@@ -14,6 +14,7 @@
 import re
 import warnings
 import getpass
+import sys
 
 import six
 from six import print_
@@ -42,7 +43,10 @@ def _convert_to_strings(list_of_things):
         if isinstance(data, six.binary_type):
             yield data.decode('utf8')
         elif isinstance(data, six.text_type):
-            yield data
+            if sys.version_info[0] >= 3:
+                yield data
+            else:
+                yield data.encode('utf8')
         elif isinstance(data, scalar_types) or hasattr(data, '__str__'):
             yield str(data)
         else:

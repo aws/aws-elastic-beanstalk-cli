@@ -75,7 +75,7 @@ class AbstractBaseController(controller.CementBaseController):
         if not env_name:
             #If env name not provided, grab branch default
             env_name = operations. \
-                get_setting_from_current_branch('environment')
+                get_current_branch_environment()
 
         if not env_name:
             # No default env, lets ask for one

@@ -45,7 +45,7 @@ class CompleterController(controller.CementBaseController):
         commands = commands.split(' ')
         word_so_far = commands[-1]
         commands = commands[0:-1]
-        commands = filter(lambda x: len(x) > 0, commands)
+        commands = list(filter(lambda x: len(x) > 0, commands))
 
         #Get the list of controllers
         self.controllers = handler.list('controller')

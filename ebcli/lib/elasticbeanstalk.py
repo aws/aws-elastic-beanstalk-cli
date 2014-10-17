@@ -97,6 +97,9 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
     assert app_name is not None, 'App name can not be empty'
     assert env_name is not None, 'Environment name can not be empty'
     assert solution_stck is not None, 'Solution stack can not be empty'
+    if size:
+        assert isinstance(size, int), 'Size must be of type int'
+        size = str(size)
 
     settings = []
 

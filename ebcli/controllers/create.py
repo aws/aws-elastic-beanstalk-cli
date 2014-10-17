@@ -93,6 +93,9 @@ class CreateController(AbstractBaseController):
         if sample and label:
             raise InvalidOptionsError(strings['create.sampleandlabel'])
 
+        if single and size:
+            raise InvalidOptionsError(strings['create.singleandsize'])
+
         app_name = self.get_app_name()
         region = self.get_region()
 

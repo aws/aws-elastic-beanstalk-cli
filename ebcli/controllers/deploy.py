@@ -47,7 +47,7 @@ class DeployController(AbstractBaseController):
 
         if not env_name:
             env_name = \
-                operations.get_setting_from_current_branch('environment')
+                operations.get_current_branch_environment()
 
         if not env_name:
             message = strings['branch.noenv'].replace('eb {cmd}',

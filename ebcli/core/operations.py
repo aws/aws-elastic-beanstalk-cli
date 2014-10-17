@@ -164,7 +164,7 @@ def list_env_names(app_name, region, verbose, all_apps):
 
 
 def list_env_names_for_app(app_name, region, verbose):
-    current_env = get_setting_from_current_branch('environment')
+    current_env = get_current_branch_environment()
     env_names = get_env_names(app_name, region)
     env_names.sort()
 
@@ -339,20 +339,20 @@ def pull_down_app_info(app_name, region, default_env=None):
             io.echo(prompts['init.selectdefaultenv'])
             env = utils.prompt_for_item_in_list(envs)
 
-    write_setting_to_current_branch('environment', env.name)
+    set_environment_for_current_branch(env.name)
 
     io.log_info('Pulling down defaults from environment ' + env.name)
     # Get keyname
     instances = get_instance_ids(app_name, env.name, region)
     if len(instances) < 1:
-        return env.solution_stack, None
+        return env.solution_stack.name, None
 
     instance = ec2.describe_instance(instances[0], region)
     try:
         keypair_name = instance['KeyName']
-        return env.solution_stack, keypair_name
+        return env.solution_stack.name, keypair_name
     except KeyError:
-        return env.solution_stack, None
+        return env.solution_stack.name, None
 
 
 def get_default_profile(region):
@@ -498,10 +498,10 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
 
     # Edit configurations
     ## Get default environment
-    default_env = get_setting_from_current_branch('environment')
+    default_env = get_current_branch_environment()
     ## Save env as branch default if needed
     if not default_env or branch_default:
-        write_setting_to_current_branch('environment', env_name)
+        set_environment_for_current_branch(env_name)
 
     # Print status of env
     print_env_details(result, health=False)
@@ -820,9 +820,9 @@ def terminate(env_name, region):
 
     # disassociate with branch if branch default
     ## Get default environment
-    default_env = get_setting_from_current_branch('environment')
+    default_env = get_current_branch_environment()
     if default_env == env_name:
-        write_setting_to_current_branch('environment', None)
+        set_environment_for_current_branch(None)
 
     wait_and_print_events(request_id, region,
                         timeout_in_seconds=60*5)
@@ -1035,6 +1035,10 @@ def write_setting_to_current_branch(keyname, value):
     )
 
 
+def set_environment_for_current_branch(value):
+    write_setting_to_current_branch('environment', value)
+
+
 def get_setting_from_current_branch(keyname):
     source_control = SourceControl.get_source_control()
 
@@ -1048,6 +1052,10 @@ def get_setting_from_current_branch(keyname):
             return branch_dict[keyname]
         except KeyError:
             return None
+
+
+def get_current_branch_environment():
+    return get_setting_from_current_branch('environment')
 
 
 def prompt_for_ec2_keyname(region):

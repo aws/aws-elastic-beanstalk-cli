@@ -54,6 +54,7 @@ strings = {
 
     # Error when --sample and --label falg are both used on create
     'create.sampleandlabel': 'Both sample and versionlabel cannot be used together',
+    'create.singleandsize': 'Both single and size cannot be used together',
     # Text shown if 'eb terminate' is called while no environment is selected as default
     'terminate.noenv': 'To delete the application and all application versions, use "eb terminate --all"',
 
@@ -117,6 +118,8 @@ prompts = {
     'scale.switchtoloadbalancewarn': 'By choosing yes, the environment will terminate and your application will be temporarily unavailable.',
     'cname.unavailable': 'The CNAME you provided is currently not available.\n'
                          'Please try another',
+    'terminate.confirm': 'You are about to terminate environment: {env-name} and all associated instances.',
+    'terminate.validate': 'Enter environment name as shown to confirm',
     'delete.confirm': 'You are about to delete the application "{app-name}" and all its resources.\n'
                       'This app currently has the following,\n'
                       'Running environments: {env-num}\n'

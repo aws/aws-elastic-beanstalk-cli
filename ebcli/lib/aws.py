@@ -18,7 +18,7 @@ from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
 from ..objects.exceptions import ServiceError, NotAuthorizedError, \
-    InvalidSyntaxError, CredentialsError, NoRegionError
+    InvalidSyntaxError, CredentialsError, NoRegionError, InvalidProfileError
 
 LOG = minimal_logger(__name__)
 
@@ -60,12 +60,18 @@ def _get_service(service_name):
         return _api_sessions[service_name]
 
     LOG.debug('Creating new Botocore Session')
-    session = botocore_eb.session.Session(session_vars={'profile': (None, _profile_env_var, _profile)})
-    if _profile not in session.available_profiles:
-        session = botocore_eb.session.get_session()
+    if _profile:
+        session = botocore_eb.session.Session(session_vars={
+            'profile': (None, _profile_env_var, _profile)})
+    else:
+        session = botocore_eb.session.Session(session_vars={
+            'profile': (None, _profile_env_var, None)})
     _set_user_agent_for_session(session)
 
-    service = session.get_service(service_name)
+    try:
+        service = session.get_service(service_name)
+    except botocore_eb.exceptions.ProfileNotFound as e:
+        raise InvalidProfileError(e)
     LOG.debug('Successfully created session for ' + service_name)
 
     if _id and _key:
@@ -87,7 +93,7 @@ def make_api_call(service_name, operation_name, region=None, profile=None,
             endpoint = service.get_endpoint(region)
     except botocore_eb.exceptions.UnknownEndpointError as e:
         raise NoRegionError(e)
-    except botocore_eb.exceptions.PartialCredentialsError as e:
+    except botocore_eb.exceptions.PartialCredentialsError:
         LOG.debug('Credentials incomplete')
         raise CredentialsError('Your credentials are not valid')
 
