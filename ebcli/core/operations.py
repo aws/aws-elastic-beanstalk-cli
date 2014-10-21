@@ -345,14 +345,14 @@ def pull_down_app_info(app_name, region, default_env=None):
     # Get keyname
     instances = get_instance_ids(app_name, env.name, region)
     if len(instances) < 1:
-        return env.solution_stack.name, None
+        return env.platform.name, None
 
     instance = ec2.describe_instance(instances[0], region)
     try:
         keypair_name = instance['KeyName']
-        return env.solution_stack.name, keypair_name
+        return env.platform.name, keypair_name
     except KeyError:
-        return env.solution_stack.name, None
+        return env.platform.name, None
 
 
 def get_default_profile(region):
@@ -519,12 +519,12 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
 def print_env_details(env, health=True, verbose=False):
 
     io.echo('Environment details for:', env.name)
-    io.echo('  App name:', env.app_name)
+    io.echo('  Application name:', env.app_name)
     io.echo('  Deployed Version:', env.version_label)
     io.echo('  Environment ID:', env.id)
-    io.echo('  Solution Stack:', env.solution_stack)
+    io.echo('  Platform:', env.platform)
     io.echo('  Tier:', env.tier)
-    io.echo('  Cname:', env.cname)
+    io.echo('  CNAME:', env.cname)
     io.echo('  Updated:', env.date_updated)
 
     if health:
@@ -620,7 +620,7 @@ def delete_app(app_name, region, force):
             '{version-num}', str(len(app['Versions'])))
         io.echo()
         io.echo(confirm_message)
-        result = io.get_input('Enter application name as shown to confirm')
+        result = io.get_input('To confirm, type the application name')
 
         if result != app_name:
             io.log_error(prompts['terminate.nomatch'])

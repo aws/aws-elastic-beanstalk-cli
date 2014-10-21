@@ -65,13 +65,17 @@ class TestCreate(BaseControllerTest):
             'us-west-2',  # region
             cname_prefix,  # cname
             self.solution,  # solution
-            None,  #tier
+            None,  # Tier
+            None,  # itype
             None,  # label
-            None,  # profile
+            None,  # iprofile
             False,  # single
             None,  # key_name
             False,  # branch_default
             False,  # sample
+            [],  # Tags
+            None,  # Size
+            False,  #Database
             False,  # nohang
         )
 
@@ -101,13 +105,17 @@ class TestCreate(BaseControllerTest):
             'us-west-2',  # region
             self.app_name + '-dev',   # cname = env name
             self.solution,  # solution
-            None,  #tier
+            None,  # Tier
+            None,  # itype
             None,  # label
-            None,  # profile
+            None,  # iprofile
             False,  # single
             None,  # key_name
             False,  # branch_default
             False,  # sample
+            [],  # Tags
+            None,  # Size
+            False,  #Database
             False,  # nohang
         )
 
@@ -127,7 +135,7 @@ class TestCreate(BaseControllerTest):
 
         # run cmd
         try:
-            self.app = EB(argv=['create', '--sample', '--versionlabel', 'myVers'])
+            self.app = EB(argv=['create', '--sample', '--version', 'myVers'])
             self.app.setup()
             self.app.run()
             self.app.close()

@@ -29,7 +29,7 @@ class DeployController(AbstractBaseController):
                                         help='Environment name')),
             (['-r', '--region'], dict(help='Region where environment lives')),
             (['--version'], dict(help='Existing version label to deploy')),
-            (['-l', '--label'], dict(help='Label to give version')),
+            (['-l', '--label'], dict(help='Label name which version will be given')),
             (['-m', '--message'], dict(help='Message/Description for version'))
         ]
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)

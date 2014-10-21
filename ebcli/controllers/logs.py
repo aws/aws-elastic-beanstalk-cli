@@ -29,7 +29,6 @@ class LogsController(AbstractBaseController):
         ]
         epilog = strings['logs.epilog']
 
-
     def do_command(self):
         region = self.get_region()
         env_name = self.get_env_name()

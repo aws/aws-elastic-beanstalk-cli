@@ -16,6 +16,7 @@ from controllers.basecontrollertest import BaseControllerTest
 from ebcli.core.ebcore import EB
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.core import fileoperations
+from ebcli.objects.exceptions import NotInitializedError, NoRegionError
 
 
 class TestInit(BaseControllerTest):
@@ -34,20 +35,26 @@ class TestInit(BaseControllerTest):
                 2. Prompt for app name: no apps exist
             """
         # Set up mock responses
-        # 1. Get solution stacks
-        # 2. Get solution stacks again
+        # 1. Get Credentials: throw no region error
+        # 2. Get Credentials: good
         # 3. Create app
         self.mock_operations.get_application_names.return_value = list()
-        self.mock_operations.credentials_are_valid.return_value = True
+        self.mock_operations.credentials_are_valid.side_effect = [
+            NoRegionError,
+            True,
+        ]
         self.mock_operations.prompt_for_solution_stack.return_value = \
             self.solution
         self.mock_operations.prompt_for_ec2_keyname.return_value = 'test'
+        self.mock_operations.get_current_branch_environment.side_effect = \
+            NotInitializedError,
+        self.mock_operations.create_app.return_value = None, None
 
         self.mock_input.side_effect = [
             '3',  # region number
             self.app_name,  # Application name
-            '1',  # Solution stack platform selection
-            '1',  # Solution stack version selection
+            '1',  # Platform selection
+            '1',  # Platform version selection
             'n',  # Set up ssh selection
         ]
 
@@ -80,12 +87,13 @@ class TestInit(BaseControllerTest):
         self.mock_operations.prompt_for_solution_stack.return_value = \
             self.solution
         self.mock_operations.prompt_for_ec2_keyname.return_value = 'test'
+        self.mock_operations.create_app.return_value = 'something', 'smthing'
 
         self.mock_input.side_effect = [
             '3',  # region number
             self.app_name,  # Application name
-            '1',  # Solution stack platform selection
-            '1',  # Solution stack version selection'
+            '1',  # Platform selection
+            '1',  # Platform version selection'
             'n',  # Set up ssh selection
         ]
 
@@ -111,6 +119,9 @@ class TestInit(BaseControllerTest):
         self.mock_operations.prompt_for_solution_stack.return_value = \
             self.solution
         self.mock_operations.prompt_for_ec2_keyname.return_value = 'test'
+        self.mock_operations.get_current_branch_environment.side_effect = \
+            NotInitializedError,
+        self.mock_operations.create_app.return_value = None, None
 
         # run cmd
         self.app = EB(argv=['init',

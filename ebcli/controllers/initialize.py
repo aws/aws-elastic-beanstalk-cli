@@ -23,13 +23,12 @@ from ..lib import utils, elasticbeanstalk, aws
 class InitController(AbstractBaseController):
     class Meta:
         label = 'init'
-        help = 'blarg!!'
         description = strings['init.info']
         arguments = [
             (['application_name'], dict(help='Application name',
                                         nargs='?', default=[])),
             (['-r', '--region'], dict(help='Default Region')),
-            (['-s', '--solution'], dict(help='Default Solution stack')),
+            (['-p', '--platform'], dict(help='Default Platform')),
             (['-k', '--keyname'], dict(help='Default EC2 key name')),
             (['-i', '--interactive'], dict(action='store_true',
                                            help='Force interactive mode')),
@@ -45,7 +44,7 @@ class InitController(AbstractBaseController):
         self.interactive = self.app.pargs.interactive
         self.region = self.app.pargs.region
         self.flag = False
-        if self.app.pargs.application_name and self.app.pargs.solution:
+        if self.app.pargs.application_name and self.app.pargs.platform:
             self.flag = True
 
         default_env = self.get_old_values()
@@ -59,12 +58,14 @@ class InitController(AbstractBaseController):
         self.solution = self.get_solution_stack()
         self.app_name = self.get_app_name()
 
-        if not default_env:
+        if not default_env and not self.interactive:
             # try to get default env from config file if exists
             try:
                 default_env = operations.get_current_branch_environment()
             except NotInitializedError:
                 default_env = None
+        elif self.interactive:
+            default_env = None
 
         # Create application
         sstack, key = operations.create_app(self.app_name, self.region,
@@ -88,8 +89,10 @@ class InitController(AbstractBaseController):
             # Note, region is None unless explicitly set
             ## or read from old eb
             operations.credentials_are_valid(self.region)
+            return profile
         except NoRegionError:
             self.region = self.get_region()
+            return profile
         except InvalidProfileError:
             if given_profile:
                 # Provided profile is invalid, raise exception
@@ -99,7 +102,7 @@ class InitController(AbstractBaseController):
                 # try again
                 profile = None
                 aws.set_profile(profile)
-                self.check_credentials(profile)
+                return self.check_credentials(profile)
 
     def set_up_credentials(self):
         given_profile = self.app.pargs.profile
@@ -110,11 +113,11 @@ class InitController(AbstractBaseController):
             profile = 'eb-cli'
             aws.set_profile(profile)
 
-        self.check_credentials(profile)
+        profile = self.check_credentials(profile)
 
         if not operations.credentials_are_valid(self.region):
             operations.setup_credentials()
-        elif given_profile:
+        else:
             fileoperations.write_config_setting('global', 'profile',
                                                 profile)
 
@@ -158,7 +161,7 @@ class InitController(AbstractBaseController):
 
     def get_solution_stack(self):
         # Get solution stack from command line arguments
-        solution_string = self.app.pargs.solution
+        solution_string = self.app.pargs.platform
 
         # Get solution stack from config file, if exists
         if not solution_string:
@@ -219,8 +222,8 @@ class InitController(AbstractBaseController):
                 self.region = region
             if not self.app.pargs.application_name:
                 self.app.pargs.application_name = app_name
-            if self.app.pargs.solution is None:
-                self.app.pargs.solution = solution_stack
+            if self.app.pargs.platform is None:
+                self.app.pargs.platform = solution_stack
 
             operations.setup_credentials(access_id=access_id,
                                          secret_key=secret_key)

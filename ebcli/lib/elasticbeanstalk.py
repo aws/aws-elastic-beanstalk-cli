@@ -290,7 +290,7 @@ def _api_to_environment(api_dict):
         health=api_dict['Health'],
         id=api_dict['EnvironmentId'],
         date_updated=api_dict['DateUpdated'],
-        solution_stack=solution_stack,
+        platform=solution_stack,
         description=description,
         name=api_dict['EnvironmentName'],
         date_created=api_dict['DateCreated'],
@@ -360,10 +360,7 @@ def get_available_solution_stacks(region=None):
     if len(stack_strings) == 0:
         raise NotFoundError(strings['sstacks.notfound'])
 
-    solution_stacks = []
-    for s in stack_strings:
-        stack = SolutionStack(s)
-        solution_stacks.append(stack)
+    solution_stacks = [SolutionStack(s) for s in stack_strings]
 
     return solution_stacks
 

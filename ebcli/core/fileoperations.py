@@ -133,7 +133,7 @@ def get_values_from_old_eb():
             'access_id': access_id,
             'secret_key': secret_key,
             'default_env': default_env,
-            'solution_stack_name': solution_stack_name,
+            'platform': solution_stack_name,
             'region': region,
             }
 
@@ -215,7 +215,7 @@ def get_default_region():
 
 
 def get_default_solution_stack():
-    return get_config_setting('global', 'default_solution_stack')
+    return get_config_setting('global', 'default_platform')
 
 
 def get_default_keyname():
@@ -249,7 +249,7 @@ def create_config_file(app_name, region, solution_stack):
     # add to global without writing over any settings if they exist
     write_config_setting('global', 'application_name', app_name)
     write_config_setting('global', 'default_region', region)
-    write_config_setting('global', 'default_solution_stack', solution_stack)
+    write_config_setting('global', 'default_platform', solution_stack)
 
 
 def _traverse_to_project_root():

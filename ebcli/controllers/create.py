@@ -37,8 +37,8 @@ class CreateController(AbstractBaseController):
             (['-t', '--tier'], dict(help='Environment tier type')),
             (['-i', '--instance_type'], dict(help='Instance Type '
                                                   'i.e. t1.micro')),
-            (['-s', '--solution'], dict(help='Solution stack')),
-            (['--single'], dict(action='store_true',
+            (['-p', '--platform'], dict(help='Platform')),
+            (['-s', '--single'], dict(action='store_true',
                                 help='Environment will use a Single '
                                      'Instance with no Load Balancer')),
             (['--sample'], dict(action='store_true',
@@ -65,7 +65,7 @@ class CreateController(AbstractBaseController):
             (['-db.i', '--database.instance'],
                 dict(dest='db_instance', help=argparse.SUPPRESS)),
             (['-db.size', '--database.size'],
-                dict(dest='db_size', help=argparse.SUPPRESS)),
+                dict(type=int, dest='db_size', help=argparse.SUPPRESS)),
             (['-db.engine', '--database.engine'],
                 dict(dest='db_engine', help=argparse.SUPPRESS)),
         ]
@@ -76,7 +76,7 @@ class CreateController(AbstractBaseController):
         cname = self.app.pargs.cname
         tier = self.app.pargs.tier
         itype = self.app.pargs.instance_type
-        solution_string = self.app.pargs.solution
+        solution_string = self.app.pargs.platform
         single = self.app.pargs.single
         iprofile = self.app.pargs.instance_profile
         label = self.app.pargs.version
@@ -223,15 +223,11 @@ class CreateController(AbstractBaseController):
             db_object['username'] = username
             db_object['password'] = password
             db_object['engine'] = engine
-            db_object['size'] = size
+            db_object['size'] = str(size)
             db_object['instance'] = instance
             return db_object
         else:
             return False
-
-
-
-
 
 
 def get_cname(env_name, region):

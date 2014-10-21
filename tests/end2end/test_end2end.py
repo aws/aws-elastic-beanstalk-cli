@@ -57,7 +57,7 @@ class TestEnd2End(test.CementTestCase):
     def test_end2end(self):
         """ Run all tests in this one method in order to preserve order """
         self.create_index_file()
-        self.region = 'us-west-1'
+        self.region = 'us-east-1'
         self.get_app_name()
 
         self.do_init()
@@ -73,7 +73,6 @@ class TestEnd2End(test.CementTestCase):
             self.do_terminate()
         finally:
             self.do_terminate_all()
-
 
     def _run_app(self, list_of_args):
 
@@ -99,7 +98,7 @@ class TestEnd2End(test.CementTestCase):
     def do_init(self):
         self._run_app(['init', self.app_name,
                             '--region', self.region,
-                            '--solution', 'php',
+                            '--platform', 'php',
                             '--nossh'])
 
         # Make sure app exists
@@ -141,13 +140,21 @@ class TestEnd2End(test.CementTestCase):
     def do_scale(self):
         print_('staring scale')
         self._run_app(['scale', '2'])
+        # Check to make sure there are 2 running instances
 
     def do_deploy(self):
         print_('starting deploy')
         with open('index.html', 'w') as f:
             f.write('Hello World take 2')
 
+        oldenv = elasticbeanstalk.get_environment(self.app_name, self.env_name,
+                                         self.region)
         self._run_app(['deploy'])
+
+        newenv = elasticbeanstalk.get_environment(self.app_name, self.env_name,
+                                                  self.region)
+
+        self.assertNotEqual(oldenv.version_label, newenv.version_label)
         #ToDo: Check before and after deploy to make sure web is correct
         ## Maybe check after create to make sure app_version is correct
 

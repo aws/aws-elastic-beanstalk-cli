@@ -15,7 +15,7 @@
 class Environment():
     def __init__(self, version_label=None, status=None, app_name=None,
                  health=None, id=None, date_updated=None,
-                 solution_stack=None, description=None,
+                 platform=None, description=None,
                  name=None, date_created=None, tier=None,
                  cname=None):
 
@@ -25,7 +25,7 @@ class Environment():
         self.health = health
         self.id = id
         self.date_updated = date_updated
-        self.solution_stack = solution_stack
+        self.platform = platform
         self.description = description
         self.name = name
         self.date_created = date_created
