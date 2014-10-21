@@ -2,6 +2,7 @@
 import sys
 
 from setuptools import setup, find_packages
+
 import ebcli
 
 requires = ['pyyaml',
@@ -47,7 +48,6 @@ setup_options = dict(
         'Natural Language :: English',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
@@ -59,6 +59,19 @@ setup_options = dict(
         ]
     }
 )
+
+if 'py2exe' in sys.argv:
+    # This will actually give us a py2exe command.
+    import py2exe
+    # And we have some py2exe specific options.
+    setup_options['options'] = {
+        'py2exe': {
+            'optimize': 0,
+            'skip_archive': True,
+            'packages': ['ebcli'],
+        }
+    }
+    setup_options['console'] = ['bin/aws']
 
 setup(**setup_options)
 

@@ -165,6 +165,6 @@ responses = {
 git_ignore = [
     '# Elastic Beanstalk Files',        # comment line
     '.elasticbeanstalk/*',              # ignore eb files
-    '!.elasticbeanstalk/*.env.yml',       # don't ignore shareable environments
+    '!.elasticbeanstalk/*.cfg.yml',       # don't ignore configuration templates
     '!.elasticbeanstalk/*.global.yml',    # don't ignore global configurations
 ]

@@ -47,132 +47,13 @@ class TestFileOperations(unittest.TestCase):
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
 
-    def test_read_aws_config_credentials_standard(self):
-        # setup
-        config = configparser.ConfigParser()
-        configparser.DEFAULTSECT = 'default'
+    def test_get_aws_home(self):
+        # Just make sure no errors are thrown
+        fileoperations.get_aws_home()
 
-        default = fileoperations.default_section
-        access1 = '123456'
-        access2 = '567890'
-        secret1 = 'abcdefg'
-        secret2 = 'hijklmn'
-
-        config.add_section('section1')
-        config.set(default, 'aws_access_key_id', access1)
-        config.set(default, 'aws_secret_access_key', secret1)
-
-        config.set('section1', 'aws_access_key_id', access2)
-        config.set('section1', 'aws_secret_access_key', secret2)
-
-        with open(fileoperations.aws_config_location, 'w') as f:
-            config.write(f)
-
-
-        # do Test
-        access, secret = fileoperations.read_aws_config_credentials()
-        self.assertEqual(access, access1)
-        self.assertEqual(secret, secret1)
-
-    def test_read_aws_config_credentials_no_file(self):
-        # setup
-        # make sure file doesn't exist
-        if os.path.exists(fileoperations.aws_config_location):
-            os.remove(fileoperations.aws_config_location)
-
-        # do test
-        access, secret = fileoperations.read_aws_config_credentials()
-        self.assertEqual(access, None)
-        self.assertEqual(secret, None)
-
-    def test_read_aws_config_credentials_no_dir(self):
-        # setup
-        # make sure dir doesn't exist
-        if os.path.exists(fileoperations.aws_config_folder):
-            shutil.rmtree(fileoperations.aws_config_folder)
-
-        # do test
-        access, secret = fileoperations.read_aws_config_credentials()
-        self.assertEqual(access, None)
-        self.assertEqual(secret, None)
-
-    def test_read_aws_config_credentials_empty_file(self):
-        # setup
-        with open(fileoperations.aws_config_location, 'w') as f:
-            f.write('')
-
-        # do test
-        access, secret = fileoperations.read_aws_config_credentials()
-        self.assertEqual(access, None)
-        self.assertEqual(secret, None)
-
-    def test_save_to_aws_config_override(self):
-        # first, write in some values
-        fileoperations.save_to_aws_config('1234', 'abc')
-
-        #now override
-        access = '09876'
-        secret = 'abDfg'
-        fileoperations.save_to_aws_config(access, secret)
-
-        # Grab values and make sure they were saved
-        access_result, secret_result \
-            = fileoperations.read_aws_config_credentials()
-
-        # Test
-        self.assertEqual(access, access_result)
-        self.assertEqual(secret, secret_result)
-
-    def test_save_to_aws_config_no_dir(self):
-        # make sure directory doesn't exist
-        if os.path.exists(fileoperations.aws_config_folder):
-            shutil.rmtree(fileoperations.aws_config_folder)
-
-        # write values
-        access = '09876'
-        secret = 'abDfg'
-        fileoperations.save_to_aws_config(access, secret)
-
-        # Grab values and make sure they were saved
-        access_result, secret_result, \
-            = fileoperations.read_aws_config_credentials()
-
-        # Test
-        self.assertEqual(access, access_result)
-        self.assertEqual(secret, secret_result)
-
-    def test_save_to_aws_config_no_file(self):
-        # make sure file doesn't exist
-        if os.path.exists(fileoperations.aws_config_location):
-            os.remove(fileoperations.aws_config_location)
-
-        # write values
-        access = '09876'
-        secret = 'abDfg'
-
-        fileoperations.default_section = 'default'
-        fileoperations.save_to_aws_config(access, secret)
-        # Grab values and make sure they were saved
-        access_result, secret_result,  \
-            = fileoperations.read_aws_config_credentials()
-
-        # Test
-        self.assertEqual(access, access_result)
-        self.assertEqual(secret, secret_result)
-
-    def test_save_to_aws_config_standard(self):
-        # write values
-        access = '09876'
-        secret = 'abDfg'
-        fileoperations.save_to_aws_config(access, secret)
-
-        # Grab values and make sure they were saved
-        access_result, secret_result \
-            = fileoperations.read_aws_config_credentials()
-
-        # Test
-        self.assertEqual(access, access_result)
-        self.assertEqual(secret, secret_result)
+    def test_get_ssh_folder(self):
+        # Just make sure no errors are thrown
+        fileoperations.get_ssh_folder()
 
     def test_get_application_name(self):
         # wrapper of get_config_setting
@@ -248,7 +129,6 @@ class TestFileOperations(unittest.TestCase):
         # get new working directory - make sure its the same as the original
         nwd = os.getcwd()
         self.assertEqual(cwd, nwd)
-
 
     def test_traverse_to_project_root_deep(self):
         # save current directory

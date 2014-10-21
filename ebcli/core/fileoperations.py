@@ -85,15 +85,6 @@ def clean_up():
         os.chdir(cwd)
 
 
-def read_aws_config_region():
-    config = configparser.ConfigParser()
-    config.read(aws_config_location)
-
-    region = _get_option(config, default_section, region_key, None)
-
-    return region
-
-
 def _set_not_none(config, section, option, value):
     if value:
         config.set(section, option, value)
@@ -302,10 +293,10 @@ def program_is_installed(program):
 
 
 def os_which(program):
-    path=os.getenv('PATH')
+    path = os.getenv('PATH')
     for p in path.split(os.path.pathsep):
-        p=os.path.join(p, program)
-        if os.path.exists(p) and os.access(p,os.X_OK):
+        p = os.path.join(p, program)
+        if os.path.exists(p) and os.access(p, os.X_OK):
             return p
 
 
@@ -317,27 +308,6 @@ def delete_file(location):
 def delete_directory(location):
     if os.path.isdir(location):
         shutil.rmtree(location)
-
-
-def get_environment_from_file(env_name):
-    cwd = os.getcwd()
-    file_name = beanstalk_directory + env_name
-
-    try:
-        _traverse_to_project_root()
-        for file_ext in ['.ebe.yml', '.env.yml', '.paused-env.yml']:
-            path = file_name + file_ext
-            if os.path.exists(path):
-                with codecs.open(path, 'r', encoding='utf8') as f:
-                    env = load(f)
-    except ScannerError:
-        raise InvalidSyntaxError("The environment file contains "
-                                 "invalid syntax")
-
-    finally:
-        os.chdir(cwd)
-
-    return env
 
 
 def delete_app_versions():
@@ -359,6 +329,7 @@ def zip_up_folder(directory, location):
         zipf.close()
     finally:
         os.chdir(cwd)
+
 
 def zip_up_project(location):
     cwd = os.getcwd()
@@ -437,15 +408,11 @@ def get_editor():
     return editor
 
 
-def save_env_file(env, public=False, paused=False):
+def save_env_file(env):
     cwd = os.getcwd()
     env_name = env['EnvironmentName']
-    if public:
-        file_name = env_name + '.ebe.yml'
-    elif paused:
-        file_name = env_name + '.paused-env.yml'
-    else:
-        file_name = env_name + '.env.yml'
+    # ..yml extension helps editors enable syntax highlighting
+    file_name = env_name + '.env.yml'
 
     file_name = beanstalk_directory + file_name
     try:
@@ -458,6 +425,27 @@ def save_env_file(env, public=False, paused=False):
         os.chdir(cwd)
 
     return file_name
+
+
+def get_environment_from_file(env_name):
+    cwd = os.getcwd()
+    file_name = beanstalk_directory + env_name
+
+    try:
+        _traverse_to_project_root()
+        file_ext = '.env.yml'
+        path = file_name + file_ext
+        if os.path.exists(path):
+            with codecs.open(path, 'r', encoding='utf8') as f:
+                env = load(f)
+    except ScannerError:
+        raise InvalidSyntaxError('The environment file contains '
+                                 'invalid syntax')
+
+    finally:
+        os.chdir(cwd)
+
+    return env
 
 
 def write_config_setting(section, key_name, value):

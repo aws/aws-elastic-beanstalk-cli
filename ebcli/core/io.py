@@ -44,9 +44,10 @@ def _convert_to_strings(list_of_things):
             yield data.decode('utf8')
         elif isinstance(data, six.text_type):
             if sys.version_info[0] >= 3:
-                yield data
+                yield data.replace(u"\u2018", "'").replace(u"\u2019", "'")
             else:
-                yield data.encode('utf8')
+                yield data.replace(u"\u2018", "'").replace(u"\u2019", "'")\
+                    .encode('utf8')
         elif isinstance(data, scalar_types) or hasattr(data, '__str__'):
             yield str(data)
         else:
