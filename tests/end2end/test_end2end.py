@@ -23,6 +23,7 @@ from ebcli.core.ebcore import EB
 from ebcli.lib import elasticbeanstalk
 from ebcli.objects.exceptions import *
 
+
 class TestEnd2End(test.CementTestCase):
     app_class = EB
 
@@ -98,8 +99,7 @@ class TestEnd2End(test.CementTestCase):
     def do_init(self):
         self._run_app(['init', self.app_name,
                             '--region', self.region,
-                            '--platform', 'php',
-                            '--nossh'])
+                            '--platform', 'php'])
 
         # Make sure app exists
         elasticbeanstalk.describe_application(self.app_name, self.region)

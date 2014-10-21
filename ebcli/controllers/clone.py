@@ -31,6 +31,7 @@ class CloneController(AbstractBaseController):
                                                ' clone')),
             (['-c', '--cname'], dict(help='Cname prefix')),
             (['-r', '--region'], dict(help='Region where environment lives')),
+            (['--scale'], dict(type=int, help='Number of desired instances')),
             (['-nh', '--nohang'], dict(action='store_true',
                                        help='Do not hang and wait for create '
                                             'to be completed')),
@@ -43,6 +44,7 @@ class CloneController(AbstractBaseController):
         env_name = self.get_env_name()
         clone_name = self.app.pargs.clone_name
         cname = self.app.pargs.cname
+        scale = self.app.pargs.scale
         nohang = self.app.pargs.nohang
         provided_clone_name = clone_name is not None
 
@@ -85,7 +87,7 @@ class CloneController(AbstractBaseController):
 
 
         operations.make_cloned_env(app_name, env_name, clone_name, cname,
-                             region, nohang)
+                             scale, region, nohang)
 
     def complete_command(self, commands):
         super(CloneController, self).complete_command(commands)

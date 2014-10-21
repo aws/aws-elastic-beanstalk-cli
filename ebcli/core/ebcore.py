@@ -116,7 +116,7 @@ def main():
         app.close(code=3)
     except EBCLIException as e:
         message = next(io._convert_to_strings([e]))
-        io.log_error(e.__class__.__name__ + ": " + message)
+        io.log_error(e.__class__.__name__ + " - " + message)
         app.close(code=3)
     except Exception as e:
         #Generic catch all
@@ -124,7 +124,7 @@ def main():
             raise
         else:
             message = next(io._convert_to_strings([e]))
-            io.log_error(e.__class__.__name__ + ": " + message)
+            io.log_error(e.__class__.__name__ + " :: " + message)
             app.close(code=10)
     finally:
         app.close()

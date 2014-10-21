@@ -237,12 +237,15 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
 
 
 def clone_environment(app_name, env_name, clone_name, cname,
-                      description, region=None):
+                      description, scale, region=None):
     LOG.debug('Inside clone_environment api wrapper')
 
     assert app_name is not None, 'App name can not be empty'
     assert env_name is not None, 'Environment name can not be empty'
     assert clone_name is not None, 'Clone name can not be empty'
+    if scale:
+        assert isinstance(scale, int), 'Size must be of type int'
+        scale = str(scale)
 
     settings = []
 
@@ -255,6 +258,18 @@ def clone_environment(app_name, env_name, clone_name, cname,
         kwargs['description'] = description
     if cname:
         kwargs['cname_prefix'] = cname
+
+    if scale:
+        settings.append(
+            {'Namespace': 'aws:autoscaling:asg',
+             'OptionName': 'MaxSize',
+             'Value': scale},
+        )
+        settings.append(
+            {'Namespace': 'aws:autoscaling:asg',
+             'OptionName': 'MinSize',
+             'Value': scale},
+        )
 
     result = _make_api_call('create-environment', region=region, **kwargs)
 

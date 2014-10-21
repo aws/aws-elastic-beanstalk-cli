@@ -311,6 +311,7 @@ def create_app(app_name, region, default_env=None):
             region=region
         )
 
+        set_environment_for_current_branch(None)
         io.echo('Application', app_name,
                 'has been created')
         return None, None
@@ -324,7 +325,8 @@ def pull_down_app_info(app_name, region, default_env=None):
     # App exists, set up default environment
     envs = elasticbeanstalk.get_all_environments(app_name, region)
     if len(envs) == 0:
-        # no envs to set as default
+        # no envs, set None as default to override
+        set_environment_for_current_branch(None)
         return None, None
     elif len(envs) == 1:
         # Set only env as default
@@ -561,10 +563,11 @@ def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
                           tier, label, single, key_name, profile)
 
 
-def make_cloned_env(app_name, env_name, clone_name, cname, region, nohang):
+def make_cloned_env(app_name, env_name, clone_name, cname, scale, region,
+                    nohang):
     io.log_info('Cloning environment')
     result, request_id = clone_env(app_name, env_name, clone_name,
-                                   cname, region)
+                                   cname, scale, region)
 
     # Print status of env
     print_env_details(result, health=False)
@@ -579,13 +582,14 @@ def make_cloned_env(app_name, env_name, clone_name, cname, region, nohang):
         io.log_error(strings['timeout.error'])
 
 
-def clone_env(app_name, env_name, clone_name, cname, region):
+def clone_env(app_name, env_name, clone_name, cname, scale, region):
     description = strings['env.clonedescription'].replace('{env-name}',
                                                           env_name)
 
     try:
         return elasticbeanstalk.clone_environment(
-            app_name, env_name, clone_name, cname, description, region=region)
+            app_name, env_name, clone_name, cname, description, scale,
+            region=region)
 
     except InvalidParameterValueError as e:
         LOG.debug('cloning env returned error: ' + e.message)
@@ -602,7 +606,7 @@ def clone_env(app_name, env_name, clone_name, cname, region):
             raise e
 
         #try again
-        clone_env(app_name, env_name, clone_name, cname, region)
+        clone_env(app_name, env_name, clone_name, cname, scale, region)
 
 
 def delete_app(app_name, region, force):
@@ -829,6 +833,10 @@ def terminate(env_name, region):
 
 
 def ssh_into_instance(instance_id, region):
+    if not fileoperations.program_is_installed('ssh'):
+        io.log_error(['ssh.notpresent'])
+        return None
+
     instance = ec2.describe_instance(instance_id, region)
     try:
         keypair_name = instance['KeyName']
@@ -854,7 +862,8 @@ def ssh_into_instance(instance_id, region):
                            shell=True)
 
     if returncode != 0:
-        io.log_error(strings['ssh.notpresent'])
+        LOG.debug('ssh returned exitcode: ' + str(returncode))
+        raise CommandError('An error occurred while running ssh')
 
 
 def save_env_file(api_model):

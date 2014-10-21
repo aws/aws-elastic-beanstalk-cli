@@ -49,7 +49,7 @@ class CreateController(AbstractBaseController):
             (['-ip', '--instance_profile'], dict(help='EC2 Instance profile')),
             (['--version'], dict(help='Version label to deploy')),
             (['-k', '--keyname'], dict(help='EC2 SSH KeyPair name')),
-            (['--size'], dict(type=int, help='Number of desired instances')),
+            (['--scale'], dict(type=int, help='Number of desired instances')),
             (['-nh', '--nohang'], dict(action='store_true',
                                        help='Do not hang and wait for create '
                                             'to be completed')),
@@ -85,7 +85,7 @@ class CreateController(AbstractBaseController):
         sample = self.app.pargs.sample
         nohang = self.app.pargs.nohang
         tags = self.app.pargs.tags
-        size = self.app.pargs.size
+        scale = self.app.pargs.scale
 
 
         provided_env_name = env_name is not None
@@ -93,7 +93,7 @@ class CreateController(AbstractBaseController):
         if sample and label:
             raise InvalidOptionsError(strings['create.sampleandlabel'])
 
-        if single and size:
+        if single and scale:
             raise InvalidOptionsError(strings['create.singleandsize'])
 
         app_name = self.get_app_name()
@@ -162,7 +162,7 @@ class CreateController(AbstractBaseController):
 
         operations.make_new_env(app_name, env_name, region, cname, solution,
                                 tier, itype, label, iprofile, single, key_name,
-                                branch_default, sample, tags, size,
+                                branch_default, sample, tags, scale,
                                 database, nohang)
 
     def get_and_validate_tags(self, tags):

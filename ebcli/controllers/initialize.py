@@ -32,19 +32,16 @@ class InitController(AbstractBaseController):
             (['-k', '--keyname'], dict(help='Default EC2 key name')),
             (['-i', '--interactive'], dict(action='store_true',
                                            help='Force interactive mode')),
-            (['--nossh'], dict(action='store_true',
-                               help='Dont  setup ssh'))
         ]
         usage = 'eb init <application_name> [options ...]'
         epilog = strings['init.epilog']
 
     def do_command(self):
         # get arguments
-        self.nossh = self.app.pargs.nossh
         self.interactive = self.app.pargs.interactive
         self.region = self.app.pargs.region
         self.flag = False
-        if self.app.pargs.application_name and self.app.pargs.platform:
+        if self.app.pargs.platform:
             self.flag = True
 
         default_env = self.get_old_values()
@@ -132,6 +129,10 @@ class InitController(AbstractBaseController):
             except NotInitializedError:
                 app_name = None
 
+        if not app_name and self.flag:
+            # Choose defaults
+            app_name = fileoperations.get_current_directory_name()
+
         # Ask for app name
         if not app_name or self.interactive:
             app_name = _get_application_name_interactive(self.region)
@@ -150,6 +151,11 @@ class InitController(AbstractBaseController):
                 region = None
 
         # Ask for region
+        if self.flag:
+            # Choose defaults
+            region_list = regions.get_all_regions()
+            region = region_list[2].name
+
         if not region or self.interactive:
             io.echo()
             io.echo('Select a default region')
@@ -176,9 +182,6 @@ class InitController(AbstractBaseController):
         return solution_string
 
     def get_keyname(self, default=None):
-        if self.nossh:
-            return None
-
         keyname = self.app.pargs.keyname
 
         if not keyname:

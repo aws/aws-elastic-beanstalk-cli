@@ -65,10 +65,10 @@ class SSHController(AbstractBaseController):
                 io.echo('Select an instance to ssh into')
                 instance = utils.prompt_for_item_in_list(instances)
 
-            try:
-                operations.ssh_into_instance(instance, region)
-            except NoKeypairError:
-                io.log_error(prompts['ssh.nokey'])
+        try:
+            operations.ssh_into_instance(instance, region)
+        except NoKeypairError:
+            io.log_error(prompts['ssh.nokey'])
 
     def setup_ssh(self, env_name, region):
         # Instance does not have a keypair
