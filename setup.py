@@ -68,10 +68,10 @@ if 'py2exe' in sys.argv:
         'py2exe': {
             'optimize': 0,
             'skip_archive': True,
-            'packages': ['ebcli'],
+            'packages': ['ebcli', 'botocore_eb'],
         }
     }
-    setup_options['console'] = ['bin/aws']
+    setup_options['console'] = ['bin\eb']
 
 setup(**setup_options)
 

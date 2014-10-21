@@ -313,7 +313,7 @@ def create_app(app_name, region, default_env=None):
 
         set_environment_for_current_branch(None)
         io.echo('Application', app_name,
-                'has been created')
+                'has been created.')
         return None, None
 
     except AlreadyExistsError:

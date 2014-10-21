@@ -253,6 +253,7 @@ def clone_environment(app_name, env_name, clone_name, cname,
         'application_name': app_name,
         'environment_name': clone_name,
         'template_specification': {'TemplateSource': {'EnvironmentName': env_name,}},
+        'option_settings': settings,
     }
     if description:
         kwargs['description'] = description
