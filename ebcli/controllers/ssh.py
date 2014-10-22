@@ -15,7 +15,7 @@ from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, prompts
 from ..core import fileoperations, operations, io
 from ..lib import utils
-from ..objects.exceptions import NoKeypairError
+from ..objects.exceptions import NoKeypairError, InvalidOptionsError
 
 
 class SSHController(AbstractBaseController):
@@ -27,6 +27,8 @@ class SSHController(AbstractBaseController):
             (['-n', '--number'], dict(help='Number of instance in list',
                                       type=int)),
             (['-i', '--instance'], dict(help='Instance id')),
+            (['-o', '--keep_open'], dict(action='store_true',
+                                         help='Keep port 22 open')),
             (['--setup'], dict(action='store_true',
                                help='Setup SSH for the environment'))
         ]
@@ -37,6 +39,7 @@ class SSHController(AbstractBaseController):
         number = self.app.pargs.number
         env_name = self.get_env_name()
         instance = self.app.pargs.instance
+        keep_open = self.app.pargs.keep_open
         setup = self.app.pargs.setup
 
         if setup:
@@ -44,17 +47,16 @@ class SSHController(AbstractBaseController):
             return
 
         if instance and number:
-            io.log_error('Please provide either instance or number, not both')
-            return
+            raise InvalidOptionsError(strings['ssh.instanceandnumber'])
 
         if not instance:
             instances = operations.get_instance_ids(app_name, env_name, region)
             if number is not None:
                 if number > len(instances) or number < 1:
-                    io.log_error('Invalid index number (' + str(number) +
-                                 ') for environment with ' +
-                                 str(len(instances)) + ' instances')
-                    return
+                    raise InvalidOptionsError(
+                        'Invalid index number (' + str(number) +
+                        ') for environment with ' + str(len(instances)) +
+                        ' instances')
                 else:
                     instance = instances[number - 1]
 
@@ -66,7 +68,7 @@ class SSHController(AbstractBaseController):
                 instance = utils.prompt_for_item_in_list(instances)
 
         try:
-            operations.ssh_into_instance(instance, region)
+            operations.ssh_into_instance(instance, region, keep_open=keep_open)
         except NoKeypairError:
             io.log_error(prompts['ssh.nokey'])
 

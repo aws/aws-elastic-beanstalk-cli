@@ -14,6 +14,8 @@
 from cement.utils.misc import minimal_logger
 
 from ..lib import aws
+from ..objects.exceptions import ServiceError
+from ..resources.strings import responses
 
 LOG = minimal_logger(__name__)
 
@@ -40,3 +42,31 @@ def describe_instance(instance_id, region=None):
                             instance_ids=[instance_id],
                             region=region)
     return result['Reservations'][0]['Instances'][0]
+
+
+def revoke_ssh(security_group_id, region=None):
+    try:
+        _make_api_call('revoke-security-group-ingress',
+                   group_id=security_group_id, ip_protocol='tcp',
+                   to_port=22, from_port=22, cidr_ip='0.0.0.0/0',
+                   region=region)
+    except ServiceError as e:
+        if e.message.startswith(responses['ec2.sshalreadyopen']):
+            #ignore
+            pass
+        else:
+            raise
+
+
+def authorize_ssh(security_group_id, region=None):
+    try:
+        _make_api_call('authorize-security-group-ingress',
+                   group_id=security_group_id, ip_protocol='tcp',
+                   to_port=22, from_port=22, cidr_ip='0.0.0.0/0',
+                   region=region)
+    except ServiceError as e:
+        if e.message.startswith(responses['ec2.sshalreadyopen']):
+            #ignore
+            pass
+        else:
+            raise

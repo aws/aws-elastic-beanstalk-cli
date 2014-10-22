@@ -53,6 +53,9 @@ strings = {
     # Error when --sample and --label falg are both used on create
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" flags together.',
     'create.singleandsize': 'You cannot use the "--single" and "--size" flags together.',
+    'logs.allandzip': 'You cannot use the "--all" and "--all_zip" flags together.',
+    'logs.allandinstance': 'You cannot use the "--all" and "--instance" flags together.',
+    'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" flags together.',
     # Text shown if 'eb terminate' is called while no environment is selected as default
     'terminate.noenv': 'To delete the application and all application versions, type "eb terminate --all".',
 
@@ -99,6 +102,8 @@ strings = {
     'worker.cname': 'Worker tiers do not support a CNAME.',
     # Error thrown when available cname is not available
     'cname.unavailable': 'The CNAME prefix {cname} is already in use.',
+    'ssh.openingport': 'INFO: Attempting to open port 22.',
+    'ssh.closeport': 'INFO: Closed port 22 on ec2 instance security group.',
 }
 
 prompts = {
@@ -162,6 +167,8 @@ responses = {
     'env.terminated': 'terminateEnvironment completed successfully.',
     'env.invalidstate': 'Environment named {env-name} is in an invalid state for this operation. Must be Ready.',
     'loadbalancer.notfound': 'There is no ACTIVE Load Balancer named',
+    'ec2.sshalreadyopen': 'the specified rule "peer: 0.0.0.0/0, TCP, from port: 22, to port: 22,',
+
 }
 git_ignore = [
     '# Elastic Beanstalk Files',        # comment line

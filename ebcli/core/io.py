@@ -41,17 +41,20 @@ def _convert_to_strings(list_of_things):
     scalar_types = six.string_types + six.integer_types
     for data in list_of_things:
         if isinstance(data, six.binary_type):
-            yield data.decode('utf8')
+            if sys.version_info[0] >= 3:
+                yield data.decode('utf8')
+            else:
+                yield data
         elif isinstance(data, six.text_type):
             if sys.version_info[0] >= 3:
-                yield data.replace(u"\u2018", "'").replace(u"\u2019", "'")
+                yield data
             else:
-                yield data.replace(u"\u2018", "'").replace(u"\u2019", "'")\
-                    .encode('utf8')
+                yield data.encode('utf8')
         elif isinstance(data, scalar_types) or hasattr(data, '__str__'):
             yield str(data)
         else:
             LOG.error('echo called with an unsupported data type')
+            LOG.debug('data class = ' + data.__class__.__name__)
 
 
 def log_info(message):

@@ -119,8 +119,8 @@ def log_event(event, echo=False):
     severity = event.severity
     date = event.event_date
     if echo:
-        io.echo(date.strftime("%Y-%m-%d %H:%M:%S").ljust(24) +
-                severity.ljust(8) + message)
+        io.echo(date.strftime("%Y-%m-%d %H:%M:%S").ljust(23),
+                severity.ljust(7), message)
     elif severity == 'INFO':
         io.echo('INFO:', message)
     elif severity == 'WARN':
@@ -707,7 +707,8 @@ def print_environment_vars(app_name, env_name, region):
         key, value = utils.mask_vars(key, value)
         io.echo('    ', key, '=', value)
 
-def logs(env_name, info_type, region, zip=False):
+
+def logs(env_name, info_type, region, do_zip=False, instance_id=None):
     # Request info
     result = elasticbeanstalk.request_environment_info(env_name, info_type,
                                                        region=region)
@@ -717,10 +718,11 @@ def logs(env_name, info_type, region, zip=False):
     wait_and_print_events(request_id, region,
                         timeout_in_seconds=60*2, sleep_time=1)
 
-    get_logs(env_name, info_type, region, zip=zip)
+    get_logs(env_name, info_type, region, do_zip=do_zip,
+             instance_id=instance_id)
 
 
-def get_logs(env_name, info_type, region, zip=False):
+def get_logs(env_name, info_type, region, do_zip=False, instance_id=None):
     # Get logs
     result = elasticbeanstalk.retrieve_environment_info(env_name, info_type,
                                                         region)
@@ -730,24 +732,27 @@ def get_logs(env_name, info_type, region, zip=False):
     """
     log_list = {}
     for log in result['EnvironmentInfo']:
-        instance_id = log['Ec2InstanceId']
+        i_id = log['Ec2InstanceId']
         url = log['Message']
-        log_list[instance_id] = url
+        log_list[i_id] = url
+
+    if instance_id:
+        log_list = {instance_id: log_list[instance_id]}
 
     if info_type == 'bundle':
         # save file, unzip, place in logs directory
         logs_folder_name = datetime.now().strftime("%y%m%d_%H%M%S")
         logs_location = fileoperations.get_logs_location(logs_folder_name)
         #get logs for each instance
-        for instance_id, url in iteritems(log_list):
+        for i_id, url in iteritems(log_list):
             zip_location = save_file_from_url(url, logs_location,
-                                              instance_id + '.zip')
-            instance_folder = os.path.join(logs_location, instance_id)
+                                              i_id + '.zip')
+            instance_folder = os.path.join(logs_location, i_id)
             fileoperations.unzip_folder(zip_location, instance_folder)
             fileoperations.delete_file(zip_location)
 
         fileoperations.set_user_only_permissions(logs_location)
-        if zip:
+        if do_zip:
             fileoperations.zip_up_folder(logs_location, logs_location + '.zip')
             fileoperations.delete_directory(logs_location)
 
@@ -775,8 +780,8 @@ def get_logs(env_name, info_type, region, zip=False):
 
     else:
         # print logs
-        for instance_id, url in iteritems(log_list):
-            io.echo('================', instance_id, '=================')
+        for i_id, url in iteritems(log_list):
+            io.echo('================', i_id, '=================')
             print_from_url(url)
 
 
@@ -814,6 +819,7 @@ def print_from_url(url):
     result = urllib.request.urlopen(url).read()
     io.echo(result)
 
+
 def save_file_from_url(url, location, filename):
     result = urllib.request.urlopen(url).read()
 
@@ -834,7 +840,7 @@ def terminate(env_name, region, nohang=False):
                               timeout_in_seconds=60*5)
 
 
-def ssh_into_instance(instance_id, region):
+def ssh_into_instance(instance_id, region, keep_open=False):
     if not fileoperations.program_is_installed('ssh'):
         io.log_error(['ssh.notpresent'])
         return None
@@ -848,24 +854,42 @@ def ssh_into_instance(instance_id, region):
         ip = instance['PublicIpAddress']
     except KeyError:
         raise NotFoundError(strings['ssh.noip'])
+    security_groups = instance['SecurityGroups']
+
 
     user = 'ec2-user'
 
-    ident_file = fileoperations.get_ssh_folder() + keypair_name
-    if not os.path.exists(ident_file):
-        if os.path.exists(ident_file + '.pem'):
-            ident_file += '.pem'
-        else:
-            raise NotFoundError(strings['ssh.filenotfound'].replace(
-                '{key-name}', keypair_name)
-            )
+    # Open up port for ssh
+    io.echo(strings['ssh.openingport'])
+    for group in security_groups:
+        ec2.authorize_ssh(group['GroupId'], region=region)
 
-    returncode = exec_cmd2('ssh -i ' + ident_file + ' ' + user + '@' + ip,
-                           shell=True)
+    # do ssh
+    try:
+        ident_file = fileoperations.get_ssh_folder() + keypair_name
+        if not os.path.exists(ident_file):
+            if os.path.exists(ident_file + '.pem'):
+                ident_file += '.pem'
+            else:
+                raise NotFoundError(strings['ssh.filenotfound'].replace(
+                    '{key-name}', keypair_name)
+                )
 
-    if returncode != 0:
-        LOG.debug('ssh returned exitcode: ' + str(returncode))
-        raise CommandError('An error occurred while running ssh')
+        returncode = exec_cmd2('ssh -i ' + ident_file + ' ' + user + '@' + ip,
+                               shell=True)
+
+        if returncode != 0:
+            LOG.debug('ssh returned exitcode: ' + str(returncode))
+            raise CommandError('An error occurred while running ssh')
+
+    finally:
+        # Close port for ssh
+        if keep_open:
+            return
+
+        for group in security_groups:
+            ec2.revoke_ssh(group['GroupId'], region=region)
+        io.echo(strings['ssh.closeport'])
 
 
 def save_env_file(api_model):

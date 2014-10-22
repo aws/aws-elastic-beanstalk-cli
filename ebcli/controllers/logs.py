@@ -14,6 +14,7 @@
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings
 from ..core import operations, io
+from ..objects.exceptions import InvalidOptionsError
 
 
 class LogsController(AbstractBaseController):
@@ -25,7 +26,8 @@ class LogsController(AbstractBaseController):
             (['-a', '--all'], dict(action='store_true',
                                       help='Retrieve all logs')),
             (['-z', '--all_zip'], dict(action='store_true',
-                                          help='Retrieve all logs as .zip'))
+                                          help='Retrieve all logs as .zip')),
+            (['-i', '--instance'], dict(help='Instance id')),
         ]
         epilog = strings['logs.epilog']
 
@@ -33,18 +35,24 @@ class LogsController(AbstractBaseController):
         region = self.get_region()
         env_name = self.get_env_name()
         all = self.app.pargs.all
+        instance = self.app.pargs.instance
         all_zip = self.app.pargs.all_zip
 
         if all and all_zip:
-            io.log_error('Please select either --all or --all_zip, not both')
-            return
+            raise InvalidOptionsError(strings['logs.allandzip'])
+
+        if all and instance:
+            raise InvalidOptionsError(strings['logs.allandinstance'])
+
         if all:
             info_type = 'bundle'
-            zip = False
+            do_zip = False
         elif all_zip:
             info_type = 'bundle'
-            zip = True
+            do_zip = True
         else:
             info_type = 'tail'
-            zip = False
-        operations.logs(env_name, info_type, region, zip=zip)
+            do_zip = False
+
+        operations.logs(env_name, info_type, region, do_zip=do_zip,
+                        instance_id=instance)
