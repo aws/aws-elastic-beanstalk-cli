@@ -15,7 +15,8 @@ strings = {
     # Version message got 'eb --version'
     'app.version_message': 'EBCLI - AWS Elastic Beanstalk CLI - Version:',
     # Initial text that you see on a 'eb --help'
-    'base.info': "Welcome to the Elastic Beanstalk Command Line Interface (EB CLI). Type 'eb {cmd} --help' for more info",
+    'base.info': "Welcome to the Elastic Beanstalk Command Line Interface (EB CLI). \n"
+                 "For more information on a specific command, type 'eb {cmd} --help'.",
     # Initial epilog (last line) that you see on 'eb --help'
     'base.epilog': "To get started type 'eb init'. Then type 'eb create' and 'eb open'",
 
@@ -45,7 +46,7 @@ strings = {
     'list.info': 'Lists all environments.',
     'terminate.info': 'Terminates the environment.',
     'terminate.epilog': 'This command terminates the environment. To terminate the application and everything in it, use the "--all" flag.',
-    'config.info': 'Updates the environment configuration settings.',
+    'config.info': 'Edits the environment configuration settings.',
     'ssh.info': 'Opens the SSH client to connect to an instance.',
     'printenv.info': 'Shows the environment variables.',
 
@@ -87,7 +88,7 @@ strings = {
     'setenv.invalidformat': 'You must use the format VAR_NAME=KEY to set an environment variable. Variables and keys '
                             'cannot contain any spaces or =. They must start'
                             ' with a letter, number or one of the following symbols: \\ _ . : / + - @',
-    'tags.invalidformat': 'You must provide a semicolon-separated list using the format name=value to set tags. '
+    'tags.invalidformat': 'You must provide a comma-separated list using the format name=value to set tags. '
                           'Tags may only contain letters, numbers, and the following symbols: / _ . : + - @',
     'tags.max': 'Elastic Beanstalk supports a maximum of 7 tags.',
     'deploy.invalidoptions': 'You cannot use the "--version" flag with either the "--message" or "--label" flag.',

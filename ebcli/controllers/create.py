@@ -53,7 +53,7 @@ class CreateController(AbstractBaseController):
             (['-nh', '--nohang'], dict(action='store_true',
                                        help='Do not hang and wait for create '
                                             'to be completed')),
-            (['--tags'], dict(help='A semi-colon separated list of tags '
+            (['--tags'], dict(help='A comma separated list of tags '
                                    'as key=value pairs')),
             (['-db', '--database'], dict(action="store_true",
                                          help='Create a Database')),
@@ -100,7 +100,7 @@ class CreateController(AbstractBaseController):
         region = self.get_region()
 
         # get tags
-        tags = self.get_and_validate_tags(tags)
+        tags = get_and_validate_tags(tags)
 
         #load solution stack
         if not solution_string:
@@ -147,7 +147,7 @@ class CreateController(AbstractBaseController):
                     raise AlreadyExistsError(strings['cname.unavailable'].
                                              replace('{cname}', cname))
 
-        if not solution:
+        if not solution_string:
             solution = operations.prompt_for_solution_stack(region)
 
         # if not tier:
@@ -164,28 +164,6 @@ class CreateController(AbstractBaseController):
                                 tier, itype, label, iprofile, single, key_name,
                                 branch_default, sample, tags, scale,
                                 database, nohang)
-
-    def get_and_validate_tags(self, tags):
-        if not tags:
-            return []
-
-        tags = tags.strip().strip('"').strip('\'')
-        tags = tags.split(';')
-        tag_list = []
-        if len(tags) > 7:
-            raise InvalidOptionsError(strings['tags.max'])
-        for t in tags:
-            # validate
-            if not re.match('^[\w.:/+@-]+=[\w.:/+@-]+$', t):
-                raise InvalidOptionsError(strings['tags.invalidformat'])
-            else:
-                # build tag
-                key, value = t.split('=')
-                tag_list.append(
-                    {'Key': key,
-                     'Value': value}
-                )
-        return tag_list
 
     def complete_command(self, commands):
         region = fileoperations.get_default_region()
@@ -242,3 +220,26 @@ def get_cname(env_name, region):
         else:
             break
     return cname
+
+
+def get_and_validate_tags(tags):
+    if not tags:
+        return []
+
+    tags = tags.strip().strip('"').strip('\'')
+    tags = tags.split(',')
+    tag_list = []
+    if len(tags) > 7:
+        raise InvalidOptionsError(strings['tags.max'])
+    for t in tags:
+        # validate
+        if not re.match('^[\w.:/+@-]+=[\w.:/+@-]+$', t):
+            raise InvalidOptionsError(strings['tags.invalidformat'])
+        else:
+            # build tag
+            key, value = t.split('=')
+            tag_list.append(
+                {'Key': key,
+                 'Value': value}
+            )
+    return tag_list

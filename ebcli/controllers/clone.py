@@ -15,7 +15,7 @@ from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings
 from ..core import operations, io
 from ..lib import utils, elasticbeanstalk
-from ..controllers.create import get_cname
+from ..controllers.create import get_cname, get_and_validate_tags
 from ..objects.exceptions import InvalidOptionsError, AlreadyExistsError
 
 
@@ -32,8 +32,10 @@ class CloneController(AbstractBaseController):
             (['-c', '--cname'], dict(help='Cname prefix')),
             (['-r', '--region'], dict(help='Region where environment lives')),
             (['--scale'], dict(type=int, help='Number of desired instances')),
+            (['--tags'], dict(help='A comma separated list of tags '
+                                   'as key=value pairs')),
             (['-nh', '--nohang'], dict(action='store_true',
-                                       help='Do not hang and wait for create '
+                                       help='Do not hang and wait for clone '
                                             'to be completed')),
         ]
         usage = 'eb clone <environment_name> (-n CLONE_NAME) [options ...]'
@@ -46,6 +48,7 @@ class CloneController(AbstractBaseController):
         cname = self.app.pargs.cname
         scale = self.app.pargs.scale
         nohang = self.app.pargs.nohang
+        tags = self.app.pargs.tags
         provided_clone_name = clone_name is not None
 
         # Get tier of original environment
@@ -58,6 +61,9 @@ class CloneController(AbstractBaseController):
             if not operations.is_cname_available(cname, region):
                 raise AlreadyExistsError(strings['cname.unavailable'].
                                          replace('{cname}', cname))
+
+        # get tags
+        tags = get_and_validate_tags(tags)
 
         # Get env_name for clone
         if not clone_name:
@@ -87,7 +93,7 @@ class CloneController(AbstractBaseController):
 
 
         operations.make_cloned_env(app_name, env_name, clone_name, cname,
-                             scale, region, nohang)
+                             scale, tags, region, nohang)
 
     def complete_command(self, commands):
         super(CloneController, self).complete_command(commands)

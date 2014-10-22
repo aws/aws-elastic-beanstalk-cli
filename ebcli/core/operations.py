@@ -518,7 +518,7 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
         io.log_error(strings['timeout.error'])
 
 
-def print_env_details(env, health=True, verbose=False):
+def print_env_details(env, health=True):
 
     io.echo('Environment details for:', env.name)
     io.echo('  Application name:', env.app_name)
@@ -563,11 +563,11 @@ def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
                           tier, label, single, key_name, profile)
 
 
-def make_cloned_env(app_name, env_name, clone_name, cname, scale, region,
+def make_cloned_env(app_name, env_name, clone_name, cname, scale, tags, region,
                     nohang):
     io.log_info('Cloning environment')
     result, request_id = clone_env(app_name, env_name, clone_name,
-                                   cname, scale, region)
+                                   cname, scale, tags, region)
 
     # Print status of env
     print_env_details(result, health=False)
@@ -582,13 +582,13 @@ def make_cloned_env(app_name, env_name, clone_name, cname, scale, region,
         io.log_error(strings['timeout.error'])
 
 
-def clone_env(app_name, env_name, clone_name, cname, scale, region):
+def clone_env(app_name, env_name, clone_name, cname, scale, tags, region):
     description = strings['env.clonedescription'].replace('{env-name}',
                                                           env_name)
 
     try:
         return elasticbeanstalk.clone_environment(
-            app_name, env_name, clone_name, cname, description, scale,
+            app_name, env_name, clone_name, cname, description, scale, tags,
             region=region)
 
     except InvalidParameterValueError as e:
@@ -609,7 +609,7 @@ def clone_env(app_name, env_name, clone_name, cname, scale, region):
         clone_env(app_name, env_name, clone_name, cname, scale, region)
 
 
-def delete_app(app_name, region, force):
+def delete_app(app_name, region, force, nohang=False):
     app = elasticbeanstalk.describe_application(app_name, region)
 
     if not force:
@@ -636,8 +636,9 @@ def delete_app(app_name, region, force):
 
     cleanup_ignore_file()
     fileoperations.clean_up()
-    wait_and_print_events(request_id, region, sleep_time=1,
-                          timeout_in_seconds=60*15)
+    if not nohang:
+        wait_and_print_events(request_id, region, sleep_time=1,
+                              timeout_in_seconds=60*15)
 
 
 def deploy(app_name, env_name, region, version, label, message):
@@ -819,7 +820,7 @@ def save_file_from_url(url, location, filename):
     return fileoperations.save_to_file(result, location, filename)
 
 
-def terminate(env_name, region):
+def terminate(env_name, region, nohang=False):
     request_id = elasticbeanstalk.terminate_environment(env_name, region)
 
     # disassociate with branch if branch default
@@ -828,8 +829,9 @@ def terminate(env_name, region):
     if default_env == env_name:
         set_environment_for_current_branch(None)
 
-    wait_and_print_events(request_id, region,
-                        timeout_in_seconds=60*5)
+    if not nohang:
+        wait_and_print_events(request_id, region,
+                              timeout_in_seconds=60*5)
 
 
 def ssh_into_instance(instance_id, region):

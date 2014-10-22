@@ -24,9 +24,12 @@ class TerminateController(AbstractBaseController):
         description = strings['terminate.info']
         arguments = AbstractBaseController.Meta.arguments + [
             (['--force'], dict(action='store_true',
-                               help='skip confimation prompt')),
+                               help='skip confirmation prompt')),
             (['--all'], dict(action='store_true',
-                             help='Terminate everything'))
+                             help='Terminate everything')),
+            (['-nh', '--nohang'], dict(action='store_true',
+                                       help='Do not hang and wait for '
+                                            'terminate to be completed')),
         ]
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
         epilog = strings['terminate.epilog']
@@ -36,9 +39,10 @@ class TerminateController(AbstractBaseController):
         app_name = self.get_app_name()
         force = self.app.pargs.force
         all = self.app.pargs.all
+        nohang = self.app.pargs.nohang
 
         if all:
-            operations.delete_app(app_name, region, force)
+            operations.delete_app(app_name, region, force, nohang=True)
 
         else:
             try:
@@ -61,4 +65,4 @@ class TerminateController(AbstractBaseController):
                     io.log_error('Names do not match. Exiting.')
                     return
 
-            operations.terminate(env_name, region)
+            operations.terminate(env_name, region, nohang=True)

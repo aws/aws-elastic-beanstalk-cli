@@ -83,13 +83,17 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
     :param description: a string description (optional)
     :param solution_stck: a solution_stack object
     :param tier: a tier object
+    :param itype: instance type string
     :param label: version label of app version to deploy. If None, a
                         sample app will be launched
     :param single: True if you would like environment to be a SingleInstance.
                             If False, the environment will be launched as LoadBalanced
     :param key_name: EC2 SSH Keypair name
     :param profile: IAM Instance profile name
+    :param tags: a list of tags as {'Key': 'foo', 'Value':'bar'}
     :param region: region in which to create the environment
+    :param database: database object dictionary
+    :param size: number of instances to spawn at create
     :return: environment_object, request_id
     """
     LOG.debug('Inside create_environment api wrapper')
@@ -237,7 +241,7 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
 
 
 def clone_environment(app_name, env_name, clone_name, cname,
-                      description, scale, region=None):
+                      description, scale, tags, region=None):
     LOG.debug('Inside clone_environment api wrapper')
 
     assert app_name is not None, 'App name can not be empty'
@@ -259,6 +263,8 @@ def clone_environment(app_name, env_name, clone_name, cname,
         kwargs['description'] = description
     if cname:
         kwargs['cname_prefix'] = cname
+    if tags:
+        kwargs['tags'] = tags
 
     if scale:
         settings.append(

@@ -11,6 +11,9 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import time
+import random
+
 import botocore_eb.session
 import botocore_eb.exceptions
 import six
@@ -92,50 +95,81 @@ def make_api_call(service_name, operation_name, region=None, profile=None,
         LOG.debug('Credentials incomplete')
         raise CredentialsError('Your credentials are not valid')
 
-    try:
-        LOG.debug('Making api call: (' +
-                  service_name + ', ' + operation_name +
-                  ') to region: ' + region + ' with args:' + str(operation_options))
-        http_response, response_data = operation.call(endpoint,
-                                                      **operation_options)
-        status = http_response.status_code
-        LOG.debug('API call finished, status = ' + str(status))
-        if response_data:
-            LOG.debug('Response: ' + str(response_data))
 
-        if status is not 200:
-            if status == 400:
-                # Convert to correct 400 error
-                raise _get_400_error(response_data)
-            elif status == 403:
-                LOG.debug('Received a 403')
-                raise NotAuthorizedError('Operation Denied. Are your '
-                                       'permissions correct?')
-            else:
-                LOG.error('API Call unsuccessful. '
-                          'Status code returned ' + str(status))
-            return None
-    except botocore_eb.exceptions.NoCredentialsError as e:
-        LOG.debug('No credentials found')
-        raise CredentialsError('Operation Denied. You appear to have no'
-                               ' credentials')
-    except botocore_eb.exceptions.PartialCredentialsError as e:
-        LOG.debug('Credentials incomplete')
-        raise CredentialsError('Your credentials are not valid')
+    MAX_ATTEMPTS = 15
+    attempt = 0
+    while True:
+        attempt += 1
+        if attempt > 1:
+            LOG.debug('Retrying -- attempt #' + str(attempt))
+        delay = _get_delay(attempt)
+        time.sleep(delay)
+        try:
+            LOG.debug('Making api call: (' +
+                      service_name + ', ' + operation_name +
+                      ') to region: ' + region + ' with args:' + str(operation_options))
+            http_response, response_data = operation.call(endpoint,
+                                                          **operation_options)
+            status = http_response.status_code
+            LOG.debug('API call finished, status = ' + str(status))
+            if response_data:
+                LOG.debug('Response: ' + str(response_data))
 
-    except botocore_eb.exceptions.ValidationError as e:
-        raise InvalidSyntaxError(e)
+            if status == 200:
+                return response_data
 
-    except botocore_eb.exceptions.BotoCoreError as e:
-        LOG.error('Botocore Error')
-        raise e
+            if status is not 200:
+                if status == 400:
+                    # Convert to correct 400 error
+                    error = _get_400_error(response_data)
+                    if isinstance(error, ThrottlingError):
+                        LOG.debug('Received throttling error')
+                        if attempt > MAX_ATTEMPTS:
+                            raise MaxRetriesError('Max retries exceeded for '
+                                                  'throttling error')
+                    else:
+                        raise error
+                elif status == 403:
+                    LOG.debug('Received a 403')
+                    raise NotAuthorizedError('Operation Denied. Are your '
+                                           'permissions correct?')
+                elif status in (500, 503, 504):
+                    LOG.debug('Received 5XX error')
+                    if attempt > MAX_ATTEMPTS:
+                        raise MaxRetriesError('Max retries exceeded for '
+                                              'service error (5XX)')
+                else:
+                    raise ServiceError('API Call unsuccessful. '
+                              'Status code returned ' + str(status))
+        except botocore_eb.exceptions.NoCredentialsError as e:
+            LOG.debug('No credentials found')
+            raise CredentialsError('Operation Denied. You appear to have no'
+                                   ' credentials')
+        except botocore_eb.exceptions.PartialCredentialsError as e:
+            LOG.debug('Credentials incomplete')
+            raise CredentialsError('Your credentials are not valid')
 
-    except IOError as error:
-        LOG.error('Error while contacting Elastic Beanstalk Service')
-        LOG.debug('error:' + str(error))
-        raise ServiceError(error)
+        except botocore_eb.exceptions.ValidationError as e:
+            raise InvalidSyntaxError(e)
 
-    return response_data
+        except botocore_eb.exceptions.BotoCoreError as e:
+            LOG.error('Botocore Error')
+            raise e
+
+        except IOError as error:
+            LOG.error('Error while contacting Elastic Beanstalk Service')
+            LOG.debug('error:' + str(error))
+            raise ServiceError(error)
+
+
+def _get_delay(attempt_number):
+    if attempt_number == 1:
+        return 0
+    # Exponential backoff
+    rand_int = random.randrange(0, 2**attempt_number)
+    delay = rand_int * 0.05  # delay time is 50 ms
+    LOG.debug('MY RAND IS ' + str(rand_int))
+    return delay
 
 
 def _get_400_error(response_data):
@@ -161,6 +195,10 @@ class InvalidQueryParameterError(ServiceError):
 
 
 class ThrottlingError(ServiceError):
+    pass
+
+
+class MaxRetriesError(ServiceError):
     pass
 
 
