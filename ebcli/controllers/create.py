@@ -142,10 +142,7 @@ class CreateController(AbstractBaseController):
             if not cname and not provided_env_name:
                 cname = get_cname(env_name, region)
             elif not cname:
-                cname = env_name
-                if not operations.is_cname_available(cname, region):
-                    raise AlreadyExistsError(strings['cname.unavailable'].
-                                             replace('{cname}', cname))
+                cname = None
 
         if not solution_string:
             solution = operations.prompt_for_solution_stack(region)

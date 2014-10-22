@@ -85,11 +85,7 @@ class CloneController(AbstractBaseController):
             if not cname and not provided_clone_name:
                 cname = get_cname(clone_name, region)
             elif not cname:
-                cname = clone_name
-                if not operations.is_cname_available(cname, region):
-                    raise AlreadyExistsError(strings['cname.unavailable'].
-                                             replace('{cname}', cname))
-
+                cname = None
 
 
         operations.make_cloned_env(app_name, env_name, clone_name, cname,
