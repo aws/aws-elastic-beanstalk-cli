@@ -147,7 +147,7 @@ class TestCreate(BaseControllerTest):
         mock_error.assert_called()
         self.assertEqual(self.mock_operations.make_new_env.call_count, 0)
 
-    def test_create_scriptability(self):
+    def test_create_script_mode(self):
         """
         Provide env name and tier as command line options.
         Command should now no longer be interactive and it should ask no questions.

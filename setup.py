@@ -24,7 +24,7 @@ except:
     data_files = []
 
 setup_options = dict(
-    name='aws-eb-cli',
+    name='awsebcli',
     version=ebcli.__version__,
     description='Command Line Interface for AWS EB.',
     long_description=open('README.rst').read(),

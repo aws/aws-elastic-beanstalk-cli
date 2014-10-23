@@ -137,3 +137,29 @@ class TestInit(BaseControllerTest):
                                                       'us-west-2',
                                                       'PHP 5.5',
                                                       'test')
+
+    def test_init_script_mode(self):
+        """
+        Test that we prompt for credentials
+        """
+
+        # setup mock response
+        self.mock_operations.credentials_are_valid.return_value = True
+        self.mock_operations.prompt_for_solution_stack.return_value = Exception
+        self.mock_operations.prompt_for_ec2_keyname.return_value = Exception
+        self.mock_operations.get_current_branch_environment.side_effect = \
+            NotInitializedError,
+        self.mock_operations.create_app.return_value = None, None
+
+        # run cmd
+        self.app = EB(argv=['init', '-p', 'php'])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+        # make sure we setup credentials
+        self.mock_operations.setup_credentials.assert_called()
+        self.mock_operations.setup.assert_called_with(self.app_name,
+                                                      'us-west-2',
+                                                      'PHP 5.5',
+                                                      'test')

@@ -1104,13 +1104,12 @@ def prompt_for_ec2_keyname(region):
     if not ssh:
         return None
 
-    keys = ec2.get_key_pairs(region=region)
+    keys = [k['KeyName'] for k in ec2.get_key_pairs(region=region)]
 
     if len(keys) < 1:
         keyname = _generate_and_upload_keypair(region, keys)
 
     else:
-        keys = [k['KeyName'] for k in keys]
         new_key_option = '[ Create new KeyPair ]'
         keys.append(new_key_option)
         io.echo()
@@ -1205,6 +1204,10 @@ def _generate_and_upload_keypair(region, keys):
 
 
 def upload_keypair_if_needed(region, keyname):
+    keys = [k['KeyName'] for k in ec2.get_key_pairs(region=region)]
+    if keyname in keys:
+        return
+
     file_name = _get_public_ssh_file(keyname)
     key_material = open(file_name, 'r').read()
 
