@@ -71,11 +71,11 @@ strings = {
     'env.clonedescription': 'Environment cloned from {env-name} from the EB CLI using "eb clone"',
     'env.exists': 'An environment with that name already exists.',
     # When create is called, if we cant find any files, we say this
-    'appversion.none': 'The directory does not contain any source code. Elastic Beanstalk is launching the sample application instead.',
+    'appversion.none': 'The current directory does not contain any source code. Elastic Beanstalk is launching the sample application instead.',
     # Error, no solution stacks returned. Almost always due to permissions
-    'sstacks.notfound': 'No Platforms returned from Elastic Beanstalk. Ensure you have the necessary permissions to access Elastic Beanstalk.',
+    'sstacks.notfound': 'Elastic Beanstalk could not find any platforms. Ensure you have the necessary permissions to access Elastic Beanstalk.',
     'timeout.error': 'The operation timed out. The state of the environment is unknown.',
-    'sc.notfound': 'Git not setup for this directory. The EB CLI will create a zip for deploys.',
+    'sc.notfound': 'Git is not set up for this project. EB CLI will deploy a .zip file of the entire directory.',
     'exit.notsetup': 'This directory has not been set up with the EB CLI\n'
                      'You must first run "eb init".',
     'exit.noregion': 'The EB CLI cannot find a default region. Run "eb init" or add the region using the "--region" flag.',
