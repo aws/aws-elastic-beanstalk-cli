@@ -14,10 +14,11 @@
 
 def get_all_regions():
     return [
-        Region('us-east-1', 'US East (Virginia)'),
-        Region('us-west-1', 'US West (Northern California)'),
+        Region('us-east-1', 'US East (N. Virginia)'),
+        Region('us-west-1', 'US West (N. California)'),
         Region('us-west-2', 'US West (Oregon)'),
         Region('eu-west-1', 'EU (Ireland)'),
+        Region('eu-central-1', 'EU (Frankfurt)'),
         Region('ap-southeast-1', 'Asia Pacific (Singapore)'),
         Region('ap-southeast-2', 'Asia Pacific (Sydney)'),
         Region('ap-northeast-1', 'Asia Pacific (Tokyo)'),

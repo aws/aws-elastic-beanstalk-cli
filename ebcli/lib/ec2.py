@@ -14,7 +14,7 @@
 from cement.utils.misc import minimal_logger
 
 from ..lib import aws
-from ..objects.exceptions import ServiceError
+from ..objects.exceptions import ServiceError, AlreadyExistsError
 from ..resources.strings import responses
 
 LOG = minimal_logger(__name__)
@@ -30,9 +30,15 @@ def get_key_pairs(region=None):
 
 
 def import_key_pair(keyname, key_material, region=None):
-    result = _make_api_call('import-key-pair', key_name=keyname,
-                            public_key_material=key_material,
-                            region=region)
+    try:
+        result = _make_api_call('import-key-pair', key_name=keyname,
+                    public_key_material=key_material,
+                    region=region)
+    except ServiceError as e:
+        if e.message.endswith('already exists.'):
+            raise AlreadyExistsError(e.message)
+        else:
+            raise
 
     return result
 

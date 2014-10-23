@@ -71,11 +71,11 @@ strings = {
     'env.clonedescription': 'Environment cloned from {env-name} from the EB CLI using "eb clone"',
     'env.exists': 'An environment with that name already exists.',
     # When create is called, if we cant find any files, we say this
-    'appversion.none': '*The directory does not contain any source code. Launching sample application.',
+    'appversion.none': 'The directory does not contain any source code. Elastic Beanstalk is launching the sample application instead.',
     # Error, no solution stacks returned. Almost always due to permissions
-    'sstacks.notfound': '*No Platforms found. It is possible this could be due to a lack of permissions',
+    'sstacks.notfound': 'No Platforms returned from Elastic Beanstalk. Ensure you have the necessary permissions to access Elastic Beanstalk.',
     'timeout.error': 'The operation timed out. The state of the environment is unknown.',
-    'sc.notfound': '*No source control found. Will use system\'s zip for deploys.',
+    'sc.notfound': 'Git not setup for this directory. The EB CLI will create a zip for deploys.',
     'exit.notsetup': 'This directory has not been set up with the EB CLI\n'
                      'You must first run "eb init".',
     'exit.noregion': 'The EB CLI cannot find a default region. Run "eb init" or add the region using the "--region" flag.',
@@ -104,6 +104,7 @@ strings = {
     'cname.unavailable': 'The CNAME prefix {cname} is already in use.',
     'ssh.openingport': 'INFO: Attempting to open port 22.',
     'ssh.closeport': 'INFO: Closed port 22 on ec2 instance security group.',
+    'ssh.uploadpem': 'SSH files ending in .pem cannot be used cross-region. Run "init -i" to create a new keypair.',
 }
 
 prompts = {
@@ -161,6 +162,7 @@ responses = {
     'env.nameexists': 'Environment [^ ]+ already exists.',
     'app.deletesuccess': 'The application has been deleted successfully.',
     'app.exists': 'Application {app-name} already exists.',
+    'app.notexists': 'No Application named {app-name} found.',
     'logs.pulled': 'Pulled logs for environment instances.',
     'logs.successtail': 'Successfully finished tailing',
     'logs.successbundle': 'Successfully finished bundling',

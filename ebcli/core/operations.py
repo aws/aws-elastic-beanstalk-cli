@@ -278,7 +278,8 @@ def setup(app_name, region, solution, keyname):
     try:
         setup_ignore_file()
     except NoSourceControlError:
-        io.log_warning(strings['sc.notfound'])
+        # io.log_warning(strings['sc.notfound'])
+        pass
 
 
 def setup_credentials(access_id=None, secret_key=None):
@@ -335,7 +336,10 @@ def pull_down_app_info(app_name, region, default_env=None):
                     env.name + '" as default')
     elif len(envs) > 1:
         if default_env:
-            env = next((env for env in envs if env.name == default_env), None)
+            if default_env == '/ni':
+                env = envs[0]
+            else:
+                env = next((env for env in envs if env.name == default_env), None)
         else:
             # Prompt for default
             io.echo(prompts['init.selectdefaultenv'])
@@ -491,6 +495,9 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
         label = create_app_version(app_name, region)
 
     # Create env
+    if key_name:
+        upload_keypair_if_needed(region, key_name)
+
     io.log_info('Creating new environment')
     result, request_id = create_env(app_name, env_name, region, cname,
                                     solution_stack, tier, itype, label, single,
@@ -537,7 +544,6 @@ def print_env_details(env, health=True):
 def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
                label, single, key_name, profile, tags, size, database):
     description = strings['env.description']
-
     try:
         return elasticbeanstalk.create_environment(
             app_name, env_name, cname, description, solution_stack,
@@ -555,12 +561,18 @@ def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
             unique_name = utils.get_unique_name(env_name,
                                                 current_environments)
             env_name = io.prompt_for_environment_name(default_name=unique_name)
+        elif e.message == responses['app.notexists'].replace(
+                        '{app-name}', '\'' + app_name + '\''):
+            # App doesnt exist, must be a new region.
+            ## Lets create the app in the region
+            create_app(app_name, region)
         else:
             raise e
 
         # Try again with new values
         return create_env(app_name, env_name, region, cname, solution_stack,
-                          tier, label, single, key_name, profile)
+                          tier, itype, label, single, key_name, profile,
+                          tags, size, database)
 
 
 def make_cloned_env(app_name, env_name, clone_name, cname, scale, tags, region,
@@ -840,58 +852,6 @@ def terminate(env_name, region, nohang=False):
                               timeout_in_seconds=60*5)
 
 
-def ssh_into_instance(instance_id, region, keep_open=False):
-    if not fileoperations.program_is_installed('ssh'):
-        io.log_error(['ssh.notpresent'])
-        return None
-
-    instance = ec2.describe_instance(instance_id, region)
-    try:
-        keypair_name = instance['KeyName']
-    except KeyError:
-        raise NoKeypairError()
-    try:
-        ip = instance['PublicIpAddress']
-    except KeyError:
-        raise NotFoundError(strings['ssh.noip'])
-    security_groups = instance['SecurityGroups']
-
-
-    user = 'ec2-user'
-
-    # Open up port for ssh
-    io.echo(strings['ssh.openingport'])
-    for group in security_groups:
-        ec2.authorize_ssh(group['GroupId'], region=region)
-
-    # do ssh
-    try:
-        ident_file = fileoperations.get_ssh_folder() + keypair_name
-        if not os.path.exists(ident_file):
-            if os.path.exists(ident_file + '.pem'):
-                ident_file += '.pem'
-            else:
-                raise NotFoundError(strings['ssh.filenotfound'].replace(
-                    '{key-name}', keypair_name)
-                )
-
-        returncode = exec_cmd2('ssh -i ' + ident_file + ' ' + user + '@' + ip,
-                               shell=True)
-
-        if returncode != 0:
-            LOG.debug('ssh returned exitcode: ' + str(returncode))
-            raise CommandError('An error occurred while running ssh')
-
-    finally:
-        # Close port for ssh
-        if keep_open:
-            return
-
-        for group in security_groups:
-            ec2.revoke_ssh(group['GroupId'], region=region)
-        io.echo(strings['ssh.closeport'])
-
-
 def save_env_file(api_model):
     usr_model = configuration.convert_api_to_usr_model(api_model)
     file_location = fileoperations.save_env_file(usr_model)
@@ -1093,6 +1053,50 @@ def get_current_branch_environment():
     return get_setting_from_current_branch('environment')
 
 
+def ssh_into_instance(instance_id, region, keep_open=False):
+    if not fileoperations.program_is_installed('ssh'):
+        io.log_error(['ssh.notpresent'])
+        return None
+
+    instance = ec2.describe_instance(instance_id, region)
+    try:
+        keypair_name = instance['KeyName']
+    except KeyError:
+        raise NoKeypairError()
+    try:
+        ip = instance['PublicIpAddress']
+    except KeyError:
+        raise NotFoundError(strings['ssh.noip'])
+    security_groups = instance['SecurityGroups']
+
+
+    user = 'ec2-user'
+
+    # Open up port for ssh
+    io.echo(strings['ssh.openingport'])
+    for group in security_groups:
+        ec2.authorize_ssh(group['GroupId'], region=region)
+
+    # do ssh
+    try:
+        ident_file = _get_ssh_file(keypair_name)
+        returncode = exec_cmd2('ssh -i ' + ident_file + ' ' + user + '@' + ip,
+                               shell=True)
+
+        if returncode != 0:
+            LOG.debug('ssh returned exitcode: ' + str(returncode))
+            raise CommandError('An error occurred while running ssh')
+
+    finally:
+        # Close port for ssh
+        if keep_open:
+            return
+
+        for group in security_groups:
+            ec2.revoke_ssh(group['GroupId'], region=region)
+        io.echo(strings['ssh.closeport'])
+
+
 def prompt_for_ec2_keyname(region):
     io.echo(prompts['ssh.setup'])
     ssh = get_boolean_response()
@@ -1117,6 +1121,7 @@ def prompt_for_ec2_keyname(region):
             keyname = _generate_and_upload_keypair(region, keys)
 
     return keyname
+
 
 def select_tier():
     tier_list = Tier.get_latest_tiers()
@@ -1197,3 +1202,38 @@ def _generate_and_upload_keypair(region, keys):
         LOG.debug('ssh-keygen returned exitcode: ' + str(exitcode) +
                    ' with filename: ' + file_name)
         raise CommandError('An error occurred while running ssh-keygen')
+
+
+def upload_keypair_if_needed(region, keyname):
+    file_name = _get_public_ssh_file(keyname)
+    key_material = open(file_name, 'r').read()
+
+    try:
+        ec2.import_key_pair(keyname, key_material, region=region)
+    except AlreadyExistsError:
+        pass
+        return
+    io.log_warning('Uploaded SSH public key ' + keyname + '.pub into EC2')
+
+
+def _get_public_ssh_file(keypair_name):
+    key_file = fileoperations.get_ssh_folder() + keypair_name
+    if os.path.exists(key_file + '.pub'):
+        return key_file + '.pub'
+    elif os.path.exists(key_file + '.pem'):
+        raise NotSupportedError(strings['ssh.uploadpem'])
+    else:
+        raise NotSupportedError(strings['ssh.filenotfound'].replace(
+            '{key-name}', keypair_name))
+
+
+def _get_ssh_file(keypair_name):
+    key_file = fileoperations.get_ssh_folder() + keypair_name
+    if not os.path.exists(key_file):
+        if os.path.exists(key_file + '.pem'):
+            key_file += '.pem'
+        else:
+            raise NotFoundError(strings['ssh.filenotfound'].replace(
+                '{key-name}', keypair_name))
+
+    return key_file

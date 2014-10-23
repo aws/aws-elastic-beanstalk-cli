@@ -115,16 +115,23 @@ def main():
         io.log_error(strings['exit.noregion'])
         app.close(code=3)
     except EBCLIException as e:
+        if app.pargs.debug:
+            raise
+
         message = next(io._convert_to_strings([e]))
-        io.log_error(e.__class__.__name__ + " - " + message)
-        app.close(code=3)
+
+        if app.pargs.verbose:
+            io.log_error(e.__class__.__name__ + " - " + message)
+        else:
+            io.log_error(message)
+        app.close(code=4)
     except Exception as e:
         #Generic catch all
         if app.pargs.debug:
             raise
-        else:
-            message = next(io._convert_to_strings([e]))
-            io.log_error(e.__class__.__name__ + " :: " + message)
-            app.close(code=10)
+
+        message = next(io._convert_to_strings([e]))
+        io.log_error(e.__class__.__name__ + " :: " + message)
+        app.close(code=10)
     finally:
         app.close()

@@ -64,6 +64,9 @@ class InitController(AbstractBaseController):
         elif self.interactive:
             default_env = None
 
+        if self.flag:
+            default_env = '/ni'
+
         # Create application
         sstack, key = operations.create_app(self.app_name, self.region,
                                             default_env=default_env)
@@ -71,7 +74,8 @@ class InitController(AbstractBaseController):
         if not self.solution:
             self.solution = sstack
 
-        if not self.solution or self.interactive:
+        if not self.solution or \
+                (self.interactive and not self.app.pargs.platform):
             result = operations.prompt_for_solution_stack(self.region)
             self.solution = result.version
 
@@ -134,7 +138,8 @@ class InitController(AbstractBaseController):
             app_name = fileoperations.get_current_directory_name()
 
         # Ask for app name
-        if not app_name or self.interactive:
+        if not app_name or \
+                (self.interactive and not self.app.pargs.application_name):
             app_name = _get_application_name_interactive(self.region)
 
         return app_name
@@ -156,7 +161,8 @@ class InitController(AbstractBaseController):
             region_list = regions.get_all_regions()
             region = region_list[2].name
 
-        if not region or self.interactive:
+        if not region or \
+                (self.interactive and not self.app.pargs.region):
             io.echo()
             io.echo('Select a default region')
             region_list = regions.get_all_regions()
@@ -197,9 +203,13 @@ class InitController(AbstractBaseController):
         if self.flag and not self.interactive:
             return keyname
 
-        if not keyname or self.interactive:
+        if not keyname or \
+                (self.interactive and not self.app.pargs.keyname):
             # Prompt for one
             keyname = operations.prompt_for_ec2_keyname(self.region)
+
+        else:
+            operations.upload_keypair_if_needed(self.region, keyname)
 
         return keyname
 
