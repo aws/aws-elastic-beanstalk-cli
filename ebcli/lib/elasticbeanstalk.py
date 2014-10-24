@@ -241,7 +241,7 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
 
 
 def clone_environment(app_name, env_name, clone_name, cname,
-                      description, scale, tags, region=None):
+                      description, label, scale, tags, region=None):
     LOG.debug('Inside clone_environment api wrapper')
 
     assert app_name is not None, 'App name can not be empty'
@@ -263,6 +263,8 @@ def clone_environment(app_name, env_name, clone_name, cname,
         kwargs['description'] = description
     if cname:
         kwargs['cname_prefix'] = cname
+    if label:
+        kwargs['version_label'] = label
     if tags:
         kwargs['tags'] = tags
 

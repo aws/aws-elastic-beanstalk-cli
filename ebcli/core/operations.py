@@ -544,37 +544,39 @@ def print_env_details(env, health=True):
 def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
                label, single, key_name, profile, tags, size, database):
     description = strings['env.description']
-    try:
-        return elasticbeanstalk.create_environment(
-            app_name, env_name, cname, description, solution_stack,
-            tier, itype, label, single, key_name, profile, tags,
-            region=region, database=database, size=size)
+    while True:
+        try:
+            return elasticbeanstalk.create_environment(
+                app_name, env_name, cname, description, solution_stack,
+                tier, itype, label, single, key_name, profile, tags,
+                region=region, database=database, size=size)
 
-    except InvalidParameterValueError as e:
-        LOG.debug('creating env returned error: ' + e.message)
-        if re.match(responses['env.cnamenotavailable'], e.message):
-            io.echo(prompts['cname.unavailable'])
-            cname = io.prompt_for_cname()
-        elif re.match(responses['env.nameexists'], e.message):
-            io.echo(strings['env.exists'])
-            current_environments = get_env_names(app_name, region)
-            unique_name = utils.get_unique_name(env_name,
-                                                current_environments)
-            env_name = io.prompt_for_environment_name(default_name=unique_name)
-        else:
-            raise e
+        except InvalidParameterValueError as e:
+            LOG.debug('creating env returned error: ' + e.message)
+            if re.match(responses['env.cnamenotavailable'], e.message):
+                io.echo(prompts['cname.unavailable'])
+                cname = io.prompt_for_cname()
+            elif re.match(responses['env.nameexists'], e.message):
+                io.echo(strings['env.exists'])
+                current_environments = get_env_names(app_name, region)
+                unique_name = utils.get_unique_name(env_name,
+                                                    current_environments)
+                env_name = io.prompt_for_environment_name(
+                    default_name=unique_name)
+            else:
+                raise e
 
         # Try again with new values
-        return create_env(app_name, env_name, region, cname, solution_stack,
-                          tier, itype, label, single, key_name, profile,
-                          tags, size, database)
 
 
 def make_cloned_env(app_name, env_name, clone_name, cname, scale, tags, region,
                     nohang):
     io.log_info('Cloning environment')
+    # get app version from environment
+    env = elasticbeanstalk.get_environment(app_name, env_name, region)
+    label = env.version_label
     result, request_id = clone_env(app_name, env_name, clone_name,
-                                   cname, scale, tags, region)
+                                   cname, label, scale, tags, region)
 
     # Print status of env
     print_env_details(result, health=False)
@@ -589,31 +591,33 @@ def make_cloned_env(app_name, env_name, clone_name, cname, scale, tags, region,
         io.log_error(strings['timeout.error'])
 
 
-def clone_env(app_name, env_name, clone_name, cname, scale, tags, region):
+def clone_env(app_name, env_name, clone_name, cname, label, scale,
+              tags, region):
     description = strings['env.clonedescription'].replace('{env-name}',
                                                           env_name)
 
-    try:
-        return elasticbeanstalk.clone_environment(
-            app_name, env_name, clone_name, cname, description, scale, tags,
-            region=region)
+    while True:
+        try:
+            return elasticbeanstalk.clone_environment(
+                app_name, env_name, clone_name, cname, description, label,
+                scale, tags, region=region)
 
-    except InvalidParameterValueError as e:
-        LOG.debug('cloning env returned error: ' + e.message)
-        if re.match(responses['env.cnamenotavailable'], e.message):
-            io.echo(prompts['cname.unavailable'])
-            cname = io.prompt_for_cname()
-        elif re.match(responses['env.nameexists'], e.message):
-            io.echo(strings['env.exists'])
-            current_environments = get_env_names(app_name, region)
-            unique_name = utils.get_unique_name(clone_name,
-                                                current_environments)
-            clone_name = io.prompt_for_environment_name(default_name=unique_name)
-        else:
-            raise e
+        except InvalidParameterValueError as e:
+            LOG.debug('cloning env returned error: ' + e.message)
+            if re.match(responses['env.cnamenotavailable'], e.message):
+                io.echo(prompts['cname.unavailable'])
+                cname = io.prompt_for_cname()
+            elif re.match(responses['env.nameexists'], e.message):
+                io.echo(strings['env.exists'])
+                current_environments = get_env_names(app_name, region)
+                unique_name = utils.get_unique_name(clone_name,
+                                                    current_environments)
+                clone_name = io.prompt_for_environment_name(
+                    default_name=unique_name)
+            else:
+                raise e
 
         #try again
-        clone_env(app_name, env_name, clone_name, cname, scale, region)
 
 
 def delete_app(app_name, region, force, nohang=False):
