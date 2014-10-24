@@ -396,7 +396,7 @@ def get_application_versions(app_name, region=None):
 
 
 def get_all_applications(region=None):
-    LOG.debug('Insise get_all_applications api wrapper')
+    LOG.debug('Inside get_all_applications api wrapper')
     result = _make_api_call('describe-applications',
                             region=region)
     app_list = []

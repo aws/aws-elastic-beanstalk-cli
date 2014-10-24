@@ -19,7 +19,6 @@ import glob
 import stat
 import codecs
 
-
 from yaml import load, dump, safe_dump
 from yaml.scanner import ScannerError
 from six.moves import configparser

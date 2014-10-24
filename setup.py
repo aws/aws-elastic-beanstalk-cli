@@ -5,12 +5,12 @@ from setuptools import setup, find_packages
 
 import ebcli
 
-requires = ['pyyaml',
-            'six',
+requires = ['pyyaml==3.11',
+            'six==1.8.0',
             'cement==2.4',
             ## For botocore we need the following
-            'python-dateutil',
-            'jmespath'
+            'python-dateutil>=2.2',
+            'jmespath>=0.4.1'
             ]
 
 try:

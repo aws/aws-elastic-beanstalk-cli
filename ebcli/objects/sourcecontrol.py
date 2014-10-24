@@ -15,6 +15,7 @@ from __future__ import print_function
 import os
 import fileinput
 import datetime
+import sys
 
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
@@ -122,7 +123,6 @@ class Git(SourceControl):
             exec_cmd('git describe --always --abbrev=4', shell=True)
         self._handle_exitcode(exitcode, stderr)
 
-
         #Replace dots with underscores
         return stdout.decode('utf8')[:-1].replace('.', '_')
 
@@ -131,8 +131,9 @@ class Git(SourceControl):
             exec_cmd(['git rev-parse --abbrev-ref HEAD'], shell=True)
 
         self._handle_exitcode(exitcode, stderr)
-
-        return stdout.rstrip()
+        stdout = stdout.decode('utf8').rstrip()
+        LOG.debug('git current-branch result: ' + stdout)
+        return stdout
 
     def do_zip(self, location):
         io.log_info('creating zip using git archive HEAD')
