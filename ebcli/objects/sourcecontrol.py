@@ -113,14 +113,14 @@ class Git(SourceControl):
             raise NoSourceControlError
 
         # Something else happened
-        LOG.error('An error occurred while handling git command.'
-                  '\nError code: ' + str(exitcode) + ' Error: ' + stderr)
-        raise CommandError
+        raise CommandError('An error occurred while handling git command.'
+                           '\nError code: ' + str(exitcode) + ' Error: ' +
+                           str(stderr))
 
     def get_version_label(self):
         io.log_info('Getting version label from git with git-describe')
         stdout, stderr, exitcode = \
-            exec_cmd('git describe --always --abbrev=4', shell=True)
+            exec_cmd(['git', 'describe', '--always', '--abbrev=4'])
         self._handle_exitcode(exitcode, stderr)
 
         #Replace dots with underscores
@@ -128,7 +128,7 @@ class Git(SourceControl):
 
     def get_current_branch(self):
         stdout, stderr, exitcode = \
-            exec_cmd(['git rev-parse --abbrev-ref HEAD'], shell=True)
+            exec_cmd(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
 
         self._handle_exitcode(exitcode, stderr)
         stdout = stdout.decode('utf8').rstrip()
@@ -138,15 +138,15 @@ class Git(SourceControl):
     def do_zip(self, location):
         io.log_info('creating zip using git archive HEAD')
         stdout, stderr, exitcode = \
-            exec_cmd(['git archive -v --format=zip '
-                      '-o ' + location + ' HEAD'], shell=True)
+            exec_cmd(['git', 'archive', '-v', '--format=zip',
+                      '-o', location, 'HEAD'])
         self._handle_exitcode(exitcode, stderr)
         io.log_info('git archive output: ' + stderr.decode('utf8'))
 
 
     def get_message(self):
         stdout, stderr, exitcode = \
-            exec_cmd(['git log --oneline -1'], shell=True)
+            exec_cmd(['git', 'log', '--oneline', '-1'])
         self._handle_exitcode(exitcode, stderr)
         return stdout.rstrip().decode('utf8')
 

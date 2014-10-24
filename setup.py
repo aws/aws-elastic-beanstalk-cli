@@ -20,7 +20,7 @@ try:
             ('/etc/bash_completion.d/', ['bin/eb_completion.bash'])
         ]
 except:
-    print('User does not have write access to /etc. Completion will not work.')
+    # print('User does not have write access to /etc. Completion will not work.')
     data_files = []
 
 setup_options = dict(

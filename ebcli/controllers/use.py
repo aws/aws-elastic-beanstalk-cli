@@ -31,5 +31,4 @@ class UseController(AbstractBaseController):
         region = self.get_region()
         env_name = self.app.pargs.environment_name[0]
 
-        operations.set_environment_for_current_branch(app_name, env_name,
-                                                      region)
+        operations.switch_default_environment(app_name, env_name, region)
