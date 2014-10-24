@@ -27,7 +27,13 @@ class TestNoSourceControl(unittest.TestCase):
             os.makedirs('testDir/')
         os.chdir('testDir')
 
+        self.patcher_io = mock.patch('ebcli.objects.sourcecontrol.io')
+
+        self.mock_input = self.patcher_io.start()
+
     def tearDown(self):
+        self.patcher_io.stop()
+
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
@@ -44,9 +50,10 @@ class TestNoSourceControl(unittest.TestCase):
         #Hardcoded, but should test for backwards compatibility
         self.assertEqual(sourcecontrol.NoSC().get_current_branch(), 'default')
 
-    def test_do_zip(self):
-        #ToDo: Mock fileoperations and just make sure its called
-        pass
+    @mock.patch('ebcli.objects.sourcecontrol.fileoperations')
+    def test_do_zip(self, mock_file):
+        sourcecontrol.NoSC().do_zip('file.zip')
+        mock_file.zip_up_project.assert_called_with('file.zip')
 
     def test_get_message(self):
         # Just a hardcoded string, dont really need to test
