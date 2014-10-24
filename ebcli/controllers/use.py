@@ -27,6 +27,9 @@ class UseController(AbstractBaseController):
         usage = 'eb use [environment_name]'
 
     def do_command(self):
+        app_name = self.get_app_name()
+        region = self.get_region()
         env_name = self.app.pargs.environment_name[0]
 
-        operations.set_environment_for_current_branch(env_name)
+        operations.set_environment_for_current_branch(app_name, env_name,
+                                                      region)

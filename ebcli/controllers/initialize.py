@@ -27,7 +27,6 @@ class InitController(AbstractBaseController):
         arguments = [
             (['application_name'], dict(help='Application name',
                                         nargs='?', default=[])),
-            (['-r', '--region'], dict(help='Default Region')),
             (['-p', '--platform'], dict(help='Default Platform')),
             (['-k', '--keyname'], dict(help='Default EC2 key name')),
             (['-i', '--interactive'], dict(action='store_true',

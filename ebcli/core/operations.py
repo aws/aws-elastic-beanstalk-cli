@@ -1038,8 +1038,10 @@ def write_setting_to_current_branch(keyname, value):
     )
 
 
-def set_environment_for_current_branch(value):
-    write_setting_to_current_branch('environment', value)
+def set_environment_for_current_branch(app_name, env_name, region):
+    #check that environment exists
+    elasticbeanstalk.get_environment(app_name, env_name, region)
+    write_setting_to_current_branch('environment', env_name)
 
 
 def get_setting_from_current_branch(keyname):

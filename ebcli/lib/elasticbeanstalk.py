@@ -348,7 +348,7 @@ def describe_application(app_name, region=None):
                             region=region)
     apps = result['Applications']
     if len(apps) != 1:
-        raise NotFoundError('Application not found')
+        raise NotFoundError('Application "' + app_name + '" not found.')
     return apps[0]
 
 
@@ -447,7 +447,7 @@ def get_environment(app_name, env_name, region=None):
 
     envs = result['Environments']
     if len(envs) < 1:
-        raise NotFoundError('Environment ' + env_name + ' Not Found')
+        raise NotFoundError('Environment "' + env_name + '" not Found.')
     else:
         return _api_to_environment(envs[0])
 

@@ -30,7 +30,6 @@ class CloneController(AbstractBaseController):
             (['-n', '--clone_name'], dict(help='Desired name for environment'
                                                ' clone')),
             (['-c', '--cname'], dict(help='Cname prefix')),
-            (['-r', '--region'], dict(help='Region where environment lives')),
             (['--scale'], dict(type=int, help='Number of desired instances')),
             (['--tags'], dict(help='A comma separated list of tags '
                                    'as key=value pairs')),

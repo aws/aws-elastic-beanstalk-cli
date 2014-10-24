@@ -31,8 +31,6 @@ class CreateController(AbstractBaseController):
             (['environment_name'], dict(action='store', nargs='?',
                                         default=None,
                                         help='Desired Environment name')),
-            (['-r', '--region'], dict(help='Region which environment '
-                                           'will be created in')),
             (['-c', '--cname'], dict(help='Cname prefix')),
             (['-t', '--tier'], dict(help='Environment tier type')),
             (['-i', '--instance_type'], dict(help='Instance Type '

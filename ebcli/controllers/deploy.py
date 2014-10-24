@@ -27,7 +27,6 @@ class DeployController(AbstractBaseController):
             (['environment_name'], dict(action='store', nargs='?',
                                         default=[],
                                         help='Environment name')),
-            (['-r', '--region'], dict(help='Region where environment lives')),
             (['--version'], dict(help='Existing version label to deploy')),
             (['-l', '--label'], dict(help='Label name which version will be given')),
             (['-m', '--message'], dict(help='Message/Description for version'))

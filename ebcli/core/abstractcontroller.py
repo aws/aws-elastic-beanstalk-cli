@@ -42,7 +42,6 @@ class AbstractBaseController(controller.CementBaseController):
             (['environment_name'], dict(action='store', nargs='?',
                                         default=[],
                                         help='Environment name')),
-            (['-r', '--region'], dict(help='Region where environment lives')),
         ]
         epilog = ''
         usage = 'eb {cmd} <environment_name> [options ...]'

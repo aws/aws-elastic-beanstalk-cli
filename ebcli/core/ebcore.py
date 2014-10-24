@@ -77,6 +77,7 @@ class EB(foundation.CementApp):
                      action='store_true', help='toggle verbose output')
         self.add_arg('--profile', help='Use a specific profile '
                                        'from your credential file')
+        self.add_arg('-r', '--region', help='Use a specific region')
 
         globals.app = self
 

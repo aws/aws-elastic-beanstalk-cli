@@ -22,7 +22,6 @@ class ListController(AbstractBaseController):
         description = strings['list.info']
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
         arguments = [
-            (['-r', '--region'], dict(help='Region where environments live')),
             (['-a', '--all'], dict(action='store_true',
                                    help='Show environments for all '
                                         'applications'))

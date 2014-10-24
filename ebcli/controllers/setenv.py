@@ -27,7 +27,6 @@ class SetEnvController(AbstractBaseController):
                                                ': VAR_NAME=KEY')),
             (['-e', '--environment'], dict(dest='environment_name',
                                         help='Environment\'s name')),
-            (['-r', '--region'], dict(help='Region where environment lives')),
         ]
         epilog = strings['setenv.epilog']
 
