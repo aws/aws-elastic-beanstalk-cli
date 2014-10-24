@@ -71,7 +71,7 @@ def authorize_ssh(security_group_id, region=None):
                    to_port=22, from_port=22, cidr_ip='0.0.0.0/0',
                    region=region)
     except ServiceError as e:
-        if e.message.startswith(responses['ec2.sshalreadyopen']):
+        if e.code == 'InvalidPermission.Duplicate':
             #ignore
             pass
         else:

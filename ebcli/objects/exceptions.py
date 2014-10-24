@@ -40,7 +40,9 @@ class CommandError(EBCLIException):
 
 class ServiceError(EBCLIException):
     """  Error occurred calling the api    """
-    pass
+    def __init__(self, message=None, code=None):
+        self.code = code
+        super(ServiceError, self).__init__(message)
 
 
 class CredentialsError(EBCLIException):

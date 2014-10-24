@@ -104,7 +104,7 @@ strings = {
     'cname.unavailable': 'The CNAME prefix {cname} is already in use.',
     'ssh.openingport': 'INFO: Attempting to open port 22.',
     'ssh.closeport': 'INFO: Closed port 22 on ec2 instance security group.',
-    'ssh.uploadpem': 'SSH files ending in .pem cannot be used cross-region. Run "init -i" to create a new keypair.',
+    'ssh.uploaded': 'Uploaded SSH public key for "{keyname} into EC2.'
 }
 
 prompts = {

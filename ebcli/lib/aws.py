@@ -183,7 +183,7 @@ def _get_400_error(response_data):
         return ThrottlingError(message)
     else:
         # Not tracking this error
-        return ServiceError(message)
+        return ServiceError(message, code=code)
 
 
 class InvalidParameterValueError(ServiceError):

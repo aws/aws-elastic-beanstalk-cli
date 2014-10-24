@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 import time
 import re
 import os
-import dateutil
+import subprocess
 
 from six.moves import urllib
 from six import iteritems
@@ -412,7 +412,7 @@ def open_console(app_name, env_name, region):
 
 
 def open_webpage_in_browser(url, ssl=False):
-    io.log_info('Opening webpage with default browser')
+    io.log_info('Opening webpage with default browser.')
     if ssl:
         url = 'https://' + url
     else:
@@ -561,11 +561,6 @@ def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
             unique_name = utils.get_unique_name(env_name,
                                                 current_environments)
             env_name = io.prompt_for_environment_name(default_name=unique_name)
-        elif e.message == responses['app.notexists'].replace(
-                        '{app-name}', '\'' + app_name + '\''):
-            # App doesnt exist, must be a new region.
-            ## Lets create the app in the region
-            create_app(app_name, region)
         else:
             raise e
 
@@ -942,17 +937,26 @@ def create_app_version(app_name, region, label=None, message=None):
     s3.upload_application_version(bucket, key, file_path,
                                                 region=region)
     fileoperations.delete_app_versions()
-    try:
-        io.log_info('Creating AppVersion ' + version_label)
-        elasticbeanstalk.create_application_version(
-            app_name, version_label, description, bucket, key, region
-        )
-    except InvalidParameterValueError as e:
-        if e.message.startswith('Application Version ') and \
-                e.message.endswith(' already exists.'):
-            # we must be deploying with an existing app version
-            io.log_warning('Deploying a previously deployed commit')
-    return version_label
+    io.log_info('Creating AppVersion ' + version_label)
+    while True:
+        try:
+            elasticbeanstalk.create_application_version(
+                app_name, version_label, description, bucket, key, region
+            )
+            return version_label
+        except InvalidParameterValueError as e:
+            if e.message.startswith('Application Version ') and \
+                    e.message.endswith(' already exists.'):
+                # we must be deploying with an existing app version
+                io.log_warning('Deploying a previously deployed commit')
+                return version_label
+            elif e.message == responses['app.notexists'].replace(
+                    '{app-name}', '\'' + app_name + '\''):
+                # App doesnt exist, must be a new region.
+                ## Lets create the app in the region
+                create_app(app_name, region)
+            else:
+                raise
 
 
 def update_environment_configuration(app_name, env_name, region, nohang):
@@ -1054,10 +1058,6 @@ def get_current_branch_environment():
 
 
 def ssh_into_instance(instance_id, region, keep_open=False):
-    if not fileoperations.program_is_installed('ssh'):
-        io.log_error(['ssh.notpresent'])
-        return None
-
     instance = ec2.describe_instance(instance_id, region)
     try:
         keypair_name = instance['KeyName']
@@ -1080,21 +1080,21 @@ def ssh_into_instance(instance_id, region, keep_open=False):
     # do ssh
     try:
         ident_file = _get_ssh_file(keypair_name)
-        returncode = exec_cmd2('ssh -i ' + ident_file + ' ' + user + '@' + ip,
-                               shell=True)
-
+        returncode = subprocess.call(['ssh', '-i', ident_file,
+                                      user + '@' + ip])
         if returncode != 0:
             LOG.debug('ssh returned exitcode: ' + str(returncode))
-            raise CommandError('An error occurred while running ssh')
-
+            raise CommandError('An error occurred while running ssh.')
+    except OSError:
+        CommandError(strings['ssh.notpresent'])
     finally:
         # Close port for ssh
         if keep_open:
             return
-
-        for group in security_groups:
-            ec2.revoke_ssh(group['GroupId'], region=region)
-        io.echo(strings['ssh.closeport'])
+        else:
+            for group in security_groups:
+                ec2.revoke_ssh(group['GroupId'], region=region)
+            io.echo(strings['ssh.closeport'])
 
 
 def prompt_for_ec2_keyname(region):
@@ -1176,10 +1176,6 @@ def get_instance_ids(app_name, env_name, region):
 
 
 def _generate_and_upload_keypair(region, keys):
-    if not fileoperations.program_is_installed('ssh-keygen'):
-        io.log_error(['ssh.notpresent'])
-        return None
-
     # Get filename
     io.echo()
     io.echo(prompts['keypair.nameprompt'])
@@ -1187,20 +1183,20 @@ def _generate_and_upload_keypair(region, keys):
     keyname = io.prompt('Default is ' + unique, default=unique)
     file_name = fileoperations.get_ssh_folder() + keyname
 
-
-    exitcode = exec_cmd2('ssh-keygen -f ' + file_name, shell=True)
+    try:
+        exitcode = subprocess.call(['ssh-keygen', '-f', file_name])
+    except OSError:
+        raise CommandError(strings['ssh.notpresent'])
 
     if exitcode == 0 or exitcode == 1:
         # if exitcode is 1, they file most likely exists, and they are
         ## just uploading it
-        key_material = open(file_name + '.pub', 'r').read()
-        ec2.import_key_pair(keyname, key_material, region=region)
-        io.log_warning('Uploaded ' + keyname + '.pub into EC2 as SSH key')
+        upload_keypair_if_needed(region, keyname)
         return keyname
     else:
         LOG.debug('ssh-keygen returned exitcode: ' + str(exitcode) +
                    ' with filename: ' + file_name)
-        raise CommandError('An error occurred while running ssh-keygen')
+        raise CommandError('An error occurred while running ssh-keygen.')
 
 
 def upload_keypair_if_needed(region, keyname):
@@ -1208,26 +1204,35 @@ def upload_keypair_if_needed(region, keyname):
     if keyname in keys:
         return
 
-    file_name = _get_public_ssh_file(keyname)
-    key_material = open(file_name, 'r').read()
+    key_material = _get_public_ssh_key(keyname)
 
     try:
         ec2.import_key_pair(keyname, key_material, region=region)
     except AlreadyExistsError:
-        pass
         return
-    io.log_warning('Uploaded SSH public key ' + keyname + '.pub into EC2')
+    io.log_warning(strings['ssh.uploaded'].replace('{keyname}', keyname))
 
 
-def _get_public_ssh_file(keypair_name):
+def _get_public_ssh_key(keypair_name):
     key_file = fileoperations.get_ssh_folder() + keypair_name
-    if os.path.exists(key_file + '.pub'):
-        return key_file + '.pub'
+    if os.path.exists(key_file):
+        file_name = key_file
     elif os.path.exists(key_file + '.pem'):
-        raise NotSupportedError(strings['ssh.uploadpem'])
+        file_name = key_file + '.pem'
     else:
         raise NotSupportedError(strings['ssh.filenotfound'].replace(
             '{key-name}', keypair_name))
+
+    try:
+        stdout, stderr, returncode = exec_cmd(['ssh-keygen', '-y', '-f',
+                                           file_name])
+        if returncode != 0:
+            raise CommandError('An error occurred while trying '
+                               'to get ssh public key')
+        key_material = stdout
+        return key_material
+    except OSError:
+        CommandError(strings['ssh.notpresent'])
 
 
 def _get_ssh_file(keypair_name):
