@@ -156,6 +156,11 @@ def get_env_names(app_name, region):
 
 
 def list_env_names(app_name, region, verbose, all_apps):
+    if region is None:
+        region = aws.get_default_region()
+
+    io.echo('Region:', region)
+
     if all_apps:
         for app_name in get_application_names(region):
             list_env_names_for_app(app_name, region, verbose)
@@ -349,16 +354,13 @@ def pull_down_app_info(app_name, region, default_env=None):
 
     io.log_info('Pulling down defaults from environment ' + env.name)
     # Get keyname
-    instances = get_instance_ids(app_name, env.name, region)
-    if len(instances) < 1:
-        return env.platform.name, None
-
-    instance = ec2.describe_instance(instances[0], region)
-    try:
-        keypair_name = instance['KeyName']
-        return env.platform.name, keypair_name
-    except KeyError:
-        return env.platform.name, None
+    keyname = elasticbeanstalk.get_specific_configuration_for_env(
+        app_name, env.name, 'aws:autoscaling:launchconfiguration',
+        'EC2KeyName', region=region
+    )
+    if keyname is None:
+        keyname = -1
+    return env.platform.name, keyname
 
 
 def get_default_profile(region):
@@ -513,7 +515,7 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
         set_environment_for_current_branch(env_name)
 
     # Print status of env
-    print_env_details(result, health=False)
+    print_env_details(result, region, health=False)
 
     if nohang:
         return
@@ -525,10 +527,13 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
         io.log_error(strings['timeout.error'])
 
 
-def print_env_details(env, health=True):
+def print_env_details(env, region, health=True):
+    if region is None:
+        region = aws.get_default_region()
 
     io.echo('Environment details for:', env.name)
     io.echo('  Application name:', env.app_name)
+    io.echo('  Region:', region)
     io.echo('  Deployed Version:', env.version_label)
     io.echo('  Environment ID:', env.id)
     io.echo('  Platform:', env.platform)
@@ -579,7 +584,7 @@ def make_cloned_env(app_name, env_name, clone_name, cname, scale, tags, region,
                                    cname, label, scale, tags, region)
 
     # Print status of env
-    print_env_details(result, health=False)
+    print_env_details(result, region, health=False)
 
     if nohang:
         return
@@ -676,7 +681,7 @@ def deploy(app_name, env_name, region, version, label, message):
 
 def status(app_name, env_name, region, verbose):
     env = elasticbeanstalk.get_environment(app_name, env_name, region)
-    print_env_details(env, True)
+    print_env_details(env, region, health=True)
 
     if verbose:
         # Print number of running instances
@@ -923,8 +928,8 @@ def create_app_version(app_name, region, label=None, message=None):
     # Check for zip or artifact deploy
     artifact = fileoperations.get_config_setting('deploy', 'artifact')
     if artifact:
-        dirname, filename = os.path.split(os.getcwd())
-        file_name = filename
+        file_name, file_extension = os.path.splitext(artifact)
+        file_name = version_label + file_extension
         file_path = artifact
     else:
         # Create zip file

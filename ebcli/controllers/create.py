@@ -196,7 +196,7 @@ class CreateController(AbstractBaseController):
             db_object['username'] = username
             db_object['password'] = password
             db_object['engine'] = engine
-            db_object['size'] = str(size)
+            db_object['size'] = str(size) if size else None
             db_object['instance'] = instance
             return db_object
         else:

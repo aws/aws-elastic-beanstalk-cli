@@ -21,7 +21,8 @@ from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
 from ..objects.exceptions import ServiceError, NotAuthorizedError, \
-    InvalidSyntaxError, CredentialsError, NoRegionError, InvalidProfileError
+    InvalidSyntaxError, CredentialsError, NoRegionError, \
+    InvalidProfileError, ConnectionError
 
 LOG = minimal_logger(__name__)
 
@@ -76,6 +77,17 @@ def _get_service(service_name):
         service.session.set_credentials(_id, _key)
     _api_sessions[service_name] = service
     return service
+
+
+def get_default_region():
+    service = _get_service('elasticbeanstalk')
+    try:
+        endpoint = service.get_endpoint()
+        return endpoint.region_name
+    except botocore_eb.exceptions.UnknownEndpointError as e:
+        raise NoRegionError(e)
+    except:
+        return None
 
 
 def make_api_call(service_name, operation_name, region=None, profile=None,
@@ -157,6 +169,10 @@ def make_api_call(service_name, operation_name, region=None, profile=None,
             raise e
 
         except IOError as error:
+            if hasattr(error.args[0], 'reason') and str(error.args[0].reason) == \
+                    '[Errno -2] Name or service not known':
+                raise ConnectionError()
+
             LOG.error('Error while contacting Elastic Beanstalk Service')
             LOG.debug('error:' + str(error))
             raise ServiceError(error)

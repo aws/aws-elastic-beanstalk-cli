@@ -76,6 +76,11 @@ class NoRegionError(EBCLIException):
     pass
 
 
+class ConnectionError(EBCLIException):
+    """ Region provided cannot be resolved    """
+    pass
+
+
 class TimeoutError(EBCLIException):
     """ Operation timed out   """
     pass

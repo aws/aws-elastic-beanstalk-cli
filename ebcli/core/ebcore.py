@@ -115,6 +115,9 @@ def main():
     except NoRegionError:
         io.log_error(strings['exit.noregion'])
         app.close(code=3)
+    except ConnectionError:
+        io.log_error(strings['connection.error'])
+        app.close(code=2)
     except EBCLIException as e:
         if app.pargs.debug:
             raise

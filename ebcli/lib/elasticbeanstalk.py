@@ -105,6 +105,9 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
         assert isinstance(size, int), 'Size must be of type int'
         size = str(size)
 
+    if region is None:
+        region = aws.get_default_region()
+
     settings = []
 
     kwargs = {
@@ -187,8 +190,8 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
                 {'SnippetName': 'RdsExtensionEB',
                  'Order': 10000,
                  'SourceUrl': 'https://s3.amazonaws.com/'
-                              'elasticbeanstalk-env-resources-us-west-2/'
-                              'eb_snippets/rds/rds.json'}
+                              'elasticbeanstalk-env-resources-' + region +
+                              '/eb_snippets/rds/rds.json'}
             ]
         }
 
@@ -373,6 +376,25 @@ def describe_configuration_settings(app_name, env_name, region=None):
                             environment_name=env_name,
                             region=region)
     return result['ConfigurationSettings'][0]
+
+
+def get_specific_configuration(env_config, namespace, option):
+    for setting in env_config['OptionSettings']:
+        if setting['Namespace'] == namespace and \
+                setting['OptionName'] == option:
+            try:
+                return setting['Value']
+            except KeyError:
+                return None
+
+    return None
+
+
+def get_specific_configuration_for_env(app_name, env_name, namespace, option, region=None):
+    env_config = describe_configuration_settings(app_name, env_name,
+                                                 region=region)
+    return get_specific_configuration(env_config, namespace, option)
+
 
 
 def get_available_solution_stacks(region=None):

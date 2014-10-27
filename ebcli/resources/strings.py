@@ -104,7 +104,8 @@ strings = {
     'cname.unavailable': 'The CNAME prefix {cname} is already in use.',
     'ssh.openingport': 'INFO: Attempting to open port 22.',
     'ssh.closeport': 'INFO: Closed port 22 on ec2 instance security group.',
-    'ssh.uploaded': 'Uploaded SSH public key for "{keyname} into EC2.'
+    'ssh.uploaded': 'Uploaded SSH public key for "{keyname} into EC2.',
+    'connection.error': 'Having trouble communicating with AWS. Please ensure the provided region is correct and you have a working internet connection.',
 }
 
 prompts = {

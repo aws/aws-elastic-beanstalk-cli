@@ -80,6 +80,8 @@ class InitController(AbstractBaseController):
 
         self.keyname = self.get_keyname(default=key)
 
+        if self.keyname == -1:
+            self.keyname = None
         operations.setup(self.app_name, self.region, self.solution,
                          self.keyname)
 
@@ -202,12 +204,12 @@ class InitController(AbstractBaseController):
         if self.flag and not self.interactive:
             return keyname
 
-        if not keyname or \
+        if keyname is None or \
                 (self.interactive and not self.app.pargs.keyname):
             # Prompt for one
             keyname = operations.prompt_for_ec2_keyname(self.region)
 
-        else:
+        elif keyname != -1:
             operations.upload_keypair_if_needed(self.region, keyname)
 
         return keyname
