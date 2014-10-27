@@ -70,6 +70,8 @@ class InitController(AbstractBaseController):
         sstack, key = operations.create_app(self.app_name, self.region,
                                             default_env=default_env)
 
+
+
         if not self.solution:
             self.solution = sstack
 
@@ -78,12 +80,15 @@ class InitController(AbstractBaseController):
             result = operations.prompt_for_solution_stack(self.region)
             self.solution = result.version
 
+        operations.setup(self.app_name, self.region, self.solution)
+
         self.keyname = self.get_keyname(default=key)
 
         if self.keyname == -1:
             self.keyname = None
-        operations.setup(self.app_name, self.region, self.solution,
-                         self.keyname)
+
+        fileoperations.write_config_setting('global', 'default_ec2_keyname',
+                                            self.keyname)
 
     def check_credentials(self, profile):
         given_profile = self.app.pargs.profile

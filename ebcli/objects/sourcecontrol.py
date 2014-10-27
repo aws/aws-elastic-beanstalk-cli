@@ -121,8 +121,9 @@ class Git(SourceControl):
         io.log_info('Getting version label from git with git-describe')
         stdout, stderr, exitcode = \
             exec_cmd(['git', 'describe', '--always', '--abbrev=4'])
-        stdout = stdout.decode('utf8')
-        stderr = stderr.decode('utf8')
+        if sys.version_info[0] >= 3:
+            stdout = stdout.decode('utf8')
+            stderr = stderr.decode('utf8')
 
         self._handle_exitcode(exitcode, stderr)
 
@@ -133,8 +134,10 @@ class Git(SourceControl):
         stdout, stderr, exitcode = \
             exec_cmd(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
 
-        stdout = stdout.decode('utf8').rstrip()
-        stderr = stderr.decode('utf8')
+        if sys.version_info[0] >= 3:
+            stdout = stdout.decode('utf8')
+            stderr = stderr.decode('utf8')
+        stdout = stdout.rstrip()
         self._handle_exitcode(exitcode, stderr)
         LOG.debug('git current-branch result: ' + stdout)
         return stdout
@@ -144,15 +147,17 @@ class Git(SourceControl):
         stdout, stderr, exitcode = \
             exec_cmd(['git', 'archive', '-v', '--format=zip',
                       '-o', location, 'HEAD'])
-        stderr = stderr.decode('utf8')
+        if sys.version_info[0] >= 3:
+            stderr = stderr.decode('utf8')
         self._handle_exitcode(exitcode, stderr)
         io.log_info('git archive output: ' + stderr)
 
     def get_message(self):
         stdout, stderr, exitcode = \
             exec_cmd(['git', 'log', '--oneline', '-1'])
-        stdout = stdout.decode('utf8')
-        stderr = stderr.decode('utf8')
+        if sys.version_info[0] >= 3:
+            stdout = stdout.decode('utf8')
+            stderr = stderr.decode('utf8')
         self._handle_exitcode(exitcode, stderr)
         return stdout.rstrip()
 

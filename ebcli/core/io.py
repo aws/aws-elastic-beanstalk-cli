@@ -117,13 +117,13 @@ def prompt_for_environment_name(default_name='myEnv',
     #  Edit default name to fit standards.
 
     if not re.match(constraint_pattern, default_name):
-        if not re.match('^[a-z0-9].*', default_name):  # begins correctly
+        if not re.match('^[a-zA-Z0-9].*', default_name):  # begins correctly
             default_name = 'eb-' + default_name
         default_name = default_name.replace('_', '-')
         default_name = re.sub('[^a-z0-9A-Z-]', '', default_name)
         if len(default_name) > 23:
             default_name = default_name[:22]
-        if not re.match('.*[a-z0-9]$', default_name):  # end correctly
+        if not re.match('.*[a-zA-Z0-9]$', default_name):  # end correctly
             default_name += '0'
 
     while True:

@@ -448,11 +448,22 @@ def get_all_applications(region=None):
     return app_list
 
 
-def get_all_environments(app_name, region=None):
-    LOG.debug('Inside get_all_environments api wrapper')
+def get_app_environments(app_name, region=None):
+    LOG.debug('Inside get_app_environments api wrapper')
     result = _make_api_call('describe-environments',
                           application_name=app_name,
                           region=region)
+    # convert to object
+    envs = []
+    for env in result['Environments']:
+        envs.append(_api_to_environment(env))
+    return envs
+
+
+def get_all_environments(region=None):
+    LOG.debug('Inside get_all_environments api wrapper')
+    result = _make_api_call('describe-environments',
+                            region=region)
     # convert to object
     envs = []
     for env in result['Environments']:

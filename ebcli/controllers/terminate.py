@@ -42,7 +42,9 @@ class TerminateController(AbstractBaseController):
         nohang = self.app.pargs.nohang
 
         if all:
-            operations.delete_app(app_name, region, force, nohang=True)
+            cleanup = False if self.app.pargs.region else True
+            operations.delete_app(app_name, region, force, nohang=nohang,
+                                  cleanup=cleanup)
 
         else:
             try:
@@ -65,4 +67,4 @@ class TerminateController(AbstractBaseController):
                     io.log_error('Names do not match. Exiting.')
                     return
 
-            operations.terminate(env_name, region, nohang=True)
+            operations.terminate(env_name, region, nohang=nohang)

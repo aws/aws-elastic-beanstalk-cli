@@ -150,8 +150,13 @@ def print_events(app_name, env_name, region, follow):
             break
 
 
+def get_all_env_names(region):
+    envs = elasticbeanstalk.get_all_environments(region=region)
+    return [e.name for e in envs if not e.status == 'Terminated']
+
+
 def get_env_names(app_name, region):
-    envs = elasticbeanstalk.get_all_environments(app_name, region)
+    envs = elasticbeanstalk.get_app_environments(app_name, region)
     return [e.name for e in envs if not e.status == 'Terminated']
 
 
@@ -159,7 +164,8 @@ def list_env_names(app_name, region, verbose, all_apps):
     if region is None:
         region = aws.get_default_region()
 
-    io.echo('Region:', region)
+    if verbose:
+        io.echo('Region:', region)
 
     if all_apps:
         for app_name in get_application_names(region):
@@ -271,8 +277,8 @@ def credentials_are_valid(region):
         return False
 
 
-def setup(app_name, region, solution, keyname):
-    setup_directory(app_name, region, solution, keyname)
+def setup(app_name, region, solution):
+    setup_directory(app_name, region, solution)
 
     # Handle tomcat special case
     if 'tomcat' in solution.lower() and \
@@ -329,7 +335,7 @@ def create_app(app_name, region, default_env=None):
 
 def pull_down_app_info(app_name, region, default_env=None):
     # App exists, set up default environment
-    envs = elasticbeanstalk.get_all_environments(app_name, region)
+    envs = elasticbeanstalk.get_app_environments(app_name, region)
     if len(envs) == 0:
         # no envs, set None as default to override
         set_environment_for_current_branch(None)
@@ -401,6 +407,9 @@ def open_console(app_name, env_name, region):
         page = 'environment/dashboard'
     else:
         page = 'application/overview'
+
+    #encode app name
+    app_name = urllib.parse.quote(app_name)
 
     console_url = 'console.aws.amazon.com/elasticbeanstalk/home?'
     if region:
@@ -485,7 +494,7 @@ def scale(app_name, env_name, number, confirm, region):
 
 def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
                  itype, label, profile, single, key_name, branch_default,
-                 sample, tags, size, database, nohang):
+                 sample, tags, size, database, nohang, interactive=True):
     if profile is None:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
@@ -503,7 +512,8 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
     io.log_info('Creating new environment')
     result, request_id = create_env(app_name, env_name, region, cname,
                                     solution_stack, tier, itype, label, single,
-                                    key_name, profile, tags, size, database)
+                                    key_name, profile, tags, size, database,
+                                    interactive=interactive)
 
     env_name = result.name  # get the (possibly) updated name
 
@@ -547,7 +557,8 @@ def print_env_details(env, region, health=True):
 
 
 def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
-               label, single, key_name, profile, tags, size, database):
+               label, single, key_name, profile, tags, size, database,
+               interactive=True):
     description = strings['env.description']
     while True:
         try:
@@ -557,19 +568,22 @@ def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
                 region=region, database=database, size=size)
 
         except InvalidParameterValueError as e:
-            LOG.debug('creating env returned error: ' + e.message)
-            if re.match(responses['env.cnamenotavailable'], e.message):
-                io.echo(prompts['cname.unavailable'])
-                cname = io.prompt_for_cname()
-            elif re.match(responses['env.nameexists'], e.message):
-                io.echo(strings['env.exists'])
-                current_environments = get_env_names(app_name, region)
-                unique_name = utils.get_unique_name(env_name,
-                                                    current_environments)
-                env_name = io.prompt_for_environment_name(
-                    default_name=unique_name)
+            if interactive:
+                LOG.debug('creating env returned error: ' + e.message)
+                if re.match(responses['env.cnamenotavailable'], e.message):
+                    io.echo(prompts['cname.unavailable'])
+                    cname = io.prompt_for_cname()
+                elif re.match(responses['env.nameexists'], e.message):
+                    io.echo(strings['env.exists'])
+                    current_environments = get_all_env_names(region)
+                    unique_name = utils.get_unique_name(env_name,
+                                                        current_environments)
+                    env_name = io.prompt_for_environment_name(
+                        default_name=unique_name)
+                else:
+                    raise
             else:
-                raise e
+                raise
 
         # Try again with new values
 
@@ -625,7 +639,7 @@ def clone_env(app_name, env_name, clone_name, cname, label, scale,
         #try again
 
 
-def delete_app(app_name, region, force, nohang=False):
+def delete_app(app_name, region, force, nohang=False, cleanup=True):
     app = elasticbeanstalk.describe_application(app_name, region)
 
     if not force:
@@ -650,8 +664,9 @@ def delete_app(app_name, region, force, nohang=False):
     request_id = elasticbeanstalk.delete_application_and_envs(app_name,
                                                                   region)
 
-    cleanup_ignore_file()
-    fileoperations.clean_up()
+    if cleanup:
+        cleanup_ignore_file()
+        fileoperations.clean_up()
     if not nohang:
         wait_and_print_events(request_id, region, sleep_time=1,
                               timeout_in_seconds=60*15)
@@ -878,11 +893,9 @@ def open_file_for_editing(file_location):
             io.log_error(prompts['fileopen.error2'])
 
 
-def setup_directory(app_name, region, solution, keyname):
+def setup_directory(app_name, region, solution):
     io.log_info('Setting up .elasticbeanstalk directory')
     fileoperations.create_config_file(app_name, region, solution)
-    fileoperations.write_config_setting('global', 'default_ec2_keyname',
-                                        keyname)
 
 
 def setup_ignore_file():
@@ -1156,7 +1169,7 @@ def get_solution_stack(solution_string, region):
 
     #should only have 1 result
     if len(stacks) > 1:
-        LOG.error('Solution Stack list contains '
+        LOG.error('Platform list contains '
                   'multiple results')
         return None
 

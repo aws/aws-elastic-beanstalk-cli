@@ -84,6 +84,7 @@ class CreateController(AbstractBaseController):
         nohang = self.app.pargs.nohang
         tags = self.app.pargs.tags
         scale = self.app.pargs.scale
+        flag = False if env_name else True
 
 
         provided_env_name = env_name is not None
@@ -131,7 +132,7 @@ class CreateController(AbstractBaseController):
         if not env_name:
             # default is app-name plus '-dev'
             default_name = app_name + '-dev'
-            current_environments = operations.get_env_names(app_name, region)
+            current_environments = operations.get_all_env_names(region)
             unique_name = utils.get_unique_name(default_name,
                                                 current_environments)
             env_name = io.prompt_for_environment_name(unique_name)
@@ -158,7 +159,7 @@ class CreateController(AbstractBaseController):
         operations.make_new_env(app_name, env_name, region, cname, solution,
                                 tier, itype, label, iprofile, single, key_name,
                                 branch_default, sample, tags, scale,
-                                database, nohang)
+                                database, nohang, interactive=flag)
 
     def complete_command(self, commands):
         region = fileoperations.get_default_region()
