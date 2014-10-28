@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
+from ..resources.strings import strings, flag_text
 from ..core import fileoperations, io, operations
 from ..objects.exceptions import NotInitializedError, NoRegionError, \
     InvalidProfileError
@@ -25,12 +25,12 @@ class InitController(AbstractBaseController):
         label = 'init'
         description = strings['init.info']
         arguments = [
-            (['application_name'], dict(help='Application name',
-                                        nargs='?', default=[])),
-            (['-p', '--platform'], dict(help='Default Platform')),
-            (['-k', '--keyname'], dict(help='Default EC2 key name')),
-            (['-i', '--interactive'], dict(action='store_true',
-                                           help='Force interactive mode')),
+            (['application_name'], dict(
+                help=flag_text['init.name'], nargs='?', default=[])),
+            (['-p', '--platform'], dict(help=flag_text['init.platform'])),
+            (['-k', '--keyname'], dict(help=flag_text['init.keyname'])),
+            (['-i', '--interactive'], dict(
+                action='store_true', help=flag_text['init.interactive'])),
         ]
         usage = 'eb init <application_name> [options ...]'
         epilog = strings['init.epilog']

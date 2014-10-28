@@ -15,7 +15,7 @@ import re
 import argparse
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, prompts
+from ..resources.strings import strings, prompts, flag_text
 from ..lib import elasticbeanstalk, utils
 from ..objects.exceptions import NotFoundError, AlreadyExistsError, \
     InvalidOptionsError
@@ -28,33 +28,30 @@ class CreateController(AbstractBaseController):
         label = 'create'
         description = strings['create.info']
         arguments = [
-            (['environment_name'], dict(action='store', nargs='?',
-                                        default=None,
-                                        help='Desired Environment name')),
-            (['-c', '--cname'], dict(help='Cname prefix')),
-            (['-t', '--tier'], dict(help='Environment tier type')),
-            (['-i', '--instance_type'], dict(help='Instance Type '
-                                                  'i.e. t1.micro')),
-            (['-p', '--platform'], dict(help='Platform')),
-            (['-s', '--single'], dict(action='store_true',
-                                help='Environment will use a Single '
-                                     'Instance with no Load Balancer')),
-            (['--sample'], dict(action='store_true',
-                                help='Use Sample Application')),
-            (['-d', '--branch_default'], dict(action='store_true',
-                                              help='Set as branches default '
-                                                   'environment')),
-            (['-ip', '--instance_profile'], dict(help='EC2 Instance profile')),
-            (['--version'], dict(help='Version label to deploy')),
-            (['-k', '--keyname'], dict(help='EC2 SSH KeyPair name')),
-            (['--scale'], dict(type=int, help='Number of desired instances')),
-            (['-nh', '--nohang'], dict(action='store_true',
-                                       help='Do not hang and wait for create '
-                                            'to be completed')),
-            (['--tags'], dict(help='A comma separated list of tags '
-                                   'as key=value pairs')),
-            (['-db', '--database'], dict(action="store_true",
-                                         help='Create a Database')),
+            (['environment_name'], dict(
+                action='store', nargs='?', default=None,
+                help=flag_text['create.name'])),
+            (['-c', '--cname'], dict(help=flag_text['create.cname'])),
+            (['-t', '--tier'], dict(help=flag_text['create.tier'])),
+            (['-i', '--instance_type'], dict(
+                help=flag_text['create.itype'])),
+            (['-p', '--platform'], dict(help=flag_text['create.platform'])),
+            (['-s', '--single'], dict(
+                action='store_true', help=flag_text['create.single'])),
+            (['--sample'], dict(
+                action='store_true', help=flag_text['create.sample'])),
+            (['-d', '--branch_default'], dict(
+                action='store_true', help=flag_text['create.default'])),
+            (['-ip', '--instance_profile'], dict(
+                help=flag_text['create.iprofile'])),
+            (['--version'], dict(help=flag_text['create.version'])),
+            (['-k', '--keyname'], dict(help=flag_text['create.keyname'])),
+            (['--scale'], dict(type=int, help=flag_text['create.scale'])),
+            (['-nh', '--nohang'], dict(
+                action='store_true', help=flag_text['create.nohang'])),
+            (['--tags'], dict(help=flag_text['create.tags'])),
+            (['-db', '--database'], dict(
+                action="store_true", help=flag_text['create.database'])),
             ## Add addition hidden db commands
             (['-db.user', '--database.username'], dict(dest='db_user',
                                                    help=argparse.SUPPRESS)),
@@ -66,6 +63,17 @@ class CreateController(AbstractBaseController):
                 dict(type=int, dest='db_size', help=argparse.SUPPRESS)),
             (['-db.engine', '--database.engine'],
                 dict(dest='db_engine', help=argparse.SUPPRESS)),
+            (['--vpc.id'], dict(dest='vpc_id', help=argparse.SUPPRESS)),
+            (['--vpc.ec2subnets'], dict(
+                dest='vpc_ec2subnets', help=argparse.SUPPRESS)),
+            (['--vpc.elbsubnets'], dict(
+                dest='vpc_elbsubnets', help=argparse.SUPPRESS)),
+            (['--vpc.elbpublic'], dict(
+                action='store_true', dest='vpc_elbpublic',
+                help=argparse.SUPPRESS)),
+            (['--vpc.publicip'], dict(
+                action='store_true', dest='vpc_publicip',
+                help=argparse.SUPPRESS)),
         ]
 
     def do_command(self):
@@ -154,12 +162,13 @@ class CreateController(AbstractBaseController):
 
 
         database = self.form_database_object()
+        vpc = self.form_vpc_object()
 
 
         operations.make_new_env(app_name, env_name, region, cname, solution,
                                 tier, itype, label, iprofile, single, key_name,
                                 branch_default, sample, tags, scale,
-                                database, nohang, interactive=flag)
+                                database, vpc, nohang, interactive=flag)
 
     def complete_command(self, commands):
         region = fileoperations.get_default_region()
@@ -202,6 +211,26 @@ class CreateController(AbstractBaseController):
             return db_object
         else:
             return False
+
+    def form_vpc_object(self):
+        vpc_id = self.app.pargs.vpc_id
+        ec2subnets = self.app.pargs.vpc_ec2subnets
+        elbsubnets = self.app.pargs.vpc_elbsubnets
+        elbpublic = self.app.pargs.vpc_elbpublic
+        publicip = self.app.pargs.vpc_publicip
+
+        if vpc_id:
+            vpc_object = dict()
+            vpc_object['id'] = vpc_id
+            vpc_object['ec2subnets'] = ec2subnets
+            vpc_object['elbsubnets'] = elbsubnets
+            vpc_object['elbscheme'] = 'public' if elbpublic else 'private'
+            vpc_object['publicip'] = 'true' if publicip else 'false'
+            return vpc_object
+
+        else:
+            return False
+
 
 
 def get_cname(env_name, region):

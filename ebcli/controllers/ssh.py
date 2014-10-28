@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, prompts
+from ..resources.strings import strings, prompts, flag_text
 from ..core import fileoperations, operations, io
 from ..lib import utils
 from ..objects.exceptions import NoKeypairError, InvalidOptionsError
@@ -24,13 +24,12 @@ class SSHController(AbstractBaseController):
         description = strings['ssh.info']
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
         arguments = AbstractBaseController.Meta.arguments + [
-            (['-n', '--number'], dict(help='Number of instance in list',
-                                      type=int)),
-            (['-i', '--instance'], dict(help='Instance id')),
-            (['-o', '--keep_open'], dict(action='store_true',
-                                         help='Keep port 22 open')),
-            (['--setup'], dict(action='store_true',
-                               help='Setup SSH for the environment'))
+            (['-n', '--number'], dict(help=flag_text['ssh.number'], type=int)),
+            (['-i', '--instance'], dict(help=flag_text['ssh.instance'])),
+            (['-o', '--keep_open'], dict(
+                action='store_true', help=flag_text['ssh.keepopen'])),
+            (['--setup'], dict(
+                action='store_true', help=flag_text['ssh.setup']))
         ]
 
     def do_command(self):
@@ -74,8 +73,9 @@ class SSHController(AbstractBaseController):
 
     def setup_ssh(self, env_name, region):
         # Instance does not have a keypair
-        io.log_warning(prompts['ssh.setupwarn'])
-        keyname = operations.prompt_for_ec2_keyname(region)
+        io.log_warning(prompts['ssh.setupwarn'].replace('{env-name}',
+                                                        env_name))
+        keyname = operations.prompt_for_ec2_keyname(region, env_name=env_name)
         if keyname:
             options = [
                 {'Namespace': 'aws:autoscaling:launchconfiguration',

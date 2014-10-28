@@ -13,7 +13,7 @@
 
 import time
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, prompts
+from ..resources.strings import strings, prompts, flag_text
 from ..core import operations, io
 from ..objects.exceptions import NotFoundError, NoEnvironmentForBranchError
 
@@ -24,12 +24,11 @@ class TerminateController(AbstractBaseController):
         description = strings['terminate.info']
         arguments = AbstractBaseController.Meta.arguments + [
             (['--force'], dict(action='store_true',
-                               help='skip confirmation prompt')),
+                               help=flag_text['terminate.force'])),
             (['--all'], dict(action='store_true',
-                             help='Terminate everything')),
+                             help=flag_text['terminate.all'])),
             (['-nh', '--nohang'], dict(action='store_true',
-                                       help='Do not hang and wait for '
-                                            'terminate to be completed')),
+                                       help=flag_text['terminate.nohang'])),
         ]
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
         epilog = strings['terminate.epilog']
@@ -61,10 +60,7 @@ class TerminateController(AbstractBaseController):
                                         env_name + ' not found')
                 io.echo(prompts['terminate.confirm'].replace('{env-name}',
                                                              env_name))
-                result = io.get_input(prompts['terminate.validate'])
+                io.validate_action(prompts['terminate.validate'], env_name)
 
-                if result != env_name:
-                    io.log_error('Names do not match. Exiting.')
-                    return
 
             operations.terminate(env_name, region, nohang=nohang)

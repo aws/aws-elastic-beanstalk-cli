@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
+from ..resources.strings import strings, flag_text
 from ..core import fileoperations, operations, io
 
 
@@ -23,10 +23,9 @@ class SetEnvController(AbstractBaseController):
         usage = 'eb setenv [VAR_NAME=KEY ...] [-e environment] [options ...]'
         arguments = [
             (['varKey'], dict(action='store', nargs='+',
-                              default=[], help='Space seperated list in format'
-                                               ': VAR_NAME=KEY')),
+                              default=[], help=flag_text['setenv.vars'])),
             (['-e', '--environment'], dict(dest='environment_name',
-                                        help='Environment\'s name')),
+                                        help=flag_text['setenv.env'])),
         ]
         epilog = strings['setenv.epilog']
 

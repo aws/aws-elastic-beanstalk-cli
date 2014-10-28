@@ -74,7 +74,7 @@ def create_application_version(app_name, vers_label, descrip, s3_bucket,
 
 def create_environment(app_name, env_name, cname, description, solution_stck,
                        tier, itype, label, single, key_name, profile, tags,
-                       region=None, database=None, size=None):
+                       region=None, database=False, vpc=False, size=None):
     """
     Creates an Elastic Beanstalk environment
     :param app_name: Name of application where environment will live
@@ -234,6 +234,35 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
              'OptionName': 'CrossZone',
              'Value': 'true'}
         )
+    if vpc:
+        namespace = 'aws:ec2:vpc'
+        settings.append(
+            {'Namespace': namespace,
+             'OptionName': 'VPCId',
+             'Value': vpc['id']}
+        )
+        settings.append(
+            {'Namespace': namespace,
+             'OptionName': 'AssociatePublicIpAddress',
+             'Value': vpc['publicip']}
+        )
+        settings.append(
+            {'Namespace': namespace,
+             'OptionName': 'ELBScheme',
+             'Value': vpc['elbscheme']}
+        )
+        if vpc['elbsubnets']:
+            settings.append(
+                {'Namespace': namespace,
+                'OptionName': 'ELBSubnets',
+                'Value': vpc['elbsubnets']}
+            )
+        if vpc['ec2subnets']:
+            settings.append(
+                {'Namespace': namespace,
+                 'OptionName': 'Subnets',
+                 'Value': vpc['ec2subnets']}
+            )
 
     result = _make_api_call('create-environment', region=region, **kwargs)
 
@@ -394,7 +423,6 @@ def get_specific_configuration_for_env(app_name, env_name, namespace, option, re
     env_config = describe_configuration_settings(app_name, env_name,
                                                  region=region)
     return get_specific_configuration(env_config, namespace, option)
-
 
 
 def get_available_solution_stacks(region=None):

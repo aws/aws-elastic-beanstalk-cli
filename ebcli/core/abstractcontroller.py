@@ -15,14 +15,12 @@ import sys
 import logging
 
 from cement.core import controller
-from cement.utils.misc import init_defaults
 from cement.ext.ext_logging import LoggingLogHandler
 
 from ebcli import __version__
 from ..core import io, fileoperations, operations
-from ..objects.exceptions import NoEnvironmentForBranchError, \
-    NotInitializedError
-from ..resources.strings import strings
+from ..objects.exceptions import NoEnvironmentForBranchError
+from ..resources.strings import strings, flag_text
 from ..objects import region
 from ..lib import aws
 
@@ -41,7 +39,7 @@ class AbstractBaseController(controller.CementBaseController):
         arguments = [
             (['environment_name'], dict(action='store', nargs='?',
                                         default=[],
-                                        help='Environment name')),
+                                        help=flag_text['general.env'])),
         ]
         epilog = ''
         usage = 'eb {cmd} <environment_name> [options ...]'

@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
+from ..resources.strings import strings, flag_text
 from ..core import fileoperations, operations, io
 
 
@@ -22,10 +22,10 @@ class ScaleController(AbstractBaseController):
         description = strings['scale.info']
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
         arguments = [
-            (['number'], dict(action='store', type=int,
-                              help='Number of desired instances')),
-            (['-f'], dict(action='store_true',
-                          help='skip confirmation prompt')),
+            (['number'], dict(
+                action='store', type=int, help=flag_text['scale.number'])),
+            (['-f', '--force'], dict(
+                action='store_true', help=flag_text['scale.force'])),
         ] + AbstractBaseController.Meta.arguments
         usage = 'eb scale {number} <environment_name> [options ...]'
 
@@ -34,7 +34,7 @@ class ScaleController(AbstractBaseController):
         region = self.get_region()
         number = self.app.pargs.number
         env_name = self.get_env_name(cmd_example='scale ' + str(number))
-        confirm = self.app.pargs.f
+        confirm = self.app.pargs.force
 
         operations.scale(app_name, env_name, number, confirm, region)
 

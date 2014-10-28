@@ -157,8 +157,6 @@ class TestInit(BaseControllerTest):
         self.app.run()
         self.app.close()
 
-        # make sure we setup credentials
-        self.mock_operations.setup_credentials.assert_called()
         self.mock_operations.setup.assert_called_with('testDir',
                                                       'us-west-2',
                                                       'php')

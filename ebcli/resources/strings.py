@@ -13,7 +13,7 @@
 
 strings = {
     # Version message got 'eb --version'
-    'app.version_message': 'EBCLI - AWS Elastic Beanstalk CLI - Version:',
+    'app.version_message': 'EB CLI',
     # Initial text that you see on a 'eb --help'
     'base.info': "Welcome to the Elastic Beanstalk Command Line Interface (EB CLI). \n"
                  "For more information on a specific command, type 'eb {cmd} --help'.",
@@ -103,8 +103,9 @@ strings = {
     # Error thrown when available cname is not available
     'cname.unavailable': 'The CNAME prefix {cname} is already in use.',
     'ssh.openingport': 'INFO: Attempting to open port 22.',
+    'ssh.portopen': 'INFO: SSH port 22 open.',
     'ssh.closeport': 'INFO: Closed port 22 on ec2 instance security group.',
-    'ssh.uploaded': 'Uploaded SSH public key for "{keyname} into EC2.',
+    'ssh.uploaded': 'Uploaded SSH public key for "{keyname}" into EC2 for region {region}.',
     'connection.error': 'Having trouble communicating with AWS. Please ensure the provided region is correct and you have a working internet connection.',
 }
 
@@ -126,6 +127,7 @@ prompts = {
                       'Running environments: {env-num}\n'
                       'Configuration templates: {config-num}\n'
                       'Application versions: {version-num}\n',
+    'delete.validate': 'To confirm, type the application name',
     'fileopen.error1': 'EB CLI cannot open the file using the editor {editor}.',
     'fileopen.error2': 'Unable to open environment file. Try setting the EDITOR environment variable.',
     'update.invalidstate': 'The environment update cannot be complete at this time. Try again later.',
@@ -139,9 +141,92 @@ prompts = {
     # Error given on terminate when the user input does not match name
     'terminate.nomatch': 'Names do not match. Exiting.',
     'ssh.nokey': 'This environment is not set up for SSH. Use "eb ssh --setup" to set up SSH for the environment.',
-    'ssh.setupwarn': 'If you continue, your instances will be recreated and the environment will be temporarily unavailable.',
+    'ssh.setupwarn': 'You are about to setup SSH for environment "{env-name}". If you continue, your existing instances will have to be **terminated** and new instances will be created. The environment will be temporarily unavailable.',
     'rds.username': 'Enter an RDS DB username (default is "admin")',
     'rds.password': 'Enter an RDS DB master password',
+}
+
+flag_text = {
+    # General
+    'general.env': 'Environment name',
+    'base.version': 'show application/version info',
+    'base.verbose': 'toggle verbose output',
+    'base.profile': 'Use a specific profile from your credential file',
+    'base.region': 'Use a specific region',
+
+    # Clone
+    'clone.env': 'Name of environment to clone',
+    'clone.name': 'Desired name for environment clone',
+    'clone.cname': 'Cname prefix',
+    'clone.scale': 'Number of desired instances',
+    'clone.tags': 'A comma separated list of tags as key=value pairs',
+    'clone.nohang': 'Do not hang and wait for clone to be completed',
+
+    # Config
+    'config.nohang': 'Do not hang and wait for config to be completed',
+
+    # Create
+    'create.name': 'Desired Environment name',
+    'create.cname': 'Cname prefix',
+    'create.itype': 'Instance Type i.e. t1.micro',
+    'create.tier': 'Environment tier type',
+    'create.platform': 'Platform',
+    'create.single': 'Environment will use a Single Instance with no Load Balancer',
+    'create.sample': 'Use Sample Application',
+    'create.default': 'Set as branches default environment',
+    'create.iprofile': 'EC2 Instance profile',
+    'create.version': 'Version label to deploy',
+    'create.keyname': 'EC2 SSH KeyPair name',
+    'create.scale': 'Number of desired instances',
+    'create.nohang': 'Do not hang and wait for create to be completed',
+    'create.tags': 'A comma separated list of tags '
+                   'as key=value pairs',
+    'create.database': 'Create a Database',
+
+    # Deploy
+    'deploy.env': 'Environment name',
+    'deploy.version': 'Existing version label to deploy',
+    'deploy.label': 'Label name which version will be given',
+    'deploy.message': 'Message/Description for version',
+
+    # Events
+    'events.follow': 'Wait and continue to print events as they come',
+
+    # Init
+    'init.name': 'Application name',
+    'init.platform': 'Default Platform',
+    'init.keyname': 'Default EC2 key name',
+    'init.interactive': 'Force interactive mode',
+
+    # List
+    'list.all': 'Show environments for all applications',
+
+    # Logs
+    'logs.all': 'Retrieve all logs',
+    'logs.zip': 'Retrieve all logs as .zip',
+    'logs.instance': 'Instance id',
+
+    # Scale
+    'scale.number': 'Number of desired instances',
+    'scale.force': 'skip confirmation prompt',
+
+    # Setenv
+    'setenv.vars': 'Space separated list in format: VAR_NAME=KEY',
+    'setenv.env': 'Environment name',
+
+    # SSH
+    'ssh.number': 'Index of instance in list',
+    'ssh.instance': 'Instance id',
+    'ssh.keepopen': 'Keep port 22 open',
+    'ssh.setup': 'Setup SSH for the environment',
+
+    # terminate
+    'terminate.force': 'skip confirmation prompt',
+    'terminate.all': 'Terminate everything',
+    'terminate.nohang': 'Do not hang and wait for terminate to be completed',
+
+    # use
+    'use.env': 'Environment name',
 }
 
 

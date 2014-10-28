@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
+from ..resources.strings import strings, flag_text
 from ..core import operations, io
 from ..lib import utils, elasticbeanstalk
 from ..controllers.create import get_cname, get_and_validate_tags
@@ -25,17 +25,13 @@ class CloneController(AbstractBaseController):
         description = strings['clone.info']
         arguments = [
             (['environment_name'], dict(action='store', nargs='?',
-                                            help='Name of environment '
-                                                 'to clone')),
-            (['-n', '--clone_name'], dict(help='Desired name for environment'
-                                               ' clone')),
-            (['-c', '--cname'], dict(help='Cname prefix')),
-            (['--scale'], dict(type=int, help='Number of desired instances')),
-            (['--tags'], dict(help='A comma separated list of tags '
-                                   'as key=value pairs')),
+                                            help=flag_text['clone.env'])),
+            (['-n', '--clone_name'], dict(help=flag_text['clone.name'])),
+            (['-c', '--cname'], dict(help=flag_text['clone.cname'])),
+            (['--scale'], dict(type=int, help=flag_text['clone.scale'])),
+            (['--tags'], dict(help=flag_text['clone.tags'])),
             (['-nh', '--nohang'], dict(action='store_true',
-                                       help='Do not hang and wait for clone '
-                                            'to be completed')),
+                                       help=flag_text['clone.nohang'])),
         ]
         usage = 'eb clone <environment_name> (-n CLONE_NAME) [options ...]'
 

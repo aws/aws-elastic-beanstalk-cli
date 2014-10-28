@@ -12,8 +12,8 @@
 # language governing permissions and limitations under the License.
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..core import fileoperations, operations, io
+from ..resources.strings import strings, flag_text
+from ..core import operations
 
 
 class ListController(AbstractBaseController):
@@ -23,8 +23,7 @@ class ListController(AbstractBaseController):
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
         arguments = [
             (['-a', '--all'], dict(action='store_true',
-                                   help='Show environments for all '
-                                        'applications'))
+                                   help=flag_text['list.all']))
         ]
 
     def do_command(self):

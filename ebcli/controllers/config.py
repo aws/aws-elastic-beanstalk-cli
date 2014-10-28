@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
+from ..resources.strings import strings, flag_text
 from ..core import io, fileoperations, operations
 
 
@@ -23,8 +23,7 @@ class ConfigController(AbstractBaseController):
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
         arguments = AbstractBaseController.Meta.arguments + [
             (['-nh', '--nohang'], dict(action='store_true',
-                                       help='Do not hang and wait for update '
-                                            'to be completed'))
+                                       help=flag_text['config.nohang']))
         ]
 
 

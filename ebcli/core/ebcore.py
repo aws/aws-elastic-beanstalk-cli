@@ -38,7 +38,7 @@ from ..controllers.clone import CloneController
 from ..core.completer import CompleterController
 from ..core import globals, base, io
 from ..objects.exceptions import *
-from ..resources.strings import strings
+from ..resources.strings import strings, flag_text
 
 
 class EB(foundation.CementApp):
@@ -74,10 +74,9 @@ class EB(foundation.CementApp):
 
         #Register global arguments
         self.add_arg('-v', '--verbose',
-                     action='store_true', help='toggle verbose output')
-        self.add_arg('--profile', help='Use a specific profile '
-                                       'from your credential file')
-        self.add_arg('-r', '--region', help='Use a specific region')
+                     action='store_true', help=flag_text['base.verbose'])
+        self.add_arg('--profile', help=flag_text['base.profile'])
+        self.add_arg('-r', '--region', help=flag_text['base.region'])
 
         globals.app = self
 

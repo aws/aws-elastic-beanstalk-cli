@@ -22,6 +22,8 @@ from six.moves import input
 import logging
 
 from ..core import globals
+from ..objects.exceptions import ValidationError
+from ..resources.strings import prompts
 
 LOG = logging.getLogger(__name__)
 
@@ -149,6 +151,13 @@ def get_pass(output):
         else:
             echo()
             log_error('Passwords do not match')
+
+
+def validate_action(output, expected_input):
+    result = get_input(output)
+
+    if result != expected_input:
+        raise ValidationError(prompts['terminate.nomatch'])
 
 
 def prompt_for_cname(default=None):

@@ -494,7 +494,7 @@ def scale(app_name, env_name, number, confirm, region):
 
 def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
                  itype, label, profile, single, key_name, branch_default,
-                 sample, tags, size, database, nohang, interactive=True):
+                 sample, tags, size, database, vpc, nohang, interactive=True):
     if profile is None:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
@@ -513,7 +513,7 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
     result, request_id = create_env(app_name, env_name, region, cname,
                                     solution_stack, tier, itype, label, single,
                                     key_name, profile, tags, size, database,
-                                    interactive=interactive)
+                                    vpc, interactive=interactive)
 
     env_name = result.name  # get the (possibly) updated name
 
@@ -557,7 +557,7 @@ def print_env_details(env, region, health=True):
 
 
 def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
-               label, single, key_name, profile, tags, size, database,
+               label, single, key_name, profile, tags, size, database, vpc,
                interactive=True):
     description = strings['env.description']
     while True:
@@ -565,7 +565,7 @@ def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
             return elasticbeanstalk.create_environment(
                 app_name, env_name, cname, description, solution_stack,
                 tier, itype, label, single, key_name, profile, tags,
-                region=region, database=database, size=size)
+                region=region, database=database, vpc=vpc, size=size)
 
         except InvalidParameterValueError as e:
             if interactive:
@@ -654,11 +654,7 @@ def delete_app(app_name, region, force, nohang=False, cleanup=True):
             '{version-num}', str(len(app['Versions'])))
         io.echo()
         io.echo(confirm_message)
-        result = io.get_input('To confirm, type the application name')
-
-        if result != app_name:
-            io.log_error(prompts['terminate.nomatch'])
-            return
+        io.validate_action(prompts['delete.validate'], app_name)
 
 
     request_id = elasticbeanstalk.delete_application_and_envs(app_name,
@@ -1104,6 +1100,7 @@ def ssh_into_instance(instance_id, region, keep_open=False):
     io.echo(strings['ssh.openingport'])
     for group in security_groups:
         ec2.authorize_ssh(group['GroupId'], region=region)
+    io.echo(strings['ssh.portopen'])
 
     # do ssh
     try:
@@ -1125,12 +1122,14 @@ def ssh_into_instance(instance_id, region, keep_open=False):
             io.echo(strings['ssh.closeport'])
 
 
-def prompt_for_ec2_keyname(region):
-    io.echo(prompts['ssh.setup'])
-    ssh = get_boolean_response()
-
-    if not ssh:
-        return None
+def prompt_for_ec2_keyname(region, env_name=None):
+    if env_name:
+        io.validate_action(prompts['terminate.validate'], env_name)
+    else:
+        io.echo(prompts['ssh.setup'])
+        ssh = get_boolean_response()
+        if not ssh:
+            return None
 
     keys = [k['KeyName'] for k in ec2.get_key_pairs(region=region)]
 
@@ -1238,7 +1237,10 @@ def upload_keypair_if_needed(region, keyname):
         ec2.import_key_pair(keyname, key_material, region=region)
     except AlreadyExistsError:
         return
-    io.log_warning(strings['ssh.uploaded'].replace('{keyname}', keyname))
+    if region is None:
+        region = aws.get_default_region()
+    io.log_warning(strings['ssh.uploaded'].replace('{keyname}', keyname)
+                   .replace('{region}', region))
 
 
 def _get_public_ssh_key(keypair_name):

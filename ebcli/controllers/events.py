@@ -12,8 +12,8 @@
 # language governing permissions and limitations under the License.
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..core import fileoperations, operations, io
+from ..resources.strings import strings, flag_text
+from ..core import operations
 
 
 class EventsController(AbstractBaseController):
@@ -21,9 +21,8 @@ class EventsController(AbstractBaseController):
         label = 'events'
         description = strings['events.info']
         arguments = AbstractBaseController.Meta.arguments + [
-            (['-f', '--follow'], dict(action='store_true',
-                                      help='Wait and continue to print '
-                                           'events as they come'))
+            (['-f', '--follow'], dict(
+                action='store_true', help=flag_text['events.follow']))
         ]
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 

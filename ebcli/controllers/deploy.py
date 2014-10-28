@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
+from ..resources.strings import strings, flag_text
 from ..core import operations
 from ..objects.exceptions import NoEnvironmentForBranchError, \
     InvalidOptionsError
@@ -24,12 +24,12 @@ class DeployController(AbstractBaseController):
         label = 'deploy'
         description = strings['deploy.info']
         arguments = [
-            (['environment_name'], dict(action='store', nargs='?',
-                                        default=[],
-                                        help='Environment name')),
-            (['--version'], dict(help='Existing version label to deploy')),
-            (['-l', '--label'], dict(help='Label name which version will be given')),
-            (['-m', '--message'], dict(help='Message/Description for version'))
+            (['environment_name'], dict(
+                action='store', nargs='?', default=[],
+                help=flag_text['deploy.env'])),
+            (['--version'], dict(help=flag_text['deploy.version'])),
+            (['-l', '--label'], dict(help=flag_text['deploy.label'])),
+            (['-m', '--message'], dict(help=flag_text['deploy.message']))
         ]
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 

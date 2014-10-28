@@ -12,8 +12,8 @@
 # language governing permissions and limitations under the License.
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..core import operations, io
+from ..resources.strings import strings, flag_text
+from ..core import operations
 
 
 class UseController(AbstractBaseController):
@@ -22,7 +22,7 @@ class UseController(AbstractBaseController):
         description = strings['use.info']
         arguments = [
             (['environment_name'], dict(action='store', nargs=1,
-                                        help='Environment name'))
+                                        help=flag_text['use.env']))
         ]
         usage = 'eb use [environment_name]'
 

@@ -12,8 +12,8 @@
 # language governing permissions and limitations under the License.
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..core import operations, io
+from ..resources.strings import strings, flag_text
+from ..core import operations
 from ..objects.exceptions import InvalidOptionsError
 
 
@@ -23,11 +23,11 @@ class LogsController(AbstractBaseController):
         description = strings['logs.info']
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
         arguments = AbstractBaseController.Meta.arguments + [
-            (['-a', '--all'], dict(action='store_true',
-                                      help='Retrieve all logs')),
-            (['-z', '--all_zip'], dict(action='store_true',
-                                          help='Retrieve all logs as .zip')),
-            (['-i', '--instance'], dict(help='Instance id')),
+            (['-a', '--all'], dict(
+                action='store_true', help=flag_text['logs.all'])),
+            (['-z', '--all_zip'], dict(
+                action='store_true', help=flag_text['logs.zip'])),
+            (['-i', '--instance'], dict(help=flag_text['logs.instance'])),
         ]
         epilog = strings['logs.epilog']
 
