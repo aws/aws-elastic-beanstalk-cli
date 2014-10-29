@@ -642,6 +642,9 @@ def clone_env(app_name, env_name, clone_name, cname, label, scale,
 def delete_app(app_name, region, force, nohang=False, cleanup=True):
     app = elasticbeanstalk.describe_application(app_name, region)
 
+    if 'Versions' not in app:
+        app['Versions'] = []
+
     if not force:
         #Confirm
         envs = get_env_names(app_name, region)

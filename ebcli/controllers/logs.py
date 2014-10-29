@@ -25,7 +25,7 @@ class LogsController(AbstractBaseController):
         arguments = AbstractBaseController.Meta.arguments + [
             (['-a', '--all'], dict(
                 action='store_true', help=flag_text['logs.all'])),
-            (['-z', '--all_zip'], dict(
+            (['-z', '--zip'], dict(
                 action='store_true', help=flag_text['logs.zip'])),
             (['-i', '--instance'], dict(help=flag_text['logs.instance'])),
         ]
@@ -36,20 +36,17 @@ class LogsController(AbstractBaseController):
         env_name = self.get_env_name()
         all = self.app.pargs.all
         instance = self.app.pargs.instance
-        all_zip = self.app.pargs.all_zip
-
-        if all and all_zip:
-            raise InvalidOptionsError(strings['logs.allandzip'])
+        zip = self.app.pargs.zip
 
         if all and instance:
             raise InvalidOptionsError(strings['logs.allandinstance'])
 
-        if all:
-            info_type = 'bundle'
-            do_zip = False
-        elif all_zip:
+        if zip:
             info_type = 'bundle'
             do_zip = True
+        elif all:
+            info_type = 'bundle'
+            do_zip = False
         else:
             info_type = 'tail'
             do_zip = False

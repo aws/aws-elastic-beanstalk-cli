@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import sys
+
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
 from ..core import fileoperations, io, operations
@@ -147,6 +149,13 @@ class InitController(AbstractBaseController):
         if not app_name or \
                 (self.interactive and not self.app.pargs.application_name):
             app_name = _get_application_name_interactive(self.region)
+
+        if sys.version_info[0] < 3 and isinstance(app_name, unicode):
+            try:
+                app_name.encode('utf8').encode('utf8')
+                app_name = app_name.encode('utf8')
+            except UnicodeDecodeError:
+                pass
 
         return app_name
 

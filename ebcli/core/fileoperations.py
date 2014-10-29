@@ -185,6 +185,9 @@ def _set_user_only_permissions_file(location, ex=False):
 
 def get_current_directory_name():
     dirname, filename = os.path.split(os.getcwd())
+    if sys.version_info[0] < 3:
+        filename = filename.decode('utf8')
+
     return filename
 
 

@@ -148,85 +148,85 @@ prompts = {
 
 flag_text = {
     # General
-    'general.env': 'Environment name',
+    'general.env': 'environment name',
     'base.version': 'show application/version info',
     'base.verbose': 'toggle verbose output',
-    'base.profile': 'Use a specific profile from your credential file',
-    'base.region': 'Use a specific region',
+    'base.profile': 'use a specific profile from your credential file',
+    'base.region': 'use a specific region',
 
     # Clone
-    'clone.env': 'Name of environment to clone',
-    'clone.name': 'Desired name for environment clone',
-    'clone.cname': 'Cname prefix',
-    'clone.scale': 'Number of desired instances',
-    'clone.tags': 'A comma separated list of tags as key=value pairs',
-    'clone.nohang': 'Do not hang and wait for clone to be completed',
+    'clone.env': 'name of environment to clone',
+    'clone.name': 'desired name for environment clone',
+    'clone.cname': 'cname prefix',
+    'clone.scale': 'number of desired instances',
+    'clone.tags': 'a comma separated list of tags as key=value pairs',
+    'clone.nohang': 'return immediately, do not wait for clone to be completed',
 
     # Config
-    'config.nohang': 'Do not hang and wait for config to be completed',
+    'config.nohang': 'return immediately, do not wait for config to be completed',
 
     # Create
-    'create.name': 'Desired Environment name',
-    'create.cname': 'Cname prefix',
-    'create.itype': 'Instance Type i.e. t1.micro',
-    'create.tier': 'Environment tier type',
-    'create.platform': 'Platform',
-    'create.single': 'Environment will use a Single Instance with no Load Balancer',
-    'create.sample': 'Use Sample Application',
-    'create.default': 'Set as branches default environment',
+    'create.name': 'desired Environment name',
+    'create.cname': 'cname prefix',
+    'create.itype': 'instance type i.e. t1.micro',
+    'create.tier': 'environment tier type',
+    'create.platform': 'platform',
+    'create.single': 'environment will use a single instance with no load balancer',
+    'create.sample': 'use Sample Application',
+    'create.default': 'set as branches default environment',
     'create.iprofile': 'EC2 Instance profile',
-    'create.version': 'Version label to deploy',
+    'create.version': 'version label to deploy',
     'create.keyname': 'EC2 SSH KeyPair name',
-    'create.scale': 'Number of desired instances',
-    'create.nohang': 'Do not hang and wait for create to be completed',
-    'create.tags': 'A comma separated list of tags '
+    'create.scale': 'number of desired instances',
+    'create.nohang': 'return immediately, do not wait for create to be completed',
+    'create.tags': 'a comma separated list of tags '
                    'as key=value pairs',
-    'create.database': 'Create a Database',
+    'create.database': 'create a database',
 
     # Deploy
-    'deploy.env': 'Environment name',
-    'deploy.version': 'Existing version label to deploy',
-    'deploy.label': 'Label name which version will be given',
-    'deploy.message': 'Message/Description for version',
+    'deploy.env': 'environment name',
+    'deploy.version': 'existing version label to deploy',
+    'deploy.label': 'label name which version will be given',
+    'deploy.message': 'description for version',
 
     # Events
-    'events.follow': 'Wait and continue to print events as they come',
+    'events.follow': 'wait and continue to print events as they come',
 
     # Init
-    'init.name': 'Application name',
-    'init.platform': 'Default Platform',
-    'init.keyname': 'Default EC2 key name',
-    'init.interactive': 'Force interactive mode',
+    'init.name': 'application name',
+    'init.platform': 'default Platform',
+    'init.keyname': 'default EC2 key name',
+    'init.interactive': 'force interactive mode',
 
     # List
-    'list.all': 'Show environments for all applications',
+    'list.all': 'show environments for all applications',
 
     # Logs
-    'logs.all': 'Retrieve all logs',
-    'logs.zip': 'Retrieve all logs as .zip',
-    'logs.instance': 'Instance id',
+    'logs.all': 'retrieve all logs',
+    'logs.zip': 'retrieve all logs as .zip',
+    'logs.instance': 'instance id',
 
     # Scale
-    'scale.number': 'Number of desired instances',
+    'scale.number': 'number of desired instances',
     'scale.force': 'skip confirmation prompt',
 
     # Setenv
-    'setenv.vars': 'Space separated list in format: VAR_NAME=KEY',
-    'setenv.env': 'Environment name',
+    'setenv.vars': 'space separated list in format: VAR_NAME=KEY',
+    'setenv.env': 'environment name',
 
     # SSH
-    'ssh.number': 'Index of instance in list',
-    'ssh.instance': 'Instance id',
-    'ssh.keepopen': 'Keep port 22 open',
-    'ssh.setup': 'Setup SSH for the environment',
+    'ssh.number': 'index of instance in list',
+    'ssh.instance': 'instance id',
+    'ssh.keepopen': 'keep port 22 open',
+    'ssh.setup': 'setup SSH for the environment',
 
     # terminate
     'terminate.force': 'skip confirmation prompt',
-    'terminate.all': 'Terminate everything',
-    'terminate.nohang': 'Do not hang and wait for terminate to be completed',
+    'terminate.all': 'terminate everything',
+    'terminate.nohang': 'return immediately, do not wait for terminate to be completed',
 
     # use
-    'use.env': 'Environment name',
+    'use.env': 'environment name',
 }
 
 
