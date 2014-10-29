@@ -37,7 +37,7 @@ setup_options = dict(
     package_dir={'ebcli': 'ebcli',
                  'botocore_eb': 'botocore_eb'},
     package_data={
-        'botocore_eb': ['data/*.json', 'data/aws/*.json', 'data/aws/*/*.json'],
+        'botocore_eb': ['data/aws/*.json', 'data/aws/*/*.json'],
         'botocore_eb.vendored.requests': ['*.pem']},
     install_requires=requires,
     license="Apache License 2.0",
@@ -74,4 +74,3 @@ if 'py2exe' in sys.argv:
     setup_options['console'] = ['bin\eb']
 
 setup(**setup_options)
-

@@ -263,6 +263,12 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
                  'OptionName': 'Subnets',
                  'Value': vpc['ec2subnets']}
             )
+        if vpc['securitygroups']:
+            settings.append(
+                {'Namespace': 'aws:autoscaling:launchconfiguration',
+                 'OptionName': 'SecurityGroups',
+                 'Value': vpc['securitygroups']}
+            )
 
     result = _make_api_call('create-environment', region=region, **kwargs)
 

@@ -74,6 +74,9 @@ class CreateController(AbstractBaseController):
             (['--vpc.publicip'], dict(
                 action='store_true', dest='vpc_publicip',
                 help=argparse.SUPPRESS)),
+            (['--vpc.securitygroups'], dict(
+                dest='vpc_securitygroups', help=argparse.SUPPRESS
+            )),
         ]
 
     def do_command(self):
@@ -218,14 +221,16 @@ class CreateController(AbstractBaseController):
         elbsubnets = self.app.pargs.vpc_elbsubnets
         elbpublic = self.app.pargs.vpc_elbpublic
         publicip = self.app.pargs.vpc_publicip
+        securitygroups = self.app.pargs.vpc_securitygroups
 
         if vpc_id:
             vpc_object = dict()
             vpc_object['id'] = vpc_id
             vpc_object['ec2subnets'] = ec2subnets
             vpc_object['elbsubnets'] = elbsubnets
-            vpc_object['elbscheme'] = 'public' if elbpublic else 'private'
+            vpc_object['elbscheme'] = 'public' if elbpublic else 'internal'
             vpc_object['publicip'] = 'true' if publicip else 'false'
+            vpc_object['securitygroups'] = securitygroups
             return vpc_object
 
         else:
