@@ -82,6 +82,7 @@ def get_input(output, default=None):
         pass
 
     # Trim spaces
+    output = next(_convert_to_strings([output]))
     result = input(output + ': ').strip()
     if not result:
         result = default

@@ -72,8 +72,6 @@ class InitController(AbstractBaseController):
         sstack, key = operations.create_app(self.app_name, self.region,
                                             default_env=default_env)
 
-
-
         if not self.solution:
             self.solution = sstack
 

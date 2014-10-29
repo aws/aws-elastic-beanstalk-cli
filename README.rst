@@ -2,119 +2,118 @@
 EB-CLI
 ===========
 
-EB is the command line interface for Amazon Web Services Elastic
-Beanstalk product. This command line interface tool will help you
-manage your Elastic Beanstalk environments. It also integrates
-with Git. To see commands use:
+EB Command Line Interface (CLI) is a tool that helps you deploy and manage
+your AWS Elastic Beanstalk applications and environments. It also
+provides integration with Git. This file provides a sample walkthrough of EB CLI. To view a list of commands, type:
 
     eb --help
 
-To get more info on a specific command use:
+For more information about a specific command, type:
 
     eb {cmd} --help
 
 
-please see `Official Documentation <http://my.example.com>`__
+For detailed information about EB CLI, see `EB Command Line Reference <http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-reference-eb.html>`__
 
 
 Installation
 ====
-You will need administrator/sudo privileges (unless you install into a virtualenv).
-To install you will first need to install python and pip.
-The latest version of python (3.4) now includes pip.
+You will need administrator/sudo privileges unless you install into a virtual environment.
+To install you will first need to install Python and Pip.
+The most recent version of Python now includes pip.
 
-`Go here to install python <https://www.python.org/downloads/>`__
+`To install Python, go to <https://www.python.org/downloads/>.`__
 
-If you already have python, but need pip, `go here to install pip <http://pip.readthedocs.org/en/latest/installing.html>`__
+If you already have Python, but need to install Pip, `go to <http://pip.readthedocs.org/en/latest/installing.html>.`__
 
-Once you have pip installed run the following command:
+After you have installed Pip, run the following command:
 
-pip install aws-eb-cli
+pip install awsebcli
 
 
 Getting Started
 ====
-You will need a set of AWS Access Keys to use the eb-cli.
-You can get these by following the `directions here <http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html>`__
+EB CLI requires you to have AWS security credentials.
+For procedures to get security credentials, `see <http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html>.`__
 
-1. Make a new directory for your project.
+1. Create a new directory for your project.
 ----
 
+In Linux/UNIX, type the following:
     mkdir my-hello-app
 
-(on windows you can use "md my-hello-app")
+In Windows, type the following:
+	md my-hello-app
 
-2. Write the code for your application
+2. Create an index.html file for EB CLI to use as your sample application.
 ----
 
-    echo "Hello World!" > index.html
+    echo "Hello World" > index.html
 
-(on windows use the same command but without the quotes.)
+NOTE: In Windows, do not include quotes in the command.
 
-3. Setup your directory with the eb-cli and create an application:
+3. Set up your directory with EB CLI and then answer the questions to configure AWS Elastic Beanstalk.
 ----
 
     eb init
 
-Answer the questions at the default value by hitting enter. Make sure to put in your AWS credentials correctly when prompted.
+When prompted for your AWS security credentials, type your access key ID and secret access key. To answer a question with the default value, press Enter.
 
-4. Create your running environment
+4. Create your running environment and deploy the Hello World application.
 ----
 
     eb create
 
-Answer the questions at the default value by hitting enter.
+Wait for AWS Elastic Beanstalk to finish creating the environment.
+When it is done, your application is live in a load-balancing environment.
 
-Wait for the environment to finish being created.
-Your Application is now live in a load balanced environment!
-
-5. View your application
+5. View your application.
 ----
 
     eb open
 
-6. Make a change
+6. Update the sample application to create a new application version to deploy.
 ----
 
-Make a change to your code
+Make a change to your code by typing the following:
 
-   echo " - Sincerely Elastic Beanstalk" >> index.html
+   echo " to you." >> index.html
 
-(on windows use the same command but without the quotes.)
+NOTE: In Windows, do not include quotes in the command.
 
-Once you are ready to launch your new version, simply use the command
+When you are ready to launch your new application version, type the following:
 
    eb deploy
 
-7. View updated environment
+7. View the updated environment.
 ----
 
     eb open
 
 
-8. Shut down your running environment
+8. Shut down your running environment.
 ----
 
     eb terminate
 
-You will need to type in the environment name to confirm.
+Confirm that this is the environment that you want to terminate by typing the environment name.
 
-9. Clean up
+9. Clean up.
 ----
 
-To completely remove your application and clean up the local project directory use:
+To completely remove your application and clean up the local project directory, type the following:
 
     eb terminate --all
 
-You will need to type in the application name to confirm.
+Confirm that this is the application that you want to remove by typing the application name.
 
 
-Moving Around
+EB CLI Commands
 ====
 
-The following set of commands can be used to use the eb-cli more effectively
+This section describes some EB CLI 3 commands and why you would use them.
 
-1. View environment status
+1. View environment status.
 ----
 
     eb status -v
@@ -126,85 +125,88 @@ The status command will show you the current state of your application. This inc
   * Health
   * Number of running instances
 
-2. List your running environments
+2. List your running environments.
 ----
 
    eb list
 
 The list command will show you a list of running environments.
-The environment with a star next to it is your selected default environment.
-If you would like to see more detailed information, you can use verbose mode:
+The environment with an asterisk next to it is the default environment.
+To see more detailed information about your environments, type the following to use verbose mode:
 
    eb list -v
 
-3. Switch your current environment
+3. Change your current environment.
 ----
 
 You can run most commands with any environment by using the following syntax:
 
     eb {cmd} <environment>
 
-However if you would like to switch your default environment you can select it using
+To change your default environment, type the following:
 
     eb use [environment_name]
 
-4. Open up the AWS Elastic Beanstalk console
+4. Open the AWS Elastic Beanstalk management console.
 ----
 
-If you would like to view your Environment in the AWS Console you can use:
+To view your environment in the AWS Management Console, type the following:
 
     eb console
 
-5. Changing environment variables
+5. Change environment variables.
 ----
 
-You can set environment variables for your running environment at anytime by using:
+You can set environment variables for your running environment at any time by typing the following:
 
     eb setenv foo=bar
 
-If you would just like to view your environment variables, you can do so by using:
+You can view your environment variables by typing the following:
 
     eb printenv
 
 
-EB-CLI works better with git
+Using EB CLI with Git
 ====
-The eb-cli works even better when you are using git! After running "git clone" or "git init" simply run
+EB CLI 3 provides integration with Git. After running "git clone" or "git init", run the following command:
 
     eb init
 
-The eb-cli will now recognize that your application is set up with git. Here is our recommended steps for using git.
+EB CLI 3 will now recognize that your application is set up with Git.
 
-1. Make a change to your code.
+To use Git with EB CLI 3:
+
+1. Make any change to your code.
+
+2. After you make a change to your code, type the following:
+
+	git commit
+
+3. Deploy your updated code.
 ----
 
-After you make a change to your code, run "git commit".
+Now when you run the "eb deploy" command, EB CLI will only deploy the code that was under source control.
+Make sure to always commit what you want to deploy.
+EB CLI uses your commit ID and message as the version label and description, respectively.
 
-2. Deploy a change
+3. Deploy to production.
 ----
-
-Now when you call deploy, the eb-cli will only deploy the code that was under source control.
-Make sure to always commit what you want deployed!
-The version label and description are based on your commit id and message.
-
-3. Push to production
-----
-Once you are ready to deploy a more stable version of your code, make sure to use git tags.
+When you are ready to deploy an updated version of your code, use Git tags.
 
     git tag -a v1.0 -m "My version 1.0"
 
 The tag will be used for the version label so you always know which version your environment is running on.
-If you have already deployed this version somewhere else, the eb-cli will tell your environment to use that version instead of uploading a new one.
+If you have already deployed this version, EB CLI will deploy that version to your environment instead of uploading a new application version.
 
 4. Use branches.
 ----
 
-The eb-cli allows you to associate different branches with different branches of your code.
-For example
+EB CLI enables you to associate different branches with different branches of your code.
+For example:
 
     git checkout master
     eb use prod
     git checkout develop
     eb use dev
 
-Now whenever you switch branches, your default environment will also switch!
+Now whenever you switch to a new branch, your default environment will also switch.
