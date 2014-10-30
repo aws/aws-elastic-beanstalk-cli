@@ -110,7 +110,7 @@ def main():
         io.log_error(strings['exit.notsetup'])
         app.close(code=126)
     except NoSourceControlError:
-        io.log_error(strings['git.notfound'])
+        io.log_error(strings['sc.notfound'])
         app.close(code=3)
     except NoRegionError:
         io.log_error(strings['exit.noregion'])

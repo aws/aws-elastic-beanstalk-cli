@@ -239,7 +239,7 @@ class InitController(AbstractBaseController):
             region = old_values['region']
             access_id = old_values['access_id']
             secret_key = old_values['secret_key']
-            solution_stack = old_values['solution_stack_name']
+            solution_stack = old_values['platform']
             app_name = old_values['app_name']
             default_env = old_values['default_env']
 

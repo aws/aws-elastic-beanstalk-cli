@@ -107,9 +107,8 @@ class Git(SourceControl):
     def _handle_exitcode(self, exitcode, stderr):
         if exitcode == 0:
             return
-        if exitcode == 127 or exitcode == 128:
+        if exitcode == 127:
             # 127 = git not installed
-            # 128 = current directory does not have a git root
             raise NoSourceControlError
 
         # Something else happened

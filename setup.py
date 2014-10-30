@@ -32,7 +32,7 @@ setup_options = dict(
     data_files=data_files,
     author='Nick Humrich',
     author_email='humrichn@amazon.com',
-    url='eb.example.com',
+    url='http://aws.amazon.com/elasticbeanstalk/',
     packages=find_packages('.', exclude=['tests*', 'docs*', 'sampleApps*']),
     package_dir={'ebcli': 'ebcli',
                  'botocore_eb': 'botocore_eb'},

@@ -129,6 +129,8 @@ def get_values_from_old_eb():
 
 
 def read_old_credentials(file_location):
+    if file_location is None:
+        return None, None
     config_str = '[default]\n' + open(file_location, 'r').read()
     config_fp = StringIO(config_str)
 
