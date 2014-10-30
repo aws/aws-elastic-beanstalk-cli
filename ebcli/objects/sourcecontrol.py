@@ -165,13 +165,12 @@ class Git(SourceControl):
 
     def set_up_ignore_file(self):
         # if not os.path.exists('.gitignore')
-        with open('.gitignore', 'w+') as f:
+        with open('.gitignore', 'r') as f:
             for line in f:
                 if line.strip() == git_ignore[0]:
                     return
 
-            # Move to the end of the file:
-            f.seek(0, 2)
+        with open('.gitignore', 'a') as f:
             f.write(os.linesep)
             for line in git_ignore:
                 f.write(line + os.linesep)
