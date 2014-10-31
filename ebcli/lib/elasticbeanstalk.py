@@ -173,16 +173,17 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
          'OptionName': 'BatchSizeType',
          'Value': 'Percentage'}
     )
-    settings.append(
-        {'Namespace': 'aws:elb:policies',
-         'OptionName': 'ConnectionDrainingEnabled',
-         'Value': 'true'}
-    )
-    settings.append(
-        {'Namespace': 'aws:elb:healthcheck',
-         'OptionName': 'Interval',
-         'Value': '30'}
-    )
+    if not tier or tier.name.lower() != 'worker':
+        settings.append(
+            {'Namespace': 'aws:elb:policies',
+             'OptionName': 'ConnectionDrainingEnabled',
+             'Value': 'true'}
+        )
+        settings.append(
+            {'Namespace': 'aws:elb:healthcheck',
+             'OptionName': 'Interval',
+             'Value': '30'}
+        )
     if database:
         #Database is a dictionary
         kwargs['template_specification'] = {
