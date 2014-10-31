@@ -21,8 +21,11 @@ import codecs
 
 from yaml import load, dump, safe_dump
 from yaml.scanner import ScannerError
-from six.moves import configparser
-from six.moves.configparser import NoSectionError, NoOptionError
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+
 from six import StringIO
 from cement.utils.misc import minimal_logger
 
@@ -65,7 +68,7 @@ logs_folder = beanstalk_directory + 'logs' + os.path.sep
 def _get_option(config, section, key, default):
     try:
         return config.get(section, key)
-    except (NoSectionError, NoOptionError):
+    except (configparser.NoSectionError, configparser.NoOptionError):
         return default
 
 
