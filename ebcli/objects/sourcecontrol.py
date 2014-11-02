@@ -164,11 +164,13 @@ class Git(SourceControl):
         return fileoperations.is_git_directory_present()
 
     def set_up_ignore_file(self):
-        # if not os.path.exists('.gitignore')
-        with open('.gitignore', 'r') as f:
-            for line in f:
-                if line.strip() == git_ignore[0]:
-                    return
+        if not os.path.exists('.gitignore'):
+            open('.gitignore', 'w')
+        else:
+            with open('.gitignore', 'r') as f:
+                for line in f:
+                    if line.strip() == git_ignore[0]:
+                        return
 
         with open('.gitignore', 'a') as f:
             f.write(os.linesep)

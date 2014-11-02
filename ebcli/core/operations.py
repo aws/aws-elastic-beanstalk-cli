@@ -379,6 +379,7 @@ def get_default_profile(region):
         profile_names = iam.get_instance_profile_names(region=region)
         if profile not in profile_names:
             iam.create_instance_profile(profile)
+            # Todo: add role to instance profile
     except NotAuthorizedError:
         # Not a root account. Just assume role exists
         return DEFAULT_ROLE_NAME

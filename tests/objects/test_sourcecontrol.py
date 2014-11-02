@@ -103,10 +103,11 @@ class TestGitSourceControl(unittest.TestCase):
     def test_get_message(self):
         self.assertTrue(sourcecontrol.Git().get_message().endswith(' Hello'))
 
-    def test_get_verion_label(self):
+    def test_get_version_label(self):
         self.assertEquals(sourcecontrol.Git().get_version_label(), 'v1')
 
     def test_set_up_ignore_no_file(self):
+        self.assertFalse(os.path.isfile('.gitignore'))
         sourcecontrol.Git().set_up_ignore_file()
         self.assertTrue(os.path.isfile('.gitignore'))
 

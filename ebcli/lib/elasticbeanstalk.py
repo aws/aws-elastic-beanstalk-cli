@@ -184,6 +184,11 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
              'OptionName': 'Interval',
              'Value': '30'}
         )
+        settings.append(
+            {'Namespace': 'aws:elb:loadbalancer',
+             'OptionName': 'CrossZone',
+             'Value': 'true'}
+        )
     if database:
         #Database is a dictionary
         kwargs['template_specification'] = {
@@ -229,11 +234,6 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
             {'Namespace': 'aws:rds:dbinstance',
              'OptionName': 'DBDeletionPolicy',
              'Value': 'Snapshot'}
-        )
-        settings.append(
-            {'Namespace': 'aws:elb:loadbalancer',
-             'OptionName': 'CrossZone',
-             'Value': 'true'}
         )
     if vpc:
         namespace = 'aws:ec2:vpc'
