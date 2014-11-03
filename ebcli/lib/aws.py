@@ -162,7 +162,7 @@ def make_api_call(service_name, operation_name, region=None, profile=None,
                                    ' credentials')
         except botocore_eb.exceptions.PartialCredentialsError as e:
             LOG.debug('Credentials incomplete')
-            raise CredentialsError('Your credentials are not valid')
+            raise CredentialsError(str(e))
 
         except botocore_eb.exceptions.ValidationError as e:
             raise InvalidSyntaxError(e)

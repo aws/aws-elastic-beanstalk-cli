@@ -107,7 +107,7 @@ def get_war_file_location():
 
 
 def old_eb_config_present():
-    return os.path.exists(beanstalk_directory + 'config')
+    return os.path.isfile(beanstalk_directory + 'config')
 
 
 def get_values_from_old_eb():

@@ -179,8 +179,7 @@ flag_text = {
     'create.keyname': 'EC2 SSH KeyPair name',
     'create.scale': 'number of desired instances',
     'create.nohang': 'return immediately, do not wait for create to be completed',
-    'create.tags': 'a comma separated list of tags '
-                   'as key=value pairs',
+    'create.tags': 'a comma separated list of tags as key=value pairs',
     'create.database': 'create a database',
 
     # Deploy
