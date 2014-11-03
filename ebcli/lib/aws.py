@@ -22,7 +22,7 @@ from cement.utils.misc import minimal_logger
 from ebcli import __version__
 from ..objects.exceptions import ServiceError, NotAuthorizedError, \
     InvalidSyntaxError, CredentialsError, NoRegionError, \
-    InvalidProfileError, ConnectionError
+    InvalidProfileError, ConnectionError, AlreadyExistsError
 
 LOG = minimal_logger(__name__)
 
@@ -145,6 +145,9 @@ def make_api_call(service_name, operation_name, region=None, profile=None,
                     LOG.debug('Received a 403')
                     raise NotAuthorizedError('Operation Denied. Are your '
                                            'permissions correct?')
+                elif status == 409:
+                    LOG.debug('Received a 409')
+                    raise AlreadyExistsError(response_data['Error']['Message'])
                 elif status in (500, 503, 504):
                     LOG.debug('Received 5XX error')
                     if attempt > MAX_ATTEMPTS:

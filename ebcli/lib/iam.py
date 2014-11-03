@@ -14,6 +14,7 @@
 from cement.utils.misc import minimal_logger
 
 from ..lib import aws
+from ..objects.exceptions import ServiceError, AlreadyExistsError
 
 LOG = minimal_logger(__name__)
 
@@ -40,3 +41,17 @@ def get_instance_profile_names(region=None):
         lst.append(profile['InstanceProfileName'])
 
     return lst
+
+
+def add_role_to_profile(profile, role, region=None):
+    _make_api_call('add-role-to-instance-profile',
+                   instance_profile_name=profile,
+                   role_name=role,
+                   region=region)
+
+
+def create_role(role, document, region=None):
+    _make_api_call('create-role',
+                   role_name=role,
+                   assume_role_policy_document=document,
+                   region=region)
