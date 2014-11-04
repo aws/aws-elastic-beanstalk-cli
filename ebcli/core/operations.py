@@ -600,6 +600,11 @@ def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
                                                         current_environments)
                     env_name = io.prompt_for_environment_name(
                         default_name=unique_name)
+                elif e.message == responses['app.notexists'].replace(
+                        '{app-name}', '\'' + app_name + '\''):
+                    # App doesnt exist, must be a new region.
+                    ## Lets create the app in the region
+                    create_app(app_name, region)
                 else:
                     raise
             else:

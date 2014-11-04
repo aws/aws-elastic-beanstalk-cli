@@ -111,3 +111,17 @@ class TestGitSourceControl(unittest.TestCase):
         sourcecontrol.Git().set_up_ignore_file()
         self.assertTrue(os.path.isfile('.gitignore'))
 
+    def test_set_up_ignore_file_file_exists(self):
+        with open('.gitignore', 'w') as f:
+            f.write('line1' + os.linesep)
+            f.write('line2' + os.linesep)
+
+        sourcecontrol.Git().set_up_ignore_file()
+
+        with open('.gitignore', 'r') as f:
+            f = f.readlines()
+            self.assertEqual(f[0], 'line1' + os.linesep)
+            self.assertEqual(f[1], 'line2' + os.linesep)
+
+
+
