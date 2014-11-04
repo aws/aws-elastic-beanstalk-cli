@@ -95,8 +95,8 @@ class InitController(AbstractBaseController):
         try:
             # Note, region is None unless explicitly set
             ## or read from old eb
-            valid_credentials = operations.credentials_are_valid(self.region)
-            return profile, valid_credentials
+            operations.credentials_are_valid(self.region)
+            return profile
         except NoRegionError:
             self.region = self.get_region()
             return profile
@@ -120,9 +120,9 @@ class InitController(AbstractBaseController):
             profile = 'eb-cli'
             aws.set_profile(profile)
 
-        profile, valid_credentials = self.check_credentials(profile)
+        profile = self.check_credentials(profile)
 
-        if not valid_credentials:
+        if not operations.credentials_are_valid(self.region):
             operations.setup_credentials()
         else:
             fileoperations.write_config_setting('global', 'profile',

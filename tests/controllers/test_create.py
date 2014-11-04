@@ -74,9 +74,11 @@ class TestCreate(BaseControllerTest):
             False,  # branch_default
             False,  # sample
             [],  # Tags
-            None,  # Size
-            False,  #Database
+            None,  # scale
+            False,  # Database
+            False,  # vpc
             False,  # nohang
+            interactive=True,
         )
 
     def test_create_defaults(self):
@@ -116,7 +118,9 @@ class TestCreate(BaseControllerTest):
             [],  # Tags
             None,  # Size
             False,  #Database
+            False,  # vpc
             False,  # nohang
+            interactive=True,
         )
 
     @mock.patch('ebcli.core.io.log_error')
