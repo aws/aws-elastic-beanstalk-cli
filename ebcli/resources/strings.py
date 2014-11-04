@@ -82,8 +82,7 @@ strings = {
     # Typical response when an environment is in pending state
     'exit.invalidstate': 'The operation cannot be completed at this time due to a pending operation. Try again later.',
     'branch.noenv': 'This branch does not have a default environment. You must either specify an environment by typing ' 
-                    '"eb {cmd} my-env-name"\n'
-                    'or set a default environment by typing "eb use my-env-name".',
+                    '"eb {cmd} my-env-name" or set a default environment by typing "eb use my-env-name".',
     'ssh.notpresent': 'SSH is not installed. You must install SSH before continuing.',
     'ssh.filenotfound': 'The EB CLI cannot find your SSH key file for keyname "{key-name}".'
                         ' Your SSH key file must be located in the .ssh folder in your home directory.',

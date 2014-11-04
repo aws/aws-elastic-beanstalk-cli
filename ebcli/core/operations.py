@@ -353,8 +353,9 @@ def pull_down_app_info(app_name, region, default_env=None):
             if default_env == '/ni':
                 env = envs[0]
             else:
-                env = next((env for env in envs if env.name == default_env), None)
-        else:
+                env = next((env for env in envs if env.name == default_env),
+                           None)
+        if not default_env or env is None:
             # Prompt for default
             io.echo(prompts['init.selectdefaultenv'])
             env = utils.prompt_for_item_in_list(envs)

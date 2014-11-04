@@ -110,6 +110,10 @@ def old_eb_config_present():
     return os.path.isfile(beanstalk_directory + 'config')
 
 
+def config_file_present():
+    return os.path.isfile(local_config_file)
+
+
 def get_values_from_old_eb():
     old_config_file = beanstalk_directory + 'config'
     config = configparser.ConfigParser()

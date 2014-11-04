@@ -234,7 +234,8 @@ class InitController(AbstractBaseController):
             io.echo(*elasticbeanstalk.get_available_solution_stacks())
 
     def get_old_values(self):
-        if fileoperations.old_eb_config_present():
+        if fileoperations.old_eb_config_present() and \
+                not fileoperations.config_file_present():
             old_values = fileoperations.get_values_from_old_eb()
             region = old_values['region']
             access_id = old_values['access_id']
