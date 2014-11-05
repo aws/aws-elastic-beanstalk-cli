@@ -1207,7 +1207,7 @@ def get_solution_stack(solution_string, region):
     # No exact match, check for versions
     string = solution_string.replace('-', ' ')
     # put dash back in preconfigured types
-    string = string.replace('preconfigured   docker', 'preconfigured - docker')
+    string = re.sub('preconfigured\\s+docker', 'preconfigured - docker', string)
     string = re.sub(r'([a-z])([0-9])', '\\1 \\2', string)
     stacks = [x for x in solution_stacks if x.version.lower() == string]
 
