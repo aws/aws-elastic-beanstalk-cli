@@ -13,6 +13,7 @@
 # language governing permissions and limitations under the License.
 
 import logging
+from argparse import SUPPRESS
 
 from cement.core import foundation, handler
 from cement.utils.misc import init_defaults
@@ -78,6 +79,7 @@ class EB(foundation.CementApp):
                      action='store_true', help=flag_text['base.verbose'])
         self.add_arg('--profile', help=flag_text['base.profile'])
         self.add_arg('-r', '--region', help=flag_text['base.region'])
+        self.add_arg('--endpoint-url', help=SUPPRESS)
 
         globals.app = self
 
@@ -86,7 +88,6 @@ def main():
     # Squash cement logging
     ######
     for d, k in iteritems(logging.Logger.manager.loggerDict):
-        # io.echo(d, k, type(d), type(k))
         if d.startswith('cement') and isinstance(k, logging.Logger):
             k.setLevel('ERROR')
     #######

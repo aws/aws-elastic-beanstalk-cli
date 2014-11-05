@@ -28,6 +28,7 @@ from ..objects.event import Event
 from ..objects.environment import Environment
 from ..objects.application import Application
 from ..resources.strings import strings, responses
+from ..core import globals
 
 LOG = minimal_logger(__name__)
 
@@ -36,10 +37,15 @@ DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
 
 
 def _make_api_call(operation_name, region=None, **operation_options):
+    try:
+        endpoint_url = globals.app.pargs.endpoint_url
+    except AttributeError:
+        endpoint_url = None
 
     return aws.make_api_call('elasticbeanstalk',
                                operation_name,
                                region=region,
+                               endpoint_url=endpoint_url,
                                **operation_options)
 
 
@@ -269,6 +275,12 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
                 {'Namespace': 'aws:autoscaling:launchconfiguration',
                  'OptionName': 'SecurityGroups',
                  'Value': vpc['securitygroups']}
+            )
+        if vpc['dbsubnets']:
+            settings.append(
+                {'Namespace': namespace,
+                 'OptionName': 'DBSubnets',
+                 'Value': vpc['dbsubnets']}
             )
 
     result = _make_api_call('create-environment', region=region, **kwargs)

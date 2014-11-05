@@ -90,22 +90,26 @@ def get_default_region():
         return None
 
 
-def make_api_call(service_name, operation_name, region=None, profile=None,
+def make_api_call(service_name, operation_name, region=None, endpoint_url=None,
                   **operation_options):
     service = _get_service(service_name)
 
     operation = service.get_operation(operation_name)
-    try:
-        if not region:
-            endpoint = service.get_endpoint()
-            region = 'default'
-        else:
-            endpoint = service.get_endpoint(region)
-    except botocore_eb.exceptions.UnknownEndpointError as e:
-        raise NoRegionError(e)
-    except botocore_eb.exceptions.PartialCredentialsError:
-        LOG.debug('Credentials incomplete')
-        raise CredentialsError('Your credentials are not valid')
+    if endpoint_url:
+        endpoint = service.get_endpoint(region_name=region,
+                                        endpoint_url=endpoint_url)
+    else:
+        try:
+            if not region:
+                endpoint = service.get_endpoint()
+                region = 'default'
+            else:
+                endpoint = service.get_endpoint(region)
+        except botocore_eb.exceptions.UnknownEndpointError as e:
+            raise NoRegionError(e)
+        except botocore_eb.exceptions.PartialCredentialsError:
+            LOG.debug('Credentials incomplete')
+            raise CredentialsError('Your credentials are not valid')
 
 
     MAX_ATTEMPTS = 15
@@ -187,7 +191,7 @@ def _get_delay(attempt_number):
     # Exponential backoff
     rand_int = random.randrange(0, 2**attempt_number)
     delay = rand_int * 0.05  # delay time is 50 ms
-    LOG.debug('MY RAND IS ' + str(rand_int))
+    LOG.debug('Sleeping for ' + str(delay) + ' seconds.')
     return delay
 
 
