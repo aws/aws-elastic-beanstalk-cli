@@ -50,6 +50,8 @@ class InitController(AbstractBaseController):
 
         if self.interactive:
             self.region = self.get_region()
+        else:
+            self.region = self.get_region_from_inputs()
 
         self.set_up_credentials()
 
@@ -157,7 +159,7 @@ class InitController(AbstractBaseController):
 
         return app_name
 
-    def get_region(self):
+    def get_region_from_inputs(self):
         # Get region from command line arguments
         region = self.app.pargs.region
 
@@ -167,6 +169,12 @@ class InitController(AbstractBaseController):
                 region = fileoperations.get_default_region()
             except NotInitializedError:
                 region = None
+
+        return region
+
+    def get_region(self):
+        # Get region from command line arguments
+        region = self.get_region_from_inputs()
 
         # Ask for region
         if self.flag:
