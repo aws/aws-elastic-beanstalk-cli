@@ -43,14 +43,19 @@ def create_credential_resolver(session):
     config_file = session.get_config_variable('config_file')
     metadata_timeout = session.get_config_variable('metadata_service_timeout')
     num_attempts = session.get_config_variable('metadata_service_num_attempts')
-    providers = [
-        EnvProvider(),
-        SharedCredentialProvider(
-            creds_filename=credential_file,
-            profile_name=profile_name
-        ),
+    providers = []
+    if profile_name == 'default':
+        providers += [
+            EnvProvider(),
+            SharedCredentialProvider(
+                creds_filename=credential_file,
+                profile_name=profile_name
+            ),
+        ]
+
         # The new config file has precedence over the legacy
         # config file.
+    providers += [
         ConfigProvider(config_filename=config_file, profile_name=profile_name),
         OriginalEC2Provider(),
         BotoProvider(),

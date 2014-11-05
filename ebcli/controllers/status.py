@@ -28,4 +28,7 @@ class StatusController(AbstractBaseController):
         env_name = self.get_env_name()
         verbose = self.app.pargs.verbose
 
+        import os
+        os.environ['AWS_EB_PROFILE'] = 'bad'
+
         operations.status(app_name, env_name, region, verbose)
