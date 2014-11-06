@@ -588,7 +588,12 @@ def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
                 region=region, database=database, vpc=vpc, size=size)
 
         except InvalidParameterValueError as e:
-            if interactive:
+            if e.message == responses['app.notexists'].replace(
+                '{app-name}', '\'' + app_name + '\''):
+                # App doesnt exist, must be a new region.
+                ## Lets create the app in the region
+                create_app(app_name, region)
+            elif interactive:
                 LOG.debug('creating env returned error: ' + e.message)
                 if re.match(responses['env.cnamenotavailable'], e.message):
                     io.echo(prompts['cname.unavailable'])
