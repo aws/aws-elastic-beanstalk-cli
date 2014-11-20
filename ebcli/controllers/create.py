@@ -267,7 +267,7 @@ def get_and_validate_tags(tags):
         raise InvalidOptionsError(strings['tags.max'])
     for t in tags:
         # validate
-        if not re.match('^[\w.:/+@-]+=[\w.:/+@-]+$', t):
+        if not re.match('^[\w\s.:/+%@-]{1,128}=[\w\s.:/+%@-]{0,256}$', t):
             raise InvalidOptionsError(strings['tags.invalidformat'])
         else:
             # build tag

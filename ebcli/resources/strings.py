@@ -92,7 +92,7 @@ strings = {
                             'cannot contain any spaces or =. They must start'
                             ' with a letter, number or one of the following symbols: \\ _ . : / + - @',
     'tags.invalidformat': 'You must provide a comma-separated list using the format name=value to set tags. '
-                          'Tags may only contain letters, numbers, and the following symbols: / _ . : + - @',
+                          'Tags may only contain letters, numbers, and the following symbols: / _ . : + % - @',
     'tags.max': 'Elastic Beanstalk supports a maximum of 7 tags.',
     'deploy.invalidoptions': 'You cannot use the "--version" flag with either the "--message" or "--label" flag.',
     'init.getvarsfromoldeb': 'You previous used an earlier version of eb. Getting options from .elasticbeanstalk/config.\n'
