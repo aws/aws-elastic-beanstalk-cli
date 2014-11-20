@@ -338,6 +338,7 @@ def zip_up_folder(directory, location):
         zipf = zipfile.ZipFile(location, 'w', zipfile.ZIP_DEFLATED)
         _zipdir('./', zipf)
         zipf.close()
+        LOG.debug('File size: ' + str(os.path.getsize(location)))
     finally:
         os.chdir(cwd)
 

@@ -152,12 +152,12 @@ def print_events(app_name, env_name, region, follow):
 
 def get_all_env_names(region):
     envs = elasticbeanstalk.get_all_environments(region=region)
-    return [e.name for e in envs if not e.status == 'Terminated']
+    return [e.name for e in envs]
 
 
 def get_env_names(app_name, region):
     envs = elasticbeanstalk.get_app_environments(app_name, region)
-    return [e.name for e in envs if not e.status == 'Terminated']
+    return [e.name for e in envs]
 
 
 def list_env_names(app_name, region, verbose, all_apps):
@@ -403,7 +403,6 @@ def get_default_role(region):
     except AlreadyExistsError:
         pass
     return role
-
 
 
 def open_app(app_name, env_name, region):

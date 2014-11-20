@@ -503,7 +503,11 @@ def get_app_environments(app_name, region=None):
     # convert to object
     envs = []
     for env in result['Environments']:
-        envs.append(_api_to_environment(env))
+        env = _api_to_environment(env)
+        # Filter out terminated envs
+        if env.status != 'Terminated':
+            envs.append(env)
+
     return envs
 
 

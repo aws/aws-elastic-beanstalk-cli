@@ -178,8 +178,7 @@ class TestEnd2End(test.CementTestCase):
         self.patcher_output = mock.patch('ebcli.core.io.echo')
         self.mock_output = self.patcher_output.start()
 
-
-    # set up test directory
+        # set up test directory
         self.directory = 'testDir' + os.path.sep
         if not os.path.exists(self.directory):
             os.makedirs(self.directory)
