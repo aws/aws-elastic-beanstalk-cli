@@ -205,7 +205,7 @@ class CreateController(AbstractBaseController):
             if not username:
                 io.echo()
                 username = io.get_input(prompts['rds.username'],
-                                        default='admin')
+                                        default='ebroot')
             if not password:
                 password = io.get_pass(prompts['rds.password'])
             db_object['username'] = username

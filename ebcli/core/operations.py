@@ -889,7 +889,6 @@ def terminate(env_name, region, nohang=False):
     request_id = elasticbeanstalk.terminate_environment(env_name, region)
 
     # disassociate with branch if branch default
-    ## Get default environment
     default_env = get_current_branch_environment()
     if default_env == env_name:
         set_environment_for_current_branch(None)
@@ -952,13 +951,13 @@ def create_app_version(app_name, region, label=None, message=None):
         return None
 
     source_control = SourceControl.get_source_control()
-    #get version_label
+    # get version_label
     if label:
         version_label = label
     else:
         version_label = source_control.get_version_label()
 
-    #get description
+    # get description
     if message:
         description = message
     else:
@@ -1017,7 +1016,7 @@ def create_app_version(app_name, region, label=None, message=None):
 
 
 def update_environment_configuration(app_name, env_name, region, nohang):
-    #get environment setting
+    # get environment setting
     api_model = elasticbeanstalk.describe_configuration_settings(
         app_name, env_name, region=region
     )
