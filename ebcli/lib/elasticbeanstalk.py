@@ -499,14 +499,10 @@ def get_app_environments(app_name, region=None):
     LOG.debug('Inside get_app_environments api wrapper')
     result = _make_api_call('describe-environments',
                           application_name=app_name,
+                          include_deleted=False,
                           region=region)
-    # convert to object
-    envs = []
-    for env in result['Environments']:
-        env = _api_to_environment(env)
-        # Filter out terminated envs
-        if env.status != 'Terminated':
-            envs.append(env)
+    # convert to objects
+    envs = [_api_to_environment(env) for env in result['Environments']]
 
     return envs
 
@@ -514,6 +510,7 @@ def get_app_environments(app_name, region=None):
 def get_all_environments(region=None):
     LOG.debug('Inside get_all_environments api wrapper')
     result = _make_api_call('describe-environments',
+                            include_deleted=False,
                             region=region)
     # convert to object
     envs = []
@@ -527,6 +524,7 @@ def get_environment(app_name, env_name, region=None):
     result = _make_api_call('describe-environments',
                           application_name=app_name,
                           environment_names=[env_name],
+                          include_deleted=False,
                           region=region)
 
     envs = result['Environments']
