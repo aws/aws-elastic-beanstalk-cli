@@ -14,7 +14,8 @@
 
 from cement.utils.misc import minimal_logger
 
-from ..lib import aws
+from . import aws
+from ..objects.exceptions import NotFoundError
 
 LOG = minimal_logger(__name__)
 
@@ -26,7 +27,30 @@ def _make_api_call(operation_name, **operation_options):
 def upload_application_version(bucket, key, file_path,
                                region=None):
     with open(file_path, 'rb') as fp:
-        return _make_api_call('PutObject',
+        return _make_api_call('put-object',
                               bucket=bucket,
                               key=key,
-                              body=fp, region=region)
+                              body=fp,
+                              region=region)
+
+
+def get_object_info(bucket, object, region=None):
+    result = _make_api_call('list-objects',
+                   bucket=bucket,
+                   prefix=object,
+                   region=region)
+
+    if 'Contents' not in result or len(result['Contents']) < 1:
+        raise NotFoundError('Object not found.')
+
+    objects = result['Contents']
+    if len(objects) == 1:
+        return objects[0]
+    else:
+        # There is more than one result, search for correct one
+        object = next((o for o in objects if o['Key'] == object), None)
+        if object is None:
+            raise NotFoundError('Object not found.')
+        else:
+            return object
+

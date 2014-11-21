@@ -964,6 +964,9 @@ def create_app_version(app_name, region, label=None, message=None):
     else:
         description = source_control.get_message()
 
+    if len(description) > 200:
+        description = description[:195] + '...'
+
     io.log_info('Creating app_version archive "' + version_label + '"')
 
     # Check for zip or artifact deploy
@@ -983,9 +986,13 @@ def create_app_version(app_name, region, label=None, message=None):
     # upload to s3
     key = app_name + '/' + file_name
 
-    io.log_info('Uploading archive to s3 location: ' + key)
-    s3.upload_application_version(bucket, key, file_path,
-                                                region=region)
+    try:
+        s3.get_object_info(bucket, key, region=region)
+        io.log_info('S3 Object already exists. Skipping upload.')
+    except NotFoundError:
+        io.log_info('Uploading archive to s3 location: ' + key)
+        s3.upload_application_version(bucket, key, file_path, region=region)
+
     fileoperations.delete_app_versions()
     io.log_info('Creating AppVersion ' + version_label)
     while True:

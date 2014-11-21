@@ -158,7 +158,7 @@ class Git(SourceControl):
             stdout = stdout.decode('utf8')
             stderr = stderr.decode('utf8')
         self._handle_exitcode(exitcode, stderr)
-        return stdout.rstrip()
+        return stdout.rstrip().split(' ', 1)[1]
 
     def is_setup(self):
         return fileoperations.is_git_directory_present()
