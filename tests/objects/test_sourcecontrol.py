@@ -38,7 +38,6 @@ class TestNoSourceControl(unittest.TestCase):
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
 
-
     def test_get_source_control(self):
         sc = sourcecontrol.SourceControl.get_source_control()
         self.assertIsInstance(sc, sourcecontrol.NoSC)
@@ -101,7 +100,7 @@ class TestGitSourceControl(unittest.TestCase):
         sourcecontrol.Git().do_zip(os.getcwd() + os.path.sep + 'file.zip')
 
     def test_get_message(self):
-        self.assertTrue(sourcecontrol.Git().get_message().endswith(' Hello'))
+        self.assertEqual(sourcecontrol.Git().get_message(), 'Hello')
 
     def test_get_version_label(self):
         self.assertEquals(sourcecontrol.Git().get_version_label(), 'v1')

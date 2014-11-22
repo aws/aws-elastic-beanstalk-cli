@@ -98,8 +98,8 @@ class TestEnd2End(test.CementTestCase):
 
     def do_init(self):
         self._run_app(['init', self.app_name,
-                            '--region', self.region,
-                            '--platform', 'php'])
+                       '--region', self.region,
+                       '--platform', 'php'])
 
         # Make sure app exists
         elasticbeanstalk.describe_application(self.app_name, self.region)

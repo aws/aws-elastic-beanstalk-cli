@@ -22,7 +22,8 @@ from cement.utils.shell import exec_cmd
 
 from ..resources.strings import git_ignore
 from ..core.fileoperations import get_config_setting
-from ..objects.exceptions import NoSourceControlError, CommandError
+from ..objects.exceptions import NoSourceControlError, CommandError, \
+    NotInitializedError
 from ..core import fileoperations, io
 
 LOG = minimal_logger(__name__)
@@ -52,7 +53,10 @@ class SourceControl():
     @staticmethod
     def get_source_control():
         # First check for setting in config file
-        git_installed = get_config_setting('global', 'sc')
+        try:
+            git_installed = get_config_setting('global', 'sc')
+        except NotInitializedError:
+            git_installed = False
 
         if not git_installed:
             if Git().is_setup():
