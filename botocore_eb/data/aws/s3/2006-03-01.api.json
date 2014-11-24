@@ -1639,7 +1639,7 @@
       "type":"string",
       "enum":["s3:ReducedRedundancyLostObject"]
     },
-    "Expiration":{"type":"timestamp"},
+    "Expiration":{"type":"string"},
     "ExpirationStatus":{
       "type":"string",
       "enum":[
