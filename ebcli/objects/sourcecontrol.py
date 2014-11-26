@@ -147,13 +147,11 @@ class Git(SourceControl):
             stdout = stdout.decode('utf8')
             stderr = stderr.decode('utf8')
         stdout = stdout.strip()
-        LOG.debug('git status --numstat result: ' + stdout +
+        LOG.debug('git diff --numstat result: ' + stdout +
                   ' with errors: ' + stderr)
         if stdout:
             return True
         return False
-
-
 
     def get_current_branch(self):
         stdout, stderr, exitcode = \

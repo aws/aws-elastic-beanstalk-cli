@@ -1012,7 +1012,7 @@ def create_app_version(app_name, region, label=None, message=None):
             if e.message.startswith('Application Version ') and \
                     e.message.endswith(' already exists.'):
                 # we must be deploying with an existing app version
-                io.log_warning('Deploying a previously deployed commit')
+                io.log_warning('Deploying a previously deployed commit.')
                 return version_label
             elif e.message == responses['app.notexists'].replace(
                     '{app-name}', '\'' + app_name + '\''):
