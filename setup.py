@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 import ebcli
 
-requires = ['setuptools>=7.0'
+requires = ['setuptools>=7.0',
             'pyyaml>=3.11',
             'six==1.8.0',
             'cement==2.4',
