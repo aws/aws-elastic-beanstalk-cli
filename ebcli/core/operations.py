@@ -1264,7 +1264,9 @@ def _generate_and_upload_keypair(region, keys):
     file_name = fileoperations.get_ssh_folder() + keyname
 
     try:
-        exitcode = subprocess.call(['ssh-keygen', '-f', file_name])
+        exitcode = subprocess.call(
+            ['ssh-keygen', '-f', file_name, '-C', keyname]
+        )
     except OSError:
         raise CommandError(strings['ssh.notpresent'])
 
