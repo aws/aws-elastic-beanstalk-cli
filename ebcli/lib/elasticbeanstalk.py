@@ -291,7 +291,7 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
     return env, request_id
 
 
-def clone_environment(app_name, env_name, clone_name, cname,
+def clone_environment(app_name, env_name, clone_name, cname, platform,
                       description, label, scale, tags, region=None):
     LOG.debug('Inside clone_environment api wrapper')
 
@@ -310,6 +310,8 @@ def clone_environment(app_name, env_name, clone_name, cname,
         'template_specification': {'TemplateSource': {'EnvironmentName': env_name,}},
         'option_settings': settings,
     }
+    if platform:
+        kwargs['solution_stack_name'] = platform.name
     if description:
         kwargs['description'] = description
     if cname:

@@ -165,6 +165,7 @@ flag_text = {
     'clone.scale': 'number of desired instances',
     'clone.tags': 'a comma separated list of tags as key=value pairs',
     'clone.nohang': 'return immediately, do not wait for clone to be completed',
+    'clone.latest': 'use the latest platform version',
 
     # Config
     'config.nohang': 'return immediately, do not wait for config to be completed',

@@ -32,6 +32,8 @@ class CloneController(AbstractBaseController):
             (['--tags'], dict(help=flag_text['clone.tags'])),
             (['-nh', '--nohang'], dict(action='store_true',
                                        help=flag_text['clone.nohang'])),
+            (['--latest'], dict(action='store_true',
+                                help=flag_text['clone.latest'])),
         ]
         usage = 'eb clone <environment_name> (-n CLONE_NAME) [options ...]'
 
@@ -44,10 +46,14 @@ class CloneController(AbstractBaseController):
         scale = self.app.pargs.scale
         nohang = self.app.pargs.nohang
         tags = self.app.pargs.tags
+        latest = self.app.pargs.latest
         provided_clone_name = clone_name is not None
+        platform = None
+
+        # Get original environment
+        env = elasticbeanstalk.get_environment(app_name, env_name, region)
 
         # Get tier of original environment
-        env = elasticbeanstalk.get_environment(app_name, env_name, region)
         tier = env.tier
         if 'worker' in tier.name.lower() and cname:
             raise InvalidOptionsError(strings['worker.cname'])
@@ -56,6 +62,12 @@ class CloneController(AbstractBaseController):
             if not operations.is_cname_available(cname, region):
                 raise AlreadyExistsError(strings['cname.unavailable'].
                                          replace('{cname}', cname))
+
+        if latest:
+            # get original platform
+            platform = operations.get_latest_solution_stack(
+                env.platform.version, region=region)
+
 
         # get tags
         tags = get_and_validate_tags(tags)
@@ -84,7 +96,7 @@ class CloneController(AbstractBaseController):
 
 
         operations.make_cloned_env(app_name, env_name, clone_name, cname,
-                             scale, tags, region, nohang)
+                             platform, scale, tags, region, nohang)
 
     def complete_command(self, commands):
         super(CloneController, self).complete_command(commands)

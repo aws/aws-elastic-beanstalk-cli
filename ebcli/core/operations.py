@@ -252,8 +252,19 @@ def prompt_for_solution_stack(region):
     else:
         version = versions[0]
 
+    get_latest_solution_stack(version, stack_list=solution_stacks)
+
+
+def get_latest_solution_stack(platform_version, region=None, stack_list=None):
+    if stack_list:
+        solution_stacks = stack_list
+    else:
+        solution_stacks = elasticbeanstalk.\
+            get_available_solution_stacks(region=region)
+
     #filter
-    solution_stacks = [x for x in solution_stacks if x.version == version]
+    solution_stacks = [x for x in solution_stacks
+                       if x.version == platform_version]
 
     #Lastly choose a server type
     servers = []
@@ -269,7 +280,7 @@ def prompt_for_solution_stack(region):
     solution_stacks = [x for x in solution_stacks if x.server == server]
 
     #should have 1 and only have 1 result
-    assert len(solution_stacks) == 1, 'Filtered Solution Stack list '\
+    assert len(solution_stacks) == 1, 'Filtered Solution Stack list ' \
                                       'contains multiple results'
     return solution_stacks[0]
 
@@ -622,14 +633,14 @@ def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
         # Try again with new values
 
 
-def make_cloned_env(app_name, env_name, clone_name, cname, scale, tags, region,
-                    nohang):
+def make_cloned_env(app_name, env_name, clone_name, cname, platform,
+                    scale, tags, region, nohang):
     io.log_info('Cloning environment')
     # get app version from environment
     env = elasticbeanstalk.get_environment(app_name, env_name, region)
     label = env.version_label
-    result, request_id = clone_env(app_name, env_name, clone_name,
-                                   cname, label, scale, tags, region)
+    result, request_id = clone_env(app_name, env_name, clone_name, cname,
+                                   platform, label, scale, tags, region)
 
     # Print status of env
     print_env_details(result, region, health=False)
@@ -644,7 +655,7 @@ def make_cloned_env(app_name, env_name, clone_name, cname, scale, tags, region,
         io.log_error(strings['timeout.error'])
 
 
-def clone_env(app_name, env_name, clone_name, cname, label, scale,
+def clone_env(app_name, env_name, clone_name, cname, platform, label, scale,
               tags, region):
     description = strings['env.clonedescription'].replace('{env-name}',
                                                           env_name)
@@ -652,8 +663,8 @@ def clone_env(app_name, env_name, clone_name, cname, label, scale,
     while True:
         try:
             return elasticbeanstalk.clone_environment(
-                app_name, env_name, clone_name, cname, description, label,
-                scale, tags, region=region)
+                app_name, env_name, clone_name, cname, platform, description,
+                label, scale, tags, region=region)
 
         except InvalidParameterValueError as e:
             LOG.debug('cloning env returned error: ' + e.message)
