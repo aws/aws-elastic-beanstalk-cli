@@ -16,6 +16,7 @@ import time
 import re
 import os
 import subprocess
+import json
 
 from six.moves import urllib
 from six import iteritems
@@ -25,7 +26,7 @@ from cement.utils.shell import exec_cmd, exec_cmd2
 from ..lib import elasticbeanstalk, s3, iam, aws, ec2, elb
 from ..core import fileoperations, io
 from ..objects.sourcecontrol import SourceControl
-from ..resources.strings import strings, responses, prompts
+from ..resources.strings import strings, responses, prompts, alerts
 from ..lib import utils
 from ..objects import configuration
 from ..objects.exceptions import *
@@ -769,6 +770,11 @@ def status(app_name, env_name, region, verbose):
             #No load balancer. Dont show instance status
             pass
 
+    # check platform version
+    latest = get_latest_solution_stack(env.platform.version, region)
+    if env.platform != latest:
+        io.log_alert(alerts['platform.old'])
+
 
 def print_environment_vars(app_name, env_name, region):
     settings = elasticbeanstalk.describe_configuration_settings(
@@ -896,15 +902,31 @@ def create_envvars_list(var_list):
     return options, options_to_remove
 
 
+def get_data_from_url(url, timeout=20):
+    return urllib.request.urlopen(url, timeout=timeout).read()
+
+
 def print_from_url(url):
-    result = urllib.request.urlopen(url).read()
+    result = get_data_from_url(url)
     io.echo(result)
 
 
 def save_file_from_url(url, location, filename):
-    result = urllib.request.urlopen(url).read()
+    result = get_data_from_url(url)
 
     return fileoperations.save_to_file(result, location, filename)
+
+
+def cli_update_exists(current_version):
+    try:
+        data = get_data_from_url('https://pypi.python.org/pypi/awsebcli/json',
+                                 timeout=5)
+        data = json.loads(data)
+        latest = data['info']['version']
+        return latest != current_version
+    except:
+        # Ignore all exceptions. We want to fail silently.
+        return False
 
 
 def terminate(env_name, region, nohang=False, timeout=None):

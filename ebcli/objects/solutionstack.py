@@ -27,6 +27,12 @@ class SolutionStack():
     def __str__(self):
         return self.string
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return self.__dict__ != other.__dict__
+
     @staticmethod
     def get_platform(ss_string):
         pattern = re.compile('.+running\s([^\s]*).*')

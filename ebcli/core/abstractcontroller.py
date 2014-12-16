@@ -62,6 +62,13 @@ class AbstractBaseController(controller.CementBaseController):
             LoggingLogHandler.set_level(self.app.log, 'INFO')
         self.set_profile()
         self.do_command()
+        self.check_for_cli_update(__version__)
+
+    def check_for_cli_update(self, version):
+        label = self.Meta.label
+        if label in ('create', 'deploy', 'status', 'clone', 'config'):
+            if operations.cli_update_exists(version):
+                io.log_alert('An update to this CLI is available.')
 
     def get_app_name(self):
         app_name = fileoperations.get_application_name()
@@ -70,7 +77,7 @@ class AbstractBaseController(controller.CementBaseController):
     def get_env_name(self, cmd_example=None, noerror=False):
         env_name = self.app.pargs.environment_name
         if not env_name:
-            #If env name not provided, grab branch default
+            # If env name not provided, grab branch default
             env_name = operations. \
                 get_current_branch_environment()
 

@@ -59,6 +59,10 @@ def _convert_to_strings(list_of_things):
             LOG.debug('data class = ' + data.__class__.__name__)
 
 
+def log_alert(message):
+    echo('Alert:', message)
+
+
 def log_info(message):
     globals.app.log.info(message)
 

@@ -151,6 +151,10 @@ prompts = {
     'swap.envprompt': 'Select an environment to swap with.',
 }
 
+alerts = {
+    'platform.old': 'The platform you are using is on an outdated version. You can create an environment on the latest using "eb clone --latest".'
+}
+
 flag_text = {
     # General
     'general.env': 'environment name',

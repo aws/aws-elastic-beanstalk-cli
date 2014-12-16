@@ -62,6 +62,9 @@ class CreateEnvironmentRequest(object):
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
+    def __ne__(self, other):
+        return self.__dict__ != other.__dict__
+
     def add_option_setting(self, namespace, option_name, value, resource=None):
         setting = {'Namespace': namespace,
                    'OptionName': option_name,
