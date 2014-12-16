@@ -158,6 +158,7 @@ flag_text = {
     'base.verbose': 'toggle verbose output',
     'base.profile': 'use a specific profile from your credential file',
     'base.region': 'use a specific region',
+    'general.timeout': 'timeout period in minutes',
 
     # Clone
     'clone.env': 'name of environment to clone',
@@ -194,6 +195,7 @@ flag_text = {
     'deploy.version': 'existing version label to deploy',
     'deploy.label': 'label name which version will be given',
     'deploy.message': 'description for version',
+    'deploy.nohang': 'return immediately, do not wait for deploy to be completed',
 
     # Events
     'events.follow': 'wait and continue to print events as they come',

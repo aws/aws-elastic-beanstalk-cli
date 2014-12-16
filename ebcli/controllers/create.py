@@ -50,6 +50,7 @@ class CreateController(AbstractBaseController):
             (['--scale'], dict(type=int, help=flag_text['create.scale'])),
             (['-nh', '--nohang'], dict(
                 action='store_true', help=flag_text['create.nohang'])),
+            (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
             (['--tags'], dict(help=flag_text['create.tags'])),
             (['--envvars'], dict(help=flag_text['create.envvars'])),
             (['-db', '--database'], dict(
@@ -100,6 +101,7 @@ class CreateController(AbstractBaseController):
         tags = self.app.pargs.tags
         envvars = self.app.pargs.envvars
         scale = self.app.pargs.scale
+        timeout = self.app.pargs.timeout
         flag = False if env_name else True
 
         provided_env_name = env_name is not None
@@ -192,7 +194,8 @@ class CreateController(AbstractBaseController):
         env_request.option_settings += envvars
         operations.make_new_env(env_request, region,
                                 branch_default=branch_default, nohang=nohang,
-                                interactive=flag)
+                                interactive=flag,
+                                timeout=timeout)
 
     def complete_command(self, commands):
         region = fileoperations.get_default_region()

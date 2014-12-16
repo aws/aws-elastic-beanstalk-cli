@@ -35,6 +35,7 @@ class CloneController(AbstractBaseController):
             (['--envvars'], dict(help=flag_text['create.envvars'])),
             (['-nh', '--nohang'], dict(action='store_true',
                                        help=flag_text['clone.nohang'])),
+            (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
             (['--latest'], dict(action='store_true',
                                 help=flag_text['clone.latest'])),
         ]
@@ -51,6 +52,7 @@ class CloneController(AbstractBaseController):
         tags = self.app.pargs.tags
         envvars = self.app.pargs.envvars
         latest = self.app.pargs.latest
+        timeout = self.app.pargs.timeout
         provided_clone_name = clone_name is not None
         platform = None
 
@@ -113,7 +115,8 @@ class CloneController(AbstractBaseController):
 
         clone_request.option_settings += envvars
 
-        operations.make_cloned_env(clone_request, region, nohang=nohang)
+        operations.make_cloned_env(clone_request, region, nohang=nohang,
+                                   timeout=timeout)
 
     def complete_command(self, commands):
         super(CloneController, self).complete_command(commands)

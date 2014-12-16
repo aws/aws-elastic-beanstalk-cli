@@ -391,8 +391,10 @@ def get_storage_location(region=None):
     return response['S3Bucket']
 
 
-def update_environment(env_name, options, region=None, remove=[]):
+def update_environment(env_name, options, region=None, remove=None):
     LOG.debug('Inside update_environment api wrapper')
+    if remove is None:
+        remove = []
     try:
         response = _make_api_call('update-environment',
                               environment_name=env_name,

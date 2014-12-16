@@ -26,6 +26,7 @@ class SetEnvController(AbstractBaseController):
                               default=[], help=flag_text['setenv.vars'])),
             (['-e', '--environment'], dict(dest='environment_name',
                                         help=flag_text['setenv.env'])),
+            (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
         ]
         epilog = strings['setenv.epilog']
 
@@ -34,8 +35,9 @@ class SetEnvController(AbstractBaseController):
         region = self.get_region()
         env_name = self.get_env_name()
         var_list = self.app.pargs.varKey
+        timeout = self.app.pargs.timeout
 
-        operations.setenv(app_name, env_name, var_list, region)
+        operations.setenv(app_name, env_name, var_list, region, timeout=None)
 
     def complete_command(self, commands):
         self.complete_region(commands)

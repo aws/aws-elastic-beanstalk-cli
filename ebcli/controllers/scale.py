@@ -26,6 +26,7 @@ class ScaleController(AbstractBaseController):
                 action='store', type=int, help=flag_text['scale.number'])),
             (['-f', '--force'], dict(
                 action='store_true', help=flag_text['scale.force'])),
+            (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
         ] + AbstractBaseController.Meta.arguments
         usage = 'eb scale {number} <environment_name> [options ...]'
 
@@ -33,10 +34,12 @@ class ScaleController(AbstractBaseController):
         app_name = self.get_app_name()
         region = self.get_region()
         number = self.app.pargs.number
+        timeout = self.app.pargs.timeout
         env_name = self.get_env_name(cmd_example='scale ' + str(number))
         confirm = self.app.pargs.force
 
-        operations.scale(app_name, env_name, number, confirm, region)
+        operations.scale(app_name, env_name, number, confirm, region,
+                         timeout=timeout)
 
     def complete_command(self, commands):
         if not self.complete_region(commands):

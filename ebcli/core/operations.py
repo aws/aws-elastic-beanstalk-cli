@@ -38,10 +38,15 @@ LOG = minimal_logger(__name__)
 DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
 
 
-def wait_for_success_events(request_id, region, timeout_in_seconds=60*10,
+def wait_for_success_events(request_id, region, timeout_in_minutes=None,
                             sleep_time=5, stream_events=True):
+    if timeout_in_minutes == 0:
+        return
+    if timeout_in_minutes is None:
+        timeout_in_minutes = 10
+
     start = datetime.now()
-    timediff = timedelta(seconds=timeout_in_seconds)
+    timediff = timedelta(seconds=timeout_in_minutes * 60)
 
     finished = False
     last_time = None
@@ -486,7 +491,7 @@ def get_application_names(region):
     return [n.name for n in app_list]
 
 
-def scale(app_name, env_name, number, confirm, region):
+def scale(app_name, env_name, number, confirm, region, timeout=None):
     options = []
     # get environment
     env = elasticbeanstalk.describe_configuration_settings(
@@ -524,13 +529,14 @@ def scale(app_name, env_name, number, confirm, region):
         )
     request_id = elasticbeanstalk.update_environment(env_name, options, region)
     try:
-        wait_for_success_events(request_id, region, timeout_in_seconds=60*5)
+        wait_for_success_events(request_id, region,
+                                timeout_in_minutes=timeout or 5)
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
 
 def make_new_env(env_request, region, branch_default=False,
-                 nohang=False, interactive=True):
+                 nohang=False, interactive=True, timeout=None):
     if env_request.instance_profile is None:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
@@ -567,7 +573,7 @@ def make_new_env(env_request, region, branch_default=False,
 
     io.echo('Printing Status:')
     try:
-        wait_for_success_events(request_id, region)
+        wait_for_success_events(request_id, region, timeout_in_minutes=timeout)
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
@@ -628,7 +634,7 @@ def create_env(env_request, region, interactive=True):
         # Try again with new values
 
 
-def make_cloned_env(clone_request, region, nohang=False):
+def make_cloned_env(clone_request, region, nohang=False, timeout=None):
     io.log_info('Cloning environment')
     # get app version from environment
     env = elasticbeanstalk.get_environment(clone_request.app_name,
@@ -644,7 +650,7 @@ def make_cloned_env(clone_request, region, nohang=False):
 
     io.echo('Printing Status:')
     try:
-        wait_for_success_events(request_id, region)
+        wait_for_success_events(request_id, region, timeout_in_minutes=timeout)
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
@@ -673,7 +679,8 @@ def clone_env(clone_request, region):
         #try again
 
 
-def delete_app(app_name, region, force, nohang=False, cleanup=True):
+def delete_app(app_name, region, force, nohang=False, cleanup=True,
+               timeout=None):
     app = elasticbeanstalk.describe_application(app_name, region)
 
     if 'Versions' not in app:
@@ -701,11 +708,13 @@ def delete_app(app_name, region, force, nohang=False, cleanup=True):
         cleanup_ignore_file()
         fileoperations.clean_up()
     if not nohang:
+        if timeout is None:
+            timeout = 15
         wait_for_success_events(request_id, region, sleep_time=1,
-                              timeout_in_seconds=60*15)
+                              timeout_in_minutes=timeout)
 
 
-def deploy(app_name, env_name, region, version, label, message):
+def deploy(app_name, env_name, region, version, label, message, timeout=None):
     if region:
         region_name = region
     else:
@@ -724,7 +733,9 @@ def deploy(app_name, env_name, region, version, label, message):
     request_id = elasticbeanstalk.update_env_application_version(env_name,
                                                     app_version_label, region)
 
-    wait_for_success_events(request_id, region, 60*5)
+    if timeout is None:
+        timeout = 5
+    wait_for_success_events(request_id, region, timeout=timeout)
 
 
 def status(app_name, env_name, region, verbose):
@@ -779,7 +790,7 @@ def logs(env_name, info_type, region, do_zip=False, instance_id=None):
 
     # Wait for logs to finish
     request_id = result['ResponseMetadata']['RequestId']
-    wait_for_success_events(request_id, region, timeout_in_seconds=60*2,
+    wait_for_success_events(request_id, region, timeout_in_minutes=2,
                             sleep_time=1, stream_events=False)
 
     get_logs(env_name, info_type, region, do_zip=do_zip,
@@ -849,15 +860,16 @@ def get_logs(env_name, info_type, region, do_zip=False, instance_id=None):
             print_from_url(url)
 
 
-def setenv(app_name, env_name, var_list, region):
+def setenv(app_name, env_name, var_list, region, timeout=None):
 
     options, options_to_remove = create_envvars_list(var_list)
 
-    result = elasticbeanstalk.update_environment(env_name, options, region,
+    request_id = elasticbeanstalk.update_environment(env_name, options, region,
                                                  remove=options_to_remove)
     try:
-        request_id = result
-        wait_for_success_events(request_id, region, timeout_in_seconds=60*4)
+        if timeout is None:
+            timeout = 4
+        wait_for_success_events(request_id, region, timeout_in_minutes=timeout)
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
@@ -895,7 +907,7 @@ def save_file_from_url(url, location, filename):
     return fileoperations.save_to_file(result, location, filename)
 
 
-def terminate(env_name, region, nohang=False):
+def terminate(env_name, region, nohang=False, timeout=None):
     request_id = elasticbeanstalk.terminate_environment(env_name, region)
 
     # disassociate with branch if branch default
@@ -904,8 +916,9 @@ def terminate(env_name, region, nohang=False):
         set_environment_for_current_branch(None)
 
     if not nohang:
-        wait_for_success_events(request_id, region,
-                              timeout_in_seconds=60*5)
+        if timeout is None:
+            timeout = 5
+        wait_for_success_events(request_id, region, timeout_in_minutes=timeout)
 
 
 def save_env_file(api_model):
@@ -1028,7 +1041,8 @@ def create_app_version(app_name, region, label=None, message=None):
                 raise
 
 
-def update_environment_configuration(app_name, env_name, region, nohang):
+def update_environment_configuration(app_name, env_name, region, nohang,
+                                     timeout=None):
     # get environment setting
     api_model = elasticbeanstalk.describe_configuration_settings(
         app_name, env_name, region=region
@@ -1052,10 +1066,12 @@ def update_environment_configuration(app_name, env_name, region, nohang):
         io.log_warning('No changes made. Exiting.')
         return
 
-    update_environment(env_name, changes, region, nohang, remove=remove)
+    update_environment(env_name, changes, region, nohang, remove=remove,
+                       timeout=timeout)
 
 
-def update_environment(env_name, changes, region, nohang, remove=[]):
+def update_environment(env_name, changes, region, nohang, remove=None,
+                       timeout=None):
     try:
         request_id = elasticbeanstalk.update_environment(env_name, changes,
                                                          region=region,
@@ -1073,7 +1089,7 @@ def update_environment(env_name, changes, region, nohang, remove=[]):
 
     io.echo('Printing Status:')
     try:
-        wait_for_success_events(request_id, region)
+        wait_for_success_events(request_id, region, timeout_in_minutes=timeout)
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
@@ -1136,7 +1152,7 @@ def cname_swap(source_env, dest_env, region):
     request_id = elasticbeanstalk.swap_environment_cnames(source_env, dest_env,
                                                           region=region)
 
-    wait_for_success_events(request_id, region, timeout_in_seconds=60,
+    wait_for_success_events(request_id, region, timeout_in_minutes=1,
                             sleep_time=2)
 
 

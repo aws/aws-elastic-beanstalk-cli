@@ -23,7 +23,8 @@ class ConfigController(AbstractBaseController):
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
         arguments = AbstractBaseController.Meta.arguments + [
             (['-nh', '--nohang'], dict(action='store_true',
-                                       help=flag_text['config.nohang']))
+                                       help=flag_text['config.nohang'])),
+            (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
         ]
 
 
@@ -31,7 +32,9 @@ class ConfigController(AbstractBaseController):
         region = self.get_region()
         env_name = self.get_env_name()
         app_name = self.get_app_name()
+        timeout = self.app.pargs.timeout
         nohang = self.app.pargs.nohang
 
         operations.update_environment_configuration(app_name, env_name,
-                                                    region, nohang)
+                                                    region, nohang,
+                                                    timeout=timeout)
