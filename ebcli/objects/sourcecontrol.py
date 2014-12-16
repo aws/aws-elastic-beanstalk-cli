@@ -170,14 +170,22 @@ class Git(SourceControl):
         return stdout
 
     def do_zip(self, location):
-        io.log_info('creating zip using git archive HEAD')
-        stdout, stderr, exitcode = \
-            exec_cmd(['git', 'archive', '-v', '--format=zip',
-                      '-o', location, 'HEAD'])
-        if sys.version_info[0] >= 3:
-            stderr = stderr.decode('utf8')
-        self._handle_exitcode(exitcode, stderr)
-        io.log_info('git archive output: ' + stderr)
+        cwd = os.getcwd()
+        try:
+            # must be in project root for git archive to work.
+            fileoperations._traverse_to_project_root()
+
+            io.log_info('creating zip using git archive HEAD')
+            stdout, stderr, exitcode = \
+                exec_cmd(['git', 'archive', '-v', '--format=zip',
+                          '-o', location, 'HEAD'])
+            if sys.version_info[0] >= 3:
+                stderr = stderr.decode('utf8')
+            self._handle_exitcode(exitcode, stderr)
+            io.log_info('git archive output: ' + stderr)
+
+        finally:
+            os.chdir(cwd)
 
     def get_message(self):
         stdout, stderr, exitcode = \
