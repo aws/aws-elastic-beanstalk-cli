@@ -17,6 +17,7 @@ from ..core import operations, io
 from ..lib import utils, elasticbeanstalk
 from ..controllers.create import get_cname, get_and_validate_tags
 from ..objects.exceptions import InvalidOptionsError, AlreadyExistsError
+from ..objects.requests import CloneEnvironmentRequest
 
 
 class CloneController(AbstractBaseController):
@@ -95,8 +96,18 @@ class CloneController(AbstractBaseController):
                 cname = None
 
 
-        operations.make_cloned_env(app_name, env_name, clone_name, cname,
-                             platform, scale, tags, region, nohang)
+        operations.make_cloned_env(
+            CloneEnvironmentRequest(
+                app_name=app_name,
+                env_name=clone_name,
+                original_name=env_name,
+                cname=cname,
+                platform=platform,
+                scale=scale,
+                tags=tags,
+            ),
+            region, nohang=nohang
+        )
 
     def complete_command(self, commands):
         super(CloneController, self).complete_command(commands)

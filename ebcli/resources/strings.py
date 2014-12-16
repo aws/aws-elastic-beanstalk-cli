@@ -53,7 +53,7 @@ strings = {
 
     # Error when --sample and --label falg are both used on create
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" flags together.',
-    'create.singleandsize': 'You cannot use the "--single" and "--size" flags together.',
+    'create.singleandsize': 'You cannot use the "--single" and "--scale" flags together.',
     'logs.allandzip': 'You cannot use the "--all" and "--all_zip" flags together.',
     'logs.allandinstance': 'You cannot use the "--all" and "--instance" flags together.',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" flags together.',

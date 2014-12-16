@@ -11,17 +11,14 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import dateutil
 import datetime
 
 from cement.utils.misc import minimal_logger
 
-from ..core import io
 from ..objects.solutionstack import SolutionStack
 from ..objects.exceptions import NotFoundError, InvalidStateError, \
     AlreadyExistsError
 from ..objects.tier import Tier
-from ..lib import utils
 from ..lib import aws
 from ..lib.aws import InvalidParameterValueError
 from ..objects.event import Event
@@ -78,124 +75,19 @@ def create_application_version(app_name, vers_label, descrip, s3_bucket,
                           region=region)
 
 
-def create_environment(app_name, env_name, cname, description, solution_stck,
-                       tier, itype, label, single, key_name, profile, tags,
-                       region=None, database=False, vpc=False, size=None):
+def create_environment(environment, region=None):
     """
     Creates an Elastic Beanstalk environment
-    :param app_name: Name of application where environment will live
-    :param env_name: Desired name of environment
-    :param cname: cname prefix, if None, a cname will be auto-generated
-    :param description: a string description (optional)
-    :param solution_stck: a solution_stack object
-    :param tier: a tier object
-    :param itype: instance type string
-    :param label: version label of app version to deploy. If None, a
-                        sample app will be launched
-    :param single: True if you would like environment to be a SingleInstance.
-                            If False, the environment will be launched as LoadBalanced
-    :param key_name: EC2 SSH Keypair name
-    :param profile: IAM Instance profile name
-    :param tags: a list of tags as {'Key': 'foo', 'Value':'bar'}
-    :param region: region in which to create the environment
-    :param database: database object dictionary
-    :param size: number of instances to spawn at create
-    :return: environment_object, request_id
     """
     LOG.debug('Inside create_environment api wrapper')
 
-    assert app_name is not None, 'App name can not be empty'
-    assert env_name is not None, 'Environment name can not be empty'
-    assert solution_stck is not None, 'Solution stack can not be empty'
-    if size:
-        assert isinstance(size, int), 'Size must be of type int'
-        size = str(size)
+    kwargs = environment.convert_to_kwargs()
 
-    if region is None:
-        region = aws.get_default_region()
+    if environment.database:
+        # need to know region for database string
+        if region is None:
+            region = aws.get_default_region()
 
-    settings = []
-
-    kwargs = {
-        'application_name': app_name,
-        'environment_name': env_name,
-        'solution_stack_name': solution_stck.name,
-        'option_settings': settings,
-    }
-    if description:
-        kwargs['description'] = description
-    if cname:
-        kwargs['cname_prefix'] = cname
-    if tier:
-        kwargs['tier'] = tier.to_struct()
-    if label:
-        kwargs['version_label'] = label
-    if tags:
-        kwargs['tags'] = tags
-    if profile:
-        settings.append(
-            {'Namespace': 'aws:autoscaling:launchconfiguration',
-             'OptionName': 'IamInstanceProfile',
-             'Value': profile}
-        )
-    if itype:
-        settings.append(
-            {'Namespace': 'aws:autoscaling:launchconfiguration',
-             'OptionName': 'InstanceType',
-             'Value': itype}
-        )
-    if single:
-        settings.append(
-            {'Namespace': 'aws:elasticbeanstalk:environment',
-             'OptionName': 'EnvironmentType',
-             'Value': 'SingleInstance'}
-        )
-    if key_name:
-        settings.append(
-            {'Namespace': 'aws:autoscaling:launchconfiguration',
-            'OptionName': 'EC2KeyName',
-            'Value': key_name},
-        )
-    if size:
-        settings.append(
-            {'Namespace': 'aws:autoscaling:asg',
-             'OptionName': 'MaxSize',
-             'Value': size},
-        )
-        settings.append(
-            {'Namespace': 'aws:autoscaling:asg',
-             'OptionName': 'MinSize',
-             'Value': size},
-        )
-
-    # add client defaults
-    settings.append(
-        {'Namespace': 'aws:elasticbeanstalk:command',
-         'OptionName': 'BatchSize',
-         'Value': '30'}
-    )
-    settings.append(
-        {'Namespace': 'aws:elasticbeanstalk:command',
-         'OptionName': 'BatchSizeType',
-         'Value': 'Percentage'}
-    )
-    if not tier or tier.name.lower() != 'worker':
-        settings.append(
-            {'Namespace': 'aws:elb:policies',
-             'OptionName': 'ConnectionDrainingEnabled',
-             'Value': 'true'}
-        )
-        settings.append(
-            {'Namespace': 'aws:elb:healthcheck',
-             'OptionName': 'Interval',
-             'Value': '30'}
-        )
-        settings.append(
-            {'Namespace': 'aws:elb:loadbalancer',
-             'OptionName': 'CrossZone',
-             'Value': 'true'}
-        )
-    if database:
         #Database is a dictionary
         kwargs['template_specification'] = {
             'TemplateSnippets': [
@@ -207,82 +99,6 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
             ]
         }
 
-        # Add to option settings
-        settings.append(
-            {'Namespace': 'aws:rds:dbinstance',
-             'OptionName': 'DBPassword',
-             'Value': database['password']}
-        )
-        settings.append(
-            {'Namespace': 'aws:rds:dbinstance',
-             'OptionName': 'DBUser',
-             'Value': database['username']}
-        )
-        if database['instance']:
-            settings.append(
-                {'Namespace': 'aws:rds:dbinstance',
-                 'OptionName': 'DBInstanceClass',
-                 'Value': database['instance']}
-            )
-        if database['size']:
-            settings.append(
-                {'Namespace': 'aws:rds:dbinstance',
-                 'OptionName': 'DBAllocatedStorage',
-                 'Value': database['size']}
-            )
-        if database['engine']:
-            settings.append(
-                {'Namespace': 'aws:rds:dbinstance',
-                 'OptionName': 'DBEngine',
-                 'Value': database['engine']}
-            )
-        settings.append(
-            {'Namespace': 'aws:rds:dbinstance',
-             'OptionName': 'DBDeletionPolicy',
-             'Value': 'Snapshot'}
-        )
-    if vpc:
-        namespace = 'aws:ec2:vpc'
-        settings.append(
-            {'Namespace': namespace,
-             'OptionName': 'VPCId',
-             'Value': vpc['id']}
-        )
-        settings.append(
-            {'Namespace': namespace,
-             'OptionName': 'AssociatePublicIpAddress',
-             'Value': vpc['publicip']}
-        )
-        settings.append(
-            {'Namespace': namespace,
-             'OptionName': 'ELBScheme',
-             'Value': vpc['elbscheme']}
-        )
-        if vpc['elbsubnets']:
-            settings.append(
-                {'Namespace': namespace,
-                'OptionName': 'ELBSubnets',
-                'Value': vpc['elbsubnets']}
-            )
-        if vpc['ec2subnets']:
-            settings.append(
-                {'Namespace': namespace,
-                 'OptionName': 'Subnets',
-                 'Value': vpc['ec2subnets']}
-            )
-        if vpc['securitygroups']:
-            settings.append(
-                {'Namespace': 'aws:autoscaling:launchconfiguration',
-                 'OptionName': 'SecurityGroups',
-                 'Value': vpc['securitygroups']}
-            )
-        if vpc['dbsubnets']:
-            settings.append(
-                {'Namespace': namespace,
-                 'OptionName': 'DBSubnets',
-                 'Value': vpc['dbsubnets']}
-            )
-
     result = _make_api_call('create-environment', region=region, **kwargs)
 
     # convert to object
@@ -291,47 +107,13 @@ def create_environment(app_name, env_name, cname, description, solution_stck,
     return env, request_id
 
 
-def clone_environment(app_name, env_name, clone_name, cname, platform,
-                      description, label, scale, tags, region=None):
+def clone_environment(clone, region=None):
     LOG.debug('Inside clone_environment api wrapper')
 
-    assert app_name is not None, 'App name can not be empty'
-    assert env_name is not None, 'Environment name can not be empty'
-    assert clone_name is not None, 'Clone name can not be empty'
-    if scale:
-        assert isinstance(scale, int), 'Size must be of type int'
-        scale = str(scale)
+    kwargs = clone.convert_to_kwargs()
 
-    settings = []
-
-    kwargs = {
-        'application_name': app_name,
-        'environment_name': clone_name,
-        'template_specification': {'TemplateSource': {'EnvironmentName': env_name,}},
-        'option_settings': settings,
-    }
-    if platform:
-        kwargs['solution_stack_name'] = platform.name
-    if description:
-        kwargs['description'] = description
-    if cname:
-        kwargs['cname_prefix'] = cname
-    if label:
-        kwargs['version_label'] = label
-    if tags:
-        kwargs['tags'] = tags
-
-    if scale:
-        settings.append(
-            {'Namespace': 'aws:autoscaling:asg',
-             'OptionName': 'MaxSize',
-             'Value': scale},
-        )
-        settings.append(
-            {'Namespace': 'aws:autoscaling:asg',
-             'OptionName': 'MinSize',
-             'Value': scale},
-        )
+    kwargs['template_specification'] = \
+        {'TemplateSource': {'EnvironmentName': clone.original_name}}
 
     result = _make_api_call('create-environment', region=region, **kwargs)
 

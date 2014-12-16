@@ -20,6 +20,7 @@ from ebcli.objects.solutionstack import SolutionStack
 from ebcli.core import fileoperations
 from ebcli.objects.tier import Tier
 from ebcli.objects.exceptions import InvalidOptionsError
+from ebcli.objects.requests import CreateEnvironmentRequest
 
 
 class TestCreate(BaseControllerTest):
@@ -59,27 +60,15 @@ class TestCreate(BaseControllerTest):
         self.app.close()
 
         # make sure make_new_env was called correctly
-        self.mock_operations.make_new_env.assert_called_with(
-            self.app_name,  #app name
-            env_name,   # env name
-            'us-west-2',  # region
-            cname_prefix,  # cname
-            self.solution,  # solution
-            None,  # Tier
-            None,  # itype
-            None,  # label
-            None,  # iprofile
-            False,  # single
-            None,  # key_name
-            False,  # branch_default
-            False,  # sample
-            [],  # Tags
-            None,  # scale
-            False,  # Database
-            False,  # vpc
-            False,  # nohang
-            interactive=True,
+        env_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            env_name=env_name,
+            cname=cname_prefix,
+            platform=self.solution
         )
+        args, kwargs = self.mock_operations.make_new_env.call_args
+        self.assertEqual(args[0], env_request)
+        self.assertEqual(args[1], 'us-west-2')
 
     def test_create_defaults(self):
         """
@@ -101,27 +90,15 @@ class TestCreate(BaseControllerTest):
         self.app.close()
 
         # make sure make_new_env was called correctly
-        self.mock_operations.make_new_env.assert_called_with(
-            self.app_name,  #app name
-            self.app_name + '-dev',   # env name
-            'us-west-2',  # region
-            self.app_name + '-dev',   # cname = env name
-            self.solution,  # solution
-            None,  # Tier
-            None,  # itype
-            None,  # label
-            None,  # iprofile
-            False,  # single
-            None,  # key_name
-            False,  # branch_default
-            False,  # sample
-            [],  # Tags
-            None,  # Size
-            False,  #Database
-            False,  # vpc
-            False,  # nohang
-            interactive=True,
+        env_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            env_name=self.app_name + '-dev',
+            cname=self.app_name + '-dev',
+            platform=self.solution
         )
+        args, kwargs = self.mock_operations.make_new_env.call_args
+        self.assertEqual(args[0], env_request)
+        self.assertEqual(args[1], 'us-west-2')
 
     @mock.patch('ebcli.core.io.log_error')
     def test_create_sample_and_label(self, mock_error):
@@ -167,3 +144,48 @@ class TestCreate(BaseControllerTest):
 
         # Make sure input was never called
         self.assertEqual(self.mock_input.call_count, 0)
+
+    def test_all_options(self):
+        env_name = 'my-awesome-env'
+        cname_prefix = env_name + '1'
+        profile = 'myprofile'
+        tier = self.tier
+        itype = 'c3.large'
+        keyname ='mykey'
+        self.mock_operations.get_solution_stack.return_value = self.solution
+        self.mock_operations.is_cname_available.return_value = True
+
+        self.mock_input.side_effect = [
+            env_name,
+            cname_prefix,
+            '1',  # tier selection
+        ]
+
+        # run cmd
+        self.app = EB(argv=['create', env_name, '-c', cname_prefix,
+                            '-ip', profile, '-r', 'us-east-1',
+                            '-t', 'web', '-i', itype, '-p', self.solution.name,
+                            '--sample', '-d', '-k', keyname, '--scale', '3',
+                            '--tags', 'a=1,b=2'])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+        # make sure make_new_env was called correctly
+        env_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            env_name=env_name,
+            cname=cname_prefix,
+            platform=self.solution,
+            instance_profile=profile,
+            tier=tier,
+            sample_application=True,
+            instance_type=itype,
+            key_name=keyname,
+            scale=3,
+            tags=[{'Key': 'a', 'Value': '1'}, {'Key': 'b', 'Value': '2'}]
+        )
+        args, kwargs = self.mock_operations.make_new_env.call_args
+        self.assertEqual(args[0], env_request)
+        self.assertEqual(args[1], 'us-east-1')
+        self.assertEqual(kwargs['branch_default'], True)

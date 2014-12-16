@@ -26,7 +26,6 @@ from ..lib import elasticbeanstalk, s3, iam, aws, ec2, elb
 from ..core import fileoperations, io
 from ..objects.sourcecontrol import SourceControl
 from ..resources.strings import strings, responses, prompts
-from ..objects import region as regions
 from ..lib import utils
 from ..objects import configuration
 from ..objects.exceptions import *
@@ -530,28 +529,26 @@ def scale(app_name, env_name, number, confirm, region):
         io.log_error(strings['timeout.error'])
 
 
-def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
-                 itype, label, profile, single, key_name, branch_default,
-                 sample, tags, size, database, vpc, nohang, interactive=True):
-    if profile is None:
+def make_new_env(env_request, region, branch_default=False,
+                 nohang=False, interactive=True):
+    if env_request.instance_profile is None:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
-        profile = get_default_profile(region)
+        env_request.instance_profile = get_default_profile(region)
 
     # deploy code
-    if not sample and not label:
+    if not env_request.sample_application and not env_request.version_label:
         io.log_info('Creating new application version using project code')
-        label = create_app_version(app_name, region)
+        env_request.version_label = \
+            create_app_version(env_request.app_name, region)
 
     # Create env
-    if key_name:
-        upload_keypair_if_needed(region, key_name)
+    if env_request.key_name:
+        upload_keypair_if_needed(region, env_request.key_name)
 
     io.log_info('Creating new environment')
-    result, request_id = create_env(app_name, env_name, region, cname,
-                                    solution_stack, tier, itype, label, single,
-                                    key_name, profile, tags, size, database,
-                                    vpc, interactive=interactive)
+    result, request_id = create_env(env_request, region,
+                                    interactive=interactive)
 
     env_name = result.name  # get the (possibly) updated name
 
@@ -594,23 +591,18 @@ def print_env_details(env, region, health=True):
         io.echo('  Health:', env.health)
 
 
-def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
-               label, single, key_name, profile, tags, size, database, vpc,
-               interactive=True):
-    description = strings['env.description']
+def create_env(env_request, region, interactive=True):
     while True:
         try:
-            return elasticbeanstalk.create_environment(
-                app_name, env_name, cname, description, solution_stack,
-                tier, itype, label, single, key_name, profile, tags,
-                region=region, database=database, vpc=vpc, size=size)
+            return elasticbeanstalk.create_environment(env_request,
+                                                       region=region)
 
         except InvalidParameterValueError as e:
             if e.message == responses['app.notexists'].replace(
-                '{app-name}', '\'' + app_name + '\''):
+                    '{app-name}', '\'' + env_request.app_name + '\''):
                 # App doesnt exist, must be a new region.
                 ## Lets create the app in the region
-                create_app(app_name, region)
+                create_app(env_request.app_name, region)
             elif interactive:
                 LOG.debug('creating env returned error: ' + e.message)
                 if re.match(responses['env.cnamenotavailable'], e.message):
@@ -619,15 +611,15 @@ def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
                 elif re.match(responses['env.nameexists'], e.message):
                     io.echo(strings['env.exists'])
                     current_environments = get_all_env_names(region)
-                    unique_name = utils.get_unique_name(env_name,
+                    unique_name = utils.get_unique_name(env_request.env_name,
                                                         current_environments)
-                    env_name = io.prompt_for_environment_name(
+                    env_request.env_name = io.prompt_for_environment_name(
                         default_name=unique_name)
                 elif e.message == responses['app.notexists'].replace(
-                        '{app-name}', '\'' + app_name + '\''):
+                        '{app-name}', '\'' + env_request.app_name + '\''):
                     # App doesnt exist, must be a new region.
                     ## Lets create the app in the region
-                    create_app(app_name, region)
+                    create_app(env_request.app_name, region)
                 else:
                     raise
             else:
@@ -636,14 +628,13 @@ def create_env(app_name, env_name, region, cname, solution_stack, tier, itype,
         # Try again with new values
 
 
-def make_cloned_env(app_name, env_name, clone_name, cname, platform,
-                    scale, tags, region, nohang):
+def make_cloned_env(clone_request, region, nohang=False):
     io.log_info('Cloning environment')
     # get app version from environment
-    env = elasticbeanstalk.get_environment(app_name, env_name, region)
-    label = env.version_label
-    result, request_id = clone_env(app_name, env_name, clone_name, cname,
-                                   platform, label, scale, tags, region)
+    env = elasticbeanstalk.get_environment(clone_request.app_name,
+                                           clone_request.original_name, region)
+    clone_request.version_label = env.version_label
+    result, request_id = clone_env(clone_request, region)
 
     # Print status of env
     print_env_details(result, region, health=False)
@@ -658,31 +649,26 @@ def make_cloned_env(app_name, env_name, clone_name, cname, platform,
         io.log_error(strings['timeout.error'])
 
 
-def clone_env(app_name, env_name, clone_name, cname, platform, label, scale,
-              tags, region):
-    description = strings['env.clonedescription'].replace('{env-name}',
-                                                          env_name)
-
+def clone_env(clone_request, region):
     while True:
         try:
-            return elasticbeanstalk.clone_environment(
-                app_name, env_name, clone_name, cname, platform, description,
-                label, scale, tags, region=region)
-
+            return elasticbeanstalk.clone_environment(clone_request,
+                                                      region=region)
         except InvalidParameterValueError as e:
             LOG.debug('cloning env returned error: ' + e.message)
             if re.match(responses['env.cnamenotavailable'], e.message):
                 io.echo(prompts['cname.unavailable'])
-                cname = io.prompt_for_cname()
+                clone_request.cname = io.prompt_for_cname()
             elif re.match(responses['env.nameexists'], e.message):
                 io.echo(strings['env.exists'])
-                current_environments = get_env_names(app_name, region)
-                unique_name = utils.get_unique_name(clone_name,
+                current_environments = get_env_names(clone_request.app_name,
+                                                     region)
+                unique_name = utils.get_unique_name(clone_request.env_name,
                                                     current_environments)
-                clone_name = io.prompt_for_environment_name(
+                clone_request.env_name = io.prompt_for_environment_name(
                     default_name=unique_name)
             else:
-                raise e
+                raise
 
         #try again
 

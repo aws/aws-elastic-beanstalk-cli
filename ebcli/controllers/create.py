@@ -21,6 +21,7 @@ from ..objects.exceptions import NotFoundError, AlreadyExistsError, \
     InvalidOptionsError
 from ..core import io, fileoperations, operations
 from ..objects.tier import Tier
+from ..objects.requests import CreateEnvironmentRequest
 
 
 class CreateController(AbstractBaseController):
@@ -99,7 +100,6 @@ class CreateController(AbstractBaseController):
         scale = self.app.pargs.scale
         flag = False if env_name else True
 
-
         provided_env_name = env_name is not None
 
         if sample and label:
@@ -170,10 +170,25 @@ class CreateController(AbstractBaseController):
         vpc = self.form_vpc_object()
 
 
-        operations.make_new_env(app_name, env_name, region, cname, solution,
-                                tier, itype, label, iprofile, single, key_name,
-                                branch_default, sample, tags, scale,
-                                database, vpc, nohang, interactive=flag)
+        operations.make_new_env(
+            CreateEnvironmentRequest(
+                app_name=app_name,
+                env_name=env_name,
+                cname=cname,
+                platform=solution,
+                tier=tier,
+                instance_type=itype,
+                version_label=label,
+                instance_profile=iprofile,
+                single_instance=single,
+                key_name=key_name,
+                sample_application=sample,
+                tags=tags,
+                scale=scale,
+                database=database,
+                vpc=vpc),
+            region, branch_default=branch_default,
+            nohang=nohang, interactive=flag)
 
     def complete_command(self, commands):
         region = fileoperations.get_default_region()
@@ -215,7 +230,7 @@ class CreateController(AbstractBaseController):
             db_object['instance'] = instance
             return db_object
         else:
-            return False
+            return {}
 
     def form_vpc_object(self):
         vpc_id = self.app.pargs.vpc_id
@@ -238,7 +253,7 @@ class CreateController(AbstractBaseController):
             return vpc_object
 
         else:
-            return False
+            return {}
 
 
 def get_cname(env_name, region):
