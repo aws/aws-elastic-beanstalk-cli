@@ -186,6 +186,7 @@ flag_text = {
     'create.scale': 'number of desired instances',
     'create.nohang': 'return immediately, do not wait for create to be completed',
     'create.tags': 'a comma separated list of tags as key=value pairs',
+    'create.envvars': 'a comma separated list of environment variables as key=value pairs',
     'create.database': 'create a database',
 
     # Deploy

@@ -850,6 +850,19 @@ def get_logs(env_name, info_type, region, do_zip=False, instance_id=None):
 
 
 def setenv(app_name, env_name, var_list, region):
+
+    options, options_to_remove = create_envvars_list(var_list)
+
+    result = elasticbeanstalk.update_environment(env_name, options, region,
+                                                 remove=options_to_remove)
+    try:
+        request_id = result
+        wait_for_success_events(request_id, region, timeout_in_seconds=60*4)
+    except TimeoutError:
+        io.log_error(strings['timeout.error'])
+
+
+def create_envvars_list(var_list):
     namespace = 'aws:elasticbeanstalk:application:environment'
 
     options = []
@@ -857,8 +870,7 @@ def setenv(app_name, env_name, var_list, region):
     for pair in var_list:
         ## validate
         if not re.match('^[\w\\_.:/+@-][^=]*=([\w\\_.:/+@-][^=]*)?$', pair):
-            io.log_error(strings['setenv.invalidformat'])
-            return
+            raise InvalidOptionsError(strings['setenv.invalidformat'])
         else:
             option_name, value = pair.split('=')
             d = {'Namespace': namespace,
@@ -869,14 +881,7 @@ def setenv(app_name, env_name, var_list, region):
             else:
                 d['Value'] = value
                 options.append(d)
-
-    result = elasticbeanstalk.update_environment(env_name, options, region,
-                                                 remove=options_to_remove)
-    try:
-        request_id = result
-        wait_for_success_events(request_id, region, timeout_in_seconds=60*4)
-    except TimeoutError:
-        io.log_error(strings['timeout.error'])
+    return options, options_to_remove
 
 
 def print_from_url(url):

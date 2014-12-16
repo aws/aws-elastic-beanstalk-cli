@@ -15,7 +15,8 @@ from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
 from ..core import operations, io
 from ..lib import utils, elasticbeanstalk
-from ..controllers.create import get_cname, get_and_validate_tags
+from ..controllers.create import get_cname, get_and_validate_tags, \
+    get_and_validate_envars
 from ..objects.exceptions import InvalidOptionsError, AlreadyExistsError
 from ..objects.requests import CloneEnvironmentRequest
 
@@ -31,6 +32,7 @@ class CloneController(AbstractBaseController):
             (['-c', '--cname'], dict(help=flag_text['clone.cname'])),
             (['--scale'], dict(type=int, help=flag_text['clone.scale'])),
             (['--tags'], dict(help=flag_text['clone.tags'])),
+            (['--envvars'], dict(help=flag_text['create.envvars'])),
             (['-nh', '--nohang'], dict(action='store_true',
                                        help=flag_text['clone.nohang'])),
             (['--latest'], dict(action='store_true',
@@ -47,6 +49,7 @@ class CloneController(AbstractBaseController):
         scale = self.app.pargs.scale
         nohang = self.app.pargs.nohang
         tags = self.app.pargs.tags
+        envvars = self.app.pargs.envvars
         latest = self.app.pargs.latest
         provided_clone_name = clone_name is not None
         platform = None
@@ -72,8 +75,10 @@ class CloneController(AbstractBaseController):
 
         # get tags
         tags = get_and_validate_tags(tags)
+        envvars = get_and_validate_envars(envvars)
 
-        # Get env_name for clone
+
+    # Get env_name for clone
         if not clone_name:
             if len(env_name) < 16:
                 unique_name = env_name + '-clone'
@@ -96,18 +101,19 @@ class CloneController(AbstractBaseController):
                 cname = None
 
 
-        operations.make_cloned_env(
-            CloneEnvironmentRequest(
-                app_name=app_name,
-                env_name=clone_name,
-                original_name=env_name,
-                cname=cname,
-                platform=platform,
-                scale=scale,
-                tags=tags,
-            ),
-            region, nohang=nohang
+        clone_request = CloneEnvironmentRequest(
+            app_name=app_name,
+            env_name=clone_name,
+            original_name=env_name,
+            cname=cname,
+            platform=platform,
+            scale=scale,
+            tags=tags,
         )
+
+        clone_request.option_settings += envvars
+
+        operations.make_cloned_env(clone_request, region, nohang=nohang)
 
     def complete_command(self, commands):
         super(CloneController, self).complete_command(commands)

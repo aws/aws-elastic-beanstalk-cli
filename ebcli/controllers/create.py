@@ -51,6 +51,7 @@ class CreateController(AbstractBaseController):
             (['-nh', '--nohang'], dict(
                 action='store_true', help=flag_text['create.nohang'])),
             (['--tags'], dict(help=flag_text['create.tags'])),
+            (['--envvars'], dict(help=flag_text['create.envvars'])),
             (['-db', '--database'], dict(
                 action="store_true", help=flag_text['create.database'])),
             ## Add addition hidden db commands
@@ -97,6 +98,7 @@ class CreateController(AbstractBaseController):
         sample = self.app.pargs.sample
         nohang = self.app.pargs.nohang
         tags = self.app.pargs.tags
+        envvars = self.app.pargs.envvars
         scale = self.app.pargs.scale
         flag = False if env_name else True
 
@@ -168,27 +170,29 @@ class CreateController(AbstractBaseController):
 
         database = self.form_database_object()
         vpc = self.form_vpc_object()
+        envvars = get_and_validate_envars(envvars)
 
+        env_request = CreateEnvironmentRequest(
+            app_name=app_name,
+            env_name=env_name,
+            cname=cname,
+            platform=solution,
+            tier=tier,
+            instance_type=itype,
+            version_label=label,
+            instance_profile=iprofile,
+            single_instance=single,
+            key_name=key_name,
+            sample_application=sample,
+            tags=tags,
+            scale=scale,
+            database=database,
+            vpc=vpc)
 
-        operations.make_new_env(
-            CreateEnvironmentRequest(
-                app_name=app_name,
-                env_name=env_name,
-                cname=cname,
-                platform=solution,
-                tier=tier,
-                instance_type=itype,
-                version_label=label,
-                instance_profile=iprofile,
-                single_instance=single,
-                key_name=key_name,
-                sample_application=sample,
-                tags=tags,
-                scale=scale,
-                database=database,
-                vpc=vpc),
-            region, branch_default=branch_default,
-            nohang=nohang, interactive=flag)
+        env_request.option_settings += envvars
+        operations.make_new_env(env_request, region,
+                                branch_default=branch_default, nohang=nohang,
+                                interactive=flag)
 
     def complete_command(self, commands):
         region = fileoperations.get_default_region()
@@ -291,3 +295,14 @@ def get_and_validate_tags(tags):
                  'Value': value}
             )
     return tag_list
+
+
+def get_and_validate_envars(envvars):
+    if not envvars:
+        return []
+
+    envvars = envvars.strip().strip('"').strip('\'')
+    envvars = envvars.split(',')
+
+    options, options_to_remove = operations.create_envvars_list(envvars)
+    return options
