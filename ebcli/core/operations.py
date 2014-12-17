@@ -1190,13 +1190,6 @@ def prompt_for_ec2_keyname(region, env_name=None):
     return keyname
 
 
-def select_tier():
-    tier_list = Tier.get_latest_tiers()
-    io.echo(prompts['tier.prompt'])
-    tier = utils.prompt_for_item_in_list(tier_list)
-    return tier
-
-
 def get_solution_stack(solution_string, region):
     #If string is explicit, do not check
     if re.match('\d\dbit Amazon Linux [0-9.]+ v[0-9.]+ running .*', solution_string):

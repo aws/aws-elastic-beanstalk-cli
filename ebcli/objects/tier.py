@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from ..objects.exceptions import NotFoundError
+import re
 
 
 class Tier():
@@ -22,16 +23,19 @@ class Tier():
         self.string = self.__str__()
 
     def to_struct(self):
-        return {
+        strct = {
             'Name': self.name,
             'Type': self.type,
-            'Version': self.version
         }
+        if self.version:
+            strct['Version'] = self.version
+        return strct
 
     def __str__(self):
-        return (self.name + '-' +
-            self.type + '-' +
-            self.version)
+        s = self.name + '-' + self.type
+        if self.version:
+            s += '-' + self.version
+        return s
 
     def __eq__(self, other):
         if not isinstance(other, Tier):
@@ -44,14 +48,7 @@ class Tier():
             Tier('WebServer', 'Standard', '1.0'),
             Tier('Worker', 'SQS/HTTP', '1.0'),
             Tier('Worker', 'SQS/HTTP', '1.1'),
-        ]
-        return lst
-
-    @staticmethod
-    def get_latest_tiers():
-        lst = [
-            Tier('WebServer', 'Standard', '1.0'),
-            Tier('Worker', 'SQS/HTTP', '1.1'),
+            Tier('Worker', 'SQS/HTTP', ''),
         ]
         return lst
 
@@ -60,16 +57,25 @@ class Tier():
         if string.lower() == 'web' or string.lower() == 'webserver':
             return Tier('WebServer', 'Standard', '1.0')
         if string.lower() == 'worker':
-            return Tier('Worker', 'SQS/HTTP', '1.1')
+            return Tier('Worker', 'SQS/HTTP', '')
 
+        params = string.split('-')
+        if len(params) == 3:
+            name, typ, version = string.split('-')
+        elif len(params) == 2:
+            name, typ = string.split('-')
+            if re.match('\d+[.]\d+', typ):
+                version = typ
+            else:
+                version = ''
+        else:
+            raise NotFoundError('Tier Not found')
 
-        name, typ, version = string.split('-')
-        result = Tier(name, typ, version)
-
-        for tier in Tier.get_all_tiers():
-            if tier == result:
-                # we want to return the Proper, uppercase version
-                return tier
+        # we want to return the Proper, uppercase version
+        if name.lower() == 'webserver' or name.lower() == 'web':
+            return Tier('WebServer', 'Standard', version)
+        elif name.lower() == 'worker':
+            return Tier('Worker', 'SQS/HTTP', version)
 
         # tier not found
         raise NotFoundError('Tier Not found')
