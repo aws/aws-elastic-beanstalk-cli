@@ -430,6 +430,8 @@ def save_env_file(env):
     try:
         _traverse_to_project_root()
 
+        file_name = os.path.abspath(file_name)
+
         with codecs.open(file_name, 'w', encoding='utf8') as f:
             f.write(safe_dump(env, default_flow_style=False))
 
