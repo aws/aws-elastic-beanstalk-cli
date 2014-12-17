@@ -39,8 +39,8 @@ LOG = minimal_logger(__name__)
 DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
 
 
-def wait_and_print_events(request_id, region,
-                          timeout_in_seconds=60*10, sleep_time=5):
+def wait_for_success_events(request_id, region, timeout_in_seconds=60*10,
+                            sleep_time=5, stream_events=True):
     start = datetime.now()
     timediff = timedelta(seconds=timeout_in_seconds)
 
@@ -74,11 +74,14 @@ def wait_and_print_events(request_id, region,
         )
 
         for event in reversed(events):
-            log_event(event)
+            if stream_events:
+                log_event(event)
+                # We dont need to update last_time if we are not printing.
+                # This can solve timing issues
+                last_time = event.event_date
 
             # Test event message for success string
             finished = _is_success_string(event.message)
-            last_time = event.event_date
 
             if finished:
                 break
@@ -506,7 +509,7 @@ def scale(app_name, env_name, number, confirm, region):
         )
     request_id = elasticbeanstalk.update_environment(env_name, options, region)
     try:
-        wait_and_print_events(request_id, region, timeout_in_seconds=60*5)
+        wait_for_success_events(request_id, region, timeout_in_seconds=60*5)
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
@@ -551,7 +554,7 @@ def make_new_env(app_name, env_name, region, cname, solution_stack, tier,
 
     io.echo('Printing Status:')
     try:
-        wait_and_print_events(request_id, region)
+        wait_for_success_events(request_id, region)
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
@@ -634,7 +637,7 @@ def make_cloned_env(app_name, env_name, clone_name, cname, scale, tags, region,
 
     io.echo('Printing Status:')
     try:
-        wait_and_print_events(request_id, region)
+        wait_for_success_events(request_id, region)
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
@@ -696,7 +699,7 @@ def delete_app(app_name, region, force, nohang=False, cleanup=True):
         cleanup_ignore_file()
         fileoperations.clean_up()
     if not nohang:
-        wait_and_print_events(request_id, region, sleep_time=1,
+        wait_for_success_events(request_id, region, sleep_time=1,
                               timeout_in_seconds=60*15)
 
 
@@ -719,7 +722,7 @@ def deploy(app_name, env_name, region, version, label, message):
     request_id = elasticbeanstalk.update_env_application_version(env_name,
                                                     app_version_label, region)
 
-    wait_and_print_events(request_id, region, 60*5)
+    wait_for_success_events(request_id, region, 60*5)
 
 
 def status(app_name, env_name, region, verbose):
@@ -774,8 +777,8 @@ def logs(env_name, info_type, region, do_zip=False, instance_id=None):
 
     # Wait for logs to finish
     request_id = result['ResponseMetadata']['RequestId']
-    wait_and_print_events(request_id, region,
-                        timeout_in_seconds=60*2, sleep_time=1)
+    wait_for_success_events(request_id, region, timeout_in_seconds=60*2,
+                            sleep_time=1, stream_events=False)
 
     get_logs(env_name, info_type, region, do_zip=do_zip,
              instance_id=instance_id)
@@ -869,7 +872,7 @@ def setenv(app_name, env_name, var_list, region):
                                                  remove=options_to_remove)
     try:
         request_id = result
-        wait_and_print_events(request_id, region, timeout_in_seconds=60*4)
+        wait_for_success_events(request_id, region, timeout_in_seconds=60*4)
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
@@ -894,7 +897,7 @@ def terminate(env_name, region, nohang=False):
         set_environment_for_current_branch(None)
 
     if not nohang:
-        wait_and_print_events(request_id, region,
+        wait_for_success_events(request_id, region,
                               timeout_in_seconds=60*5)
 
 
@@ -1060,7 +1063,7 @@ def update_environment(env_name, changes, region, nohang, remove=[]):
 
     io.echo('Printing Status:')
     try:
-        wait_and_print_events(request_id, region)
+        wait_for_success_events(request_id, region)
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 

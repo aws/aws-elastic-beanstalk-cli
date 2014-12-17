@@ -143,6 +143,7 @@ prompts = {
     'ssh.setupwarn': 'You are about to setup SSH for environment "{env-name}". If you continue, your existing instances will have to be **terminated** and new instances will be created. The environment will be temporarily unavailable.',
     'rds.username': 'Enter an RDS DB username (default is "admin")',
     'rds.password': 'Enter an RDS DB master password',
+    'logs.retrieving': 'Retrieving logs...'
 }
 
 flag_text = {
