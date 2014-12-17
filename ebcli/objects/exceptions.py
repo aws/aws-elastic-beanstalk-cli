@@ -115,9 +115,11 @@ class NotSupportedError(EBCLIException):
     """  Operation not supported   """
     pass
 
+
 class InvalidProfileError(EBCLIException):
     """ Given profile is invalid  """
     pass
+
 
 class ValidationError(EBCLIException):
     pass

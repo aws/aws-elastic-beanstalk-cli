@@ -23,7 +23,7 @@ from cement.utils.shell import exec_cmd
 from ..resources.strings import git_ignore
 from ..core.fileoperations import get_config_setting
 from ..objects.exceptions import NoSourceControlError, CommandError, \
-    NotInitializedError
+    NotInitializedError, EBCLIException
 from ..core import fileoperations, io
 
 LOG = minimal_logger(__name__)
@@ -135,12 +135,16 @@ class Git(SourceControl):
 
     def get_current_branch(self):
         stdout, stderr, exitcode = \
-            exec_cmd(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+            exec_cmd(['git', 'symbolic-ref', '--short', '-q', 'HEAD'])
 
         if sys.version_info[0] >= 3:
             stdout = stdout.decode('utf8')
             stderr = stderr.decode('utf8')
         stdout = stdout.rstrip()
+        if exitcode == 1 and not stderr:
+            io.log_warning('Git is in a detached head state. Using branch "default".')
+            return 'default'
+
         self._handle_exitcode(exitcode, stderr)
         LOG.debug('git current-branch result: ' + stdout)
         return stdout
