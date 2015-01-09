@@ -252,7 +252,7 @@ def prompt_for_solution_stack(region):
     else:
         version = versions[0]
 
-    get_latest_solution_stack(version, stack_list=solution_stacks)
+    return get_latest_solution_stack(version, stack_list=solution_stacks)
 
 
 def get_latest_solution_stack(platform_version, region=None, stack_list=None):
@@ -274,6 +274,9 @@ def get_latest_solution_stack(platform_version, region=None, stack_list=None):
 
     # Default to latest version of server
     # We are assuming latest is always first in list.
+    if len(servers) < 1:
+        raise NotFoundError(strings['sstacks.notaversion'].
+                            replace('{version}', platform_version))
     server = servers[0]
 
     #filter

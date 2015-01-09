@@ -75,6 +75,7 @@ strings = {
     'appversion.none': 'The current directory does not contain any source code. Elastic Beanstalk is launching the sample application instead.',
     # Error, no solution stacks returned. Almost always due to permissions
     'sstacks.notfound': 'Elastic Beanstalk could not find any platforms. Ensure you have the necessary permissions to access Elastic Beanstalk.',
+    'sstacks.notaversion': 'Elastic Beanstalk could not find any platforms for the given version {version}.',
     'timeout.error': 'The operation timed out. The state of the environment is unknown.',
     'sc.notfound': 'Git is not set up for this project. EB CLI will deploy a .zip file of the entire directory.',
     'exit.notsetup': 'This directory has not been set up with the EB CLI\n'
