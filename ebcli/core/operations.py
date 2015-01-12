@@ -113,6 +113,8 @@ def _is_success_string(message):
         return True
     if responses['logs.successbundle'] in message:
         return True
+    if message.startswith(responses['swap.success']):
+        return True
 
     return False
 
@@ -1120,6 +1122,14 @@ def get_setting_from_current_branch(keyname):
 
 def get_current_branch_environment():
     return get_setting_from_current_branch('environment')
+
+
+def cname_swap(source_env, dest_env, region):
+    request_id = elasticbeanstalk.swap_environment_cnames(source_env, dest_env,
+                                                          region=region)
+
+    wait_for_success_events(request_id, region, timeout_in_seconds=60,
+                          sleep_time=2)
 
 
 def ssh_into_instance(instance_id, region, keep_open=False):

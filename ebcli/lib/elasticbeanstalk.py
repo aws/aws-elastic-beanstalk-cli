@@ -411,6 +411,15 @@ def is_cname_available(cname, region=None):
     return result['Available']
 
 
+def swap_environment_cnames(source_env, dest_env, region=None):
+    LOG.debug('Inside swap_environment_cnames api wrapper')
+    result = _make_api_call('swap-environment-cnames',
+                            source_environment_name=source_env,
+                            destination_environment_name=dest_env,
+                            region=region)
+    return result['ResponseMetadata']['RequestId']
+
+
 def describe_applications(region=None):
     LOG.debug('Inside describe_applications api wrapper')
     result = _make_api_call('describe-applications', region=region)

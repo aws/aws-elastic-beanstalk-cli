@@ -37,6 +37,7 @@ from ..controllers.setenv import SetEnvController
 from ..controllers.list import ListController
 from ..controllers.printenv import PrintEnvController
 from ..controllers.clone import CloneController
+from ..controllers.swap import SwapController
 from ..core.completer import CompleterController
 from ..core import globals, base, io
 from ..objects.exceptions import *
@@ -70,6 +71,7 @@ class EB(foundation.CementApp):
         handler.register(PrintEnvController)
         handler.register(ListController)
         handler.register(CloneController)
+        handler.register(SwapController)
         handler.register(CompleterController)
 
         super(EB, self).setup()

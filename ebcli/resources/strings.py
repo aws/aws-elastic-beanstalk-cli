@@ -43,6 +43,7 @@ strings = {
                      'You can also remove environment variables by specifying no value. For example:\n'
                      '  eb setenv HeapSize= Site_Url=\n'
                      'This removes the environment variables.',
+    'swap.info': 'Swaps two environment CNAME\'s with each other.',
     'list.info': 'Lists all environments.',
     'terminate.info': 'Terminates the environment.',
     'terminate.epilog': 'This command terminates the environment. To terminate the application and everything in it, use the "--all" flag.',
@@ -105,6 +106,7 @@ strings = {
     'ssh.portopen': 'INFO: SSH port 22 open.',
     'ssh.closeport': 'INFO: Closed port 22 on ec2 instance security group.',
     'ssh.uploaded': 'Uploaded SSH public key for "{keyname}" into EC2 for region {region}.',
+    'swap.unsupported': 'You must have at least 2 running environments to do a CNAME swap.',
     'connection.error': 'Having trouble communicating with AWS. Please ensure the provided region is correct and you have a working internet connection.',
 }
 
@@ -143,7 +145,8 @@ prompts = {
     'ssh.setupwarn': 'You are about to setup SSH for environment "{env-name}". If you continue, your existing instances will have to be **terminated** and new instances will be created. The environment will be temporarily unavailable.',
     'rds.username': 'Enter an RDS DB username (default is "admin")',
     'rds.password': 'Enter an RDS DB master password',
-    'logs.retrieving': 'Retrieving logs...'
+    'logs.retrieving': 'Retrieving logs...',
+    'swap.envprompt': 'Select an environment to swap with.',
 }
 
 flag_text = {
@@ -226,6 +229,10 @@ flag_text = {
 
     # use
     'use.env': 'environment name',
+
+    # swap
+    'swap.env': 'name of source environment',
+    'swap.name': 'name of destination environment',
 }
 
 
@@ -255,6 +262,7 @@ responses = {
     'env.invalidstate': 'Environment named {env-name} is in an invalid state for this operation. Must be Ready.',
     'loadbalancer.notfound': 'There is no ACTIVE Load Balancer named',
     'ec2.sshalreadyopen': 'the specified rule "peer: 0.0.0.0/0, TCP, from port: 22, to port: 22,',
+    'swap.success': 'Completed swapping CNAMEs for environments'
 
 }
 git_ignore = [
