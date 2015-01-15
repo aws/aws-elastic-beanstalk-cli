@@ -55,6 +55,7 @@ def download_config_from_s3(app_name, cfg_name, region):
                          region)
 
     location = write_to_local_config(cfg_name, body)
+    fileoperations.set_user_only_permissions(location)
     io.echo()
     io.echo('Configuration saved at: ' + location)
 

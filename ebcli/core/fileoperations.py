@@ -172,6 +172,11 @@ _marker = object()
 
 
 def set_user_only_permissions(location):
+    """
+    Sets permissions so that only a user can read/write (chmod 400).
+    Can be a folder or a file.
+    :param location: Full location of either a folder or a location
+    """
     if os.path.isdir(location):
 
         for root, dirs, files in os.walk(location):
@@ -186,6 +191,9 @@ def set_user_only_permissions(location):
 
 
 def _set_user_only_permissions_file(location, ex=False):
+    """
+    :param ex: Boolean: add executable permission
+    """
     permission = stat.S_IRUSR | stat.S_IWUSR
     if ex:
         permission |= stat.S_IXUSR
