@@ -956,7 +956,10 @@ def create_app_version(app_name, region, label=None, message=None):
         return None
 
     source_control = SourceControl.get_source_control()
-    # get version_label
+    if source_control.untracked_changes_exist():
+        io.log_warning(strings['sc.unstagedchanges'])
+
+    #get version_label
     if label:
         version_label = label
     else:
@@ -1129,7 +1132,7 @@ def cname_swap(source_env, dest_env, region):
                                                           region=region)
 
     wait_for_success_events(request_id, region, timeout_in_seconds=60,
-                          sleep_time=2)
+                            sleep_time=2)
 
 
 def ssh_into_instance(instance_id, region, keep_open=False):

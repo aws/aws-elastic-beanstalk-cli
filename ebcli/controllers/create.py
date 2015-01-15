@@ -241,7 +241,6 @@ class CreateController(AbstractBaseController):
             return False
 
 
-
 def get_cname(env_name, region):
     while True:
         cname = io.prompt_for_cname(default=env_name)

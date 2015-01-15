@@ -50,6 +50,9 @@ class SourceControl():
     def get_version_label(self):
         pass
 
+    def untracked_changes_exist(self):
+        pass
+
     @staticmethod
     def get_source_control():
         # First check for setting in config file
@@ -99,6 +102,9 @@ class NoSC(SourceControl):
     def clean_up_ignore_file(self):
         pass
 
+    def untracked_changes_exist(self):
+        return False
+
 
 class Git(SourceControl):
     """
@@ -132,6 +138,22 @@ class Git(SourceControl):
 
         #Replace dots with underscores
         return stdout[:-1].replace('.', '_')
+
+    def untracked_changes_exist(self):
+        stdout, stderr, exitcode = \
+            exec_cmd(['git', 'diff', '--numstat'])
+
+        if sys.version_info[0] >= 3:
+            stdout = stdout.decode('utf8')
+            stderr = stderr.decode('utf8')
+        stdout = stdout.strip()
+        LOG.debug('git status --numstat result: ' + stdout +
+                  ' with errors: ' + stderr)
+        if stdout:
+            return True
+        return False
+
+
 
     def get_current_branch(self):
         stdout, stderr, exitcode = \
