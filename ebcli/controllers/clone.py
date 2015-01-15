@@ -36,8 +36,8 @@ class CloneController(AbstractBaseController):
             (['-nh', '--nohang'], dict(action='store_true',
                                        help=flag_text['clone.nohang'])),
             (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
-            (['--latest'], dict(action='store_true',
-                                help=flag_text['clone.latest'])),
+            (['--exact'], dict(action='store_true',
+                                help=flag_text['clone.exact'])),
         ]
         usage = 'eb clone <environment_name> (-n CLONE_NAME) [options ...]'
 
@@ -51,7 +51,7 @@ class CloneController(AbstractBaseController):
         nohang = self.app.pargs.nohang
         tags = self.app.pargs.tags
         envvars = self.app.pargs.envvars
-        latest = self.app.pargs.latest
+        exact = self.app.pargs.exact
         timeout = self.app.pargs.timeout
         provided_clone_name = clone_name is not None
         platform = None
@@ -69,7 +69,7 @@ class CloneController(AbstractBaseController):
                 raise AlreadyExistsError(strings['cname.unavailable'].
                                          replace('{cname}', cname))
 
-        if latest:
+        if not exact:
             # get original platform
             platform = operations.get_latest_solution_stack(
                 env.platform.version, region=region)
@@ -80,7 +80,7 @@ class CloneController(AbstractBaseController):
         envvars = get_and_validate_envars(envvars)
 
 
-    # Get env_name for clone
+        # Get env_name for clone
         if not clone_name:
             if len(env_name) < 16:
                 unique_name = env_name + '-clone'

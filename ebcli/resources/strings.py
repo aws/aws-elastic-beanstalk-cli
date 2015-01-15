@@ -24,15 +24,17 @@ strings = {
     'init.info': 'Initializes your directory with the EB CLI. Creates the application.',
     'init.epilog': 'This command is safe when run in a previously initialized'
                    ' directory. To re-initialize with different options, '
-                   'use the -i flag.',
+                   'use the -i option.',
     'create.info': 'Creates a new environment.',
     'events.info': 'Gets recent events.',
     'open.info': 'Opens the application URL in a browser.',
     'console.info': 'Opens the environment in the AWS Elastic Beanstalk Management Console.',
     'clone.info': 'Clones an environment.',
+    'clone.epilog': 'This command will clone your environment and will attempt to upgrade the platform to the latest version.\n'
+                    'To clone without changing platform version use the --exact option.',
     'logs.info': 'Gets recent logs.',
     'use.info': 'Sets default environment.',
-    'logs.epilog': 'This command displays the last 100 lines of logs. To retrieve all logs, use the "--all" flag.',
+    'logs.epilog': 'This command displays the last 100 lines of logs. To retrieve all logs, use the "--all" option.',
     'deploy.info': 'Deploys your source code to the environment.',
     'scale.info': 'Changes the number of running instances.',
     'status.info': 'Gets environment information and status.',
@@ -50,17 +52,17 @@ strings = {
     'config.notfound': 'There is no configuration saved with the name "{config-name}".',
     'list.info': 'Lists all environments.',
     'terminate.info': 'Terminates the environment.',
-    'terminate.epilog': 'This command terminates the environment. To terminate the application and everything in it, use the "--all" flag.',
+    'terminate.epilog': 'This command terminates the environment. To terminate the application and everything in it, use the "--all" option.',
     'config.info': 'Edits the environment configuration settings. Manage Saved Configurations.',
     'ssh.info': 'Opens the SSH client to connect to an instance.',
     'printenv.info': 'Shows the environment variables.',
 
     # Error when --sample and --label falg are both used on create
-    'create.sampleandlabel': 'You cannot use the "--sample" and "--version" flags together.',
-    'create.singleandsize': 'You cannot use the "--single" and "--scale" flags together.',
-    'logs.allandzip': 'You cannot use the "--all" and "--all_zip" flags together.',
-    'logs.allandinstance': 'You cannot use the "--all" and "--instance" flags together.',
-    'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" flags together.',
+    'create.sampleandlabel': 'You cannot use the "--sample" and "--version" options together.',
+    'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
+    'logs.allandzip': 'You cannot use the "--all" and "--all_zip" options together.',
+    'logs.allandinstance': 'You cannot use the "--all" and "--instance" options together.',
+    'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',
     # Text shown if 'eb terminate' is called while no environment is selected as default
     'terminate.noenv': 'To delete the application and all application versions, type "eb terminate --all".',
 
@@ -86,7 +88,7 @@ strings = {
     'sc.notfound': 'Git is not set up for this project. EB CLI will deploy a .zip file of the entire directory.',
     'exit.notsetup': 'This directory has not been set up with the EB CLI\n'
                      'You must first run "eb init".',
-    'exit.noregion': 'The EB CLI cannot find a default region. Run "eb init" or add the region using the "--region" flag.',
+    'exit.noregion': 'The EB CLI cannot find a default region. Run "eb init" or add the region using the "--region" option.',
     # Typical response when an environment is in pending state
     'exit.invalidstate': 'The operation cannot be completed at this time due to a pending operation. Try again later.',
     'branch.noenv': 'This branch does not have a default environment. You must either specify an environment by typing ' 
@@ -101,7 +103,7 @@ strings = {
     'tags.invalidformat': 'You must provide a comma-separated list using the format name=value to set tags. '
                           'Tags may only contain letters, numbers, and the following symbols: / _ . : + % - @',
     'tags.max': 'Elastic Beanstalk supports a maximum of 7 tags.',
-    'deploy.invalidoptions': 'You cannot use the "--version" flag with either the "--message" or "--label" flag.',
+    'deploy.invalidoptions': 'You cannot use the "--version" option with either the "--message" or "--label" option.',
     'init.getvarsfromoldeb': 'You previous used an earlier version of eb. Getting options from .elasticbeanstalk/config.\n'
                              'Credentials will now be stored in ~/.aws/config',
     'ssh.noip': 'This instance does not have a Public IP address. This is possibly because the instance is terminating.',
@@ -177,7 +179,7 @@ flag_text = {
     'clone.scale': 'number of desired instances',
     'clone.tags': 'a comma separated list of tags as key=value pairs',
     'clone.nohang': 'return immediately, do not wait for clone to be completed',
-    'clone.latest': 'use the latest platform version',
+    'clone.exact': 'match the exact platform version',
 
     # Config
     'config.nohang': 'return immediately, do not wait for config to be completed',
