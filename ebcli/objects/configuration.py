@@ -31,6 +31,7 @@ def collect_changes(api_model, usr_model):
     """
 
     api_model = remove_unwanted_settings(api_model)
+    ignore_default_resource_names(api_model)
 
     changes = []
     remove = []
@@ -112,6 +113,8 @@ def convert_api_to_usr_model(api_model):
     :return: a user model
     """
     api_model = remove_unwanted_settings(api_model)
+    ignore_default_resource_names(api_model)
+
     usr_model = dict()
     # Grab only data we care about
     _get_key('ApplicationName', usr_model, api_model)
@@ -154,6 +157,20 @@ def remove_unwanted_settings(api_model):
 
     ]
     return api_model
+
+
+def ignore_default_resource_names(api_model):
+    option_settings = api_model['OptionSettings']
+    for setting in option_settings:
+        if 'ResourceName' in setting and setting['ResourceName'] in \
+            ['AWSEBAutoScalingGroup',
+             'AWSEBAutoScalingLaunchConfiguration',
+             'AWSEBEnvironmentName',
+             'AWSEBLoadBalancer',
+             'AWSEBRDSDatabase',
+             'AWSEBSecurityGroup',
+             ]:
+            del setting['ResourceName']
 
 
 def _get_key(KeyName, usr_model, api_model):
