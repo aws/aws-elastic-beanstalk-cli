@@ -65,7 +65,7 @@ def wait_for_success_events(request_id, region, timeout_in_minutes=None,
 
             log_event(event)
             # Test event message for success string
-            finished = _is_success_string(event.message)
+            _is_success_string(event.message)
             last_time = event.event_date
         else:
             time.sleep(sleep_time)
@@ -78,15 +78,15 @@ def wait_for_success_events(request_id, region, timeout_in_minutes=None,
         )
 
         for event in reversed(events):
-            # Test event message for success string
-            if _is_success_string(event.message):
-                return
-
             if stream_events:
                 log_event(event)
                 # We dont need to update last_time if we are not printing.
                 # This can solve timing issues
                 last_time = event.event_date
+
+            # Test event message for success string
+            if _is_success_string(event.message):
+                return
 
     # We have timed out
     raise TimeoutError('Timed out while waiting for command to Complete')
