@@ -974,7 +974,7 @@ def create_app_version(app_name, region, label=None, message=None):
     if len(description) > 200:
         description = description[:195] + '...'
 
-    io.log_info('Creating app_version archive "' + version_label + '"')
+    io.echo('Creating Application version archive "' + version_label + '".')
 
     # Check for zip or artifact deploy
     artifact = fileoperations.get_config_setting('deploy', 'artifact')

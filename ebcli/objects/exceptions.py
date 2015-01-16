@@ -125,3 +125,7 @@ class ValidationError(EBCLIException):
     pass
 
 
+class FileTooLargeError(EBCLIException):
+    pass
+
+

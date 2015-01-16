@@ -132,35 +132,34 @@ def make_api_call(service_name, operation_name, region=None, endpoint_url=None,
             if response_data:
                 LOG.debug('Response: ' + str(response_data))
 
-            if status == 200:
+            if status in (200, 204):
                 return response_data
 
-            if status is not 200:
-                if status == 400:
-                    # Convert to correct 400 error
-                    error = _get_400_error(response_data)
-                    if isinstance(error, ThrottlingError):
-                        LOG.debug('Received throttling error')
-                        if attempt > MAX_ATTEMPTS:
-                            raise MaxRetriesError('Max retries exceeded for '
-                                                  'throttling error')
-                    else:
-                        raise error
-                elif status == 403:
-                    LOG.debug('Received a 403')
-                    raise NotAuthorizedError('Operation Denied. Are your '
-                                           'permissions correct?')
-                elif status == 409:
-                    LOG.debug('Received a 409')
-                    raise AlreadyExistsError(response_data['Error']['Message'])
-                elif status in (500, 503, 504):
-                    LOG.debug('Received 5XX error')
+            if status == 400:
+                # Convert to correct 400 error
+                error = _get_400_error(response_data)
+                if isinstance(error, ThrottlingError):
+                    LOG.debug('Received throttling error')
                     if attempt > MAX_ATTEMPTS:
                         raise MaxRetriesError('Max retries exceeded for '
-                                              'service error (5XX)')
+                                              'throttling error')
                 else:
-                    raise ServiceError('API Call unsuccessful. '
-                              'Status code returned ' + str(status))
+                    raise error
+            elif status == 403:
+                LOG.debug('Received a 403')
+                raise NotAuthorizedError('Operation Denied. Are your '
+                                       'permissions correct?')
+            elif status == 409:
+                LOG.debug('Received a 409')
+                raise AlreadyExistsError(response_data['Error']['Message'])
+            elif status in (500, 503, 504):
+                LOG.debug('Received 5XX error')
+                if attempt > MAX_ATTEMPTS:
+                    raise MaxRetriesError('Max retries exceeded for '
+                                          'service error (5XX)')
+            else:
+                raise ServiceError('API Call unsuccessful. '
+                          'Status code returned ' + str(status))
         except botocore_eb.exceptions.NoCredentialsError as e:
             LOG.debug('No credentials found')
             raise CredentialsError('Operation Denied. You appear to have no'

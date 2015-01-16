@@ -100,3 +100,10 @@ def list_to_columns(lst):
 
 def is_ssh():
     return "SSH_CLIENT" in os.environ or "SSH_TTY" in os.environ
+
+
+def static_var(varname, value):
+    def decorate(func):
+        setattr(func, varname, value)
+        return func
+    return decorate
