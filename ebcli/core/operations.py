@@ -1267,7 +1267,8 @@ def prompt_for_ec2_keyname(region, env_name=None):
 
 def get_solution_stack(solution_string, region):
     #If string is explicit, do not check
-    if re.match('\d\dbit Amazon Linux [0-9.]+ v[0-9.]+ running .*', solution_string):
+    if re.match(r'^\d\dbit [\w\s]+[0-9.]* v[0-9.]+ running .*$',
+                solution_string):
         return SolutionStack(solution_string)
 
     solution_string = solution_string.lower()

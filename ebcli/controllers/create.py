@@ -129,7 +129,7 @@ class CreateController(AbstractBaseController):
         if solution_string:
             try:
                 solution = operations.get_solution_stack(solution_string,
-                                                               region)
+                                                         region)
             except NotFoundError:
                 raise NotFoundError('Solution stack ' + solution_string +
                                     ' does not appear to be valid')
