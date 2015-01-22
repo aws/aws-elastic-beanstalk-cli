@@ -314,11 +314,7 @@ def setup(app_name, region, solution):
         war_file = fileoperations.get_war_file_location()
         fileoperations.write_config_setting('deploy', 'artifact', war_file)
 
-    try:
-        setup_ignore_file()
-    except NoSourceControlError:
-        # io.log_warning(strings['sc.notfound'])
-        pass
+    setup_ignore_file()
 
 
 def setup_credentials(access_id=None, secret_key=None):
