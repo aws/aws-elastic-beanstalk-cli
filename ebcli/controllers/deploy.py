@@ -13,7 +13,7 @@
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
-from ..core import operations
+from ..core import operations, fileoperations
 from ..objects.exceptions import NoEnvironmentForBranchError, \
     InvalidOptionsError
 from ..core import io
@@ -70,5 +70,9 @@ class DeployController(AbstractBaseController):
         #ToDo, edit this if we ever support multiple env deploys
         super(DeployController, self).complete_command(commands)
 
-        #ToDo, eventually add support for autocompleting
         ## versionlabels on --version
+        cmd = commands[-1]
+        if cmd in ['--version']:
+            region = fileoperations.get_default_region()
+            app_name = fileoperations.get_application_name()
+            io.echo(*operations.get_app_version_labels(app_name, region))
