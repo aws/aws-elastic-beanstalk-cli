@@ -1029,7 +1029,6 @@ def create_app_version(app_name, region, label=None, message=None):
     if len(description) > 200:
         description = description[:195] + '...'
 
-    io.echo('Creating Application version archive "' + version_label + '".')
 
     # Check for zip or artifact deploy
     artifact = fileoperations.get_config_setting('deploy', 'artifact')
@@ -1041,7 +1040,14 @@ def create_app_version(app_name, region, label=None, message=None):
         # Create zip file
         file_name = version_label + '.zip'
         file_path = fileoperations.get_zip_location(file_name)
-        source_control.do_zip(file_path)
+        # Check to see if file already exists from previous attempt
+        if not fileoperations.file_exists(file_path) and \
+                                version_label not in \
+                                get_app_version_labels(app_name, region):
+            # If it doesn't already exist, create it
+            io.echo(strings['appversion.create'].replace('{version}',
+                                                         version_label))
+            source_control.do_zip(file_path)
 
     # Get s3 location
     bucket = elasticbeanstalk.get_storage_location(region)

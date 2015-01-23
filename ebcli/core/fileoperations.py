@@ -528,6 +528,10 @@ def _get_yaml_dict(filename):
         return {}
 
 
+def file_exists(full_path):
+    return os.path.isfile(full_path)
+
+
 def eb_file_exists(location):
     cwd = os.getcwd()
     try:

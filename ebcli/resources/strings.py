@@ -60,6 +60,7 @@ strings = {
     # Error when --sample and --label falg are both used on create
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" options together.',
     'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
+    'appversion.create': 'Creating Application version archive "{version}".',
     'logs.allandzip': 'You cannot use the "--all" and "--all_zip" options together.',
     'logs.allandinstance': 'You cannot use the "--all" and "--instance" options together.',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',

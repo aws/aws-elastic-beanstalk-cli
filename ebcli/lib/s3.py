@@ -106,11 +106,7 @@ def multithreaded_upload(bucket, key, file_path, region=None):
     total_parts = math.ceil(size / CHUNK_SIZE)  # Number of parts needed
 
     # Begin multi-part upload
-    response = _make_api_call('create-multipart-upload',
-                   bucket=bucket,
-                   key=key,
-                   region=region)
-    upload_id = response['UploadId']
+    upload_id = _get_multipart_upload_id(bucket, key, region)
 
     # Upload parts
     try:
@@ -123,7 +119,7 @@ def multithreaded_upload(bucket, key, file_path, region=None):
                 p = threading.Thread(
                     target=_upload_chunk,
                     args=(f, lock, etaglist, total_parts,
-                          bucket, key, upload_id),
+                          bucket, key, upload_id, region),
                     )
                 p.daemon = True
                 jobs.append(p)
@@ -143,10 +139,8 @@ def multithreaded_upload(bucket, key, file_path, region=None):
         return result
 
     except (Exception, KeyboardInterrupt) as e:
-        _make_api_call('abort-multipart-upload',
-                       bucket=bucket,
-                       key=key,
-                       upload_id=upload_id)
+        # We dont want to clean up multipart in case a user decides to
+        # continue later
         raise
 
 
@@ -167,30 +161,76 @@ def _wait_for_threads(jobs):
                 alive = True
 
 
-def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id):
+def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id,
+                  region):
     while True:
         data, part = _read_next_section_from_file(f, lock)
         if data == '':
             return
-        b = BytesIO()
-        b.write(data)
-        b.seek(0)
-        response = _make_api_call('upload-part',
-                                  bucket=bucket,
-                                  key=key,
-                                  upload_id=upload_id,
-                                  body=b,
-                                  part_number=part)
+        # First check to see if s3 already has part
+        etag = _get_part_etag(bucket, key, part, upload_id, region=region)
+        if etag is None:
+            b = BytesIO()
+            b.write(data)
+            b.seek(0)
+            response = _make_api_call('upload-part',
+                                      bucket=bucket,
+                                      key=key,
+                                      upload_id=upload_id,
+                                      body=b,
+                                      part_number=part,
+                                      region=region)
+            etag = response['ETag']
 
-        etaglist.append({'PartNumber': part, 'ETag': response['ETag']})
+        etaglist.append({'PartNumber': part, 'ETag': etag})
 
         progress = (1/total_parts) * len(etaglist)
         io.update_upload_progress(progress)
 
 
+def _get_part_etag(bucket, key, part, upload_id, region):
+    response = _make_api_call('list-parts',
+                              bucket=bucket,
+                              key=key,
+                              upload_id=upload_id,
+                              region=region)
+
+    if 'Parts' not in response:
+        return None
+    etag = next((i['ETag'] for i in response['Parts']
+                 if i['PartNumber'] == part), None)
+    return etag
+
+
+def _get_multipart_upload_id(bucket, key, region):
+    # Check to see if multipart already exists
+    response = _make_api_call('list-multipart-uploads',
+                              bucket=bucket,
+                              prefix=key,
+                              region=region)
+
+    try:
+        for r in response['Uploads']:
+            if r['Key'] == key:
+                return r['UploadId']
+    except KeyError:
+        pass  # There are no uploads with that prefix
+
+    # Not found, lets initiate the upload
+    response = _make_api_call('create-multipart-upload',
+                              bucket=bucket,
+                              key=key,
+                              region=region)
+
+    return response['UploadId']
+
+
 @static_var('part_num', 0)
 def _read_next_section_from_file(f, lock):
-    with lock:
-        data = f.read(CHUNK_SIZE)
-        _read_next_section_from_file.part_num += 1
-        return data, _read_next_section_from_file.part_num
+    try:
+        with lock:
+            data = f.read(CHUNK_SIZE)
+            _read_next_section_from_file.part_num += 1
+            return data, _read_next_section_from_file.part_num
+    except ValueError:
+        return '', None  # File was closed, Process was terminated
