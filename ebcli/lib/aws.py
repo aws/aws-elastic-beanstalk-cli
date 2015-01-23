@@ -147,8 +147,11 @@ def make_api_call(service_name, operation_name, region=None, endpoint_url=None,
                     raise error
             elif status == 403:
                 LOG.debug('Received a 403')
-                raise NotAuthorizedError('Operation Denied. Are your '
-                                       'permissions correct?')
+                try:
+                    message = str(response_data['Error']['Message'])
+                except KeyError:
+                    message = 'Are your permissions correct?'
+                raise NotAuthorizedError('Operation Denied. ' + message)
             elif status == 404:
                 LOG.debug('Received a 404')
                 raise NotFoundError(response_data['Error']['Message'])
