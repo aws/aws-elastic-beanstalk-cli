@@ -189,7 +189,7 @@ def describe_application(app_name, region=None):
 def is_cname_available(cname, region=None):
     LOG.debug('Inside is_cname_available api wrapper')
     result = _make_api_call('check_dns_availability',
-                            CnamePrefix=cname,
+                            CNAMEPrefix=cname,
                             region=region)
     return result['Available']
 

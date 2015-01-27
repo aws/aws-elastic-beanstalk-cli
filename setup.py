@@ -5,9 +5,7 @@ from setuptools import setup, find_packages
 
 import ebcli
 
-requires = ['setuptools>=7.0',
-            'pyyaml>=3.11',
-            'six>=1.8.0',
+requires = ['pyyaml>=3.11',
             'cement==2.4',
             ## For botocore we need the following
             'python-dateutil>=2.1,<3.0.0',
@@ -69,7 +67,7 @@ if 'py2exe' in sys.argv:
         'py2exe': {
             'optimize': 0,
             'skip_archive': True,
-            'packages': ['ebcli', 'botocore_eb'],
+            'packages': ['ebcli'],
         }
     }
     setup_options['console'] = ['bin\eb']

@@ -18,6 +18,7 @@ import os
 import subprocess
 import json
 
+from botocore.compat import six
 from six.moves import urllib
 from six import iteritems
 from cement.utils.misc import minimal_logger

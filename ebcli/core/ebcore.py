@@ -17,7 +17,14 @@ import sys
 
 # Add vendor directory to module search path
 # Need this for botocore
-parent_dir = os.path.abspath(os.path.dirname(__file__))
+
+parent_folder = os.path.dirname(__file__)
+parent_dir = os.path.abspath(parent_folder)
+while not parent_folder.endswith('ebcli'):
+    # Keep going up until we get to the right folder
+    parent_folder = os.path.dirname(parent_folder)
+    parent_dir = os.path.abspath(parent_folder)
+
 vendor_dir = os.path.join(parent_dir, 'bundled')
 
 sys.path.insert(0, vendor_dir)
@@ -28,6 +35,8 @@ from argparse import SUPPRESS
 from cement.core import foundation, handler
 from cement.utils.misc import init_defaults
 from cement.core.exc import CaughtSignal
+import botocore
+from botocore.compat import six
 from six import iteritems
 
 from ..controllers.initialize import InitController

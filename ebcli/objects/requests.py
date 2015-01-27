@@ -99,7 +99,7 @@ class CreateEnvironmentRequest(object):
         if self.description:
             kwargs['Description'] = self.description
         if self.cname:
-            kwargs['CnamePrefix'] = self.cname
+            kwargs['CNAMEPrefix'] = self.cname
         if self.template_name:
             kwargs['TemplateName'] = self.template_name
         if self.version_label:

@@ -17,7 +17,6 @@ import random
 import botocore
 import botocore.session
 import botocore.exceptions
-import six
 from cement.utils.misc import minimal_logger
 
 from ebcli import __version__

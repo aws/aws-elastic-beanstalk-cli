@@ -16,7 +16,7 @@ import warnings
 import getpass
 import sys
 
-import six
+from botocore.compat import six
 from six import print_
 from six.moves import input
 import logging

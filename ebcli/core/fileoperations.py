@@ -27,6 +27,7 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
+from botocore.compat import six
 from six import StringIO
 from cement.utils.misc import minimal_logger
 
