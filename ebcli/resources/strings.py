@@ -172,6 +172,7 @@ flag_text = {
     'base.profile': 'use a specific profile from your credential file',
     'base.region': 'use a specific region',
     'general.timeout': 'timeout period in minutes',
+    'base.noverify': 'do not verify AWS SSL certificates',
 
     # Clone
     'clone.env': 'name of environment to clone',

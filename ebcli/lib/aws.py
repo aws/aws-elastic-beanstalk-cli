@@ -33,6 +33,7 @@ _profile_env_var = 'AWS_EB_PROFILE'
 _id = None
 _key = None
 _region_name = None
+_verify_ssl = True
 
 
 def set_session_creds(id, key):
@@ -57,6 +58,11 @@ def set_region(region_name):
     _region_name = region_name
 
 
+def no_verify_ssl():
+    global _verify_ssl
+    _verify_ssl = False
+
+
 def set_profile_override(profile):
     global _profile_env_var
     set_profile(profile)
@@ -69,7 +75,6 @@ def _set_user_agent_for_session(session):
 
 
 def _get_client(service_name, endpoint_url=None, region_name=None):
-    global _api_clients, _region_name
     aws_access_key_id = _id
     aws_secret_key = _key
     if service_name in _api_clients:
@@ -83,7 +88,8 @@ def _get_client(service_name, endpoint_url=None, region_name=None):
                                        endpoint_url=endpoint_url,
                                        region_name=region_name,
                                        aws_access_key_id=aws_access_key_id,
-                                       aws_secret_access_key=aws_secret_key)
+                                       aws_secret_access_key=aws_secret_key,
+                                       verify=_verify_ssl)
 
     except botocore.exceptions.ProfileNotFound as e:
         raise InvalidProfileError(e)

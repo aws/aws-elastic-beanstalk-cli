@@ -500,7 +500,7 @@ def write_config_setting(section, key_name, value):
         os.chdir(cwd)  # go back to working directory
 
 
-def get_config_setting(section, key_name):
+def get_config_setting(section, key_name, default=_marker):
     # get setting from global if it exists
     cwd = os.getcwd()  # save working directory
     try:
@@ -521,6 +521,13 @@ def get_config_setting(section, key_name):
         except KeyError:
             pass  # Revert to global value
 
+        if value is None and default != _marker:
+            return default
+    except NotInitializedError:
+        if default == _marker:
+            raise
+        else:
+            return default
     finally:
         os.chdir(cwd)  # move back to working directory
     return value

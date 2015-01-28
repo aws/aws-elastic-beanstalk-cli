@@ -61,6 +61,7 @@ class AbstractBaseController(controller.CementBaseController):
         if self.app.pargs.verbose:
             LoggingLogHandler.set_level(self.app.log, 'INFO')
         self.set_profile()
+        self.set_ssl()
         self.do_command()
         self.check_for_cli_update(__version__)
 
@@ -114,6 +115,14 @@ class AbstractBaseController(controller.CementBaseController):
             profile = fileoperations.get_default_profile()
             if profile:
                 aws.set_profile(profile)
+
+    def set_ssl(self):
+        noverify = self.app.pargs.no_verify_ssl
+        if not noverify:
+            noverify = fileoperations.get_config_setting(
+                'global', 'no-verify-ssl', default=False)
+        if noverify:
+            aws.no_verify_ssl()
 
     def complete_command(self, commands):
         if not self.complete_region(commands):

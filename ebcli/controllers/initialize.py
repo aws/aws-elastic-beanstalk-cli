@@ -41,6 +41,7 @@ class InitController(AbstractBaseController):
         # get arguments
         self.interactive = self.app.pargs.interactive
         self.region = self.app.pargs.region
+        self.noverify = self.app.pargs.no_verify_ssl
         self.flag = False
         if self.app.pargs.platform:
             self.flag = True
@@ -57,6 +58,9 @@ class InitController(AbstractBaseController):
 
         self.solution = self.get_solution_stack()
         self.app_name = self.get_app_name()
+        if self.noverify:
+            fileoperations.write_config_setting('global',
+                                                'no-verify-ssl', True)
 
         if not default_env and not self.interactive:
             # try to get default env from config file if exists

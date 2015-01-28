@@ -108,6 +108,8 @@ class EB(foundation.CementApp):
         self.add_arg('--profile', help=flag_text['base.profile'])
         self.add_arg('-r', '--region', help=flag_text['base.region'])
         self.add_arg('--endpoint-url', help=SUPPRESS)
+        self.add_arg('--no-verify-ssl',
+                     action='store_true', help=flag_text['base.noverify'])
 
         globals.app = self
 
