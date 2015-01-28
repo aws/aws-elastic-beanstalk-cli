@@ -1139,8 +1139,12 @@ def update_environment(env_name, changes, region, nohang, remove=None,
         io.log_error(strings['timeout.error'])
 
 
-def get_boolean_response():
-    response = io.prompt('y/n', default='y').lower()
+def get_boolean_response(text=None):
+    if text:
+        string = text + ' (y/n)'
+    else:
+        string = '(y/n)'
+    response = io.get_input(string, default='y').lower()
     while response not in ('y', 'n', 'yes', 'no'):
         io.echo(strings['prompt.invalid'],
                              strings['prompt.yes-or-no'])

@@ -29,6 +29,7 @@ class CreateController(AbstractBaseController):
     class Meta:
         label = 'create'
         description = strings['create.info']
+        epilog = strings['create.epilog']
         arguments = [
             (['environment_name'], dict(
                 action='store', nargs='?', default=None,
@@ -68,6 +69,8 @@ class CreateController(AbstractBaseController):
                 dict(type=int, dest='db_size', help=argparse.SUPPRESS)),
             (['-db.engine', '--database.engine'],
                 dict(dest='db_engine', help=argparse.SUPPRESS)),
+            (['--vpc'], dict(action='store_true',
+                             help=flag_text['create.vpc'])),
             (['--vpc.id'], dict(dest='vpc_id', help=argparse.SUPPRESS)),
             (['--vpc.ec2subnets'], dict(
                 dest='vpc_ec2subnets', help=argparse.SUPPRESS)),
@@ -245,6 +248,7 @@ class CreateController(AbstractBaseController):
             return {}
 
     def form_vpc_object(self):
+        vpc = self.app.pargs.vpc
         vpc_id = self.app.pargs.vpc_id
         ec2subnets = self.app.pargs.vpc_ec2subnets
         elbsubnets = self.app.pargs.vpc_elbsubnets
@@ -252,8 +256,29 @@ class CreateController(AbstractBaseController):
         publicip = self.app.pargs.vpc_publicip
         securitygroups = self.app.pargs.vpc_securitygroups
         dbsubnets = self.app.pargs.vpc_dbsubnets
+        database = self.app.pargs.database
 
-        if vpc_id:
+        if vpc:
+            # Interactively ask for vpc settings
+            io.echo()
+            if not vpc_id:
+                vpc_id = io.get_input(prompts['vpc.id'])
+            if not publicip:
+                publicip = operations.get_boolean_response(
+                    text=prompts['vpc.publicip'])
+            if not ec2subnets:
+                ec2subnets = io.get_input(prompts['vpc.ec2subnets'])
+            if not elbsubnets:
+                elbsubnets = io.get_input(prompts['vpc.elbsubnets'])
+            if not securitygroups:
+                securitygroups = io.get_input(prompts['vpc.securitygroups'])
+            if not elbpublic:
+                publicip = operations.get_boolean_response(
+                    text=prompts['vpc.elbpublic'])
+            if not dbsubnets and database:
+                dbsubnets = io.get_input(prompts['vpc.dbsubnets'])
+
+        if vpc_id or vpc:
             vpc_object = dict()
             vpc_object['id'] = vpc_id
             vpc_object['ec2subnets'] = ec2subnets

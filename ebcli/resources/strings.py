@@ -26,6 +26,7 @@ strings = {
                    ' directory. To re-initialize with different options, '
                    'use the -i option.',
     'create.info': 'Creates a new environment.',
+    'create.epilog': 'Hint: Type "--vpc." or "--database." for more database and vpc options.',
     'events.info': 'Gets recent events.',
     'open.info': 'Opens the application URL in a browser.',
     'console.info': 'Opens the environment in the AWS Elastic Beanstalk Management Console.',
@@ -156,6 +157,13 @@ prompts = {
     'ssh.setupwarn': 'You are about to setup SSH for environment "{env-name}". If you continue, your existing instances will have to be **terminated** and new instances will be created. The environment will be temporarily unavailable.',
     'rds.username': 'Enter an RDS DB username (default is "ebroot")',
     'rds.password': 'Enter an RDS DB master password',
+    'vpc.id': 'Enter the VPC ID',
+    'vpc.publicip': 'Would you like to associate a public IP Address?',
+    'vpc.ec2subnets': 'Enter a comma separated list of EC2 subnets',
+    'vpc.elbsubnets': 'Enter a comma separated list of ELB subnets',
+    'vpc.securitygroups': 'Enter a comma separated list of VPC security groups',
+    'vpc.elbpublic': 'Would you like the VPC to be public? (Select no for internal)',
+    'vpc.dbsubnets': 'Enter a comma seperated list of database subnets',
     'logs.retrieving': 'Retrieving logs...',
     'swap.envprompt': 'Select an environment to swap with.',
 }
@@ -203,6 +211,7 @@ flag_text = {
     'create.tags': 'a comma separated list of tags as key=value pairs',
     'create.envvars': 'a comma separated list of environment variables as key=value pairs',
     'create.database': 'create a database',
+    'create.vpc': 'create environment inside a VPC',
     'create.config': 'saved configuration name',
 
     # Deploy
