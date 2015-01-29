@@ -49,7 +49,6 @@ def wait_for_success_events(request_id, region, timeout_in_minutes=None,
     start = datetime.now()
     timediff = timedelta(seconds=timeout_in_minutes * 60)
 
-    finished = False
     last_time = None
 
     #Get first events
@@ -71,7 +70,7 @@ def wait_for_success_events(request_id, region, timeout_in_minutes=None,
         else:
             time.sleep(sleep_time)
 
-    while not finished and (datetime.now() - start) < timediff:
+    while (datetime.now() - start) < timediff:
         time.sleep(sleep_time)
 
         events = elasticbeanstalk.get_new_events(
@@ -79,20 +78,18 @@ def wait_for_success_events(request_id, region, timeout_in_minutes=None,
         )
 
         for event in reversed(events):
+            # Test event message for success string
+            if _is_success_string(event.message):
+                return
+
             if stream_events:
                 log_event(event)
                 # We dont need to update last_time if we are not printing.
                 # This can solve timing issues
                 last_time = event.event_date
 
-            # Test event message for success string
-            finished = _is_success_string(event.message)
-
-            if finished:
-                break
-
-    if not finished:
-        raise TimeoutError('Timed out while waiting for command to Complete')
+    # We have timed out
+    raise TimeoutError('Timed out while waiting for command to Complete')
 
 
 def _is_success_string(message):
@@ -106,11 +103,15 @@ def _is_success_string(message):
         raise ServiceError(message)
     if message.startswith(responses['event.updatebad']):
         raise ServiceError(message)
+    if message == responses['event.failedlaunch']:
+        raise ServiceError(message)
     if message == responses['logs.pulled']:
         return True
     if message == responses['env.terminated']:
         return True
     if message == responses['env.updatesuccess']:
+        return True
+    if message == responses['env.configsuccess']:
         return True
     if message == responses['app.deletesuccess']:
         return True
@@ -538,7 +539,8 @@ def scale(app_name, env_name, number, confirm, region, timeout=None):
 
 def make_new_env(env_request, region, branch_default=False,
                  nohang=False, interactive=True, timeout=None):
-    if env_request.instance_profile is None:
+    if env_request.instance_profile is None and \
+                env_request.template_name is None:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
         env_request.instance_profile = get_default_profile(region)
@@ -599,6 +601,12 @@ def print_env_details(env, region, health=True):
 
 
 def create_env(env_request, region, interactive=True):
+    # If a template is being used, we want to try using just the template
+    if env_request.template_name:
+        platform = env_request.platform
+        env_request.platform = None
+    else:
+        platform = None
     while True:
         try:
             return elasticbeanstalk.create_environment(env_request,
@@ -610,6 +618,11 @@ def create_env(env_request, region, interactive=True):
                 # App doesnt exist, must be a new region.
                 ## Lets create the app in the region
                 create_app(env_request.app_name, region)
+            elif e.message == responses['create.noplatform']:
+                if platform:
+                    env_request.platform = platform
+                else:
+                    raise
             elif interactive:
                 LOG.debug('creating env returned error: ' + e.message)
                 if re.match(responses['env.cnamenotavailable'], e.message):
@@ -736,7 +749,7 @@ def deploy(app_name, env_name, region, version, label, message, timeout=None):
 
     if timeout is None:
         timeout = 5
-    wait_for_success_events(request_id, region, timeout=timeout)
+    wait_for_success_events(request_id, region, timeout_in_minutes=timeout)
 
 
 def status(app_name, env_name, region, verbose):
@@ -745,13 +758,14 @@ def status(app_name, env_name, region, verbose):
 
     if verbose:
         # Print number of running instances
-        env = elasticbeanstalk.get_environment_resources(env_name, region)
-        instances = [i['Id'] for i in env['EnvironmentResources']['Instances']]
+        env_dict = elasticbeanstalk.get_environment_resources(env_name, region)
+        instances = [i['Id'] for i in
+                     env_dict['EnvironmentResources']['Instances']]
         io.echo('  Running instances:', len(instances))
         #Get elb health
         try:
             load_balancer_name = [i['Name'] for i in
-                              env['EnvironmentResources']['LoadBalancers']][0]
+                                  env_dict['EnvironmentResources']['LoadBalancers']][0]
             instance_states = elb.get_health_of_instances(load_balancer_name,
                                                           region=region)
             for i in instance_states:
@@ -991,9 +1005,14 @@ def cleanup_ignore_file():
 
 
 def create_app_version(app_name, region, label=None, message=None):
-    if heuristics.directory_is_empty():
-        io.log_warning(strings['appversion.none'])
-        return None
+    cwd = os.getcwd()
+    fileoperations._traverse_to_project_root()
+    try:
+        if heuristics.directory_is_empty():
+            io.log_warning(strings['appversion.none'])
+            return None
+    finally:
+        os.chdir(cwd)
 
     source_control = SourceControl.get_source_control()
     if source_control.untracked_changes_exist():
@@ -1093,11 +1112,11 @@ def update_environment_configuration(app_name, env_name, region, nohang,
 
 
 def update_environment(env_name, changes, region, nohang, remove=None,
-                       timeout=None):
+                       template=None, timeout=None, template_body=None):
     try:
-        request_id = elasticbeanstalk.update_environment(env_name, changes,
-                                                         region=region,
-                                                         remove=remove)
+        request_id = elasticbeanstalk.update_environment(
+            env_name, changes, remove=remove, region=region, template=template,
+            template_body=template_body)
     except InvalidStateError:
         io.log_error(prompts['update.invalidstate'])
         return

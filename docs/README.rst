@@ -1,4 +1,4 @@
-# Elastic Beanstalk CLI, v2
+# Elastic Beanstalk CLI, v3
 
 [![Build Status](https://magnum.travis-ci.com/nhumrich/nicksEB.svg?token=Tp97fyAcyQ3Tx3oqH2Te&branch=master)](https://magnum.travis-ci.com/nhumrich/nicksEB)
 

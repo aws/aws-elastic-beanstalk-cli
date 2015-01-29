@@ -53,25 +53,32 @@ class EB(foundation.CementApp):
         config_defaults = defaults
 
     def setup(self):
+        controllers = [
+            InitController,
+            CreateController,
+            EventsController,
+            LogsController,
+            PrintEnvController,
+            DeployController,
+            StatusController,
+            TerminateController,
+            ConfigController,
+            SwapController,
+            OpenController,
+            ConsoleController,
+            ScaleController,
+            SSHController,
+            UseController,
+            SetEnvController,
+            ListController,
+            CloneController,
+        ]
+
         # register all controllers
-        handler.register(InitController)
-        handler.register(CreateController)
-        handler.register(EventsController)
-        handler.register(LogsController)
-        handler.register(DeployController)
-        handler.register(StatusController)
-        handler.register(TerminateController)
-        handler.register(ConfigController)
-        handler.register(OpenController)
-        handler.register(ConsoleController)
-        handler.register(ScaleController)
-        handler.register(SSHController)
-        handler.register(UseController)
-        handler.register(SetEnvController)
-        handler.register(PrintEnvController)
-        handler.register(ListController)
-        handler.register(CloneController)
-        handler.register(SwapController)
+        for c in controllers:
+            c._add_to_handler(handler)
+
+        #Add special controllers
         handler.register(CompleterController)
 
         super(EB, self).setup()
@@ -133,7 +140,7 @@ def main():
             io.log_error(message)
         app.close(code=4)
     except Exception as e:
-        #Generic catch all
+        # Generic catch all
         if app.pargs.debug:
             raise
 

@@ -44,10 +44,14 @@ strings = {
                      '  eb setenv HeapSize= Site_Url=\n'
                      'This removes the environment variables.',
     'swap.info': 'Swaps two environment CNAME\'s with each other.',
+    'config.epilog': 'Use this command to configure your environment. \n'
+                     'To update your environment directly in an interactive editor, type:\n'
+                     '  eb config\n',
+    'config.notfound': 'There is no configuration saved with the name "{config-name}".',
     'list.info': 'Lists all environments.',
     'terminate.info': 'Terminates the environment.',
     'terminate.epilog': 'This command terminates the environment. To terminate the application and everything in it, use the "--all" flag.',
-    'config.info': 'Edits the environment configuration settings.',
+    'config.info': 'Edits the environment configuration settings. Manage Saved Configurations.',
     'ssh.info': 'Opens the SSH client to connect to an instance.',
     'printenv.info': 'Shows the environment variables.',
 
@@ -70,6 +74,8 @@ strings = {
     'env.description': 'Environment created from the EB CLI using "eb create"',
     # Same as above but for cloned environments
     'env.clonedescription': 'Environment cloned from {env-name} from the EB CLI using "eb clone"',
+    # Default template description
+    'template.description': 'Template created from the EB CLI using "eb template"',
     'env.exists': 'An environment with that name already exists.',
     # When create is called, if we cant find any files, we say this
     'appversion.none': 'The current directory does not contain any source code. Elastic Beanstalk is launching the sample application instead.',
@@ -145,7 +151,7 @@ prompts = {
     'terminate.nomatch': 'Names do not match. Exiting.',
     'ssh.nokey': 'This environment is not set up for SSH. Use "eb ssh --setup" to set up SSH for the environment.',
     'ssh.setupwarn': 'You are about to setup SSH for environment "{env-name}". If you continue, your existing instances will have to be **terminated** and new instances will be created. The environment will be temporarily unavailable.',
-    'rds.username': 'Enter an RDS DB username (default is "admin")',
+    'rds.username': 'Enter an RDS DB username (default is "ebroot")',
     'rds.password': 'Enter an RDS DB master password',
     'logs.retrieving': 'Retrieving logs...',
     'swap.envprompt': 'Select an environment to swap with.',
@@ -193,6 +199,7 @@ flag_text = {
     'create.tags': 'a comma separated list of tags as key=value pairs',
     'create.envvars': 'a comma separated list of environment variables as key=value pairs',
     'create.database': 'create a database',
+    'create.config': 'saved configuration name',
 
     # Deploy
     'deploy.env': 'environment name',
@@ -246,7 +253,7 @@ flag_text = {
 }
 
 
-### The below are programatic and are not intended to be edited unless the service response changes
+### The below are programmatic and are not intended to be edited unless the service response changes
 responses = {
     'event.redmessage': 'Environment health has been set to RED',
     'event.redtoyellowmessage': 'Environment health has transitioned '
@@ -256,10 +263,12 @@ responses = {
     'event.launchsuccess': 'Successfully launched environment:',
     'event.launchbad': 'Create environment operation is CompleterController, '
                        'but with errors',
+    'event.failedlaunch': 'Failed to launch environment.',
     'event.updatebad': 'Update environment operation is complete, but with errors.',
     'git.norepository': 'Error: Not a git repository '
                         '(or any of the parent directories): .git',
     'env.updatesuccess': 'Environment update completed successfully.',
+    'env.configsuccess': 'Successfully deployed new configuration to environment.',
     'env.cnamenotavailable': 'DNS name \([^ ]+\) is not available.',
     'env.nameexists': 'Environment [^ ]+ already exists.',
     'app.deletesuccess': 'The application has been deleted successfully.',
@@ -272,8 +281,9 @@ responses = {
     'env.invalidstate': 'Environment named {env-name} is in an invalid state for this operation. Must be Ready.',
     'loadbalancer.notfound': 'There is no ACTIVE Load Balancer named',
     'ec2.sshalreadyopen': 'the specified rule "peer: 0.0.0.0/0, TCP, from port: 22, to port: 22,',
-    'swap.success': 'Completed swapping CNAMEs for environments'
-
+    'swap.success': 'Completed swapping CNAMEs for environments',
+    'cfg.nameexists': 'Configuration Template {name} already exists.',
+    'create.noplatform': 'Unable to determine base for template pack (no solution stack)',
 }
 git_ignore = [
     '# Elastic Beanstalk Files',        # comment line

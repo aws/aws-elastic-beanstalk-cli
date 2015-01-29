@@ -391,20 +391,36 @@ def get_storage_location(region=None):
     return response['S3Bucket']
 
 
-def update_environment(env_name, options, region=None, remove=None):
+def update_environment(env_name, options, region=None, remove=None,
+                       template=None, template_body=None):
     LOG.debug('Inside update_environment api wrapper')
     if remove is None:
         remove = []
+    kwargs = {
+        'environment_name': env_name,
+
+    }
+    if options:
+        kwargs['option_settings'] = options
+    if remove:
+        kwargs['options_to_remove'] = remove
+    if template:
+        kwargs['template_name'] = template
+    if template_body:
+        kwargs['template_specification'] = \
+            {'TemplateSource':
+             {'SourceContents': template_body}}
+
     try:
         response = _make_api_call('update-environment',
-                              environment_name=env_name,
-                              option_settings=options,
-                              options_to_remove=remove,
-                              region=region)
+                                  region=region,
+                                  **kwargs)
     except aws.InvalidParameterValueError as e:
         if e.message == responses['env.invalidstate'].replace('{env-name}',
                                                               env_name):
             raise InvalidStateError(e)
+        else:
+            raise
     return response['ResponseMetadata']['RequestId']
 
 
@@ -439,3 +455,42 @@ def terminate_environment(env_name, region=None):
                             environment_name=env_name,
                             region=region)
     return result['ResponseMetadata']['RequestId']
+
+
+def create_configuration_template(app_name, env_name, template_name,
+                                  description, region=None):
+    kwargs = {
+        'template_name': template_name,
+        'application_name': app_name,
+        'description': description,
+        'template_specification':
+            {'TemplateSource':
+                {'EnvironmentName': env_name}},
+    }
+
+    try:
+        result = _make_api_call('create-configuration-template',
+                                region=region, **kwargs)
+    except InvalidParameterValueError as e:
+        if e.message == responses['cfg.nameexists'].replace('{name}',
+                                                            template_name):
+            raise AlreadyExistsError(e.message)
+        else:
+            raise
+
+    return result
+
+
+def delete_configuration_template(app_name, template_name, region=None):
+    _make_api_call('delete-configuration-template',
+                   application_name=app_name,
+                   template_name=template_name,
+                   region=region)
+
+
+def validate_template(app_name, template_name, region=None):
+    result = _make_api_call('validate-configuration-settings',
+                   application_name=app_name,
+                   template_name=template_name,
+                   region=region)
+    return result

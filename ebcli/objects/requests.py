@@ -20,10 +20,11 @@ class CreateEnvironmentRequest(object):
                  tier=None, instance_type=None, version_label=None,
                  instance_profile=None, single_instance=False, key_name=None,
                  sample_application=False, tags=None, scale=None,
-                 database=None, vpc=None):
+                 database=None, vpc=None, template_name=None):
         self.app_name = app_name
         self.env_name = env_name
         self.cname = cname
+        self.template_name = template_name
         self.platform = platform
         self.tier = tier
         self.instance_type = instance_type
@@ -47,6 +48,7 @@ class CreateEnvironmentRequest(object):
         self.description = strings['env.description']
         self.scale = None
         self.option_settings = []
+        self.compiled = False
 
         if not self.app_name:
             raise TypeError(self.__class__.__name__ + ' requires key-word argument app_name')
@@ -75,11 +77,16 @@ class CreateEnvironmentRequest(object):
         self.option_settings.append(setting)
 
     def convert_to_kwargs(self):
-        self.add_client_defaults()
-        self.compile_database_options()
-        self.compile_vpc_options()
-        self.compile_common_options()
+        self.compile_option_settings()
         return self.get_standard_kwargs()
+
+    def compile_option_settings(self):
+        if not self.compiled:
+            self.add_client_defaults()
+            self.compile_database_options()
+            self.compile_vpc_options()
+            self.compile_common_options()
+            self.compiled = True
 
     def get_standard_kwargs(self):
         kwargs = {
@@ -93,6 +100,8 @@ class CreateEnvironmentRequest(object):
             kwargs['description'] = self.description
         if self.cname:
             kwargs['cname_prefix'] = self.cname
+        if self.template_name:
+            kwargs['template_name'] = self.template_name
         if self.version_label:
             kwargs['version_label'] = self.version_label
         if self.tags:
@@ -133,8 +142,21 @@ class CreateEnvironmentRequest(object):
                 'aws:autoscaling:launchconfiguration',
                 'EC2KeyName',
                 self.key_name)
+        if self.scale:
+            self.add_option_setting(
+                'aws:autoscaling:asg',
+                'MaxSize',
+                self.scale)
+            self.add_option_setting(
+                'aws:autoscaling:asg',
+                'MinSize',
+                self.scale)
 
     def add_client_defaults(self):
+        if self.template_name:
+            # dont add client defaults if a template is being used
+            return
+
         self.add_option_setting(
             'aws:elasticbeanstalk:command',
             'BatchSize',
@@ -213,5 +235,8 @@ class CloneEnvironmentRequest(CreateEnvironmentRequest):
         self.description = strings['env.clonedescription']. \
             replace('{env-name}', self.env_name)
 
-    def convert_to_kwargs(self):
-        return self.get_standard_kwargs()
+    def compile_option_settings(self):
+        if not self.compiled:
+            # dont compile extras like vpc/database/etc.
+            self.compile_common_options()
+            self.compiled = True

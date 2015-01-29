@@ -48,13 +48,17 @@ class EbBaseController(controller.CementBaseController):
         """Returns the help text displayed when '--help' is passed."""
         longest = 0
         def pad(label):
-            padlength = longest - len(label)
+            padlength = longest - len(label) + 2
             padding = '   '
-            for x in range(0, padlength):
-                padding+= ' '
+            if padlength < 0:
+                for x in range(0, longest):
+                    padding += ' '
+            else:
+                for x in range(0, padlength):
+                    padding += ' '
             return padding
 
-        cmd_txt = ''
+        help_txt = ''
         for label in self._visible_commands:
             # get longest command
             if len(label) > longest:
@@ -62,32 +66,34 @@ class EbBaseController(controller.CementBaseController):
 
         for label in self._visible_commands:
             cmd = self._dispatch_map[label]
+            cmd_txt = '  '
             if len(cmd['aliases']) > 0 and cmd['aliases_only']:
                 if len(cmd['aliases']) > 1:
                     first = cmd['aliases'].pop(0)
-                    cmd_txt = cmd_txt + " %s (aliases: %s)\n" % \
-                                        (first, ', '.join(cmd['aliases']))
+                    cmd_txt += "%s (alias: %s)\n" % \
+                               (first, ', '.join(cmd['aliases']))
                 else:
-                    cmd_txt = cmd_txt + " %s\n" % cmd['aliases'][0]
+                    cmd_txt += "%s" % cmd['alias'][0]
             elif len(cmd['aliases']) > 0:
-                cmd_txt = cmd_txt + " %s (aliases: %s)\n" % \
-                                    (label, ', '.join(cmd['aliases']))
+                cmd_txt += "%s (alias: %s)\n" % (label, ', '.join(cmd['aliases']))
             else:
-                cmd_txt = cmd_txt + "   %s" % label
+                cmd_txt += label
 
             if cmd['help']:
-                cmd_txt = cmd_txt + pad(label) + "%s\n" % cmd['help']
+                cmd_txt += pad(cmd_txt) + "%s\n" % cmd['help']
             else:
-                cmd_txt = cmd_txt + "\n"
+                cmd_txt += "\n"
 
-        if len(cmd_txt) > 0:
+            help_txt += cmd_txt
+
+        if len(help_txt) > 0:
             txt = '''%s
 
 commands:
 %s
 
 
-''' % (self._meta.description, cmd_txt)
+''' % (self._meta.description, help_txt)
         else:
             txt = self._meta.description
 

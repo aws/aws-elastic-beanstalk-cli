@@ -433,7 +433,8 @@ def save_env_file(env):
         file_name = os.path.abspath(file_name)
 
         with codecs.open(file_name, 'w', encoding='utf8') as f:
-            f.write(safe_dump(env, default_flow_style=False))
+            f.write(safe_dump(env, default_flow_style=False,
+                              encoding='utf8', line_break=os.linesep))
 
     finally:
         os.chdir(cwd)
@@ -473,7 +474,8 @@ def write_config_setting(section, key_name, value):
         config.setdefault(section, {})[key_name] = value
 
         with codecs.open(local_config_file, 'w', encoding='utf8') as f:
-            f.write(dump(config, default_flow_style=False))
+            f.write(safe_dump(config, default_flow_style=False,
+                              encoding='utf8', line_break=os.linesep))
 
     finally:
         os.chdir(cwd)  # go back to working directory
@@ -511,3 +513,65 @@ def _get_yaml_dict(filename):
             return load(f)
     except IOError:
         return {}
+
+
+def eb_file_exists(location):
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        path = beanstalk_directory + location
+        return os.path.isfile(path)
+    finally:
+        os.chdir(cwd)
+
+
+def make_eb_dir(location):
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        path = beanstalk_directory + location
+        if not os.path.isdir(path):
+            os.makedirs(path)
+    finally:
+        os.chdir(cwd)
+
+
+def write_to_eb_file(location, data):
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        path = beanstalk_directory + location
+        write_to_file(path, data)
+    finally:
+        os.chdir(cwd)
+
+
+def read_from_eb_file(location):
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        path = beanstalk_directory + location
+        read_from_file(path)
+    finally:
+        os.chdir(cwd)
+
+
+def write_to_file(location, data):
+    with codecs.open(location, 'w', encoding='utf8') as f:
+        f.write(data)
+
+
+def read_from_file(location):
+    with codecs.open(location, 'r', encoding='utf8') as f:
+        return f.read()
+
+
+def get_eb_file_full_location(location):
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        path = beanstalk_directory + location
+        full_path = os.path.abspath(path)
+        return full_path
+    finally:
+        os.chdir(cwd)

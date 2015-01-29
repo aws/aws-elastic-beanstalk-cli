@@ -42,10 +42,10 @@ def upload_file(bucket, key, file_path, region=None):
                               region=region)
 
 
-def get_object_info(bucket, object, region=None):
+def get_object_info(bucket, object_key, region=None):
     result = _make_api_call('list-objects',
                    bucket=bucket,
-                   prefix=object,
+                   prefix=object_key,
                    region=region)
 
     if 'Contents' not in result or len(result['Contents']) < 1:
@@ -56,11 +56,19 @@ def get_object_info(bucket, object, region=None):
         return objects[0]
     else:
         # There is more than one result, search for correct one
-        object = next((o for o in objects if o['Key'] == object), None)
-        if object is None:
+        object_key = next((o for o in objects if o['Key'] == object_key), None)
+        if object_key is None:
             raise NotFoundError('Object not found.')
         else:
-            return object
+            return object_key
+
+
+def get_object(bucket, key, region=None):
+    result = _make_api_call('get-object',
+                            bucket=bucket,
+                            key=key,
+                            region=region)
+    return result['Body'].read()
 
 
 def upload_application_version(bucket, key, file_path, region=None):

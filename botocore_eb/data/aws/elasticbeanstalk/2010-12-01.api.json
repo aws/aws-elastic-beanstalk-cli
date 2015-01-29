@@ -950,6 +950,7 @@
       "member":{"shape":"ConfigurationOptionDescription"}
     },
     "ConfigurationOptionName":{"type":"string"},
+    "ConfigurationResourceName":{"type":"string"},
     "ConfigurationOptionPossibleValue":{"type":"string"},
     "ConfigurationOptionPossibleValues":{
       "type":"list",
@@ -969,6 +970,10 @@
         "Value":{
           "shape":"ConfigurationOptionValue",
           "documentation":"<p> The current value for the configuration option. </p>"
+        },
+        "ResourceName":{
+          "shape":"ConfigurationResourceName",
+          "documentation":"<p> The name of the configuration resource. </p>"
         }
       },
       "documentation":"<p> A specification identifying an individual configuration option along with its current value. For a list of possible option values, go to <a href=\"http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options.html\">Option Values</a> in the <i>AWS Elastic Beanstalk Developer Guide</i>. </p>"
@@ -1154,6 +1159,10 @@
         "OptionSettings":{
           "shape":"ConfigurationOptionSettingsList",
           "documentation":"<p> If specified, AWS Elastic Beanstalk sets the specified configuration option to the requested value. The new value overrides the value obtained from the solution stack or the source configuration template. </p>"
+        },
+        "TemplateSpecification":{
+          "shape":"EnvironmentTemplateSpecification",
+          "documentation":""
         }
       },
       "documentation":"<p>This documentation target is not reported in the API reference.</p>"
@@ -2412,6 +2421,10 @@
         "OptionsToRemove":{
           "shape":"OptionsSpecifierList",
           "documentation":"<p> A list of custom user-defined configuration options to remove from the configuration set for this environment. </p>"
+        },
+        "TemplateSpecification":{
+          "shape":"EnvironmentTemplateSpecification",
+          "documentation":""
         }
       },
       "documentation":"<p>This documentation target is not reported in the API reference.</p>"
@@ -2420,8 +2433,7 @@
     "ValidateConfigurationSettingsMessage":{
       "type":"structure",
       "required":[
-        "ApplicationName",
-        "OptionSettings"
+        "ApplicationName"
       ],
       "members":{
         "ApplicationName":{

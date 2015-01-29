@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 
 import sys
-import logging
+import textwrap
 
 from cement.core import controller
 from cement.ext.ext_logging import LoggingLogHandler
@@ -74,8 +74,11 @@ class AbstractBaseController(controller.CementBaseController):
         app_name = fileoperations.get_application_name()
         return app_name
 
-    def get_env_name(self, cmd_example=None, noerror=False):
-        env_name = self.app.pargs.environment_name
+    def get_env_name(self, cmd_example=None, noerror=False, varname=None):
+        if varname:
+            env_name = getattr(self.app.pargs, varname)
+        else:
+            env_name = self.app.pargs.environment_name
         if not env_name:
             # If env name not provided, grab branch default
             env_name = operations. \
@@ -127,3 +130,63 @@ class AbstractBaseController(controller.CementBaseController):
             io.echo(*[r.name for r in region.get_all_regions()])
             return True
         return False
+
+    @classmethod
+    def _add_to_handler(cls, handler):
+        handler.register(cls)
+
+    @property
+    def _help_text(self):
+        """Returns the help text displayed when '--help' is passed."""
+        longest = 0
+        def pad(label):
+            padlength = longest - len(label) + 2
+            padding = '   '
+            if padlength < 0:
+                for x in range(0, longest):
+                    padding += ' '
+            else:
+                for x in range(0, padlength):
+                    padding += ' '
+            return padding
+
+        help_txt = ''
+        for label in self._visible_commands:
+            # get longest command
+            if len(label) > longest:
+                longest = len(label)
+
+        for label in self._visible_commands:
+            cmd = self._dispatch_map[label]
+            cmd_txt = '  '
+            if len(cmd['aliases']) > 0 and cmd['aliases_only']:
+                if len(cmd['aliases']) > 1:
+                    first = cmd['aliases'].pop(0)
+                    cmd_txt += "%s (alias: %s)\n" % \
+                               (first, ', '.join(cmd['aliases']))
+                else:
+                    cmd_txt += "%s" % cmd['alias'][0]
+            elif len(cmd['aliases']) > 0:
+                cmd_txt += "%s (alias: %s)\n" % (label, ', '.join(cmd['aliases']))
+            else:
+                cmd_txt += label
+
+            if cmd['help']:
+                cmd_txt += pad(cmd_txt) + "%s\n" % cmd['help']
+            else:
+                cmd_txt += "\n"
+
+            help_txt += cmd_txt
+
+        if len(help_txt) > 0:
+            txt = '''%s
+
+commands:
+%s
+
+
+''' % (self._meta.description, help_txt)
+        else:
+            txt = self._meta.description
+
+        return textwrap.dedent(txt)

@@ -22,6 +22,7 @@ from ..objects.exceptions import NotFoundError, AlreadyExistsError, \
 from ..core import io, fileoperations, operations
 from ..objects.tier import Tier
 from ..objects.requests import CreateEnvironmentRequest
+from ..commands import saved_configs
 
 
 class CreateController(AbstractBaseController):
@@ -53,6 +54,7 @@ class CreateController(AbstractBaseController):
             (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
             (['--tags'], dict(help=flag_text['create.tags'])),
             (['--envvars'], dict(help=flag_text['create.envvars'])),
+            (['--cfg'], dict(help=flag_text['create.config'])),
             (['-db', '--database'], dict(
                 action="store_true", help=flag_text['create.database'])),
             ## Add addition hidden db commands
@@ -102,6 +104,7 @@ class CreateController(AbstractBaseController):
         envvars = self.app.pargs.envvars
         scale = self.app.pargs.scale
         timeout = self.app.pargs.timeout
+        cfg = self.app.pargs.cfg
         flag = False if env_name else True
 
         provided_env_name = env_name is not None
@@ -173,11 +176,13 @@ class CreateController(AbstractBaseController):
         database = self.form_database_object()
         vpc = self.form_vpc_object()
         envvars = get_and_validate_envars(envvars)
+        template_name = get_template_name(app_name, cfg, region)
 
         env_request = CreateEnvironmentRequest(
             app_name=app_name,
             env_name=env_name,
             cname=cname,
+            template_name=template_name,
             platform=solution,
             tier=tier,
             instance_type=itype,
@@ -271,7 +276,7 @@ def get_cname(env_name, region):
             break
         if not operations.is_cname_available(cname, region):
             io.echo('That cname is not available. '
-                    'Please choose another')
+                    'Please choose another.')
         else:
             break
     return cname
@@ -309,3 +314,13 @@ def get_and_validate_envars(envvars):
 
     options, options_to_remove = operations.create_envvars_list(envvars)
     return options
+
+
+def get_template_name(app_name, cfg, region):
+    if not cfg:
+        # See if a default template exists
+        if saved_configs.resolve_config_location('default') is None:
+            return None
+        else:
+            cfg = 'default'
+    return saved_configs.resolve_config_name(app_name, cfg, region)
