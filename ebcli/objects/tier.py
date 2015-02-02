@@ -19,7 +19,7 @@ class Tier():
     def __init__(self, name, typ, version):
         self.name = name
         self.type = typ
-        self.version = version
+        self.version = version.strip()
         self.string = self.__str__()
 
     def to_struct(self):
