@@ -84,13 +84,14 @@ class InitController(AbstractBaseController):
 
         operations.setup(self.app_name, self.region, self.solution)
 
-        self.keyname = self.get_keyname(default=key)
+        if 'IIS' not in self.solution:
+            self.keyname = self.get_keyname(default=key)
 
-        if self.keyname == -1:
-            self.keyname = None
+            if self.keyname == -1:
+                self.keyname = None
 
-        fileoperations.write_config_setting('global', 'default_ec2_keyname',
-                                            self.keyname)
+            fileoperations.write_config_setting('global', 'default_ec2_keyname',
+                                                self.keyname)
 
     def check_credentials(self, profile):
         given_profile = self.app.pargs.profile
