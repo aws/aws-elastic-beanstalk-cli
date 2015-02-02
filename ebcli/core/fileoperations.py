@@ -361,9 +361,13 @@ def _zipdir(path, zipf):
             io.log_info('  -skipping: ' + str(root))
             continue
         for f in files:
-            file = os.path.join(root, f)
-            io.log_info('  +adding: ' + str(file))
-            zipf.write(file)
+            cur_file = os.path.join(root, f)
+            if cur_file.endswith('~'):
+                # Ignore editor backup files (like file.txt~)
+                io.log_info('  -skipping: ' + str(cur_file))
+            else:
+                io.log_info('  +adding: ' + str(cur_file))
+                zipf.write(cur_file)
 
 
 def unzip_folder(file_location, directory):
