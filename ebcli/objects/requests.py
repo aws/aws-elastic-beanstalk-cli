@@ -32,15 +32,15 @@ class CreateEnvironmentRequest(object):
         self.single_instance = single_instance
         self.key_name = key_name
         self.sample_application = sample_application
-        if self.tags is None:
+        if tags is None:
             self.tags = []
         else:
             self.tags = list(tags)
-        if self.database is None:
+        if database is None:
             self.database = {}
         else:
             self.database = dict(database)
-        if self.vpc is None:
+        if vpc is None:
             self.vpc = {}
         else:
             self.vpc = dict(vpc)
