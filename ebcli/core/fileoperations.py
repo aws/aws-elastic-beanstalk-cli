@@ -438,7 +438,7 @@ def save_env_file(env):
 
         with codecs.open(file_name, 'w', encoding='utf8') as f:
             f.write(safe_dump(env, default_flow_style=False,
-                              encoding='utf8', line_break=os.linesep))
+                              line_break=os.linesep))
 
     finally:
         os.chdir(cwd)
@@ -479,7 +479,7 @@ def write_config_setting(section, key_name, value):
 
         with codecs.open(local_config_file, 'w', encoding='utf8') as f:
             f.write(safe_dump(config, default_flow_style=False,
-                              encoding='utf8', line_break=os.linesep))
+                              line_break=os.linesep))
 
     finally:
         os.chdir(cwd)  # go back to working directory
