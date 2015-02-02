@@ -29,7 +29,6 @@ from ..core import globals
 
 LOG = minimal_logger(__name__)
 
-
 DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
 
 
@@ -40,19 +39,19 @@ def _make_api_call(operation_name, region=None, **operation_options):
         endpoint_url = None
 
     return aws.make_api_call('elasticbeanstalk',
-                               operation_name,
-                               region=region,
-                               endpoint_url=endpoint_url,
-                               **operation_options)
+                             operation_name,
+                             region=region,
+                             endpoint_url=endpoint_url,
+                             **operation_options)
 
 
 def create_application(app_name, descrip, region=None):
     LOG.debug('Inside create_application api wrapper')
     try:
         result = _make_api_call('create-application',
-                                  application_name=app_name,
-                                  description=descrip,
-                                  region=region)
+                                application_name=app_name,
+                                description=descrip,
+                                region=region)
     except InvalidParameterValueError as e:
         string = responses['app.exists'].replace('{app-name}', app_name)
         if e.message == string:
@@ -88,7 +87,7 @@ def create_environment(environment, region=None):
         if region is None:
             region = aws.get_default_region()
 
-        #Database is a dictionary
+        # Database is a dictionary
         kwargs['template_specification'] = {
             'TemplateSnippets': [
                 {'SnippetName': 'RdsExtensionEB',
@@ -170,9 +169,9 @@ def delete_application(app_name, region=None):
 def delete_application_and_envs(app_name, region=None):
     LOG.debug('Inside delete_application_and_envs')
     result = _make_api_call('delete-application',
-                          application_name=app_name,
-                          terminate_env_by_force=True,
-                          region=region)
+                            application_name=app_name,
+                            terminate_env_by_force=True,
+                            region=region)
     return result['ResponseMetadata']['RequestId']
 
 
@@ -222,7 +221,7 @@ def describe_configuration_settings(app_name, env_name, region=None):
 def get_specific_configuration(env_config, namespace, option):
     for setting in env_config['OptionSettings']:
         if setting['Namespace'] == namespace and \
-                setting['OptionName'] == option:
+                                setting['OptionName'] == option:
             try:
                 return setting['Value']
             except KeyError:
@@ -231,7 +230,8 @@ def get_specific_configuration(env_config, namespace, option):
     return None
 
 
-def get_specific_configuration_for_env(app_name, env_name, namespace, option, region=None):
+def get_specific_configuration_for_env(app_name, env_name, namespace, option,
+                                       region=None):
     env_config = describe_configuration_settings(app_name, env_name,
                                                  region=region)
     return get_specific_configuration(env_config, namespace, option)
@@ -291,9 +291,9 @@ def get_all_applications(region=None):
 def get_app_environments(app_name, region=None):
     LOG.debug('Inside get_app_environments api wrapper')
     result = _make_api_call('describe-environments',
-                          application_name=app_name,
-                          include_deleted=False,
-                          region=region)
+                            application_name=app_name,
+                            include_deleted=False,
+                            region=region)
     # convert to objects
     envs = [_api_to_environment(env) for env in result['Environments']]
 
@@ -315,10 +315,10 @@ def get_all_environments(region=None):
 def get_environment(app_name, env_name, region=None):
     LOG.debug('Inside get_environment api wrapper')
     result = _make_api_call('describe-environments',
-                          application_name=app_name,
-                          environment_names=[env_name],
-                          include_deleted=False,
-                          region=region)
+                            application_name=app_name,
+                            environment_names=[env_name],
+                            include_deleted=False,
+                            region=region)
 
     envs = result['Environments']
     if len(envs) < 1:
@@ -357,8 +357,8 @@ def get_new_events(app_name, env_name, request_id,
         kwargs['start_time'] = str(new_time)
 
     result = _make_api_call('describe-events',
-                          region=region,
-                          **kwargs)
+                            region=region,
+                            **kwargs)
 
     # convert to object
     events = []
@@ -380,7 +380,7 @@ def get_new_events(app_name, env_name, request_id,
                   app_name=event['ApplicationName'],
                   environment_name=environment_name,
                   severity=event['Severity'],
-                  )
+            )
         )
     return events
 
@@ -409,7 +409,7 @@ def update_environment(env_name, options, region=None, remove=None,
     if template_body:
         kwargs['template_specification'] = \
             {'TemplateSource':
-             {'SourceContents': template_body}}
+                {'SourceContents': template_body}}
 
     try:
         response = _make_api_call('update-environment',
@@ -436,17 +436,17 @@ def update_env_application_version(env_name,
 
 def request_environment_info(env_name, info_type, region=None):
     result = _make_api_call('request-environment-info',
-                          environment_name=env_name,
-                          info_type=info_type,
-                          region=region)
+                            environment_name=env_name,
+                            info_type=info_type,
+                            region=region)
     return result
 
 
 def retrieve_environment_info(env_name, info_type, region=None):
     result = _make_api_call('retrieve-environment-info',
-                          environment_name=env_name,
-                          info_type=info_type,
-                          region=region)
+                            environment_name=env_name,
+                            info_type=info_type,
+                            region=region)
     return result
 
 
@@ -490,7 +490,7 @@ def delete_configuration_template(app_name, template_name, region=None):
 
 def validate_template(app_name, template_name, region=None):
     result = _make_api_call('validate-configuration-settings',
-                   application_name=app_name,
-                   template_name=template_name,
-                   region=region)
+                            application_name=app_name,
+                            template_name=template_name,
+                            region=region)
     return result
