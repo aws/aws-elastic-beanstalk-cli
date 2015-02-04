@@ -20,6 +20,7 @@ import stat
 import codecs
 
 from yaml import load, dump, safe_dump
+from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 try:
     import configparser
@@ -465,9 +466,9 @@ def get_environment_from_file(env_name):
         if os.path.exists(path):
             with codecs.open(path, 'r', encoding='utf8') as f:
                 env = load(f)
-    except ScannerError:
+    except (ScannerError, ParserError):
         raise InvalidSyntaxError('The environment file contains '
-                                 'invalid syntax')
+                                 'invalid syntax.')
 
     finally:
         os.chdir(cwd)
