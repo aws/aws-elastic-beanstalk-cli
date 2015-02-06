@@ -7,11 +7,11 @@ import ebcli
 
 requires = ['setuptools>=7.0',
             'pyyaml>=3.11',
-            'six==1.8.0',
+            'six>=1.8.0',
             'cement==2.4',
             ## For botocore we need the following
-            'python-dateutil>=2.2',
-            'jmespath>=0.4.1'
+            'python-dateutil>=2.1,<3.0.0',
+            'jmespath>=0.5.0'
             ]
 
 try:
@@ -35,11 +35,11 @@ setup_options = dict(
     author_email='humrichn@amazon.com',
     url='http://aws.amazon.com/elasticbeanstalk/',
     packages=find_packages('.', exclude=['tests*', 'docs*', 'sampleApps*']),
-    package_dir={'ebcli': 'ebcli',
-                 'botocore_eb': 'botocore_eb'},
+    package_dir={'ebcli': 'ebcli'},
     package_data={
-        'botocore_eb': ['data/aws/*.json', 'data/aws/*/*.json'],
-        'botocore_eb.vendored.requests': ['*.pem']},
+        'ebcli': ['bundled/botocore/data/aws/*.json',
+                  'bundled/botocore/data/aws/*/*.json'],
+        'ebcli.bundled.botocore.vendored.requests': ['*.pem']},
     install_requires=requires,
     license="Apache License 2.0",
     classifiers=(

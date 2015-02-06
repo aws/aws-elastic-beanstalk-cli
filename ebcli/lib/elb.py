@@ -26,8 +26,8 @@ def _make_api_call(operation_name, **operation_options):
 
 def get_health_of_instances(load_balancer_name, region=None):
     try:
-        result = _make_api_call('describe-instance-health',
-                            load_balancer_name=load_balancer_name,
+        result = _make_api_call('describe_instance_health',
+                            LoadBalancerName=load_balancer_name,
                             region=region)
     except ServiceError as e:
         if e.message.startswith(responses['loadbalancer.notfound']):

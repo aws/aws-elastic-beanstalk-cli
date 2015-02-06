@@ -14,8 +14,9 @@
 import time
 import random
 
-import botocore_eb.session
-import botocore_eb.exceptions
+import botocore
+import botocore.session
+import botocore.exceptions
 import six
 from cement.utils.misc import minimal_logger
 
@@ -23,33 +24,43 @@ from ebcli import __version__
 from ..objects.exceptions import ServiceError, NotAuthorizedError, \
     InvalidSyntaxError, CredentialsError, NoRegionError, \
     InvalidProfileError, ConnectionError, AlreadyExistsError, NotFoundError
+from .utils import static_var
 
 LOG = minimal_logger(__name__)
 
-_api_sessions = {}
+_api_clients = {}
 _profile = None
 _profile_env_var = 'AWS_EB_PROFILE'
 _id = None
 _key = None
+_region_name = None
 
 
 def set_session_creds(id, key):
-    global _api_sessions, _id, _key
+    global _api_clients, _id, _key
     _id = id
     _key = key
-    for k, service in six.iteritems(_api_sessions):
-        service.session.set_credentials(_id, _key)
+
+    # invalidate all old sessions
+    _api_clients = {}
 
 
 def set_profile(profile):
     global _profile
     _profile = profile
 
+    # Invalidate session
+    _get_botocore_session.botocore_session = None
+
+
+def set_region(region_name):
+    global _region_name
+    _region_name = region_name
+
 
 def set_profile_override(profile):
-    global _profile
     global _profile_env_var
-    _profile = profile
+    set_profile(profile)
     _profile_env_var = None
 
 
@@ -58,60 +69,67 @@ def _set_user_agent_for_session(session):
     session.user_agent_version = __version__
 
 
-def _get_service(service_name):
-    global _api_sessions
-    if service_name in _api_sessions:
-        return _api_sessions[service_name]
+def _get_client(service_name, endpoint_url=None, region_name=None):
+    global _api_clients, _region_name
+    aws_access_key_id = _id
+    aws_secret_key = _key
+    if service_name in _api_clients:
+        return _api_clients[service_name]
 
-    LOG.debug('Creating new Botocore Session')
-    session = botocore_eb.session.Session(session_vars={
-        'profile': (None, _profile_env_var, _profile)})
-    _set_user_agent_for_session(session)
-
+    session = _get_botocore_session()
     try:
-        service = session.get_service(service_name)
-    except botocore_eb.exceptions.ProfileNotFound as e:
+
+        LOG.debug('Creating new Botocore Client for ' + str(service_name))
+        client = session.create_client(service_name,
+                                       endpoint_url=endpoint_url,
+                                       region_name=region_name,
+                                       aws_access_key_id=aws_access_key_id,
+                                       aws_secret_access_key=aws_secret_key)
+
+    except botocore.exceptions.ProfileNotFound as e:
         raise InvalidProfileError(e)
     LOG.debug('Successfully created session for ' + service_name)
 
-    if _id and _key:
-        service.session.set_credentials(_id, _key)
-    _api_sessions[service_name] = service
-    return service
+    _api_clients[service_name] = client
+    return client
+
+
+@static_var('botocore_session', None)
+def _get_botocore_session():
+    if _get_botocore_session.botocore_session is None:
+        LOG.debug('Creating new Botocore Session')
+        session = botocore.session.Session(session_vars={
+            'profile': (None, _profile_env_var, _profile)})
+        _set_user_agent_for_session(session)
+        _get_botocore_session.botocore_session = session
+
+    return _get_botocore_session.botocore_session
 
 
 def get_default_region():
-    service = _get_service('elasticbeanstalk')
+    client = _get_client('elasticbeanstalk')
     try:
-        endpoint = service.get_endpoint()
+        endpoint = client._endpoint
         return endpoint.region_name
-    except botocore_eb.exceptions.UnknownEndpointError as e:
+    except botocore.exceptions.UnknownEndpointError as e:
         raise NoRegionError(e)
-    except:
-        return None
 
 
-def make_api_call(service_name, operation_name, region=None, endpoint_url=None,
+def make_api_call(service_name, operation_name, endpoint_url=None, region=None,
                   **operation_options):
-    service = _get_service(service_name)
+    try:
+        client = _get_client(service_name, endpoint_url=endpoint_url,
+                             region_name=region)
+    except botocore.exceptions.UnknownEndpointError as e:
+        raise NoRegionError(e)
+    except botocore.exceptions.PartialCredentialsError:
+        LOG.debug('Credentials incomplete')
+        raise CredentialsError('Your credentials are not complete')
 
-    operation = service.get_operation(operation_name)
-    if endpoint_url:
-        endpoint = service.get_endpoint(region_name=region,
-                                        endpoint_url=endpoint_url)
-    else:
-        try:
-            if not region:
-                endpoint = service.get_endpoint()
-                region = 'default'
-            else:
-                endpoint = service.get_endpoint(region)
-        except botocore_eb.exceptions.UnknownEndpointError as e:
-            raise NoRegionError(e)
-        except botocore_eb.exceptions.PartialCredentialsError:
-            LOG.debug('Credentials incomplete')
-            raise CredentialsError('Your credentials are not valid')
+    operation = getattr(client, operation_name)
 
+    if not region:
+        region = 'default'
 
     MAX_ATTEMPTS = 10
     attempt = 0
@@ -125,16 +143,19 @@ def make_api_call(service_name, operation_name, region=None, endpoint_url=None,
             LOG.debug('Making api call: (' +
                       service_name + ', ' + operation_name +
                       ') to region: ' + region + ' with args:' + str(operation_options))
-            http_response, response_data = operation.call(endpoint,
-                                                          **operation_options)
-            status = http_response.status_code
+            response_data = operation(**operation_options)
+            status = response_data['ResponseMetadata']['HTTPStatusCode']
             LOG.debug('API call finished, status = ' + str(status))
             if response_data:
                 LOG.debug('Response: ' + str(response_data))
 
-            if status in (200, 204):
-                return response_data
+            return response_data
 
+        except botocore.exceptions.ClientError as e:
+            response_data = e.response
+            LOG.debug('Response: ' + str(response_data))
+            status = response_data['ResponseMetadata']['HTTPStatusCode']
+            LOG.debug('API call finished, status = ' + str(status))
             if status == 400:
                 # Convert to correct 400 error
                 error = _get_400_error(response_data)
@@ -165,21 +186,21 @@ def make_api_call(service_name, operation_name, region=None, endpoint_url=None,
                                           'service error (5XX)')
             else:
                 raise ServiceError('API Call unsuccessful. '
-                          'Status code returned ' + str(status))
-        except botocore_eb.exceptions.NoCredentialsError as e:
+                                   'Status code returned ' + str(status))
+        except botocore.exceptions.NoCredentialsError:
             LOG.debug('No credentials found')
             raise CredentialsError('Operation Denied. You appear to have no'
                                    ' credentials')
-        except botocore_eb.exceptions.PartialCredentialsError as e:
+        except botocore.exceptions.PartialCredentialsError as e:
             LOG.debug('Credentials incomplete')
             raise CredentialsError(str(e))
 
-        except botocore_eb.exceptions.ValidationError as e:
+        except botocore.exceptions.ValidationError as e:
             raise InvalidSyntaxError(e)
 
-        except botocore_eb.exceptions.BotoCoreError as e:
+        except botocore.exceptions.BotoCoreError as e:
             LOG.error('Botocore Error')
-            raise e
+            raise
 
         except IOError as error:
             if hasattr(error.args[0], 'reason') and str(error.args[0].reason) == \

@@ -6,7 +6,11 @@
 /doc/generated/*
 /runpy
 /build
-
+/.idea
+/dist
+/out
+eb.py
+awsebcli.egg-info/
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*

@@ -939,6 +939,7 @@ def cli_update_exists(current_version):
         return False
 
 
+
 def terminate(env_name, region, nohang=False, timeout=None):
     request_id = elasticbeanstalk.terminate_environment(env_name, region)
 

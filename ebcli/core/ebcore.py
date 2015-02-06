@@ -12,6 +12,16 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import os
+import sys
+
+# Add vendor directory to module search path
+# Need this for botocore
+parent_dir = os.path.abspath(os.path.dirname(__file__))
+vendor_dir = os.path.join(parent_dir, 'bundled')
+
+sys.path.insert(0, vendor_dir)
+
 import logging
 from argparse import SUPPRESS
 

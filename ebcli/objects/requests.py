@@ -90,24 +90,24 @@ class CreateEnvironmentRequest(object):
 
     def get_standard_kwargs(self):
         kwargs = {
-            'application_name': self.app_name,
-            'environment_name': self.env_name,
-            'option_settings': self.option_settings,
+            'ApplicationName': self.app_name,
+            'EnvironmentName': self.env_name,
+            'OptionSettings': self.option_settings,
             }
         if self.platform:
-            kwargs['solution_stack_name'] = self.platform.name
+            kwargs['SolutionStackName'] = self.platform.name
         if self.description:
-            kwargs['description'] = self.description
+            kwargs['Description'] = self.description
         if self.cname:
-            kwargs['cname_prefix'] = self.cname
+            kwargs['CnamePrefix'] = self.cname
         if self.template_name:
-            kwargs['template_name'] = self.template_name
+            kwargs['TemplateName'] = self.template_name
         if self.version_label:
-            kwargs['version_label'] = self.version_label
+            kwargs['VersionLabel'] = self.version_label
         if self.tags:
-            kwargs['tags'] = self.tags
+            kwargs['Tags'] = self.tags
         if self.tier:
-            kwargs['tier'] = self.tier.to_struct()
+            kwargs['Tier'] = self.tier.to_struct()
 
         if self.scale:
             self.add_option_setting(

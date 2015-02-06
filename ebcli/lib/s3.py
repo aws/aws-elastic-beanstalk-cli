@@ -35,17 +35,17 @@ def _make_api_call(operation_name, **operation_options):
 
 def upload_file(bucket, key, file_path, region=None):
     with open(file_path, 'rb') as fp:
-        return _make_api_call('put-object',
-                              bucket=bucket,
-                              key=key,
-                              body=fp,
+        return _make_api_call('put_object',
+                              Bucket=bucket,
+                              Key=key,
+                              Body=fp,
                               region=region)
 
 
 def get_object_info(bucket, object_key, region=None):
-    result = _make_api_call('list-objects',
-                   bucket=bucket,
-                   prefix=object_key,
+    result = _make_api_call('list_objects',
+                   Bucket=bucket,
+                   Prefix=object_key,
                    region=region)
 
     if 'Contents' not in result or len(result['Contents']) < 1:
@@ -64,9 +64,9 @@ def get_object_info(bucket, object_key, region=None):
 
 
 def get_object(bucket, key, region=None):
-    result = _make_api_call('get-object',
-                            bucket=bucket,
-                            key=key,
+    result = _make_api_call('get_object',
+                            Bucket=bucket,
+                            Key=key,
                             region=region)
     return result['Body'].read()
 
@@ -130,11 +130,11 @@ def multithreaded_upload(bucket, key, file_path, region=None):
         # S3 requires the etag list to be sorted
         etaglist = sorted(etaglist, key=lambda k: k['PartNumber'])
 
-        result = _make_api_call('complete-multipart-upload',
-                              bucket=bucket,
-                              key=key,
-                              upload_id=upload_id,
-                              multipart_upload=dict(Parts=etaglist))
+        result = _make_api_call('complete_multipart_upload',
+                              Bucket=bucket,
+                              Key=key,
+                              Upload_id=upload_id,
+                              MultipartUpload=dict(Parts=etaglist))
 
         return result
 
@@ -173,12 +173,12 @@ def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id,
             b = BytesIO()
             b.write(data)
             b.seek(0)
-            response = _make_api_call('upload-part',
-                                      bucket=bucket,
-                                      key=key,
-                                      upload_id=upload_id,
-                                      body=b,
-                                      part_number=part,
+            response = _make_api_call('upload_part',
+                                      Bucket=bucket,
+                                      Key=key,
+                                      Upload_id=upload_id,
+                                      Body=b,
+                                      PartNumber=part,
                                       region=region)
             etag = response['ETag']
 
@@ -189,10 +189,10 @@ def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id,
 
 
 def _get_part_etag(bucket, key, part, upload_id, region):
-    response = _make_api_call('list-parts',
-                              bucket=bucket,
-                              key=key,
-                              upload_id=upload_id,
+    response = _make_api_call('list_parts',
+                              Bucket=bucket,
+                              Key=key,
+                              UploadId=upload_id,
                               region=region)
 
     if 'Parts' not in response:
@@ -204,9 +204,9 @@ def _get_part_etag(bucket, key, part, upload_id, region):
 
 def _get_multipart_upload_id(bucket, key, region):
     # Check to see if multipart already exists
-    response = _make_api_call('list-multipart-uploads',
-                              bucket=bucket,
-                              prefix=key,
+    response = _make_api_call('list_multipart_uploads',
+                              Bucket=bucket,
+                              Prefix=key,
                               region=region)
 
     try:
@@ -217,9 +217,9 @@ def _get_multipart_upload_id(bucket, key, region):
         pass  # There are no uploads with that prefix
 
     # Not found, lets initiate the upload
-    response = _make_api_call('create-multipart-upload',
-                              bucket=bucket,
-                              key=key,
+    response = _make_api_call('create_multipart_upload',
+                              Bucket=bucket,
+                              Key=key,
                               region=region)
 
     return response['UploadId']

@@ -25,14 +25,14 @@ def _make_api_call(operation_name, **operation_options):
 
 
 def get_key_pairs(region=None):
-    result = _make_api_call('describe-key-pairs', region=region)
+    result = _make_api_call('describe_key_pairs', region=region)
     return result['KeyPairs']
 
 
 def import_key_pair(keyname, key_material, region=None):
     try:
-        result = _make_api_call('import-key-pair', key_name=keyname,
-                    public_key_material=key_material,
+        result = _make_api_call('import_key_pair', KeyName=keyname,
+                    PublicKeyMaterial=key_material,
                     region=region)
     except ServiceError as e:
         if e.message.endswith('already exists.'):
@@ -45,16 +45,16 @@ def import_key_pair(keyname, key_material, region=None):
 
 def describe_instance(instance_id, region=None):
     result = _make_api_call('describe-instances',
-                            instance_ids=[instance_id],
+                            InstanceIds=[instance_id],
                             region=region)
     return result['Reservations'][0]['Instances'][0]
 
 
 def revoke_ssh(security_group_id, region=None):
     try:
-        _make_api_call('revoke-security-group-ingress',
-                   group_id=security_group_id, ip_protocol='tcp',
-                   to_port=22, from_port=22, cidr_ip='0.0.0.0/0',
+        _make_api_call('revoke_security_group_ingress',
+                   GroupId=security_group_id, IpProtocol='tcp',
+                   ToPort=22, FromPort=22, CidrIp='0.0.0.0/0',
                    region=region)
     except ServiceError as e:
         if e.message.startswith(responses['ec2.sshalreadyopen']):
@@ -66,9 +66,9 @@ def revoke_ssh(security_group_id, region=None):
 
 def authorize_ssh(security_group_id, region=None):
     try:
-        _make_api_call('authorize-security-group-ingress',
-                   group_id=security_group_id, ip_protocol='tcp',
-                   to_port=22, from_port=22, cidr_ip='0.0.0.0/0',
+        _make_api_call('authorize_security_group_ingress',
+                   GroupId=security_group_id, IpProtocol='tcp',
+                   ToPort=22, FromPort=22, CidrIp='0.0.0.0/0',
                    region=region)
     except ServiceError as e:
         if e.code == 'InvalidPermission.Duplicate':
