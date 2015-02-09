@@ -4,6 +4,11 @@ Changelog
 =========
 
 -------------------
+3.0.11 (2014-02-09)
+-------------------
+- Fixed Zipping issue for Windows Containers
+
+-------------------
 3.0.10 (2014-11-24)
 -------------------
 - Fixed parsing error for uploads in a s3 bucket with auto-deletion policy
