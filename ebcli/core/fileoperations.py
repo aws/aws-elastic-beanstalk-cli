@@ -366,11 +366,16 @@ def zip_up_project(location):
 
 
 def _zipdir(path, zipf):
+    zipped_roots = []
     for root, dirs, files in os.walk(path):
         if '.elasticbeanstalk' in root:
             io.log_info('  -skipping: ' + str(root))
             continue
         for f in files:
+            # Windows requires us to index the folders.
+            if root not in zipped_roots:
+                zipf.write(root)
+                zipped_roots.append(root)
             cur_file = os.path.join(root, f)
             if cur_file.endswith('~'):
                 # Ignore editor backup files (like file.txt~)
