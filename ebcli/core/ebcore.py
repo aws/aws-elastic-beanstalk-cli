@@ -32,13 +32,14 @@ sys.path.insert(0, vendor_dir)
 import logging
 from argparse import SUPPRESS
 
-from cement.core import foundation, handler
+from cement.core import foundation, handler, hook
 from cement.utils.misc import init_defaults
 from cement.core.exc import CaughtSignal
 import botocore
 from botocore.compat import six
 from six import iteritems
 
+from . import globals, base, io, hooks
 from ..controllers.initialize import InitController
 from ..controllers.create import CreateController
 from ..controllers.events import EventsController
@@ -58,7 +59,6 @@ from ..controllers.printenv import PrintEnvController
 from ..controllers.clone import CloneController
 from ..controllers.swap import SwapController
 from ..core.completer import CompleterController
-from ..core import globals, base, io
 from ..objects.exceptions import *
 from ..resources.strings import strings, flag_text
 
@@ -123,6 +123,7 @@ def main():
     #######
 
     app = EB()
+    hook.register('post_argument_parsing', hooks.pre_run_hook)
 
     try:
         app.setup()

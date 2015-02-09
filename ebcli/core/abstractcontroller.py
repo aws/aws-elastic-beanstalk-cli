@@ -11,18 +11,15 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import sys
 import textwrap
 
 from cement.core import controller
-from cement.ext.ext_logging import LoggingLogHandler
 
 from ebcli import __version__
 from ..core import io, fileoperations, operations
 from ..objects.exceptions import NoEnvironmentForBranchError
 from ..resources.strings import strings, flag_text
 from ..objects import region
-from ..lib import aws
 
 
 class AbstractBaseController(controller.CementBaseController):
@@ -54,14 +51,6 @@ class AbstractBaseController(controller.CementBaseController):
         from here.  It can also be overridden in the sub-class
 
         """
-        if self.app.pargs.debug:
-            io.echo('-- EBCLI Version:', __version__)
-            io.echo('-- Python Version:', sys.version)
-
-        if self.app.pargs.verbose:
-            LoggingLogHandler.set_level(self.app.log, 'INFO')
-        self.set_profile()
-        self.set_ssl()
         self.do_command()
         self.check_for_cli_update(__version__)
 
@@ -106,23 +95,6 @@ class AbstractBaseController(controller.CementBaseController):
         if not region:
             region = fileoperations.get_default_region()
         return region
-
-    def set_profile(self):
-        profile = self.app.pargs.profile
-        if profile:
-            aws.set_profile_override(profile)
-        else:
-            profile = fileoperations.get_default_profile()
-            if profile:
-                aws.set_profile(profile)
-
-    def set_ssl(self):
-        noverify = self.app.pargs.no_verify_ssl
-        if not noverify:
-            noverify = fileoperations.get_config_setting(
-                'global', 'no-verify-ssl', default=False)
-        if noverify:
-            aws.no_verify_ssl()
 
     def complete_command(self, commands):
         if not self.complete_region(commands):
