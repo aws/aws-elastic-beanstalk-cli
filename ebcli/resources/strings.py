@@ -119,7 +119,9 @@ strings = {
     'ssh.uploaded': 'Uploaded SSH public key for "{keyname}" into EC2 for region {region}.',
     'swap.unsupported': 'You must have at least 2 running environments to do a CNAME swap.',
     'connection.error': 'Having trouble communicating with AWS. Please ensure the provided region is correct and you have a working internet connection.',
-    'sc.unstagedchanges': 'You have uncommitted changes.'
+    'sc.unstagedchanges': 'You have uncommitted changes.',
+    'sc.gitnotinstalled': 'Your project is using git, but git doesn\'t appear to be installed.\n'
+                          'Have you added git on your PATH?',
 }
 
 prompts = {

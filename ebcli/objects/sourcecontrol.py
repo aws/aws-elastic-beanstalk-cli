@@ -20,10 +20,10 @@ import sys
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
 
-from ..resources.strings import git_ignore
+from ..resources.strings import git_ignore, strings
 from ..core.fileoperations import get_config_setting
 from ..objects.exceptions import NoSourceControlError, CommandError, \
-    NotInitializedError, EBCLIException
+    NotInitializedError
 from ..core import fileoperations, io
 
 LOG = minimal_logger(__name__)
@@ -196,7 +196,14 @@ class Git(SourceControl):
         return stdout.rstrip().split(' ', 1)[1]
 
     def is_setup(self):
-        return fileoperations.is_git_directory_present()
+        if fileoperations.is_git_directory_present():
+            # We know that the directory has git, but
+            # is git on the path?
+            if not fileoperations.program_is_installed('git'):
+                raise CommandError(strings['sc.gitnotinstalled'])
+            else:
+                return True
+        return False
 
     def set_up_ignore_file(self):
         if not os.path.exists('.gitignore'):
