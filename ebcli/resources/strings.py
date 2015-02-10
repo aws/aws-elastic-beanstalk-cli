@@ -168,10 +168,13 @@ prompts = {
     'vpc.dbsubnets': 'Enter a comma seperated list of database subnets',
     'logs.retrieving': 'Retrieving logs...',
     'swap.envprompt': 'Select an environment to swap with.',
+    'clone.latest': 'The environment you are cloning from is on an outdated platform.\n'
+                    'Which version of the platform would you like to use for the clone?',
+    'clone.latestwarn': 'Environment clone launching on latest version of platform. Use the --exact flag to override this behavior.',
 }
 
 alerts = {
-    'platform.old': 'The platform you are using is on an outdated version. You can create an environment on the latest using "eb clone --latest".'
+    'platform.old': 'The platform you are using is on an outdated version. You can create an environment on the latest using "eb clone".'
 }
 
 flag_text = {

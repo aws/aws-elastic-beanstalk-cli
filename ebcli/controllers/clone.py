@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, flag_text
+from ..resources.strings import strings, flag_text, prompts
 from ..core import operations, io
 from ..lib import utils, elasticbeanstalk
 from ..controllers.create import get_cname, get_and_validate_tags, \
@@ -69,16 +69,9 @@ class CloneController(AbstractBaseController):
                 raise AlreadyExistsError(strings['cname.unavailable'].
                                          replace('{cname}', cname))
 
-        if not exact:
-            # get original platform
-            platform = operations.get_latest_solution_stack(
-                env.platform.version, region=region)
-
-
         # get tags
         tags = get_and_validate_tags(tags)
         envvars = get_and_validate_envars(envvars)
-
 
         # Get env_name for clone
         if not clone_name:
@@ -101,6 +94,26 @@ class CloneController(AbstractBaseController):
                 cname = get_cname(clone_name, region)
             elif not cname:
                 cname = None
+
+        if not exact:
+            if not provided_clone_name:  # interactive mode
+                latest = operations.get_latest_solution_stack(
+                    env.platform.version, region=region)
+                if latest != env.platform:
+                    # ask for latest or exact
+                    io.echo()
+                    io.echo(prompts['clone.latest'])
+                    lst = ['Latest  (' + str(latest) + ')',
+                           'Same    (' + str(env.platform) + ')']
+                    result = utils.prompt_for_item_in_list(lst)
+                    if result == lst[0]:
+                        platform = latest
+            else:
+                # assume latest - get original platform
+                platform = operations.get_latest_solution_stack(
+                    env.platform.version, region=region)
+                if platform != env.platform:
+                    io.log_warning(prompts['clone.latestwarn'])
 
 
         clone_request = CloneEnvironmentRequest(
