@@ -24,6 +24,7 @@ from ..objects.exceptions import ServiceError, NotAuthorizedError, \
     InvalidSyntaxError, CredentialsError, NoRegionError, \
     InvalidProfileError, ConnectionError, AlreadyExistsError, NotFoundError
 from .utils import static_var
+from .botopatch import apply_patches
 
 LOG = minimal_logger(__name__)
 
@@ -34,6 +35,8 @@ _id = None
 _key = None
 _region_name = None
 _verify_ssl = True
+
+apply_patches()
 
 
 def set_session_creds(id, key):
