@@ -14,7 +14,8 @@
 from cement.utils.misc import minimal_logger
 
 from ..lib import aws
-from ..objects.exceptions import ServiceError, AlreadyExistsError
+from ..objects.exceptions import ServiceError, AlreadyExistsError, \
+    NotFoundError
 from ..resources.strings import responses
 
 LOG = minimal_logger(__name__)
@@ -44,10 +45,14 @@ def import_key_pair(keyname, key_material, region=None):
 
 
 def describe_instance(instance_id, region=None):
-    result = _make_api_call('describe-instances',
+    result = _make_api_call('describe_instances',
                             InstanceIds=[instance_id],
                             region=region)
-    return result['Reservations'][0]['Instances'][0]
+
+    try:
+        return result['Reservations'][0]['Instances'][0]
+    except IndexError:
+        raise NotFoundError('Instance {0} not found.'.format(instance_id))
 
 
 def revoke_ssh(security_group_id, region=None):
