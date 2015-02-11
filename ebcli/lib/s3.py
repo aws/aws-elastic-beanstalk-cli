@@ -73,6 +73,7 @@ def get_object(bucket, key, region=None):
 
 def upload_application_version(bucket, key, file_path, region=None):
     size = os.path.getsize(file_path)
+    LOG.debug('Upload Application Version. File size = ' + str(size))
     if size > 536870912:
         raise FileTooLargeError('Application version cannot be any '
                                 'larger than 512MB')
@@ -107,6 +108,7 @@ def multithreaded_upload(bucket, key, file_path, region=None):
 
     # Begin multi-part upload
     upload_id = _get_multipart_upload_id(bucket, key, region)
+    io.update_upload_progress(0)
 
     # Upload parts
     try:
@@ -133,7 +135,7 @@ def multithreaded_upload(bucket, key, file_path, region=None):
         result = _make_api_call('complete_multipart_upload',
                               Bucket=bucket,
                               Key=key,
-                              Upload_id=upload_id,
+                              UploadId=upload_id,
                               MultipartUpload=dict(Parts=etaglist))
 
         return result
@@ -176,7 +178,7 @@ def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id,
             response = _make_api_call('upload_part',
                                       Bucket=bucket,
                                       Key=key,
-                                      Upload_id=upload_id,
+                                      UploadId=upload_id,
                                       Body=b,
                                       PartNumber=part,
                                       region=region)
