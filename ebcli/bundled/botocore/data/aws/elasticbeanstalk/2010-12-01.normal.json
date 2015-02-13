@@ -1931,6 +1931,10 @@
         "OptionName":{
           "shape":"ConfigurationOptionName",
           "documentation":"<p> The name of the configuration option. </p>"
+        },
+        "ResourceName":{
+          "shape": "ConfigurationResourceName",
+          "documentation": "<p> The Name of the resource. </p>"
         }
       },
       "documentation":"<p> A specification identifying an individual configuration option. </p>"
