@@ -41,21 +41,13 @@ def create_credential_resolver(session):
     credentials.
 
     """
-    profile_name = session.get_config_variable('profile')
+    profile_name = session.get_config_variable('profile') or 'default'
     credential_file = session.get_config_variable('credentials_file')
     config_file = session.get_config_variable('config_file')
     metadata_timeout = session.get_config_variable('metadata_service_timeout')
     num_attempts = session.get_config_variable('metadata_service_num_attempts')
-    providers = []
-    if profile_name is None:
-        providers += [
-            EnvProvider(),
-        ]
-        profile_name = 'default'
-
-    providers += [
-        # The new config file has precedence over the legacy
-        # config file.
+    providers = [
+        EnvProvider(),
         SharedCredentialProvider(
             creds_filename=credential_file,
             profile_name=profile_name
