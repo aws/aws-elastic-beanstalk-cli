@@ -71,30 +71,5 @@ def fix_botocore_credential_loading():
         create_credential_resolver
 
 
-def fix_botocore_client_nonetype():
-    def _get_response(self, request, operation_model, attempts):
-        try:
-            logger.debug("Sending http request: %s", request)
-            http_response = self.http_session.send(
-                request, verify=self.verify,
-                stream=operation_model.has_streaming_output,
-                proxies=self.proxies, timeout=self.timeout)
-        except Exception as e:
-            logger.debug("Exception received when sending HTTP request.",
-                         exc_info=True)
-            raise
-        # This returns the http_response and the parsed_data.
-        response_dict = convert_to_response_dict(http_response,
-                                                 operation_model)
-        parser = self._response_parser_factory.create_parser(
-            operation_model.metadata['protocol'])
-        return ((http_response, parser.parse(response_dict,
-                                             operation_model.output_shape)),
-                None)
-
-    botocore.endpoint.Endpoint._get_response = _get_response
-
-
 def apply_patches():
     fix_botocore_credential_loading()
-    fix_botocore_client_nonetype()
