@@ -566,33 +566,33 @@ def make_eb_dir(location):
         os.chdir(cwd)
 
 
-def write_to_eb_file(location, data):
+def write_to_eb_data_file(location, data):
     cwd = os.getcwd()
     try:
         _traverse_to_project_root()
         path = beanstalk_directory + location
-        write_to_file(path, data)
+        write_to_data_file(path, data)
     finally:
         os.chdir(cwd)
 
 
-def read_from_eb_file(location):
+def read_from_eb_data_file(location):
     cwd = os.getcwd()
     try:
         _traverse_to_project_root()
         path = beanstalk_directory + location
-        read_from_file(path)
+        read_from_data_file(path)
     finally:
         os.chdir(cwd)
 
 
-def write_to_file(location, data):
-    with codecs.open(location, 'w', encoding='utf8') as f:
+def write_to_data_file(location, data):
+    with codecs.open(location, 'wb', encoding=None) as f:
         f.write(data)
 
 
-def read_from_file(location):
-    with codecs.open(location, 'r', encoding='utf8') as f:
+def read_from_data_file(location):
+    with codecs.open(location, 'rb', encoding=None) as f:
         return f.read()
 
 

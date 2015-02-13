@@ -145,7 +145,7 @@ def write_to_local_config(cfg_name, data):
     fileoperations.make_eb_dir(SAVED_CONFIG_FOLDER_NAME)
 
     file_location = SAVED_CONFIG_FOLDER_NAME + cfg_name + '.cfg.yml'
-    fileoperations.write_to_eb_file(file_location, data)
+    fileoperations.write_to_eb_data_file(file_location, data)
     return fileoperations.get_eb_file_full_location(file_location)
 
 
