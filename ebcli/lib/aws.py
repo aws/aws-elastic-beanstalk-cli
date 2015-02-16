@@ -44,16 +44,17 @@ def set_session_creds(id, key):
     _id = id
     _key = key
 
-    # invalidate all old sessions
+    # invalidate all old clients
     _api_clients = {}
 
 
 def set_profile(profile):
-    global _profile
+    global _profile, _api_clients
     _profile = profile
 
-    # Invalidate session
+    # Invalidate session and old clients
     _get_botocore_session.botocore_session = None
+    _api_clients = {}
 
 
 def set_region(region_name):
