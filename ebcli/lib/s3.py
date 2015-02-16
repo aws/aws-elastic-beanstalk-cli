@@ -19,7 +19,7 @@ import threading
 from cement.utils.misc import minimal_logger
 
 from . import aws
-from ..objects.exceptions import NotFoundError, FileTooLargeError
+from ..objects.exceptions import NotFoundError, FileTooLargeError, UploadError
 from ..core import io
 from .utils import static_var
 
@@ -133,6 +133,12 @@ def multithreaded_upload(bucket, key, file_path, region=None):
         # S3 requires the etag list to be sorted
         etaglist = sorted(etaglist, key=lambda k: k['PartNumber'])
 
+        # Validate we uploaded all parts
+        if len(etaglist) != total_parts:
+            LOG.debug('Uploaded {0} parts, but should have uploaded {1} parts.'
+                      .format(len(etaglist), total_parts))
+            raise UploadError('An error occured while uploading Application Version. '
+                              'Use the --debug option for more information if the problem persists.')
         result = _make_api_call('complete_multipart_upload',
                               Bucket=bucket,
                               Key=key,
@@ -173,32 +179,49 @@ def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id,
             LOG.debug('No data left, closing')
             return
         # First check to see if s3 already has part
-        etag = _get_part_etag(bucket, key, part, upload_id, region=region)
-        if etag is None:
-            b = BytesIO()
-            b.write(data)
-            b.seek(0)
-            response = _make_api_call('upload_part',
-                                      Bucket=bucket,
-                                      Key=key,
-                                      UploadId=upload_id,
-                                      Body=b,
-                                      PartNumber=part,
-                                      region=region)
-            etag = response['ETag']
+        for i in range(0, 5):
+            try:
+                etag = _get_part_etag(bucket, key, part, upload_id, region=region)
+                if etag is None:
+                    b = BytesIO()
+                    b.write(data)
+                    b.seek(0)
+                    response = _make_api_call('upload_part',
+                                              Bucket=bucket,
+                                              Key=key,
+                                              UploadId=upload_id,
+                                              Body=b,
+                                              PartNumber=part,
+                                              region=region)
+                    etag = response['ETag']
 
-        etaglist.append({'PartNumber': part, 'ETag': etag})
+                etaglist.append({'PartNumber': part, 'ETag': etag})
 
-        progress = (1/total_parts) * len(etaglist)
-        io.update_upload_progress(progress)
+                progress = (1/total_parts) * len(etaglist)
+                io.update_upload_progress(progress)
+                # No errors, break out of loop
+                break
+            except Exception as e:
+                # We want to swallow all exceptions or else they will be
+                # printed as a stack trace to the Console
+                # Exceptions are typically connections reset and
+                # Various things
+                LOG.debug('Exception raised: ' + str(e))
+                # Loop will cause a retry
 
 
 def _get_part_etag(bucket, key, part, upload_id, region):
-    response = _make_api_call('list_parts',
+    try:
+        response = _make_api_call('list_parts',
                               Bucket=bucket,
                               Key=key,
                               UploadId=upload_id,
                               region=region)
+    except Exception as e:
+        # We want to swallow all exceptions or else they will be printed
+        # as a stack trace to the Console
+        LOG.debug('Exception raised: ' + str(e))
+        return None
 
     if 'Parts' not in response:
         return None

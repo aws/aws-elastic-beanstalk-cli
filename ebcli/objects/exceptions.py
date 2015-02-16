@@ -129,3 +129,7 @@ class FileTooLargeError(EBCLIException):
     pass
 
 
+class UploadError(EBCLIException):
+    """ An error occured while uploading app version
+    """
+
