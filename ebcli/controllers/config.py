@@ -17,7 +17,7 @@ from cement.core.controller import expose
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
-from ..core import io, operations
+from ..core import io, operations, fileoperations
 from ..commands import saved_configs
 from ..objects.exceptions import InvalidSyntaxError, NotFoundError
 from ..lib import utils
@@ -86,9 +86,12 @@ class ConfigController(AbstractBaseController):
         app_name = self.get_app_name()
         region = self.get_region()
         name = self._get_cfg_name('put')
+        platform = fileoperations.get_default_solution_stack()
+        platform = operations.get_solution_stack(platform, region)
+        platform = platform.name
 
         saved_configs.update_config(app_name, name, region)
-        saved_configs.validate_config_file(app_name, name, region)
+        saved_configs.validate_config_file(app_name, name, platform, region)
 
     @expose(help='Download a configuration from S3.')
     def get(self):

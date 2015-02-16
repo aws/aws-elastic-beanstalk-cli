@@ -488,9 +488,15 @@ def delete_configuration_template(app_name, template_name, region=None):
                    region=region)
 
 
-def validate_template(app_name, template_name, region=None):
+def validate_template(app_name, template_name, region=None, platform=None):
+    kwargs = {}
+    if platform:
+        kwargs['TemplateSpecification'] = \
+            {'TemplateSource':
+             {'SolutionStackName': platform}}
     result = _make_api_call('validate_configuration_settings',
                             ApplicationName=app_name,
                             TemplateName=template_name,
-                            region=region)
+                            region=region,
+                            **kwargs)
     return result

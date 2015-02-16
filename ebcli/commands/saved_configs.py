@@ -14,9 +14,10 @@
 import os
 
 from ..lib import elasticbeanstalk, s3, utils
-from ..resources.strings import strings
+from ..resources.strings import strings, responses
 from ..core import io, operations, fileoperations
 from ..objects.exceptions import NotFoundError
+from ..lib.aws import InvalidParameterValueError
 
 SAVED_CONFIG_FOLDER_NAME = 'saved_configs' + os.path.sep
 
@@ -154,9 +155,18 @@ def get_configurations(app_name, region):
     return app['ConfigurationTemplates']
 
 
-def validate_config_file(app_name, cfg_name, region):
-    result = elasticbeanstalk.validate_template(app_name, cfg_name,
-                                                region=region)
+def validate_config_file(app_name, cfg_name, platform, region):
+    try:
+        result = elasticbeanstalk.validate_template(app_name, cfg_name,
+                                                    region=region)
+    except InvalidParameterValueError as e:
+        # Platform not in Saved config. Try again with default platform
+        if e.message == responses['create.noplatform']:
+           result = elasticbeanstalk.validate_template(app_name, cfg_name,
+                                                       region=region,
+                                                       platform=platform)
+        else:
+            raise
 
     for m in result['Messages']:
         severity = m['Severity']
