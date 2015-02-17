@@ -26,13 +26,13 @@ strings = {
                    ' directory. To re-initialize with different options, '
                    'use the -i option.',
     'create.info': 'Creates a new environment.',
-    'create.epilog': 'Hint: Type "--vpc." or "--database." for more database and vpc options.',
+    'create.epilog': 'Type "--vpc." or "--database." for more VPC and database options.',
     'events.info': 'Gets recent events.',
     'open.info': 'Opens the application URL in a browser.',
     'console.info': 'Opens the environment in the AWS Elastic Beanstalk Management Console.',
     'clone.info': 'Clones an environment.',
-    'clone.epilog': 'This command will clone your environment and will attempt to upgrade the platform to the latest version.\n'
-                    'To clone without changing platform version use the --exact option.',
+    'clone.epilog': 'This command clones your environment and attempts to upgrade the platform to the latest version.\n'
+                    'To create a clone with the same platform version, use the "--exact" option.',
     'logs.info': 'Gets recent logs.',
     'use.info': 'Sets default environment.',
     'logs.epilog': 'This command displays the last 100 lines of logs. To retrieve all logs, use the "--all" option.',
@@ -46,22 +46,22 @@ strings = {
                      'You can also remove environment variables by specifying no value. For example:\n'
                      '  eb setenv HeapSize= Site_Url=\n'
                      'This removes the environment variables.',
-    'swap.info': 'Swaps two environment CNAME\'s with each other.',
-    'config.epilog': 'Use this command to configure your environment. \n'
+    'swap.info': 'Swaps two environment CNAMEs with each other.',
+    'config.epilog': 'Use this command to work with environment configuration settings. \n'
                      'To update your environment directly in an interactive editor, type:\n'
                      '  eb config\n',
-    'config.notfound': 'There is no configuration saved with the name "{config-name}".',
+    'config.notfound': 'Elastic Beanstalk could not find any saved configuration with the name "{config-name}".',
     'list.info': 'Lists all environments.',
     'terminate.info': 'Terminates the environment.',
     'terminate.epilog': 'This command terminates the environment. To terminate the application and everything in it, use the "--all" option.',
-    'config.info': 'Edits the environment configuration settings. Manage Saved Configurations.',
+    'config.info': 'Edits the environment configuration settings or manages saved configurations.',
     'ssh.info': 'Opens the SSH client to connect to an instance.',
     'printenv.info': 'Shows the environment variables.',
 
     # Error when --sample and --label falg are both used on create
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" options together.',
     'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
-    'appversion.create': 'Creating Application version archive "{version}".',
+    'appversion.create': 'Creating application version archive "{version}".',
     'logs.allandzip': 'You cannot use the "--all" and "--all_zip" options together.',
     'logs.allandinstance': 'You cannot use the "--all" and "--instance" options together.',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',
@@ -79,18 +79,18 @@ strings = {
     # Same as above but for cloned environments
     'env.clonedescription': 'Environment cloned from {env-name} from the EB CLI using "eb clone"',
     # Default template description
-    'template.description': 'Template created from the EB CLI using "eb template"',
+    'template.description': 'Configuration created from the EB CLI using "eb config save".',
     'env.exists': 'An environment with that name already exists.',
     # When create is called, if we cant find any files, we say this
     'appversion.none': 'The current directory does not contain any source code. Elastic Beanstalk is launching the sample application instead.',
     # Error, no solution stacks returned. Almost always due to permissions
     'sstacks.notfound': 'Elastic Beanstalk could not find any platforms. Ensure you have the necessary permissions to access Elastic Beanstalk.',
-    'sstacks.notaversion': 'Elastic Beanstalk could not find any platforms for the given version {version}.',
+    'sstacks.notaversion': 'Elastic Beanstalk could not find any supported platforms for the given version {version}.',
     'timeout.error': 'The operation timed out. The state of the environment is unknown.',
     'sc.notfound': 'Git is not set up for this project. EB CLI will deploy a .zip file of the entire directory.',
     'exit.notsetup': 'This directory has not been set up with the EB CLI\n'
                      'You must first run "eb init".',
-    'exit.noregion': 'The EB CLI cannot find a default region. Run "eb init" or add the region using the "--region" option.',
+    'exit.noregion': 'The EB CLI cannot find a default region. Run "eb init" or use a specific region by including the "--region" option with the command.',
     # Typical response when an environment is in pending state
     'exit.invalidstate': 'The operation cannot be completed at this time due to a pending operation. Try again later.',
     'branch.noenv': 'This branch does not have a default environment. You must either specify an environment by typing ' 
@@ -117,11 +117,11 @@ strings = {
     'ssh.portopen': 'INFO: SSH port 22 open.',
     'ssh.closeport': 'INFO: Closed port 22 on ec2 instance security group.',
     'ssh.uploaded': 'Uploaded SSH public key for "{keyname}" into EC2 for region {region}.',
-    'swap.unsupported': 'You must have at least 2 running environments to do a CNAME swap.',
+    'swap.unsupported': 'You must have at least 2 running environments to swap CNAMEs.',
     'connection.error': 'Having trouble communicating with AWS. Please ensure the provided region is correct and you have a working internet connection.',
     'sc.unstagedchanges': 'You have uncommitted changes.',
     'sc.gitnotinstalled': 'Your project is using git, but git doesn\'t appear to be installed.\n'
-                          'Have you added git on your PATH?',
+                          'Have you added git to your PATH?',
 }
 
 prompts = {
@@ -160,21 +160,21 @@ prompts = {
     'rds.username': 'Enter an RDS DB username (default is "ebroot")',
     'rds.password': 'Enter an RDS DB master password',
     'vpc.id': 'Enter the VPC ID',
-    'vpc.publicip': 'Would you like to associate a public IP Address?',
-    'vpc.ec2subnets': 'Enter a comma separated list of EC2 subnets',
-    'vpc.elbsubnets': 'Enter a comma separated list of ELB subnets',
-    'vpc.securitygroups': 'Enter a comma separated list of VPC security groups',
-    'vpc.elbpublic': 'Would you like the VPC to be public? (Select no for internal)',
-    'vpc.dbsubnets': 'Enter a comma seperated list of database subnets',
+    'vpc.publicip': 'Do you want to associate a public IP address?',
+    'vpc.ec2subnets': 'Enter a comma-separated list of Amazon EC2 subnets',
+    'vpc.elbsubnets': 'Enter a comma-separated list of Amazon ELB subnets',
+    'vpc.securitygroups': 'Enter a comma-separated list of Amazon VPC security groups',
+    'vpc.elbpublic': 'Do you want the load balencer to be public? (Select no for internal)',
+    'vpc.dbsubnets': 'Enter a comma-separated list of database subnets',
     'logs.retrieving': 'Retrieving logs...',
-    'swap.envprompt': 'Select an environment to swap with.',
-    'clone.latest': 'The environment you are cloning from is on an outdated platform.\n'
-                    'Which version of the platform would you like to use for the clone?',
-    'clone.latestwarn': 'Environment clone launching on latest version of platform. Use the --exact flag to override this behavior.',
+    'swap.envprompt': 'Select the environment with which you want to swap CNAMEs.',
+    'clone.latest': 'There is a newer version of the platform used by the environment you are cloning.\n'
+                    'Select the version of the platform that you want to use for the clone.',
+    'clone.latestwarn': 'Launching environment clone on most recent platform version. Override this behavior by using the "--exact" option.',
 }
 
 alerts = {
-    'platform.old': 'The platform you are using is on an outdated version. You can create an environment on the latest using "eb clone".'
+    'platform.old': 'There is a newer version of the platform used by your environment. You can create an environment on the most recent platform version by typing "eb clone".'
 }
 
 flag_text = {
@@ -194,7 +194,7 @@ flag_text = {
     'clone.scale': 'number of desired instances',
     'clone.tags': 'a comma separated list of tags as key=value pairs',
     'clone.nohang': 'return immediately, do not wait for clone to be completed',
-    'clone.exact': 'match the exact platform version',
+    'clone.exact': 'match the platform version of the original environment',
 
     # Config
     'config.nohang': 'return immediately, do not wait for config to be completed',
@@ -214,7 +214,7 @@ flag_text = {
     'create.scale': 'number of desired instances',
     'create.nohang': 'return immediately, do not wait for create to be completed',
     'create.tags': 'a comma separated list of tags as key=value pairs',
-    'create.envvars': 'a comma separated list of environment variables as key=value pairs',
+    'create.envvars': 'a comma-separated list of environment variables as key=value pairs',
     'create.database': 'create a database',
     'create.vpc': 'create environment inside a VPC',
     'create.config': 'saved configuration name',
