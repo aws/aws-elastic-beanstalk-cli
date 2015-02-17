@@ -107,6 +107,7 @@ def _get_client(service_name, endpoint_url=None, region_name=None):
 def _get_botocore_session():
     if _get_botocore_session.botocore_session is None:
         LOG.debug('Creating new Botocore Session')
+        LOG.debug('Botocore version: {0}'.format(botocore.__version__))
         session = botocore.session.Session(session_vars={
             'profile': (None, _profile_env_var, _profile)})
         _set_user_agent_for_session(session)
