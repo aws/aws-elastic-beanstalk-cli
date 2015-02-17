@@ -16,8 +16,7 @@ import os
 import re
 import logging
 
-__version__ = '0.88.0'
-
+__version__ = '0.88eb'
 
 class NullHandler(logging.Handler):
     def emit(self, record):
