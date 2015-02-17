@@ -18,6 +18,7 @@ import subprocess
 import mock
 
 from ebcli.objects import sourcecontrol
+from ebcli.core import fileoperations
 
 
 class TestNoSourceControl(unittest.TestCase):
@@ -65,6 +66,7 @@ class TestGitSourceControl(unittest.TestCase):
         if not os.path.exists('testDir/'):
             os.makedirs('testDir/')
         os.chdir('testDir')
+        fileoperations.create_config_file('testapp', 'us-east-1', 'PHP')
 
         with open('myFile', 'w') as f:
             f.write('Hello')

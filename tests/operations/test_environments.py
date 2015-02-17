@@ -14,6 +14,7 @@
 from baseoperationstest import BaseOperationsTest
 from ebcli.core import operations
 from ebcli.lib.aws import InvalidParameterValueError
+from ebcli.objects.requests import CreateEnvironmentRequest
 
 
 class TestCreateEnvironment(BaseOperationsTest):
@@ -26,12 +27,11 @@ class TestCreateEnvironment(BaseOperationsTest):
 
         self.mock_input.return_value = 'new-env-name'
 
-        operations.create_env(
-            'app-name', 'env-name', 'region', 'cname',
-            'solution-stack', 'tier', 'itype', 'label',
-            'single', 'key_name', 'profile', 'tags', 'size',
-            'database', 'vpc', interactive=True
+        env_request = CreateEnvironmentRequest(
+            app_name='app-name',
+            env_name='env-name',
         )
+        operations.create_env(env_request, 'region', interactive=True)
         self.assertEqual(self.mock_elasticbeanstalk.create_environment.call_count, 2)
 
     def test_create_new_environment_envname_taken_script(self):
@@ -40,12 +40,11 @@ class TestCreateEnvironment(BaseOperationsTest):
         ]
 
         try:
-            operations.create_env(
-                'app-name', 'env-name', 'region', 'cname',
-                'solution-stack', 'tier', 'itype', 'label',
-                'single', 'key_name', 'profile', 'tags', 'size',
-                'database', 'vpc', interactive=False
-            )
+            env_request = CreateEnvironmentRequest(
+                app_name='app-name',
+                env_name='env-name',
+                )
+            operations.create_env(env_request, 'region', interactive=False)
             self.fail('Should have thrown InvalidParameterValueError')
         except InvalidParameterValueError:
             # Expected
@@ -59,12 +58,11 @@ class TestCreateEnvironment(BaseOperationsTest):
 
         self.mock_input.return_value = 'new-cname'
 
-        operations.create_env(
-            'app-name', 'env-name', 'region', 'cname',
-            'solution-stack', 'tier', 'itype', 'label',
-            'single', 'key_name', 'profile', 'tags', 'size',
-            'database', 'vpc', interactive=True
-        )
+        env_request = CreateEnvironmentRequest(
+            app_name='app-name',
+            env_name='env-name',
+            )
+        operations.create_env(env_request, 'region', interactive=True)
 
         self.assertEqual(self.mock_elasticbeanstalk.create_environment.call_count, 2)
 
@@ -74,12 +72,11 @@ class TestCreateEnvironment(BaseOperationsTest):
         ]
 
         try:
-            operations.create_env(
-                'app-name', 'env-name', 'region', 'cname',
-                'solution-stack', 'tier', 'itype', 'label',
-                'single', 'key_name', 'profile', 'tags', 'size',
-                'database', 'vpc', interactive=False
-            )
+            env_request = CreateEnvironmentRequest(
+                app_name='app-name',
+                env_name='env-name',
+                )
+            operations.create_env(env_request, 'region', interactive=False)
             self.fail('Should have thrown InvalidParameterValueError')
         except InvalidParameterValueError:
             # Expected
@@ -91,12 +88,11 @@ class TestCreateEnvironment(BaseOperationsTest):
         ]
 
         try:
-            operations.create_env(
-                'app-name', 'env-name', 'region', 'cname',
-                'solution-stack', 'tier', 'itype', 'label',
-                'single', 'key_name', 'profile', 'tags', 'size',
-                'database', 'vpc', interactive=True
-            )
+            env_request = CreateEnvironmentRequest(
+                app_name='app-name',
+                env_name='env-name',
+                )
+            operations.create_env(env_request, 'region', interactive=True)
             self.fail('Should have thrown InvalidParameterValueError')
         except InvalidParameterValueError:
             # Expected
@@ -108,12 +104,11 @@ class TestCreateEnvironment(BaseOperationsTest):
         ]
 
         try:
-            operations.create_env(
-                'app-name', 'env-name', 'region', 'cname',
-                'solution-stack', 'tier', 'itype', 'label',
-                'single', 'key_name', 'profile', 'tags', 'size',
-                'database', 'vpc', interactive=False
-            )
+            env_request = CreateEnvironmentRequest(
+                app_name='app-name',
+                env_name='env-name',
+                )
+            operations.create_env(env_request, 'region', interactive=False)
             self.fail('Should have thrown InvalidParameterValueError')
         except InvalidParameterValueError:
             #Expected

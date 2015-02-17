@@ -21,7 +21,6 @@ import botocore.credentials
 from botocore.credentials import EnvProvider, SharedCredentialProvider, \
     ConfigProvider, OriginalEC2Provider, BotoProvider, \
     InstanceMetadataProvider, InstanceMetadataFetcher, CredentialResolver
-from botocore.endpoint import logger, convert_to_response_dict, Endpoint
 
 
 def fix_botocore_credential_loading():

@@ -19,5 +19,5 @@ from ebcli.lib import aws
 class TestAws(unittest.TestCase):
 
     def test_user_agent(self):
-        service = aws._get_service('elasticbeanstalk')
-        self.assertEqual(service.session.user_agent_name, 'eb-cli')
+        client = aws._get_client('elasticbeanstalk')
+        self.assertTrue(client._endpoint._user_agent.startswith('eb-cli'))

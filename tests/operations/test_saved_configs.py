@@ -38,7 +38,7 @@ class TestResolveConfigLocations(unittest.TestCase):
     def test_resolve_config_location_full_path(self):
         location = os.path.expanduser(os.getcwd() +
                                       os.path.sep + 'myfile.cfg.yml')
-        fileoperations.write_to_file(location, '')
+        fileoperations.write_to_data_file(location, '')
 
         result = saved_configs.resolve_config_location(location)
         self.assertEqual(result, location)
@@ -52,7 +52,7 @@ class TestResolveConfigLocations(unittest.TestCase):
     def test_resolve_config_location_relative_path(self):
         os.makedirs('folder')
         location = '.' + os.path.sep + 'folder/myfile.cfg.yml'
-        fileoperations.write_to_file(location, '')
+        fileoperations.write_to_data_file(location, '')
 
         result = saved_configs.resolve_config_location(location)
         self.assertEqual(result, location)
@@ -60,7 +60,7 @@ class TestResolveConfigLocations(unittest.TestCase):
     def test_resolve_config_location_public(self):
         cfg_name = 'myfile'
         location = cfg_name + '.cfg.yml'
-        fileoperations.write_to_eb_file(location, '')
+        fileoperations.write_to_eb_data_file(location, '')
 
         location = os.path.expanduser(os.getcwd() + os.path.sep +
                                       fileoperations.beanstalk_directory +
@@ -72,7 +72,7 @@ class TestResolveConfigLocations(unittest.TestCase):
     def test_resolve_config_location_public_with_extension(self):
         cfg_name = 'myfile.cfg.yml'
         location = cfg_name
-        fileoperations.write_to_eb_file(location, '')
+        fileoperations.write_to_eb_data_file(location, '')
 
         location = os.path.expanduser(os.getcwd() + os.path.sep +
                                       fileoperations.beanstalk_directory +
@@ -85,7 +85,7 @@ class TestResolveConfigLocations(unittest.TestCase):
         cfg_name = 'myfile'
         location = 'saved_configs' + os.path.sep + cfg_name + '.cfg.yml'
         fileoperations.make_eb_dir('saved_configs')
-        fileoperations.write_to_eb_file(location, '')
+        fileoperations.write_to_eb_data_file(location, '')
 
         location = os.path.expanduser(os.getcwd() + os.path.sep +
                                       fileoperations.beanstalk_directory +
@@ -98,7 +98,7 @@ class TestResolveConfigLocations(unittest.TestCase):
         cfg_name = 'myfile.cfg.yml'
         location = 'saved_configs' + os.path.sep + cfg_name
         fileoperations.make_eb_dir('saved_configs')
-        fileoperations.write_to_eb_file(location, '')
+        fileoperations.write_to_eb_data_file(location, '')
 
         location = os.path.expanduser(os.getcwd() + os.path.sep +
                                       fileoperations.beanstalk_directory +
@@ -113,8 +113,8 @@ class TestResolveConfigLocations(unittest.TestCase):
         location_public = cfg_name + '.cfg.yml'
         location_private = 'saved_configs' + os.path.sep + cfg_name + '.cfg.yml'
         fileoperations.make_eb_dir('saved_configs')
-        fileoperations.write_to_eb_file(location_public, '')
-        fileoperations.write_to_eb_file(location_private, '')
+        fileoperations.write_to_eb_data_file(location_public, '')
+        fileoperations.write_to_eb_data_file(location_private, '')
 
         location_public = os.getcwd() + os.path.sep + \
                           fileoperations.beanstalk_directory + location_public
@@ -131,8 +131,8 @@ class TestResolveConfigLocations(unittest.TestCase):
         location_public = cfg_name
         location_private = 'saved_configs' + os.path.sep + cfg_name
         fileoperations.make_eb_dir('saved_configs')
-        fileoperations.write_to_eb_file(location_public, '')
-        fileoperations.write_to_eb_file(location_private, '')
+        fileoperations.write_to_eb_data_file(location_public, '')
+        fileoperations.write_to_eb_data_file(location_private, '')
 
         location_public = os.getcwd() + os.path.sep + \
             fileoperations.beanstalk_directory + location_public
