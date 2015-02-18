@@ -493,10 +493,24 @@ def validate_template(app_name, template_name, region=None, platform=None):
     if platform:
         kwargs['TemplateSpecification'] = \
             {'TemplateSource':
-             {'SolutionStackName': platform}}
+                {'SolutionStackName': platform}}
     result = _make_api_call('validate_configuration_settings',
                             ApplicationName=app_name,
                             TemplateName=template_name,
                             region=region,
                             **kwargs)
     return result
+
+
+def describe_template(app_name, template_name, region=None, platform=None):
+    kwargs = {}
+    if platform:
+        kwargs['TemplateSpecification'] = \
+            {'TemplateSource':
+                {'SolutionStackName': platform}}
+    LOG.debug('Inside describe_template api wrapper')
+    result = _make_api_call('describe_configuration_settings',
+                            ApplicationName=app_name,
+                            TemplateName=template_name,
+                            region=region)
+    return result['ConfigurationSettings'][0]

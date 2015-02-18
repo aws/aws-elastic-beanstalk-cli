@@ -160,17 +160,23 @@ class CreateController(AbstractBaseController):
                                                 current_environments)
             env_name = io.prompt_for_environment_name(unique_name)
 
+        if not solution_string:
+            solution = operations.prompt_for_solution_stack(region)
+
+        # Get template if applicable
+        template_name = get_template_name(app_name, cfg, region)
+        if template_name:
+            template_contents = elasticbeanstalk.describe_template(
+                app_name, template_name, region=region, platform=solution.name)
+
+            if template_contents['Tier']['Name'] == 'Worker':
+                tier = Tier.parse_tier('worker')
+
         if not tier or tier.name.lower() == 'webserver':
             if not cname and not provided_env_name:
                 cname = get_cname(env_name, region)
             elif not cname:
                 cname = None
-
-        if not solution_string:
-            solution = operations.prompt_for_solution_stack(region)
-
-        # if not tier:
-        #     tier = operations.select_tier()
 
         if not key_name:
             key_name = fileoperations.get_default_keyname()
@@ -179,7 +185,7 @@ class CreateController(AbstractBaseController):
         database = self.form_database_object()
         vpc = self.form_vpc_object()
         envvars = get_and_validate_envars(envvars)
-        template_name = get_template_name(app_name, cfg, region)
+
 
         env_request = CreateEnvironmentRequest(
             app_name=app_name,
