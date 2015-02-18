@@ -93,6 +93,9 @@ def get_logs(env_name, info_type, do_zip=False, instance_id=None):
 
     else:
         # print logs
+        data = []
         for i_id, url in iteritems(log_list):
-            io.echo('================', i_id, '=================')
-            utils.print_from_url(url)
+            data.append('============= ' + str(i_id) + ' ==============')
+            data.append(utils.get_data_from_url(url))
+
+        io.echo_with_pager(os.linesep.join(data))

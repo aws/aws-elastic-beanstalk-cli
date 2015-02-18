@@ -16,6 +16,7 @@ import warnings
 import getpass
 import sys
 
+import pydoc
 from botocore.compat import six
 from six import print_
 from six.moves import input
@@ -89,6 +90,11 @@ def get_input(output, default=None):
     if not result:
         result = default
     return result
+
+
+def echo_with_pager(output):
+    # pydoc.pager handles pipes and everything
+    pydoc.pager(output)
 
 
 def prompt(output, default=None):
