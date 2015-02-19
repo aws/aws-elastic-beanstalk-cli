@@ -153,20 +153,31 @@ class Git(SourceControl):
         return False
 
     def get_current_branch(self):
+        try:
+            stdout, stderr, exitcode = \
+                exec_cmd(['git', '--version'])
+            if sys.version_info[0] >= 3:
+                stdout = stdout.decode('utf8')
+            LOG.debug('Git Version: ' + stdout)
+        except:
+            raise CommandError('Error getting "git --version".')
+
         stdout, stderr, exitcode = \
-            exec_cmd(['git', 'symbolic-ref', '--short', '-q', 'HEAD'])
+            exec_cmd(['git', 'symbolic-ref', 'HEAD'])
 
         if sys.version_info[0] >= 3:
             stdout = stdout.decode('utf8')
             stderr = stderr.decode('utf8')
         stdout = stdout.rstrip()
-        if exitcode == 1 and not stderr:
+        if exitcode != 0:
             io.log_warning('Git is in a detached head state. Using branch "default".')
             return 'default'
 
         self._handle_exitcode(exitcode, stderr)
-        LOG.debug('git current-branch result: ' + stdout)
-        return stdout
+        LOG.debug('git symbolic-ref result: ' + stdout)
+        # Need to parse branch from ref manually because "--short" is
+        # not supported on git < 1.8
+        return stdout.split('/')[-1]
 
     def do_zip(self, location):
         cwd = os.getcwd()

@@ -73,7 +73,15 @@ class TestGitSourceControl(unittest.TestCase):
 
         subprocess.call(['git', 'init'])
         subprocess.call(['git', 'add', 'myFile'])
+        subprocess.call(['git', 'commit', '-m', 'Initial'])
+
+        # Add a second commit
+        with open('myFile2', 'w') as f:
+            f.write('Hello There')
+        subprocess.call(['git', 'add', 'myFile2'])
         subprocess.call(['git', 'commit', '-m', 'Hello'])
+
+
         subprocess.call(['git', 'tag', '-a', 'v1', '-m', 'my version'])
 
         self.patcher_io = mock.patch('ebcli.objects.sourcecontrol.io')
@@ -96,6 +104,11 @@ class TestGitSourceControl(unittest.TestCase):
 
     def test_get_current_branch(self):
         self.assertEqual(sourcecontrol.Git().get_current_branch(), 'master')
+
+    def test_get_current_branch_detached_head(self):
+        # Checkout a commit back to get us in detached head state
+        subprocess.call(['git', 'checkout', 'HEAD^'])
+        self.assertEqual(sourcecontrol.Git().get_current_branch(), 'default')
 
     def test_do_zip(self):
         #Just want to make sure no errors happen
