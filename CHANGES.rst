@@ -2,14 +2,21 @@
 Changelog
 =========
 
+------------------
+3.1.1 (2015-02-24)
+------------------
+- Fix git issue on windows
+- Support older versions of git
+- Saved Configurations now work with Worker tier
+
 ----------------
 3.1 (2015-02-17)
 ----------------
 - Editor backup files (file.txt~) no longer included in application zip
 - Added commands for Saved Configurations (eb config --help)
 - Now receive alerts for an outdated cli and outdated environment platform.
-- Deploy now works in subdirectories.
-- Config now works in subdirectories.
+- Deploy now works in subdirectories
+- Config now works in subdirectories
 - Can now specify your own timeout period with "--timeout x"
 - Can now specify environment variables on environment create with "--envvars"
 - Can now get the latest platform version when you clone an environment. "eb clone"
