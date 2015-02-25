@@ -16,7 +16,10 @@ import warnings
 import sys
 import os
 
-from ..core import io
+from botocore.compat import six
+from six.moves import urllib
+
+from ..core import io, fileoperations
 
 
 def prompt_for_item_in_list(lst, default=1):
@@ -98,6 +101,10 @@ def list_to_columns(lst):
     return colunms
 
 
+def url_encode(data):
+    return urllib.parse.quote(data)
+
+
 def is_ssh():
     return "SSH_CLIENT" in os.environ or "SSH_TTY" in os.environ
 
@@ -107,3 +114,18 @@ def static_var(varname, value):
         setattr(func, varname, value)
         return func
     return decorate
+
+
+def get_data_from_url(url, timeout=20):
+    return urllib.request.urlopen(url, timeout=timeout).read()
+
+
+def print_from_url(url):
+    result = get_data_from_url(url)
+    io.echo(result)
+
+
+def save_file_from_url(url, location, filename):
+    result = get_data_from_url(url)
+
+    return fileoperations.save_to_file(result, location, filename)

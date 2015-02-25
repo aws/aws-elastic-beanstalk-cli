@@ -15,9 +15,10 @@ import os
 
 from ..lib import elasticbeanstalk, s3, utils
 from ..resources.strings import strings, responses
-from ..core import io, operations, fileoperations
+from ..core import io, fileoperations
 from ..objects.exceptions import NotFoundError
 from ..lib.aws import InvalidParameterValueError
+from . import commonops
 
 SAVED_CONFIG_FOLDER_NAME = 'saved_configs' + os.path.sep
 
@@ -38,14 +39,14 @@ def create_config(app_name, env_name, cfg_name, region):
 def update_environment_with_config_file(env_name, cfg_name, region,
                                         nohang, timeout=None):
 
-    operations.update_environment(env_name, None, region, nohang,
+    commonops.update_environment(env_name, None, region, nohang,
                                   template=cfg_name, timeout=timeout)
 
 
 def update_environment_with_config_data(env_name, data, region,
                                         nohang, timeout=None):
 
-    operations.update_environment(env_name, None, region, nohang,
+    commonops.update_environment(env_name, None, region, nohang,
                                   timeout=timeout, template_body=data)
 
 

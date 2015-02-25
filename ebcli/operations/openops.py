@@ -11,20 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..operations import consoleops
+from ..lib import elasticbeanstalk
+from . import commonops
 
 
-class ConsoleController(AbstractBaseController):
-    class Meta:
-        label = 'console'
-        description = strings['console.info']
-        usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
+def open_app(app_name, env_name, region):
+    # get cname
+    env = elasticbeanstalk.get_environment(app_name, env_name, region)
 
-    def do_command(self):
-        app_name = self.get_app_name()
-        region = self.get_region()
-        env_name = self.get_env_name(noerror=True)
-
-        consoleops.open_console(app_name, env_name, region)
+    commonops.open_webpage_in_browser(env.cname)

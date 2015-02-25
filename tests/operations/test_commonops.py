@@ -11,20 +11,16 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..operations import consoleops
+import mock
+import unittest
+
+from ebcli.operations import commonops
 
 
-class ConsoleController(AbstractBaseController):
-    class Meta:
-        label = 'console'
-        description = strings['console.info']
-        usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
+class TestOperations(unittest.TestCase):
 
-    def do_command(self):
-        app_name = self.get_app_name()
-        region = self.get_region()
-        env_name = self.get_env_name(noerror=True)
-
-        consoleops.open_console(app_name, env_name, region)
+    def test_is_success_string(self):
+        self.assertTrue(commonops._is_success_string('Environment health has been set to GREEN'))
+        self.assertTrue(commonops._is_success_string('Successfully launched environment: my-env'))
+        self.assertTrue(commonops._is_success_string('Pulled logs for environment instances.'))
+        self.assertTrue(commonops._is_success_string('terminateEnvironment completed successfully.'))

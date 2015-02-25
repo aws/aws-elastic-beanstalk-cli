@@ -13,7 +13,7 @@
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings
-from ..core import operations
+from ..operations import envvarops
 
 
 class PrintEnvController(AbstractBaseController):
@@ -27,4 +27,4 @@ class PrintEnvController(AbstractBaseController):
         region = self.get_region()
         env_name = self.get_env_name()
 
-        operations.print_environment_vars(app_name, env_name, region)
+        envvarops.print_environment_vars(app_name, env_name, region)

@@ -44,8 +44,8 @@ class TestCreate(BaseControllerTest):
             """
         env_name = 'my-awesome-env'
         cname_prefix = env_name
-        self.mock_operations.get_solution_stack.return_value = self.solution
-        self.mock_operations.is_cname_available.return_value = True
+        self.mock_commonops.get_solution_stack.return_value = self.solution
+        self.mock_commonops.is_cname_available.return_value = True
 
         self.mock_input.side_effect = [
             env_name,
@@ -78,8 +78,8 @@ class TestCreate(BaseControllerTest):
             """
         env_name = 'my-awesome-env'
         cname_prefix = 'myenv-cname'
-        self.mock_operations.get_solution_stack.return_value = self.solution
-        self.mock_operations.is_cname_available.return_value = True
+        self.mock_commonops.get_solution_stack.return_value = self.solution
+        self.mock_commonops.is_cname_available.return_value = True
 
         self.mock_input.return_value = None
 
@@ -108,9 +108,8 @@ class TestCreate(BaseControllerTest):
             """
         env_name = 'my-awesome-env'
         cname_prefix = 'myenv-cname'
-        self.mock_operations.select_tier.return_value = self.tier
-        self.mock_operations.get_solution_stack.return_value = self.solution
-        self.mock_operations.is_cname_available.return_value = True
+        self.mock_commonops.get_solution_stack.return_value = self.solution
+        self.mock_commonops.is_cname_available.return_value = True
 
         self.mock_input.return_value = None
 
@@ -134,8 +133,7 @@ class TestCreate(BaseControllerTest):
         Command should now no longer be interactive and it should ask no questions.
         """
         env_name = 'my-awesome-env'
-        self.mock_operations.select_tier.return_value = self.tier
-        self.mock_operations.get_solution_stack.return_value = self.solution
+        self.mock_commonops.get_solution_stack.return_value = self.solution
 
         self.app = EB(argv=['create', env_name])
         self.app.setup()
@@ -152,8 +150,8 @@ class TestCreate(BaseControllerTest):
         tier = self.tier
         itype = 'c3.large'
         keyname ='mykey'
-        self.mock_operations.get_solution_stack.return_value = self.solution
-        self.mock_operations.is_cname_available.return_value = True
+        self.mock_commonops.get_solution_stack.return_value = self.solution
+        self.mock_commonops.is_cname_available.return_value = True
 
         self.mock_input.side_effect = [
             env_name,

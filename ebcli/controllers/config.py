@@ -17,8 +17,8 @@ from cement.core.controller import expose
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
-from ..core import io, operations, fileoperations
-from ..commands import saved_configs
+from ..core import io, fileoperations
+from ..operations import saved_configs, commonops, configops
 from ..objects.exceptions import InvalidSyntaxError, NotFoundError
 from ..lib import utils
 
@@ -51,7 +51,7 @@ class ConfigController(AbstractBaseController):
         input_exists = not sys.stdin.isatty()
         if not cfg and not input_exists:
             # No input, run interactive editor
-            operations.update_environment_configuration(app_name, env_name,
+            configops.update_environment_configuration(app_name, env_name,
                                                         region, nohang,
                                                         timeout=timeout)
             return
@@ -87,7 +87,7 @@ class ConfigController(AbstractBaseController):
         region = self.get_region()
         name = self._get_cfg_name('put')
         platform = fileoperations.get_default_solution_stack()
-        platform = operations.get_solution_stack(platform, region)
+        platform = commonops.get_solution_stack(platform, region)
         platform = platform.name
 
         saved_configs.update_config(app_name, name, region)

@@ -23,7 +23,7 @@ import logging
 
 from ..core import globals
 from ..objects.exceptions import ValidationError
-from ..resources.strings import prompts
+from ..resources.strings import prompts, strings
 
 LOG = logging.getLogger(__name__)
 
@@ -215,3 +215,20 @@ def update_upload_progress(progress):
         "#"*block + "-"*(barLength-block), progress, status)
     sys.stdout.write(text)
     sys.stdout.flush()
+
+
+def get_boolean_response(text=None):
+    if text:
+        string = text + ' (y/n)'
+    else:
+        string = '(y/n)'
+    response = get_input(string, default='y').lower()
+    while response not in ('y', 'n', 'yes', 'no'):
+        echo(strings['prompt.invalid'],
+                             strings['prompt.yes-or-no'])
+        response = prompt('y/n', default='y').lower()
+
+    if response in ('y', 'yes'):
+        return True
+    else:
+        return False

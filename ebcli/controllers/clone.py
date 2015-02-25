@@ -13,7 +13,8 @@
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text, prompts
-from ..core import operations, io
+from ..core import io
+from ..operations import commonops, cloneops
 from ..lib import utils, elasticbeanstalk
 from ..controllers.create import get_cname, get_and_validate_tags, \
     get_and_validate_envars
@@ -65,7 +66,7 @@ class CloneController(AbstractBaseController):
             raise InvalidOptionsError(strings['worker.cname'])
 
         if cname:
-            if not operations.is_cname_available(cname, region):
+            if not commonops.is_cname_available(cname, region):
                 raise AlreadyExistsError(strings['cname.unavailable'].
                                          replace('{cname}', cname))
 
@@ -80,7 +81,7 @@ class CloneController(AbstractBaseController):
             else:
                 unique_name = 'my-cloned-env'
 
-            env_list = operations.get_env_names(app_name, region)
+            env_list = commonops.get_env_names(app_name, region)
 
             unique_name = utils.get_unique_name(unique_name, env_list)
 
@@ -97,7 +98,7 @@ class CloneController(AbstractBaseController):
 
         if not exact:
             if not provided_clone_name:  # interactive mode
-                latest = operations.get_latest_solution_stack(
+                latest = commonops.get_latest_solution_stack(
                     env.platform.version, region=region)
                 if latest != env.platform:
                     # ask for latest or exact
@@ -110,7 +111,7 @@ class CloneController(AbstractBaseController):
                         platform = latest
             else:
                 # assume latest - get original platform
-                platform = operations.get_latest_solution_stack(
+                platform = commonops.get_latest_solution_stack(
                     env.platform.version, region=region)
                 if platform != env.platform:
                     io.log_warning(prompts['clone.latestwarn'])
@@ -128,7 +129,7 @@ class CloneController(AbstractBaseController):
 
         clone_request.option_settings += envvars
 
-        operations.make_cloned_env(clone_request, region, nohang=nohang,
+        cloneops.make_cloned_env(clone_request, region, nohang=nohang,
                                    timeout=timeout)
 
     def complete_command(self, commands):

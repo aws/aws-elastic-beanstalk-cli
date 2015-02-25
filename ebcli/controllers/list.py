@@ -13,7 +13,7 @@
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
-from ..core import operations
+from ..operations import listops
 
 
 class ListController(AbstractBaseController):
@@ -37,7 +37,7 @@ class ListController(AbstractBaseController):
         region = self.get_region()
         verbose = self.app.pargs.verbose
 
-        operations.list_env_names(app_name, region, verbose, all_apps)
+        listops.list_env_names(app_name, region, verbose, all_apps)
 
     def complete_command(self, commands):
         # We only care about regions

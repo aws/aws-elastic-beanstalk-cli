@@ -13,9 +13,10 @@
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, prompts, flag_text
-from ..core import fileoperations, operations, io
+from ..core import fileoperations, io
 from ..lib import utils
 from ..objects.exceptions import NoKeypairError, InvalidOptionsError
+from ..operations import commonops, sshops
 
 
 class SSHController(AbstractBaseController):
@@ -49,7 +50,7 @@ class SSHController(AbstractBaseController):
             raise InvalidOptionsError(strings['ssh.instanceandnumber'])
 
         if not instance:
-            instances = operations.get_instance_ids(app_name, env_name, region)
+            instances = commonops.get_instance_ids(app_name, env_name, region)
             if number is not None:
                 if number > len(instances) or number < 1:
                     raise InvalidOptionsError(
@@ -67,7 +68,7 @@ class SSHController(AbstractBaseController):
                 instance = utils.prompt_for_item_in_list(instances)
 
         try:
-            operations.ssh_into_instance(instance, region, keep_open=keep_open)
+            sshops.ssh_into_instance(instance, region, keep_open=keep_open)
         except NoKeypairError:
             io.log_error(prompts['ssh.nokey'])
 
@@ -75,14 +76,14 @@ class SSHController(AbstractBaseController):
         # Instance does not have a keypair
         io.log_warning(prompts['ssh.setupwarn'].replace('{env-name}',
                                                         env_name))
-        keyname = operations.prompt_for_ec2_keyname(region, env_name=env_name)
+        keyname = sshops.prompt_for_ec2_keyname(region, env_name=env_name)
         if keyname:
             options = [
                 {'Namespace': 'aws:autoscaling:launchconfiguration',
                  'OptionName': 'EC2KeyName',
                  'Value': keyname}
             ]
-            operations.update_environment(env_name, options,
+            commonops.update_environment(env_name, options,
                                           region, False)
 
     def complete_command(self, commands):
@@ -92,4 +93,4 @@ class SSHController(AbstractBaseController):
             if len(commands) == 2 and commands[-1].startswith('-'):
                 region = fileoperations.get_default_region()
                 app_name = fileoperations.get_application_name()
-                io.echo(*operations.get_env_names(app_name, region))
+                io.echo(commonops.get_env_names(app_name, region))

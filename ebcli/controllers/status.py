@@ -13,7 +13,7 @@
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings
-from ..core import operations
+from ..operations import statusops
 
 
 class StatusController(AbstractBaseController):
@@ -28,4 +28,4 @@ class StatusController(AbstractBaseController):
         env_name = self.get_env_name()
         verbose = self.app.pargs.verbose
 
-        operations.status(app_name, env_name, region, verbose)
+        statusops.status(app_name, env_name, region, verbose)

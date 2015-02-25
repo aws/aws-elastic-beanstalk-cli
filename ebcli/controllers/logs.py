@@ -13,7 +13,7 @@
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
-from ..core import operations
+from ..operations import logsops
 from ..objects.exceptions import InvalidOptionsError
 
 
@@ -51,5 +51,5 @@ class LogsController(AbstractBaseController):
             info_type = 'tail'
             do_zip = False
 
-        operations.logs(env_name, info_type, region, do_zip=do_zip,
+        logsops.logs(env_name, info_type, region, do_zip=do_zip,
                         instance_id=instance)

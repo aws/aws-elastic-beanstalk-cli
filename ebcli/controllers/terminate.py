@@ -11,11 +11,11 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import time
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, prompts, flag_text
-from ..core import operations, io
+from ..core import io
 from ..objects.exceptions import NotFoundError, NoEnvironmentForBranchError
+from ..operations import commonops, terminateops
 
 
 class TerminateController(AbstractBaseController):
@@ -44,8 +44,8 @@ class TerminateController(AbstractBaseController):
 
         if all:
             cleanup = False if self.app.pargs.region else True
-            operations.delete_app(app_name, region, force, nohang=nohang,
-                                  cleanup=cleanup, timeout=timeout)
+            terminateops.delete_app(app_name, region, force, nohang=nohang,
+                                    cleanup=cleanup, timeout=timeout)
 
         else:
             try:
@@ -56,7 +56,7 @@ class TerminateController(AbstractBaseController):
 
             if not force:
                 # make sure env exists
-                env_names = operations.get_env_names(app_name, region)
+                env_names = commonops.get_env_names(app_name, region)
                 if env_name not in env_names:
                     raise NotFoundError('Environment ' +
                                         env_name + ' not found')
@@ -65,5 +65,5 @@ class TerminateController(AbstractBaseController):
                 io.validate_action(prompts['terminate.validate'], env_name)
 
 
-            operations.terminate(env_name, region, nohang=nohang,
-                                 timeout=timeout)
+            terminateops.terminate(env_name, region, nohang=nohang,
+                                   timeout=timeout)

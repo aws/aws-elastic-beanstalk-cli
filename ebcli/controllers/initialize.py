@@ -15,11 +15,12 @@ import sys
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
-from ..core import fileoperations, io, operations
+from ..core import fileoperations, io
 from ..objects.exceptions import NotInitializedError, NoRegionError, \
     InvalidProfileError
 from ..objects import region as regions
 from ..lib import utils, elasticbeanstalk, aws
+from ..operations import commonops, initializeops, sshops
 
 
 class InitController(AbstractBaseController):
@@ -65,7 +66,7 @@ class InitController(AbstractBaseController):
         if not default_env and not self.interactive:
             # try to get default env from config file if exists
             try:
-                default_env = operations.get_current_branch_environment()
+                default_env = commonops.get_current_branch_environment()
             except NotInitializedError:
                 default_env = None
         elif self.interactive:
@@ -75,7 +76,7 @@ class InitController(AbstractBaseController):
             default_env = '/ni'
 
         # Create application
-        sstack, key = operations.create_app(self.app_name, self.region,
+        sstack, key = commonops.create_app(self.app_name, self.region,
                                             default_env=default_env)
 
         if not self.solution:
@@ -83,10 +84,10 @@ class InitController(AbstractBaseController):
 
         if not self.solution or \
                 (self.interactive and not self.app.pargs.platform):
-            result = operations.prompt_for_solution_stack(self.region)
+            result = commonops.prompt_for_solution_stack(self.region)
             self.solution = result.version
 
-        operations.setup(self.app_name, self.region, self.solution)
+        initializeops.setup(self.app_name, self.region, self.solution)
 
         if 'IIS' not in self.solution:
             self.keyname = self.get_keyname(default=key)
@@ -102,7 +103,7 @@ class InitController(AbstractBaseController):
         try:
             # Note, region is None unless explicitly set
             ## or read from old eb
-            operations.credentials_are_valid(self.region)
+            initializeops.credentials_are_valid(self.region)
             return profile
         except NoRegionError:
             self.region = self.get_region()
@@ -129,8 +130,8 @@ class InitController(AbstractBaseController):
 
         profile = self.check_credentials(profile)
 
-        if not operations.credentials_are_valid(self.region):
-            operations.setup_credentials()
+        if not initializeops.credentials_are_valid(self.region):
+            initializeops.setup_credentials()
         else:
             fileoperations.write_config_setting('global', 'profile',
                                                 profile)
@@ -209,7 +210,7 @@ class InitController(AbstractBaseController):
                 solution_string = None
 
         if solution_string:
-            operations.get_solution_stack(solution_string, self.region)
+            commonops.get_solution_stack(solution_string, self.region)
 
         return solution_string
 
@@ -232,10 +233,10 @@ class InitController(AbstractBaseController):
         if keyname is None or \
                 (self.interactive and not self.app.pargs.keyname):
             # Prompt for one
-            keyname = operations.prompt_for_ec2_keyname(self.region)
+            keyname = sshops.prompt_for_ec2_keyname(self.region)
 
         elif keyname != -1:
-            operations.upload_keypair_if_needed(self.region, keyname)
+            commonops.upload_keypair_if_needed(self.region, keyname)
 
         return keyname
 
@@ -265,7 +266,7 @@ class InitController(AbstractBaseController):
             if self.app.pargs.platform is None:
                 self.app.pargs.platform = solution_stack
 
-            operations.setup_credentials(access_id=access_id,
+            initializeops.setup_credentials(access_id=access_id,
                                          secret_key=secret_key)
             return default_env
 
@@ -273,7 +274,7 @@ class InitController(AbstractBaseController):
 
 
 def _get_application_name_interactive(region):
-    app_list = operations.get_application_names(region)
+    app_list = commonops.get_application_names(region)
     file_name = fileoperations.get_current_directory_name()
     new_app = False
     if len(app_list) > 0:

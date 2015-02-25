@@ -13,9 +13,10 @@
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text, prompts
-from ..core import operations, io
+from ..core import io
 from ..objects.exceptions import NotSupportedError
 from ..lib import utils
+from ..operations import commonops, swapops
 
 
 class SwapController(AbstractBaseController):
@@ -37,7 +38,7 @@ class SwapController(AbstractBaseController):
 
         if not destination_env:
             # Ask interactively for an env to swap with
-            envs = operations.get_env_names(app_name, region)
+            envs = commonops.get_env_names(app_name, region)
             if len(envs) < 2:
                 raise NotSupportedError(strings['swap.unsupported'])
 
@@ -52,4 +53,4 @@ class SwapController(AbstractBaseController):
                 io.echo(prompts['swap.envprompt'])
                 destination_env = utils.prompt_for_item_in_list(envs)
 
-        operations.cname_swap(source_env, destination_env, region)
+        swapops.cname_swap(source_env, destination_env, region)

@@ -13,7 +13,7 @@
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
-from ..core import operations
+from ..operations import useops
 
 
 class UseController(AbstractBaseController):
@@ -31,4 +31,4 @@ class UseController(AbstractBaseController):
         region = self.get_region()
         env_name = self.app.pargs.environment_name[0]
 
-        operations.switch_default_environment(app_name, env_name, region)
+        useops.switch_default_environment(app_name, env_name, region)

@@ -28,11 +28,15 @@ class BaseControllerTest(test.CementTestCase):
         self.reset_backend()
         self.patcher_input = mock.patch('ebcli.core.io.get_input')
         self.patcher_operations = mock.patch('ebcli.controllers.' +
-                                             self.module_name + '.operations')
+                                             self.module_name + '.'
+                                             + self.module_name + 'ops')
+        self.patcher_commonops = mock.patch('ebcli.controllers.' +
+                                            self.module_name + '.commonops')
         self.patcher_output = mock.patch('ebcli.core.io.echo')
 
         self.mock_input = self.patcher_input.start()
         self.mock_operations = self.patcher_operations.start()
+        self.mock_commonops = self.patcher_commonops.start()
         self.mock_output = self.patcher_output.start()
 
         # set up test directory

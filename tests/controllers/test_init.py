@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import mock
+
 from controllers.basecontrollertest import BaseControllerTest
 
 from ebcli.core.ebcore import EB
@@ -27,6 +29,12 @@ class TestInit(BaseControllerTest):
     def setUp(self):
         self.module_name = 'initialize'
         super(TestInit, self).setUp()
+        self.patcher_sshops = mock.patch('ebcli.controllers.initialize.sshops')
+        self.mock_sshops = self.patcher_sshops.start()
+
+    def tearDown(self):
+        self.patcher_sshops.stop()
+        super(TestInit, self).tearDown()
 
     def test_init_standard(self):
         """
@@ -38,17 +46,17 @@ class TestInit(BaseControllerTest):
         # 1. Get Credentials: throw no region error
         # 2. Get Credentials: good
         # 3. Create app
-        self.mock_operations.get_application_names.return_value = list()
+        self.mock_commonops.get_application_names.return_value = list()
         self.mock_operations.credentials_are_valid.side_effect = [
             NoRegionError,
             True,
         ]
-        self.mock_operations.prompt_for_solution_stack.return_value = \
+        self.mock_commonops.prompt_for_solution_stack.return_value = \
             self.solution
-        self.mock_operations.prompt_for_ec2_keyname.return_value = 'test'
-        self.mock_operations.get_current_branch_environment.side_effect = \
+        self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
+        self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
-        self.mock_operations.create_app.return_value = None, None
+        self.mock_commonops.create_app.return_value = None, None
 
         self.mock_input.side_effect = [
             '3',  # region number
@@ -81,12 +89,12 @@ class TestInit(BaseControllerTest):
         # 1. Get solution stacks
         # 2. Get solution stacks again
         # 3. Create app
-        self.mock_operations.get_application_names.return_value = list()
+        self.mock_commonops.get_application_names.return_value = list()
         self.mock_operations.credentials_are_valid.return_value = True
-        self.mock_operations.prompt_for_solution_stack.return_value = \
+        self.mock_commonops.prompt_for_solution_stack.return_value = \
             self.solution
-        self.mock_operations.prompt_for_ec2_keyname.return_value = 'test'
-        self.mock_operations.create_app.return_value = 'something', 'smthing'
+        self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
+        self.mock_commonops.create_app.return_value = 'something', 'smthing'
 
         self.mock_input.side_effect = [
             '3',  # region number
@@ -114,12 +122,12 @@ class TestInit(BaseControllerTest):
 
         # setup mock response
         self.mock_operations.credentials_are_valid.return_value = False
-        self.mock_operations.prompt_for_solution_stack.return_value = \
+        self.mock_commonops.prompt_for_solution_stack.return_value = \
             self.solution
-        self.mock_operations.prompt_for_ec2_keyname.return_value = 'test'
-        self.mock_operations.get_current_branch_environment.side_effect = \
+        self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
+        self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
-        self.mock_operations.create_app.return_value = None, None
+        self.mock_commonops.create_app.return_value = None, None
 
         # run cmd
         self.app = EB(argv=['init',
@@ -145,11 +153,11 @@ class TestInit(BaseControllerTest):
             NoRegionError,
             True
         ]
-        self.mock_operations.prompt_for_solution_stack.return_value = Exception
-        self.mock_operations.prompt_for_ec2_keyname.return_value = Exception
-        self.mock_operations.get_current_branch_environment.side_effect = \
+        self.mock_commonops.prompt_for_solution_stack.return_value = Exception
+        self.mock_sshops.prompt_for_ec2_keyname.return_value = Exception
+        self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
-        self.mock_operations.create_app.return_value = None, None
+        self.mock_commonops.create_app.return_value = None, None
 
         # run cmd
         self.app = EB(argv=['init', '-p', 'php'])

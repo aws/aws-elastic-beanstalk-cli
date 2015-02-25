@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from cement.core import controller, handler
-from ..core import fileoperations, operations, io
+from ..core import fileoperations, io
 from ..lib import aws
 
 
