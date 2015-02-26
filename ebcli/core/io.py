@@ -29,10 +29,8 @@ LOG = logging.getLogger(__name__)
 
 
 def echo_and_justify(justify, *args):
-    sep = ' '
-    for x in range(1, justify):
-        sep += ' '
-    print_(*_convert_to_strings(args), sep=sep)
+    s = ''.join(s.ljust(justify) for s in _convert_to_strings(args))
+    print_(s.rstrip())
 
 
 def echo(*args):

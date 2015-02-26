@@ -15,6 +15,8 @@ import re
 import warnings
 import sys
 import os
+import platform
+import subprocess
 
 from ..core import io
 
@@ -66,29 +68,38 @@ def mask_vars(key, value):
 
 
 def print_list_in_columns(lst):
-    lst = list_to_columns(lst)
-    index = 0
-    for x in range(0, len(lst[0])):
-        line = []
-        for i in range(0, len(lst)):
-            try:
-                line.append(lst[i][x])
-            except IndexError:
-                pass
+    """
+    This function is currently only intended for environmant names,
+    which are guaranteed to be 23 characters or less.
+    :param lst: List of env names
+    """
+    if sys.stdout.isatty():
+        lst = list_to_columns(lst)
+        index = 0
+        for x in range(0, len(lst[0])):
+            line = []
+            for i in range(0, len(lst)):
+                try:
+                    line.append(lst[i][x])
+                except IndexError:
+                    pass
 
-        #Note: This function is only intended for env_name, which are
-        ## Guaranteed to be 23 characters or less
-        io.echo_and_justify(25, *line)
+            io.echo_and_justify(25, *line)
+    else:
+        # Dont print in columns if using pipe
+        for i in lst:
+            io.echo(i)
 
 
 def list_to_columns(lst):
-    assert len(lst) > 4, "List size must be greater than 4"
-    COLUMN_NUM = 4
+    COLUMN_NUM = 3
+    assert len(lst) > COLUMN_NUM, "List size must be greater than {0}".\
+        format(COLUMN_NUM)
     remainder = len(lst) % COLUMN_NUM
     column_size = len(lst) // COLUMN_NUM
     if remainder != 0:
         column_size += 1
-    colunms = [[], [], [], []]
+    colunms = [[] for i in range(0, COLUMN_NUM)]
     index = 0
     stop = column_size
     for x in range(0, COLUMN_NUM):
