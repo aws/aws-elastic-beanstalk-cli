@@ -165,7 +165,11 @@ def _wait_for_threads(jobs):
             CTRL+C to terminate the command. 2**31 is the largest number we
             can pass into j.join()
             """
-            j.join(2**31)
+            try:
+                timeout = threading.TIMEOUT_MAX
+            except AttributeError:  # Python 2
+                timeout = 2**16  # 18 hours should be sufficient.
+            j.join(timeout)
             if j.isAlive():
                 alive = True
 
