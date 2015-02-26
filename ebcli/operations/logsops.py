@@ -23,24 +23,22 @@ from ..resources.strings import strings
 from . import commonops
 
 
-def logs(env_name, info_type, region, do_zip=False, instance_id=None):
+def logs(env_name, info_type, do_zip=False, instance_id=None):
     # Request info
-    result = elasticbeanstalk.request_environment_info(env_name, info_type,
-                                                       region=region)
+    result = elasticbeanstalk.request_environment_info(env_name, info_type)
 
     # Wait for logs to finish
     request_id = result['ResponseMetadata']['RequestId']
-    commonops.wait_for_success_events(request_id, region, timeout_in_minutes=2,
+    commonops.wait_for_success_events(request_id, timeout_in_minutes=2,
                                       sleep_time=1, stream_events=False)
 
-    get_logs(env_name, info_type, region, do_zip=do_zip,
+    get_logs(env_name, info_type, do_zip=do_zip,
              instance_id=instance_id)
 
 
-def get_logs(env_name, info_type, region, do_zip=False, instance_id=None):
+def get_logs(env_name, info_type, do_zip=False, instance_id=None):
     # Get logs
-    result = elasticbeanstalk.retrieve_environment_info(env_name, info_type,
-                                                        region)
+    result = elasticbeanstalk.retrieve_environment_info(env_name, info_type)
 
     """
     Results are ordered with latest last, we just want the latest

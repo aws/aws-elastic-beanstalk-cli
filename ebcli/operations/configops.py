@@ -21,11 +21,11 @@ from ..resources.strings import prompts
 from . import commonops
 
 
-def update_environment_configuration(app_name, env_name, region, nohang,
+def update_environment_configuration(app_name, env_name, nohang,
                                      timeout=None):
     # get environment setting
     api_model = elasticbeanstalk.describe_configuration_settings(
-        app_name, env_name, region=region
+        app_name, env_name
     )
 
     # Turn them into a yaml file and open
@@ -46,7 +46,7 @@ def update_environment_configuration(app_name, env_name, region, nohang,
         io.log_warning('No changes made. Exiting.')
         return
 
-    commonops.update_environment(env_name, changes, region, nohang,
+    commonops.update_environment(env_name, changes, nohang,
                                  remove=remove, timeout=timeout)
 
 

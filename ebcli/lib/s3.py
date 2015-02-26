@@ -33,20 +33,18 @@ def _make_api_call(operation_name, **operation_options):
     return aws.make_api_call('s3', operation_name, **operation_options)
 
 
-def upload_file(bucket, key, file_path, region=None):
+def upload_file(bucket, key, file_path):
     with open(file_path, 'rb') as fp:
         return _make_api_call('put_object',
                               Bucket=bucket,
                               Key=key,
-                              Body=fp,
-                              region=region)
+                              Body=fp)
 
 
-def get_object_info(bucket, object_key, region=None):
+def get_object_info(bucket, object_key):
     result = _make_api_call('list_objects',
                    Bucket=bucket,
-                   Prefix=object_key,
-                   region=region)
+                   Prefix=object_key)
 
     if 'Contents' not in result or len(result['Contents']) < 1:
         raise NotFoundError('Object not found.')
@@ -63,36 +61,35 @@ def get_object_info(bucket, object_key, region=None):
             return object_key
 
 
-def get_object(bucket, key, region=None):
+def get_object(bucket, key):
     result = _make_api_call('get_object',
                             Bucket=bucket,
-                            Key=key,
-                            region=region)
+                            Key=key)
     return result['Body'].read()
 
 
-def upload_application_version(bucket, key, file_path, region=None):
+def upload_application_version(bucket, key, file_path):
     size = os.path.getsize(file_path)
     LOG.debug('Upload Application Version. File size = ' + str(size))
     if size > 536870912:
         raise FileTooLargeError('Application version cannot be any '
                                 'larger than 512MB')
     if size < 7340032:
-        result = simple_upload(bucket, key, file_path, region=region)
+        result = simple_upload(bucket, key, file_path)
 
     else:
-        result = multithreaded_upload(bucket, key, file_path, region=region)
+        result = multithreaded_upload(bucket, key, file_path)
     return result
 
 
-def simple_upload(bucket, key, file_path, region=None):
+def simple_upload(bucket, key, file_path):
     io.echo('Uploading', key, 'to S3. This may take a while.')
-    result = upload_file(bucket, key, file_path, region=region)
+    result = upload_file(bucket, key, file_path)
     io.echo('Upload Complete.')
     return result
 
 
-def multithreaded_upload(bucket, key, file_path, region=None):
+def multithreaded_upload(bucket, key, file_path):
     """
     Upload a file in multiple parts using multiple threads.
     Takes advantage of S3's multipart upload.
@@ -108,7 +105,7 @@ def multithreaded_upload(bucket, key, file_path, region=None):
     LOG.debug('Doing multi-threaded upload. Parts Needed=' + str(total_parts))
 
     # Begin multi-part upload
-    upload_id = _get_multipart_upload_id(bucket, key, region)
+    upload_id = _get_multipart_upload_id(bucket, key)
     io.update_upload_progress(0)
 
     # Upload parts
@@ -122,7 +119,7 @@ def multithreaded_upload(bucket, key, file_path, region=None):
                 p = threading.Thread(
                     target=_upload_chunk,
                     args=(f, lock, etaglist, total_parts,
-                          bucket, key, upload_id, region),
+                          bucket, key, upload_id),
                     )
                 p.daemon = True
                 jobs.append(p)
@@ -174,8 +171,7 @@ def _wait_for_threads(jobs):
                 alive = True
 
 
-def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id,
-                  region):
+def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id):
     LOG.debug('Creating child thread')
     while True:
         data, part = _read_next_section_from_file(f, lock)
@@ -185,7 +181,7 @@ def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id,
         # First check to see if s3 already has part
         for i in range(0, 5):
             try:
-                etag = _get_part_etag(bucket, key, part, upload_id, region=region)
+                etag = _get_part_etag(bucket, key, part, upload_id)
                 if etag is None:
                     b = BytesIO()
                     b.write(data)
@@ -195,8 +191,7 @@ def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id,
                                               Key=key,
                                               UploadId=upload_id,
                                               Body=b,
-                                              PartNumber=part,
-                                              region=region)
+                                              PartNumber=part)
                     etag = response['ETag']
 
                 etaglist.append({'PartNumber': part, 'ETag': etag})
@@ -214,13 +209,12 @@ def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id,
                 # Loop will cause a retry
 
 
-def _get_part_etag(bucket, key, part, upload_id, region):
+def _get_part_etag(bucket, key, part, upload_id):
     try:
         response = _make_api_call('list_parts',
                               Bucket=bucket,
                               Key=key,
-                              UploadId=upload_id,
-                              region=region)
+                              UploadId=upload_id)
     except Exception as e:
         # We want to swallow all exceptions or else they will be printed
         # as a stack trace to the Console
@@ -234,12 +228,11 @@ def _get_part_etag(bucket, key, part, upload_id, region):
     return etag
 
 
-def _get_multipart_upload_id(bucket, key, region):
+def _get_multipart_upload_id(bucket, key):
     # Check to see if multipart already exists
     response = _make_api_call('list_multipart_uploads',
                               Bucket=bucket,
-                              Prefix=key,
-                              region=region)
+                              Prefix=key)
 
     try:
         for r in response['Uploads']:
@@ -251,8 +244,7 @@ def _get_multipart_upload_id(bucket, key, region):
     # Not found, lets initiate the upload
     response = _make_api_call('create_multipart_upload',
                               Bucket=bucket,
-                              Key=key,
-                              region=region)
+                              Key=key)
 
     return response['UploadId']
 

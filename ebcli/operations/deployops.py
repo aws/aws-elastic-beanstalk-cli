@@ -11,16 +11,13 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..lib import elasticbeanstalk
+from ..lib import elasticbeanstalk, aws
 from ..core import io
 from . import commonops
 
 
-def deploy(app_name, env_name, region, version, label, message, timeout=5):
-    if region:
-        region_name = region
-    else:
-        region_name = 'DEFAULT'
+def deploy(app_name, env_name, version, label, message, timeout=5):
+    region_name = aws.get_default_region()
 
     io.log_info('Deploying code to ' + env_name + " in region " + region_name)
 
@@ -29,11 +26,11 @@ def deploy(app_name, env_name, region, version, label, message, timeout=5):
     else:
         # Create app version
         app_version_label = commonops.create_app_version(
-            app_name, region, label=label, message=message)
+            app_name, label=label, message=message)
 
     # swap env to new app version
     request_id = elasticbeanstalk.update_env_application_version(
-        env_name, app_version_label, region)
+        env_name, app_version_label)
 
-    commonops.wait_for_success_events(request_id, region,
+    commonops.wait_for_success_events(request_id,
                                       timeout_in_minutes=timeout)

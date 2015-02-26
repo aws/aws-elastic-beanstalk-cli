@@ -32,7 +32,6 @@ class LogsController(AbstractBaseController):
         epilog = strings['logs.epilog']
 
     def do_command(self):
-        region = self.get_region()
         env_name = self.get_env_name()
         all = self.app.pargs.all
         instance = self.app.pargs.instance
@@ -51,5 +50,5 @@ class LogsController(AbstractBaseController):
             info_type = 'tail'
             do_zip = False
 
-        logsops.logs(env_name, info_type, region, do_zip=do_zip,
+        logsops.logs(env_name, info_type, do_zip=do_zip,
                         instance_id=instance)

@@ -23,19 +23,18 @@ def _make_api_call(operation_name, **operation_options):
     return aws.make_api_call('iam', operation_name, **operation_options)
 
 
-def get_instance_profiles(region=None):
-    result = _make_api_call('list_instance_profiles', region=region)
+def get_instance_profiles():
+    result = _make_api_call('list_instance_profiles')
     return result['InstanceProfiles']
 
 
-def create_instance_profile(profile_name, region=None):
+def create_instance_profile(profile_name):
     _make_api_call('create_instance_profile',
-                   InstanceProfileName=profile_name,
-                   region=region)
+                   InstanceProfileName=profile_name)
 
 
-def get_instance_profile_names(region=None):
-    profiles = get_instance_profiles(region=region)
+def get_instance_profile_names():
+    profiles = get_instance_profiles()
     lst = []
     for profile in profiles:
         lst.append(profile['InstanceProfileName'])
@@ -43,15 +42,13 @@ def get_instance_profile_names(region=None):
     return lst
 
 
-def add_role_to_profile(profile, role, region=None):
+def add_role_to_profile(profile, role):
     _make_api_call('add_role_to_instance_profile',
                    InstanceProfileName=profile,
-                   RoleName=role,
-                   region=region)
+                   RoleName=role)
 
 
-def create_role(role, document, region=None):
+def create_role(role, document):
     _make_api_call('create_role',
                    RoleName=role,
-                   AssumeRolePolicyDocument=document,
-                   region=region)
+                   AssumeRolePolicyDocument=document)

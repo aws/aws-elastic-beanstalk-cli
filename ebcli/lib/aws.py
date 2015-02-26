@@ -78,7 +78,7 @@ def _set_user_agent_for_session(session):
     session.user_agent_version = __version__
 
 
-def _get_client(service_name, endpoint_url=None, region_name=None):
+def _get_client(service_name, endpoint_url=None):
     aws_access_key_id = _id
     aws_secret_key = _key
     if service_name in _api_clients:
@@ -90,7 +90,7 @@ def _get_client(service_name, endpoint_url=None, region_name=None):
         LOG.debug('Creating new Botocore Client for ' + str(service_name))
         client = session.create_client(service_name,
                                        endpoint_url=endpoint_url,
-                                       region_name=region_name,
+                                       region_name=_region_name,
                                        aws_access_key_id=aws_access_key_id,
                                        aws_secret_access_key=aws_secret_key,
                                        verify=_verify_ssl)
@@ -125,11 +125,10 @@ def get_default_region():
         raise NoRegionError(e)
 
 
-def make_api_call(service_name, operation_name, endpoint_url=None, region=None,
+def make_api_call(service_name, operation_name, endpoint_url=None,
                   **operation_options):
     try:
-        client = _get_client(service_name, endpoint_url=endpoint_url,
-                             region_name=region)
+        client = _get_client(service_name, endpoint_url=endpoint_url)
     except botocore.exceptions.UnknownEndpointError as e:
         raise NoRegionError(e)
     except botocore.exceptions.PartialCredentialsError:
@@ -138,6 +137,7 @@ def make_api_call(service_name, operation_name, endpoint_url=None, region=None,
 
     operation = getattr(client, operation_name)
 
+    region = _region_name
     if not region:
         region = 'default'
 

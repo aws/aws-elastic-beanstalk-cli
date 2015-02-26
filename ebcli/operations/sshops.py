@@ -26,8 +26,8 @@ from . import commonops
 LOG = minimal_logger(__name__)
 
 
-def ssh_into_instance(instance_id, region, keep_open=False):
-    instance = ec2.describe_instance(instance_id, region)
+def ssh_into_instance(instance_id, keep_open=False):
+    instance = ec2.describe_instance(instance_id)
     try:
         keypair_name = instance['KeyName']
     except KeyError:
@@ -44,7 +44,7 @@ def ssh_into_instance(instance_id, region, keep_open=False):
     # Open up port for ssh
     io.echo(strings['ssh.openingport'])
     for group in security_groups:
-        ec2.authorize_ssh(group['GroupId'], region=region)
+        ec2.authorize_ssh(group['GroupId'])
     io.echo(strings['ssh.portopen'])
 
     # do ssh
@@ -63,7 +63,7 @@ def ssh_into_instance(instance_id, region, keep_open=False):
             return
         else:
             for group in security_groups:
-                ec2.revoke_ssh(group['GroupId'], region=region)
+                ec2.revoke_ssh(group['GroupId'])
             io.echo(strings['ssh.closeport'])
 
 
@@ -79,7 +79,7 @@ def _get_ssh_file(keypair_name):
     return key_file
 
 
-def prompt_for_ec2_keyname(region, env_name=None):
+def prompt_for_ec2_keyname(env_name=None):
     if env_name:
         io.validate_action(prompts['terminate.validate'], env_name)
     else:
@@ -88,10 +88,10 @@ def prompt_for_ec2_keyname(region, env_name=None):
         if not ssh:
             return None
 
-    keys = [k['KeyName'] for k in ec2.get_key_pairs(region=region)]
+    keys = [k['KeyName'] for k in ec2.get_key_pairs()]
 
     if len(keys) < 1:
-        keyname = _generate_and_upload_keypair(region, keys)
+        keyname = _generate_and_upload_keypair(keys)
 
     else:
         new_key_option = '[ Create new KeyPair ]'
@@ -101,12 +101,12 @@ def prompt_for_ec2_keyname(region, env_name=None):
         keyname = utils.prompt_for_item_in_list(keys, default=len(keys))
 
         if keyname == new_key_option:
-            keyname = _generate_and_upload_keypair(region, keys)
+            keyname = _generate_and_upload_keypair(keys)
 
     return keyname
 
 
-def _generate_and_upload_keypair(region, keys):
+def _generate_and_upload_keypair(keys):
     # Get filename
     io.echo()
     io.echo(prompts['keypair.nameprompt'])
@@ -124,7 +124,7 @@ def _generate_and_upload_keypair(region, keys):
     if exitcode == 0 or exitcode == 1:
         # if exitcode is 1, they file most likely exists, and they are
         ## just uploading it
-        commonops.upload_keypair_if_needed(region, keyname)
+        commonops.upload_keypair_if_needed(keyname)
         return keyname
     else:
         LOG.debug('ssh-keygen returned exitcode: ' + str(exitcode) +

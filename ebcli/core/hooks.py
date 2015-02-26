@@ -28,6 +28,7 @@ def pre_run_hook(app):
     if app.pargs.verbose:
         LoggingLogHandler.set_level(app.log, 'INFO')
     set_profile(app.pargs.profile)
+    set_region(app.pargs.region)
     set_ssl(app.pargs.no_verify_ssl)
 
 
@@ -46,3 +47,10 @@ def set_ssl(noverify):
             'global', 'no-verify-ssl', default=False)
     if noverify:
         aws.no_verify_ssl()
+
+
+def set_region(region_name):
+    if not region_name:
+        region_name = fileoperations.get_default_region()
+
+    aws.set_region(region_name)

@@ -54,6 +54,7 @@ class InitController(AbstractBaseController):
             self.region = self.get_region()
         else:
             self.region = self.get_region_from_inputs()
+        aws.set_region(self.region)
 
         self.set_up_credentials()
 
@@ -76,15 +77,15 @@ class InitController(AbstractBaseController):
             default_env = '/ni'
 
         # Create application
-        sstack, key = commonops.create_app(self.app_name, self.region,
-                                            default_env=default_env)
+        sstack, key = commonops.create_app(self.app_name,
+                                           default_env=default_env)
 
         if not self.solution:
             self.solution = sstack
 
         if not self.solution or \
                 (self.interactive and not self.app.pargs.platform):
-            result = commonops.prompt_for_solution_stack(self.region)
+            result = commonops.prompt_for_solution_stack()
             self.solution = result.version
 
         initializeops.setup(self.app_name, self.region, self.solution)
@@ -103,10 +104,10 @@ class InitController(AbstractBaseController):
         try:
             # Note, region is None unless explicitly set
             ## or read from old eb
-            initializeops.credentials_are_valid(self.region)
+            initializeops.credentials_are_valid()
             return profile
         except NoRegionError:
-            self.region = self.get_region()
+            aws.set_region(self.get_region())
             return profile
         except InvalidProfileError:
             if given_profile:
@@ -130,7 +131,7 @@ class InitController(AbstractBaseController):
 
         profile = self.check_credentials(profile)
 
-        if not initializeops.credentials_are_valid(self.region):
+        if not initializeops.credentials_are_valid():
             initializeops.setup_credentials()
         else:
             fileoperations.write_config_setting('global', 'profile',
@@ -154,7 +155,7 @@ class InitController(AbstractBaseController):
         # Ask for app name
         if not app_name or \
                 (self.interactive and not self.app.pargs.application_name):
-            app_name = _get_application_name_interactive(self.region)
+            app_name = _get_application_name_interactive()
 
         if sys.version_info[0] < 3 and isinstance(app_name, unicode):
             try:
@@ -210,7 +211,7 @@ class InitController(AbstractBaseController):
                 solution_string = None
 
         if solution_string:
-            commonops.get_solution_stack(solution_string, self.region)
+            commonops.get_solution_stack(solution_string)
 
         return solution_string
 
@@ -233,10 +234,10 @@ class InitController(AbstractBaseController):
         if keyname is None or \
                 (self.interactive and not self.app.pargs.keyname):
             # Prompt for one
-            keyname = sshops.prompt_for_ec2_keyname(self.region)
+            keyname = sshops.prompt_for_ec2_keyname()
 
         elif keyname != -1:
-            commonops.upload_keypair_if_needed(self.region, keyname)
+            commonops.upload_keypair_if_needed(keyname)
 
         return keyname
 
@@ -273,8 +274,8 @@ class InitController(AbstractBaseController):
         return None
 
 
-def _get_application_name_interactive(region):
-    app_list = commonops.get_application_names(region)
+def _get_application_name_interactive():
+    app_list = commonops.get_application_names()
     file_name = fileoperations.get_current_directory_name()
     new_app = False
     if len(app_list) > 0:

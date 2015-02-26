@@ -18,13 +18,13 @@ from ..resources.strings import prompts
 from . import commonops
 
 
-def print_events(app_name, env_name, region, follow):
+def print_events(app_name, env_name, follow):
     if follow:
         io.echo(prompts['events.hanging'])
     last_time = None
     while True:
         events = elasticbeanstalk.get_new_events(
-            app_name, env_name, None, last_event_time=last_time, region=region
+            app_name, env_name, None, last_event_time=last_time
         )
 
         for event in reversed(events):

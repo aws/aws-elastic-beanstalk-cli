@@ -39,7 +39,6 @@ class DeployController(AbstractBaseController):
 
     def do_command(self):
         app_name = self.get_app_name()
-        region = self.get_region()
         env_name = self.app.pargs.environment_name
         version = self.app.pargs.version
         label = self.app.pargs.label
@@ -64,7 +63,7 @@ class DeployController(AbstractBaseController):
         #     # deploy to every environment listed
         #     ## Right now you can only list one
 
-        deployops.deploy(app_name, env_name, region, version, label, message,
+        deployops.deploy(app_name, env_name, version, label, message,
                          timeout=timeout)
 
     def complete_command(self, commands):
@@ -74,6 +73,5 @@ class DeployController(AbstractBaseController):
         ## versionlabels on --version
         cmd = commands[-1]
         if cmd in ['--version']:
-            region = fileoperations.get_default_region()
             app_name = fileoperations.get_application_name()
-            io.echo(*commonops.get_app_version_labels(app_name, region))
+            io.echo(*commonops.get_app_version_labels(app_name))

@@ -28,8 +28,7 @@ class EventsController(AbstractBaseController):
 
     def do_command(self):
         app_name = self.get_app_name()
-        region = self.get_region()
         env_name = self.get_env_name()
         follow = self.app.pargs.follow
 
-        eventsops.print_events(app_name, env_name, region, follow)
+        eventsops.print_events(app_name, env_name, follow)

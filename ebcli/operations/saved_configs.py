@@ -27,34 +27,33 @@ def _get_s3_keyname_for_template(app_name, cfg_name):
     return 'resources/templates/' + app_name + '/' + cfg_name
 
 
-def create_config(app_name, env_name, cfg_name, region):
+def create_config(app_name, env_name, cfg_name):
     description = strings['template.description']
     result = elasticbeanstalk.create_configuration_template(
-        app_name, env_name, cfg_name, description, region=region
+        app_name, env_name, cfg_name, description
     )
 
-    download_config_from_s3(app_name, cfg_name, region)
+    download_config_from_s3(app_name, cfg_name)
 
 
-def update_environment_with_config_file(env_name, cfg_name, region,
+def update_environment_with_config_file(env_name, cfg_name,
                                         nohang, timeout=None):
 
-    commonops.update_environment(env_name, None, region, nohang,
+    commonops.update_environment(env_name, None, nohang,
                                   template=cfg_name, timeout=timeout)
 
 
-def update_environment_with_config_data(env_name, data, region,
+def update_environment_with_config_data(env_name, data,
                                         nohang, timeout=None):
 
-    commonops.update_environment(env_name, None, region, nohang,
+    commonops.update_environment(env_name, None, nohang,
                                   timeout=timeout, template_body=data)
 
 
-def download_config_from_s3(app_name, cfg_name, region):
-    bucket = elasticbeanstalk.get_storage_location(region)
+def download_config_from_s3(app_name, cfg_name):
+    bucket = elasticbeanstalk.get_storage_location()
     body = s3.get_object(bucket,
-                         _get_s3_keyname_for_template(app_name, cfg_name),
-                         region)
+                         _get_s3_keyname_for_template(app_name, cfg_name))
 
     location = write_to_local_config(cfg_name, body)
     fileoperations.set_user_only_permissions(location)
@@ -62,15 +61,14 @@ def download_config_from_s3(app_name, cfg_name, region):
     io.echo('Configuration saved at: ' + location)
 
 
-def delete_config(app_name, cfg_name, region):
-    elasticbeanstalk.delete_configuration_template(app_name, cfg_name,
-                                                   region=region)
+def delete_config(app_name, cfg_name):
+    elasticbeanstalk.delete_configuration_template(app_name, cfg_name)
     location = resolve_config_location(cfg_name)
     if location is not None:
         fileoperations.delete_file(location)
 
 
-def update_config(app_name, cfg_name, region):
+def update_config(app_name, cfg_name):
     config_location = resolve_config_location(cfg_name)
     if config_location is None:
         raise NotFoundError('No local version of ' + cfg_name + ' found.')
@@ -78,10 +76,10 @@ def update_config(app_name, cfg_name, region):
     if cfg_name.endswith('.cfg.yml'):
         cfg_name = cfg_name.rstrip('.cfg.yml')
 
-    upload_config_file(app_name, cfg_name, config_location, region)
+    upload_config_file(app_name, cfg_name, config_location)
 
 
-def upload_config_file(app_name, cfg_name, file_location, region):
+def upload_config_file(app_name, cfg_name, file_location):
     """
     Does the actual uploading to s3.
     :param app_name:  name of application. Needed for resolving bucket
@@ -89,9 +87,9 @@ def upload_config_file(app_name, cfg_name, file_location, region):
     :param file_location: str: full path to file.
     :param region: region of application. Needed for resolving bucket
     """
-    bucket = elasticbeanstalk.get_storage_location(region=region)
+    bucket = elasticbeanstalk.get_storage_location()
     key = _get_s3_keyname_for_template(app_name, cfg_name)
-    s3.upload_file(bucket, key, file_location, region=region)
+    s3.upload_file(bucket, key, file_location)
 
 
 def resolve_config_location(cfg_name):
@@ -126,7 +124,7 @@ def resolve_config_location(cfg_name):
                         get_eb_file_full_location(file_location)
 
 
-def resolve_config_name(app_name, cfg_name, region):
+def resolve_config_name(app_name, cfg_name):
     """  Resolve the name of the s3 template.
     If cfg_name is a file, we need to first upload the file.
 
@@ -139,7 +137,7 @@ def resolve_config_name(app_name, cfg_name, region):
     else:
         if cfg_name.endswith('.cfg.yml'):
             cfg_name = cfg_name.rstrip('.cfg.yml')
-        upload_config_file(app_name, cfg_name, config_location, region)
+        upload_config_file(app_name, cfg_name, config_location)
         return cfg_name
 
 
@@ -151,20 +149,18 @@ def write_to_local_config(cfg_name, data):
     return fileoperations.get_eb_file_full_location(file_location)
 
 
-def get_configurations(app_name, region):
-    app = elasticbeanstalk.describe_application(app_name, region=region)
+def get_configurations(app_name):
+    app = elasticbeanstalk.describe_application(app_name)
     return app['ConfigurationTemplates']
 
 
-def validate_config_file(app_name, cfg_name, platform, region):
+def validate_config_file(app_name, cfg_name, platform):
     try:
-        result = elasticbeanstalk.validate_template(app_name, cfg_name,
-                                                    region=region)
+        result = elasticbeanstalk.validate_template(app_name, cfg_name)
     except InvalidParameterValueError as e:
         # Platform not in Saved config. Try again with default platform
         if e.message == responses['create.noplatform']:
            result = elasticbeanstalk.validate_template(app_name, cfg_name,
-                                                       region=region,
                                                        platform=platform)
         else:
             raise

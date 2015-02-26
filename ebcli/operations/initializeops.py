@@ -18,9 +18,9 @@ from ..core import fileoperations, io
 from ..resources.strings import strings
 
 
-def credentials_are_valid(region):
+def credentials_are_valid():
     try:
-        elasticbeanstalk.get_available_solution_stacks(region)
+        elasticbeanstalk.get_available_solution_stacks()
         return True
     except CredentialsError:
         return False

@@ -24,11 +24,10 @@ def _make_api_call(operation_name, **operation_options):
     return aws.make_api_call('elb', operation_name, **operation_options)
 
 
-def get_health_of_instances(load_balancer_name, region=None):
+def get_health_of_instances(load_balancer_name):
     try:
         result = _make_api_call('describe_instance_health',
-                            LoadBalancerName=load_balancer_name,
-                            region=region)
+                            LoadBalancerName=load_balancer_name)
     except ServiceError as e:
         if e.message.startswith(responses['loadbalancer.notfound']):
             raise NotFoundError(e)

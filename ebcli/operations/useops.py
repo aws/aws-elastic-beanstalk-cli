@@ -15,7 +15,7 @@ from ..lib import elasticbeanstalk
 from . import commonops
 
 
-def switch_default_environment(app_name, env_name, region):
+def switch_default_environment(app_name, env_name):
     # check that environment exists
-    elasticbeanstalk.get_environment(app_name, env_name, region)
+    elasticbeanstalk.get_environment(app_name, env_name)
     commonops.set_environment_for_current_branch(env_name)

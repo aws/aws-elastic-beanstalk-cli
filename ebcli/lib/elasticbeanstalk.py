@@ -32,7 +32,7 @@ LOG = minimal_logger(__name__)
 DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
 
 
-def _make_api_call(operation_name, region=None, **operation_options):
+def _make_api_call(operation_name, **operation_options):
     try:
         endpoint_url = globals.app.pargs.endpoint_url
     except AttributeError:
@@ -40,18 +40,16 @@ def _make_api_call(operation_name, region=None, **operation_options):
 
     return aws.make_api_call('elasticbeanstalk',
                              operation_name,
-                             region=region,
                              endpoint_url=endpoint_url,
                              **operation_options)
 
 
-def create_application(app_name, descrip, region=None):
+def create_application(app_name, descrip):
     LOG.debug('Inside create_application api wrapper')
     try:
         result = _make_api_call('create_application',
                                 ApplicationName=app_name,
-                                Description=descrip,
-                                region=region)
+                                Description=descrip)
     except InvalidParameterValueError as e:
         string = responses['app.exists'].replace('{app-name}', app_name)
         if e.message == string:
@@ -63,18 +61,17 @@ def create_application(app_name, descrip, region=None):
 
 
 def create_application_version(app_name, vers_label, descrip, s3_bucket,
-                               s3_key, region=None):
+                               s3_key):
     LOG.debug('Inside create_application_version api wrapper')
     return _make_api_call('create_application_version',
                           ApplicationName=app_name,
                           VersionLabel=vers_label,
                           Description=descrip,
                           SourceBundle={'S3Bucket': s3_bucket,
-                                         'S3Key': s3_key},
-                          region=region)
+                                         'S3Key': s3_key})
 
 
-def create_environment(environment, region=None):
+def create_environment(environment):
     """
     Creates an Elastic Beanstalk environment
     """
@@ -84,8 +81,7 @@ def create_environment(environment, region=None):
 
     if environment.database:
         # need to know region for database string
-        if region is None:
-            region = aws.get_default_region()
+        region = aws.get_default_region()
 
         # Database is a dictionary
         kwargs['TemplateSpecification'] = {
@@ -98,7 +94,7 @@ def create_environment(environment, region=None):
             ]
         }
 
-    result = _make_api_call('create_environment', region=region, **kwargs)
+    result = _make_api_call('create_environment', **kwargs)
 
     # convert to object
     env = _api_to_environment(result)
@@ -106,7 +102,7 @@ def create_environment(environment, region=None):
     return env, request_id
 
 
-def clone_environment(clone, region=None):
+def clone_environment(clone):
     LOG.debug('Inside clone_environment api wrapper')
 
     kwargs = clone.convert_to_kwargs()
@@ -114,7 +110,7 @@ def clone_environment(clone, region=None):
     kwargs['TemplateSpecification'] = \
         {'TemplateSource': {'EnvironmentName': clone.original_name}}
 
-    result = _make_api_call('create_environment', region=region, **kwargs)
+    result = _make_api_call('create_environment', **kwargs)
 
     # convert to object
     env = _api_to_environment(result)
@@ -158,63 +154,57 @@ def _api_to_environment(api_dict):
     return env
 
 
-def delete_application(app_name, region=None):
+def delete_application(app_name):
     LOG.debug('Inside delete_application api wrapper')
     result = _make_api_call('delete_application',
-                            ApplicationName=app_name,
-                            region=region)
+                            ApplicationName=app_name)
     return result['ResponseMetadata']['RequestId']
 
 
-def delete_application_and_envs(app_name, region=None):
+def delete_application_and_envs(app_name):
     LOG.debug('Inside delete_application_and_envs')
     result = _make_api_call('delete_application',
                             ApplicationName=app_name,
-                            TerminateEnvByForce=True,
-                            region=region)
+                            TerminateEnvByForce=True)
     return result['ResponseMetadata']['RequestId']
 
 
-def describe_application(app_name, region=None):
+def describe_application(app_name):
     LOG.debug('Inside describe_application api wrapper')
     result = _make_api_call('describe_applications',
-                            ApplicationNames=[app_name],
-                            region=region)
+                            ApplicationNames=[app_name])
     apps = result['Applications']
     if len(apps) != 1:
         raise NotFoundError('Application "' + app_name + '" not found.')
     return apps[0]
 
 
-def is_cname_available(cname, region=None):
+def is_cname_available(cname):
     LOG.debug('Inside is_cname_available api wrapper')
     result = _make_api_call('check_dns_availability',
-                            CNAMEPrefix=cname,
-                            region=region)
+                            CNAMEPrefix=cname)
     return result['Available']
 
 
-def swap_environment_cnames(source_env, dest_env, region=None):
+def swap_environment_cnames(source_env, dest_env):
     LOG.debug('Inside swap_environment_cnames api wrapper')
     result = _make_api_call('swap_environment_cnames',
                             SourceEnvironmentName=source_env,
-                            DestinationEnvironmentName=dest_env,
-                            region=region)
+                            DestinationEnvironmentName=dest_env)
     return result['ResponseMetadata']['RequestId']
 
 
-def describe_applications(region=None):
+def describe_applications():
     LOG.debug('Inside describe_applications api wrapper')
-    result = _make_api_call('describe_applications', region=region)
+    result = _make_api_call('describe_applications')
     return result['Applications']
 
 
-def describe_configuration_settings(app_name, env_name, region=None):
+def describe_configuration_settings(app_name, env_name):
     LOG.debug('Inside describe_configuration_settings api wrapper')
     result = _make_api_call('describe_configuration_settings',
                             ApplicationName=app_name,
-                            EnvironmentName=env_name,
-                            region=region)
+                            EnvironmentName=env_name)
     return result['ConfigurationSettings'][0]
 
 
@@ -230,16 +220,14 @@ def get_specific_configuration(env_config, namespace, option):
     return None
 
 
-def get_specific_configuration_for_env(app_name, env_name, namespace, option,
-                                       region=None):
-    env_config = describe_configuration_settings(app_name, env_name,
-                                                 region=region)
+def get_specific_configuration_for_env(app_name, env_name, namespace, option):
+    env_config = describe_configuration_settings(app_name, env_name)
     return get_specific_configuration(env_config, namespace, option)
 
 
-def get_available_solution_stacks(region=None):
+def get_available_solution_stacks():
     LOG.debug('Inside get_available_solution_stacks api wrapper')
-    result = _make_api_call('list_available_solution_stacks', region=region)
+    result = _make_api_call('list_available_solution_stacks')
     stack_strings = result['SolutionStacks']
 
     LOG.debug('Solution Stack result size = ' + str(len(stack_strings)))
@@ -251,18 +239,16 @@ def get_available_solution_stacks(region=None):
     return solution_stacks
 
 
-def get_application_versions(app_name, region=None):
+def get_application_versions(app_name):
     LOG.debug('Inside get_application_versions api wrapper')
     result = _make_api_call('describe_application_versions',
-                            ApplicationName=app_name,
-                            region=region)
+                            ApplicationName=app_name)
     return result['ApplicationVersions']
 
 
-def get_all_applications(region=None):
+def get_all_applications():
     LOG.debug('Inside get_all_applications api wrapper')
-    result = _make_api_call('describe_applications',
-                            region=region)
+    result = _make_api_call('describe_applications')
     app_list = []
     for app in result['Applications']:
         try:
@@ -288,23 +274,21 @@ def get_all_applications(region=None):
     return app_list
 
 
-def get_app_environments(app_name, region=None):
+def get_app_environments(app_name):
     LOG.debug('Inside get_app_environments api wrapper')
     result = _make_api_call('describe_environments',
                             ApplicationName=app_name,
-                            IncludeDeleted=False,
-                            region=region)
+                            IncludeDeleted=False)
     # convert to objects
     envs = [_api_to_environment(env) for env in result['Environments']]
 
     return envs
 
 
-def get_all_environments(region=None):
+def get_all_environments():
     LOG.debug('Inside get_all_environments api wrapper')
     result = _make_api_call('describe_environments',
-                            IncludeDeleted=False,
-                            region=region)
+                            IncludeDeleted=False)
     # convert to object
     envs = []
     for env in result['Environments']:
@@ -312,13 +296,12 @@ def get_all_environments(region=None):
     return envs
 
 
-def get_environment(app_name, env_name, region=None):
+def get_environment(app_name, env_name):
     LOG.debug('Inside get_environment api wrapper')
     result = _make_api_call('describe_environments',
                             ApplicationName=app_name,
                             EnvironmentNames=[env_name],
-                            IncludeDeleted=False,
-                            region=region)
+                            IncludeDeleted=False)
 
     envs = result['Environments']
     if len(envs) < 1:
@@ -327,16 +310,15 @@ def get_environment(app_name, env_name, region=None):
         return _api_to_environment(envs[0])
 
 
-def get_environment_resources(env_name, region=None):
+def get_environment_resources(env_name):
     LOG.debug('Inside get_environment_resources api wrapper')
     result = _make_api_call('describe_environment_resources',
-                            EnvironmentName=env_name,
-                            region=region)
+                            EnvironmentName=env_name)
     return result
 
 
 def get_new_events(app_name, env_name, request_id,
-                   last_event_time=None, region=None):
+                   last_event_time=None):
     LOG.debug('Inside get_new_events api wrapper')
     # make call
     if last_event_time is not None:
@@ -357,7 +339,6 @@ def get_new_events(app_name, env_name, request_id,
         kwargs['StartTime'] = str(new_time)
 
     result = _make_api_call('describe_events',
-                            region=region,
                             **kwargs)
 
     # convert to object
@@ -385,13 +366,13 @@ def get_new_events(app_name, env_name, request_id,
     return events
 
 
-def get_storage_location(region=None):
+def get_storage_location():
     LOG.debug('Inside get_storage_location api wrapper')
-    response = _make_api_call('create_storage_location', region=region)
+    response = _make_api_call('create_storage_location')
     return response['S3Bucket']
 
 
-def update_environment(env_name, options, region=None, remove=None,
+def update_environment(env_name, options, remove=None,
                        template=None, template_body=None):
     LOG.debug('Inside update_environment api wrapper')
     if remove is None:
@@ -413,7 +394,6 @@ def update_environment(env_name, options, region=None, remove=None,
 
     try:
         response = _make_api_call('update_environment',
-                                  region=region,
                                   **kwargs)
     except aws.InvalidParameterValueError as e:
         if e.message == responses['env.invalidstate'].replace('{env-name}',
@@ -425,40 +405,36 @@ def update_environment(env_name, options, region=None, remove=None,
 
 
 def update_env_application_version(env_name,
-                                   version_label, region=None):
+                                   version_label):
     LOG.debug('Inside update_env_application_version api wrapper')
     response = _make_api_call('update_environment',
                               EnvironmentName=env_name,
-                              VersionLabel=version_label,
-                              region=region)
+                              VersionLabel=version_label)
     return response['ResponseMetadata']['RequestId']
 
 
-def request_environment_info(env_name, info_type, region=None):
+def request_environment_info(env_name, info_type):
     result = _make_api_call('request_environment_info',
                             EnvironmentName=env_name,
-                            InfoType=info_type,
-                            region=region)
+                            InfoType=info_type)
     return result
 
 
-def retrieve_environment_info(env_name, info_type, region=None):
+def retrieve_environment_info(env_name, info_type):
     result = _make_api_call('retrieve_environment_info',
                             EnvironmentName=env_name,
-                            InfoType=info_type,
-                            region=region)
+                            InfoType=info_type)
     return result
 
 
-def terminate_environment(env_name, region=None):
+def terminate_environment(env_name):
     result = _make_api_call('terminate_environment',
-                            EnvironmentName=env_name,
-                            region=region)
+                            EnvironmentName=env_name)
     return result['ResponseMetadata']['RequestId']
 
 
 def create_configuration_template(app_name, env_name, template_name,
-                                  description, region=None):
+                                  description):
     kwargs = {
         'TemplateName': template_name,
         'ApplicationName': app_name,
@@ -469,8 +445,7 @@ def create_configuration_template(app_name, env_name, template_name,
     }
 
     try:
-        result = _make_api_call('create_configuration_template',
-                                region=region, **kwargs)
+        result = _make_api_call('create_configuration_template', **kwargs)
     except InvalidParameterValueError as e:
         if e.message == responses['cfg.nameexists'].replace('{name}',
                                                             template_name):
@@ -481,14 +456,13 @@ def create_configuration_template(app_name, env_name, template_name,
     return result
 
 
-def delete_configuration_template(app_name, template_name, region=None):
+def delete_configuration_template(app_name, template_name):
     _make_api_call('delete_configuration_template',
                    ApplicationName=app_name,
-                   TemplateName=template_name,
-                   region=region)
+                   TemplateName=template_name)
 
 
-def validate_template(app_name, template_name, region=None, platform=None):
+def validate_template(app_name, template_name, platform=None):
     kwargs = {}
     if platform:
         kwargs['TemplateSpecification'] = \
@@ -497,12 +471,11 @@ def validate_template(app_name, template_name, region=None, platform=None):
     result = _make_api_call('validate_configuration_settings',
                             ApplicationName=app_name,
                             TemplateName=template_name,
-                            region=region,
                             **kwargs)
     return result
 
 
-def describe_template(app_name, template_name, region=None, platform=None):
+def describe_template(app_name, template_name, platform=None):
     kwargs = {}
     if platform:
         kwargs['TemplateSpecification'] = \
@@ -511,6 +484,5 @@ def describe_template(app_name, template_name, region=None, platform=None):
     LOG.debug('Inside describe_template api wrapper')
     result = _make_api_call('describe_configuration_settings',
                             ApplicationName=app_name,
-                            TemplateName=template_name,
-                            region=region)
+                            TemplateName=template_name)
     return result['ConfigurationSettings'][0]

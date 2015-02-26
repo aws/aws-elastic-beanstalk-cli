@@ -16,30 +16,29 @@ from ..core import io
 from . import commonops
 
 
-def list_env_names(app_name, region, verbose, all_apps):
-    if region is None:
-        region = aws.get_default_region()
+def list_env_names(app_name, verbose, all_apps):
+    region = aws.get_default_region()
 
     if verbose:
         io.echo('Region:', region)
 
     if all_apps:
-        for app_name in commonops.get_application_names(region):
-            list_env_names_for_app(app_name, region, verbose)
+        for app_name in commonops.get_application_names():
+            list_env_names_for_app(app_name, verbose)
     else:
-        list_env_names_for_app(app_name, region, verbose)
+        list_env_names_for_app(app_name, verbose)
 
 
-def list_env_names_for_app(app_name, region, verbose):
+def list_env_names_for_app(app_name, verbose):
     current_env = commonops.get_current_branch_environment()
-    env_names = commonops.get_env_names(app_name, region)
+    env_names = commonops.get_env_names(app_name)
     env_names.sort()
 
     if verbose:
         io.echo('Application:', app_name)
         io.echo('    Environments:', len(env_names))
         for e in env_names:
-            instances = commonops.get_instance_ids(app_name, e, region)
+            instances = commonops.get_instance_ids(app_name, e)
             if e == current_env:
                 e = '* ' + e
 

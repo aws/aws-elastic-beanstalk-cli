@@ -32,7 +32,7 @@ from ..lib import heuristics
 LOG = minimal_logger(__name__)
 
 
-def wait_for_success_events(request_id, region, timeout_in_minutes=None,
+def wait_for_success_events(request_id, timeout_in_minutes=None,
                             sleep_time=5, stream_events=True):
     if timeout_in_minutes == 0:
         return
@@ -48,7 +48,7 @@ def wait_for_success_events(request_id, region, timeout_in_minutes=None,
     events = []
     while not events:
         events = elasticbeanstalk.get_new_events(
-            None, None, request_id, last_event_time=None, region=region
+            None, None, request_id, last_event_time=None
         )
 
         if len(events) > 0:
@@ -67,7 +67,7 @@ def wait_for_success_events(request_id, region, timeout_in_minutes=None,
         time.sleep(sleep_time)
 
         events = elasticbeanstalk.get_new_events(
-            app_name, env_name, None, last_event_time=last_time, region=region
+            app_name, env_name, None, last_event_time=last_time
         )
 
         for event in reversed(events):
@@ -135,24 +135,24 @@ def log_event(event, echo=False):
     return message, date
 
 
-def get_all_env_names(region):
-    envs = elasticbeanstalk.get_all_environments(region=region)
+def get_all_env_names():
+    envs = elasticbeanstalk.get_all_environments()
     return [e.name for e in envs]
 
 
-def get_env_names(app_name, region):
-    envs = elasticbeanstalk.get_app_environments(app_name, region)
+def get_env_names(app_name):
+    envs = elasticbeanstalk.get_app_environments(app_name)
     return [e.name for e in envs]
 
 
-def get_app_version_labels(app_name, region):
-    app_versions = elasticbeanstalk.get_application_versions(app_name, region)
+def get_app_version_labels(app_name):
+    app_versions = elasticbeanstalk.get_application_versions(app_name)
     return [v['VersionLabel'] for v in app_versions]
 
 
-def prompt_for_solution_stack(region):
+def prompt_for_solution_stack():
 
-    solution_stacks = elasticbeanstalk.get_available_solution_stacks(region)
+    solution_stacks = elasticbeanstalk.get_available_solution_stacks()
 
     # get list of platforms
     platforms = []
@@ -194,12 +194,12 @@ def prompt_for_solution_stack(region):
     return get_latest_solution_stack(version, stack_list=solution_stacks)
 
 
-def get_latest_solution_stack(platform_version, region=None, stack_list=None):
+def get_latest_solution_stack(platform_version, stack_list=None):
     if stack_list:
         solution_stacks = stack_list
     else:
         solution_stacks = elasticbeanstalk.\
-            get_available_solution_stacks(region=region)
+            get_available_solution_stacks()
 
     #filter
     solution_stacks = [x for x in solution_stacks
@@ -227,14 +227,13 @@ def get_latest_solution_stack(platform_version, region=None, stack_list=None):
     return solution_stacks[0]
 
 
-def create_app(app_name, region, default_env=None):
+def create_app(app_name, default_env=None):
     # Attempt to create app
     try:
         io.log_info('Creating application: ' + app_name)
         elasticbeanstalk.create_application(
             app_name,
-            strings['app.description'],
-            region=region
+            strings['app.description']
         )
 
         set_environment_for_current_branch(None)
@@ -244,12 +243,12 @@ def create_app(app_name, region, default_env=None):
 
     except AlreadyExistsError:
         io.log_info('Application already exists.')
-        return pull_down_app_info(app_name, region, default_env=default_env)
+        return pull_down_app_info(app_name, default_env=default_env)
 
 
-def pull_down_app_info(app_name, region, default_env=None):
+def pull_down_app_info(app_name, default_env=None):
     # App exists, set up default environment
-    envs = elasticbeanstalk.get_app_environments(app_name, region)
+    envs = elasticbeanstalk.get_app_environments(app_name)
     if len(envs) == 0:
         # no envs, set None as default to override
         set_environment_for_current_branch(None)
@@ -277,7 +276,7 @@ def pull_down_app_info(app_name, region, default_env=None):
     # Get keyname
     keyname = elasticbeanstalk.get_specific_configuration_for_env(
         app_name, env.name, 'aws:autoscaling:launchconfiguration',
-        'EC2KeyName', region=region
+        'EC2KeyName'
     )
     if keyname is None:
         keyname = -1
@@ -305,15 +304,14 @@ def open_webpage_in_browser(url, ssl=False):
               stdout=PIPE, shell=True)
 
 
-def get_application_names(region):
-    app_list = elasticbeanstalk.get_all_applications(region=region)
+def get_application_names():
+    app_list = elasticbeanstalk.get_all_applications()
 
     return [n.name for n in app_list]
 
 
-def print_env_details(env, region, health=True):
-    if region is None:
-        region = aws.get_default_region()
+def print_env_details(env, health=True):
+    region = aws.get_default_region()
 
     io.echo('Environment details for:', env.name)
     io.echo('  Application name:', env.app_name)
@@ -352,7 +350,7 @@ def create_envvars_list(var_list):
     return options, options_to_remove
 
 
-def create_app_version(app_name, region, label=None, message=None):
+def create_app_version(app_name, label=None, message=None):
     cwd = os.getcwd()
     fileoperations._traverse_to_project_root()
     try:
@@ -395,30 +393,30 @@ def create_app_version(app_name, region, label=None, message=None):
         # Check to see if file already exists from previous attempt
         if not fileoperations.file_exists(file_path) and \
                                 version_label not in \
-                                get_app_version_labels(app_name, region):
+                                get_app_version_labels(app_name):
             # If it doesn't already exist, create it
             io.echo(strings['appversion.create'].replace('{version}',
                                                          version_label))
             source_control.do_zip(file_path)
 
     # Get s3 location
-    bucket = elasticbeanstalk.get_storage_location(region)
+    bucket = elasticbeanstalk.get_storage_location()
     # upload to s3
     key = app_name + '/' + file_name
 
     try:
-        s3.get_object_info(bucket, key, region=region)
+        s3.get_object_info(bucket, key)
         io.log_info('S3 Object already exists. Skipping upload.')
     except NotFoundError:
         io.log_info('Uploading archive to s3 location: ' + key)
-        s3.upload_application_version(bucket, key, file_path, region=region)
+        s3.upload_application_version(bucket, key, file_path)
 
     fileoperations.delete_app_versions()
     io.log_info('Creating AppVersion ' + version_label)
     while True:
         try:
             elasticbeanstalk.create_application_version(
-                app_name, version_label, description, bucket, key, region
+                app_name, version_label, description, bucket, key
             )
             return version_label
         except InvalidParameterValueError as e:
@@ -431,16 +429,16 @@ def create_app_version(app_name, region, label=None, message=None):
                     '{app-name}', '\'' + app_name + '\''):
                 # App doesnt exist, must be a new region.
                 ## Lets create the app in the region
-                create_app(app_name, region)
+                create_app(app_name)
             else:
                 raise
 
 
-def update_environment(env_name, changes, region, nohang, remove=None,
+def update_environment(env_name, changes, nohang, remove=None,
                        template=None, timeout=None, template_body=None):
     try:
         request_id = elasticbeanstalk.update_environment(
-            env_name, changes, remove=remove, region=region, template=template,
+            env_name, changes, remove=remove, template=template,
             template_body=template_body)
     except InvalidStateError:
         io.log_error(prompts['update.invalidstate'])
@@ -455,7 +453,7 @@ def update_environment(env_name, changes, region, nohang, remove=None,
 
     io.echo('Printing Status:')
     try:
-        wait_for_success_events(request_id, region, timeout_in_minutes=timeout)
+        wait_for_success_events(request_id, timeout_in_minutes=timeout)
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
@@ -495,14 +493,14 @@ def get_current_branch_environment():
     return get_setting_from_current_branch('environment')
 
 
-def get_solution_stack(solution_string, region):
+def get_solution_stack(solution_string):
     #If string is explicit, do not check
     if re.match(r'^\d\dbit [\w\s]+[0-9.]* v[0-9.]+ running .*$',
                 solution_string):
         return SolutionStack(solution_string)
 
     solution_string = solution_string.lower()
-    solution_stacks = elasticbeanstalk.get_available_solution_stacks(region)
+    solution_stacks = elasticbeanstalk.get_available_solution_stacks()
 
     # check for exact string
     stacks = [x for x in solution_stacks if x.name.lower() == solution_string]
@@ -538,29 +536,28 @@ def get_solution_stack(solution_string, region):
                                                              solution_string))
 
 
-def is_cname_available(cname, region):
-    return elasticbeanstalk.is_cname_available(cname, region)
+def is_cname_available(cname):
+    return elasticbeanstalk.is_cname_available(cname)
 
 
-def get_instance_ids(app_name, env_name, region):
-    env = elasticbeanstalk.get_environment_resources(env_name, region)
+def get_instance_ids(app_name, env_name):
+    env = elasticbeanstalk.get_environment_resources(env_name)
     instances = [i['Id'] for i in env['EnvironmentResources']['Instances']]
     return instances
 
 
-def upload_keypair_if_needed(region, keyname):
-    keys = [k['KeyName'] for k in ec2.get_key_pairs(region=region)]
+def upload_keypair_if_needed(keyname):
+    keys = [k['KeyName'] for k in ec2.get_key_pairs()]
     if keyname in keys:
         return
 
     key_material = _get_public_ssh_key(keyname)
 
     try:
-        ec2.import_key_pair(keyname, key_material, region=region)
+        ec2.import_key_pair(keyname, key_material)
     except AlreadyExistsError:
         return
-    if region is None:
-        region = aws.get_default_region()
+    region = aws.get_default_region()
     io.log_warning(strings['ssh.uploaded'].replace('{keyname}', keyname)
                    .replace('{region}', region))
 

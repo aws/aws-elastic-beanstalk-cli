@@ -28,7 +28,6 @@ class UseController(AbstractBaseController):
 
     def do_command(self):
         app_name = self.get_app_name()
-        region = self.get_region()
         env_name = self.app.pargs.environment_name[0]
 
-        useops.switch_default_environment(app_name, env_name, region)
+        useops.switch_default_environment(app_name, env_name)

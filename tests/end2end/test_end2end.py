@@ -91,7 +91,7 @@ class TestEnd2End(test.CementTestCase):
             self.app_name = 'myEBCLItest' + str(randint(1000, 9999))
             # make sure application doesnt exist yet
             try:
-                app = elasticbeanstalk.describe_application(self.app_name, self.region)
+                app = elasticbeanstalk.describe_application(self.app_name)
             except NotFoundError:
                 # Found one
                 break
@@ -102,7 +102,7 @@ class TestEnd2End(test.CementTestCase):
                        '--platform', 'php'])
 
         # Make sure app exists
-        elasticbeanstalk.describe_application(self.app_name, self.region)
+        elasticbeanstalk.describe_application(self.app_name)
 
         print_('Created application')
 
@@ -111,8 +111,7 @@ class TestEnd2End(test.CementTestCase):
         self._run_app(['create', self.env_name])
 
         # Make sure app was created
-        elasticbeanstalk.get_environment(self.app_name, self.env_name,
-                                             self.region)
+        elasticbeanstalk.get_environment(self.app_name, self.env_name)
         print_('created env ', self.env_name)
 
     def do_events(self):
@@ -147,12 +146,10 @@ class TestEnd2End(test.CementTestCase):
         with open('index.html', 'w') as f:
             f.write('Hello World take 2')
 
-        oldenv = elasticbeanstalk.get_environment(self.app_name, self.env_name,
-                                         self.region)
+        oldenv = elasticbeanstalk.get_environment(self.app_name, self.env_name)
         self._run_app(['deploy'])
 
-        newenv = elasticbeanstalk.get_environment(self.app_name, self.env_name,
-                                                  self.region)
+        newenv = elasticbeanstalk.get_environment(self.app_name, self.env_name)
 
         self.assertNotEqual(oldenv.version_label, newenv.version_label)
         #ToDo: Check before and after deploy to make sure web is correct

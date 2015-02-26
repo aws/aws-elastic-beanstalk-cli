@@ -18,13 +18,13 @@ from ..objects.exceptions import NotFoundError
 from . import commonops
 
 
-def status(app_name, env_name, region, verbose):
-    env = elasticbeanstalk.get_environment(app_name, env_name, region)
-    commonops.print_env_details(env, region, health=True)
+def status(app_name, env_name, verbose):
+    env = elasticbeanstalk.get_environment(app_name, env_name)
+    commonops.print_env_details(env, health=True)
 
     if verbose:
         # Print number of running instances
-        env_dict = elasticbeanstalk.get_environment_resources(env_name, region)
+        env_dict = elasticbeanstalk.get_environment_resources(env_name)
         instances = [i['Id'] for i in
                      env_dict['EnvironmentResources']['Instances']]
         io.echo('  Running instances:', len(instances))
@@ -32,8 +32,7 @@ def status(app_name, env_name, region, verbose):
         try:
             load_balancer_name = [i['Name'] for i in
                                   env_dict['EnvironmentResources']['LoadBalancers']][0]
-            instance_states = elb.get_health_of_instances(load_balancer_name,
-                                                          region=region)
+            instance_states = elb.get_health_of_instances(load_balancer_name)
             for i in instance_states:
                 instance_id = i['InstanceId']
                 state = i['State']
@@ -51,6 +50,6 @@ def status(app_name, env_name, region, verbose):
             pass
 
     # check platform version
-    latest = commonops.get_latest_solution_stack(env.platform.version, region)
+    latest = commonops.get_latest_solution_stack(env.platform.version)
     if env.platform != latest:
         io.log_alert(alerts['platform.old'])

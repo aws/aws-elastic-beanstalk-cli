@@ -40,7 +40,6 @@ class ConfigController(AbstractBaseController):
         epilog = strings['config.epilog']
 
     def do_command(self):
-        region = self.get_region()
         env_name = self.get_env_name(varname='name')
         app_name = self.get_app_name()
         timeout = self.app.pargs.timeout
@@ -52,20 +51,19 @@ class ConfigController(AbstractBaseController):
         if not cfg and not input_exists:
             # No input, run interactive editor
             configops.update_environment_configuration(app_name, env_name,
-                                                        region, nohang,
-                                                        timeout=timeout)
+                                                       nohang,
+                                                       timeout=timeout)
             return
 
         if cfg:
-            cfg_name = saved_configs.resolve_config_name(app_name, cfg, region)
+            cfg_name = saved_configs.resolve_config_name(app_name, cfg)
             saved_configs.update_environment_with_config_file(env_name,
-                                                              cfg_name,
-                                                              region, nohang,
+                                                              cfg_name, nohang,
                                                               timeout=timeout)
         elif input_exists:
             data = sys.stdin.read()
             saved_configs.update_environment_with_config_data(env_name, data,
-                                                              region, nohang,
+                                                              nohang,
                                                               timeout=timeout)
 
     @expose(help='Save a configuration of the environment.')
@@ -74,33 +72,30 @@ class ConfigController(AbstractBaseController):
         env_name = self.get_env_name(varname='name',
                                      cmd_example='eb config save')
         app_name = self.get_app_name()
-        region = self.get_region()
 
         if not cfg_name:
-            cfg_name = self._choose_cfg_name(app_name, env_name, region)
+            cfg_name = self._choose_cfg_name(app_name, env_name)
 
-        saved_configs.create_config(app_name, env_name, cfg_name, region)
+        saved_configs.create_config(app_name, env_name, cfg_name)
 
     @expose(help='Upload a configuration to S3.')
     def put(self):
         app_name = self.get_app_name()
-        region = self.get_region()
         name = self._get_cfg_name('put')
         platform = fileoperations.get_default_solution_stack()
-        platform = commonops.get_solution_stack(platform, region)
+        platform = commonops.get_solution_stack(platform)
         platform = platform.name
 
-        saved_configs.update_config(app_name, name, region)
-        saved_configs.validate_config_file(app_name, name, platform, region)
+        saved_configs.update_config(app_name, name)
+        saved_configs.validate_config_file(app_name, name, platform)
 
     @expose(help='Download a configuration from S3.')
     def get(self):
         app_name = self.get_app_name()
-        region = self.get_region()
         name = self._get_cfg_name('get')
 
         try:
-            saved_configs.download_config_from_s3(app_name, name, region)
+            saved_configs.download_config_from_s3(app_name, name)
         except NotFoundError:
             io.log_error(strings['config.notfound'].replace('{config-name}',
                                                             name))
@@ -109,16 +104,14 @@ class ConfigController(AbstractBaseController):
     def delete(self):
         name = self._get_cfg_name('delete')
         app_name = self.get_app_name()
-        region = self.get_region()
 
-        saved_configs.delete_config(app_name, name, region)
+        saved_configs.delete_config(app_name, name)
 
     @expose(help='List all configurations.')
     def list(self):
         app_name = self.get_app_name()
-        region = self.get_region()
 
-        for c in saved_configs.get_configurations(app_name, region):
+        for c in saved_configs.get_configurations(app_name):
             io.echo(c)
 
     def _get_cfg_name(self, cmd):
@@ -130,8 +123,8 @@ class ConfigController(AbstractBaseController):
             return name
 
     @staticmethod
-    def _choose_cfg_name(app_name, env_name, region):
-        configs = saved_configs.get_configurations(app_name, region)
+    def _choose_cfg_name(app_name, env_name):
+        configs = saved_configs.get_configurations(app_name)
         io.echo()
         io.echo('Enter desired name of configuration.')
         default = utils.get_unique_name(env_name + '-sc', configs)

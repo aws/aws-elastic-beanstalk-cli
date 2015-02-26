@@ -15,9 +15,8 @@ from ..lib import elasticbeanstalk
 from . import commonops
 
 
-def cname_swap(source_env, dest_env, region):
-    request_id = elasticbeanstalk.swap_environment_cnames(source_env, dest_env,
-                                                          region=region)
+def cname_swap(source_env, dest_env):
+    request_id = elasticbeanstalk.swap_environment_cnames(source_env, dest_env)
 
-    commonops.wait_for_success_events(request_id, region, timeout_in_minutes=1,
+    commonops.wait_for_success_events(request_id, timeout_in_minutes=1,
                             sleep_time=2)

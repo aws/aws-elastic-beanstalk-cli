@@ -32,13 +32,12 @@ class ScaleController(AbstractBaseController):
 
     def do_command(self):
         app_name = self.get_app_name()
-        region = self.get_region()
         number = self.app.pargs.number
         timeout = self.app.pargs.timeout
         env_name = self.get_env_name(cmd_example='scale ' + str(number))
         confirm = self.app.pargs.force
 
-        scaleops.scale(app_name, env_name, number, confirm, region,
+        scaleops.scale(app_name, env_name, number, confirm,
                          timeout=timeout)
 
     def complete_command(self, commands):
@@ -46,6 +45,5 @@ class ScaleController(AbstractBaseController):
             # Environment names are the second positional argument in this
             ## controller, so we only complete if its the second
             if len(commands) == 2 and not commands[-1].startswith('-'):
-                region = fileoperations.get_default_region()
                 app_name = fileoperations.get_application_name()
-                io.echo(*commonops.get_env_names(app_name, region))
+                io.echo(*commonops.get_env_names(app_name))

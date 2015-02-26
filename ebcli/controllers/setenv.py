@@ -33,16 +33,14 @@ class SetEnvController(AbstractBaseController):
 
     def do_command(self):
         app_name = self.get_app_name()
-        region = self.get_region()
         env_name = self.get_env_name()
         var_list = self.app.pargs.varKey
         timeout = self.app.pargs.timeout
 
-        envvarops.setenv(app_name, env_name, var_list, region, timeout=None)
+        envvarops.setenv(app_name, env_name, var_list, timeout=None)
 
     def complete_command(self, commands):
         self.complete_region(commands)
         if commands[-1] in ['-e', '--environment']:
-            region = fileoperations.get_default_region()
             app_name = fileoperations.get_application_name()
-            io.echo(*commonops.get_env_names(app_name, region))
+            io.echo(*commonops.get_env_names(app_name))

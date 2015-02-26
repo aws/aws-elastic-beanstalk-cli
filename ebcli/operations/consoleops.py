@@ -11,12 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..lib import utils, elasticbeanstalk
+from ..lib import utils, elasticbeanstalk, aws
 from ..objects.exceptions import NotSupportedError
 from . import commonops
 
 
-def open_console(app_name, env_name, region):
+def open_console(app_name, env_name):
     if utils.is_ssh():
         raise NotSupportedError('The console command is not supported'
                                 ' in an ssh type session')
@@ -24,8 +24,9 @@ def open_console(app_name, env_name, region):
     #Get environment id
     env = None
     if env_name is not None:
-        env = elasticbeanstalk.get_environment(app_name, env_name, region)
+        env = elasticbeanstalk.get_environment(app_name, env_name)
 
+    region = aws.get_default_region()
     if env is not None:
         page = 'environment/dashboard'
     else:
@@ -35,8 +36,7 @@ def open_console(app_name, env_name, region):
     app_name = utils.url_encode(app_name)
 
     console_url = 'console.aws.amazon.com/elasticbeanstalk/home?'
-    if region:
-        console_url += 'region=' + region
+    console_url += 'region=' + region
     console_url += '#/' + page + '?applicationName=' + app_name
 
     if env is not None:

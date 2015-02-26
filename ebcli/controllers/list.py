@@ -34,10 +34,9 @@ class ListController(AbstractBaseController):
             app_name = self.get_app_name()
         else:
             app_name = None
-        region = self.get_region()
         verbose = self.app.pargs.verbose
 
-        listops.list_env_names(app_name, region, verbose, all_apps)
+        listops.list_env_names(app_name, verbose, all_apps)
 
     def complete_command(self, commands):
         # We only care about regions

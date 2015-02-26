@@ -24,7 +24,6 @@ class ConsoleController(AbstractBaseController):
 
     def do_command(self):
         app_name = self.get_app_name()
-        region = self.get_region()
         env_name = self.get_env_name(noerror=True)
 
-        consoleops.open_console(app_name, env_name, region)
+        consoleops.open_console(app_name, env_name)

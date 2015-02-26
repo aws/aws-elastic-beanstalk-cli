@@ -18,8 +18,8 @@ from ..objects.sourcecontrol import SourceControl
 from . import commonops
 
 
-def terminate(env_name, region, nohang=False, timeout=5):
-    request_id = elasticbeanstalk.terminate_environment(env_name, region)
+def terminate(env_name, nohang=False, timeout=5):
+    request_id = elasticbeanstalk.terminate_environment(env_name)
 
     # disassociate with branch if branch default
     default_env = commonops.get_current_branch_environment()
@@ -27,20 +27,20 @@ def terminate(env_name, region, nohang=False, timeout=5):
         commonops.set_environment_for_current_branch(None)
 
     if not nohang:
-       commonops.wait_for_success_events(request_id, region,
+       commonops.wait_for_success_events(request_id,
                                          timeout_in_minutes=timeout)
 
 
-def delete_app(app_name, region, force, nohang=False, cleanup=True,
+def delete_app(app_name, force, nohang=False, cleanup=True,
                timeout=15):
-    app = elasticbeanstalk.describe_application(app_name, region)
+    app = elasticbeanstalk.describe_application(app_name)
 
     if 'Versions' not in app:
         app['Versions'] = []
 
     if not force:
         #Confirm
-        envs = commonops.get_env_names(app_name, region)
+        envs = commonops.get_env_names(app_name)
         confirm_message = prompts['delete.confirm'].replace(
             '{app-name}', app_name)
         confirm_message = confirm_message.replace('{env-num}', str(len(envs)))
@@ -53,14 +53,13 @@ def delete_app(app_name, region, force, nohang=False, cleanup=True,
         io.validate_action(prompts['delete.validate'], app_name)
 
 
-    request_id = elasticbeanstalk.delete_application_and_envs(app_name,
-                                                              region)
+    request_id = elasticbeanstalk.delete_application_and_envs(app_name)
 
     if cleanup:
         cleanup_ignore_file()
         fileoperations.clean_up()
     if not nohang:
-        commonops.wait_for_success_events(request_id, region, sleep_time=1,
+        commonops.wait_for_success_events(request_id, sleep_time=1,
                                           timeout_in_minutes=timeout)
 
 

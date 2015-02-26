@@ -18,11 +18,11 @@ from ..objects.exceptions import TimeoutError
 from . import commonops
 
 
-def scale(app_name, env_name, number, confirm, region, timeout=None):
+def scale(app_name, env_name, number, confirm, timeout=None):
     options = []
     # get environment
     env = elasticbeanstalk.describe_configuration_settings(
-        app_name, env_name, region
+        app_name, env_name
     )['OptionSettings']
 
     # if single instance, offer to switch to load-balanced
@@ -54,9 +54,9 @@ def scale(app_name, env_name, number, confirm, region, timeout=None):
              'Value': str(number)
             }
         )
-    request_id = elasticbeanstalk.update_environment(env_name, options, region)
+    request_id = elasticbeanstalk.update_environment(env_name, options)
     try:
-        commonops.wait_for_success_events(request_id, region,
+        commonops.wait_for_success_events(request_id,
                                 timeout_in_minutes=timeout or 5)
     except TimeoutError:
         io.log_error(strings['timeout.error'])

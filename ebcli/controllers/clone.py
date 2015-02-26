@@ -44,7 +44,6 @@ class CloneController(AbstractBaseController):
 
     def do_command(self):
         app_name = self.get_app_name()
-        region = self.get_region()
         env_name = self.get_env_name()
         clone_name = self.app.pargs.clone_name
         cname = self.app.pargs.cname
@@ -58,7 +57,7 @@ class CloneController(AbstractBaseController):
         platform = None
 
         # Get original environment
-        env = elasticbeanstalk.get_environment(app_name, env_name, region)
+        env = elasticbeanstalk.get_environment(app_name, env_name)
 
         # Get tier of original environment
         tier = env.tier
@@ -66,7 +65,7 @@ class CloneController(AbstractBaseController):
             raise InvalidOptionsError(strings['worker.cname'])
 
         if cname:
-            if not commonops.is_cname_available(cname, region):
+            if not commonops.is_cname_available(cname):
                 raise AlreadyExistsError(strings['cname.unavailable'].
                                          replace('{cname}', cname))
 
@@ -81,7 +80,7 @@ class CloneController(AbstractBaseController):
             else:
                 unique_name = 'my-cloned-env'
 
-            env_list = commonops.get_env_names(app_name, region)
+            env_list = commonops.get_env_names(app_name)
 
             unique_name = utils.get_unique_name(unique_name, env_list)
 
@@ -92,14 +91,14 @@ class CloneController(AbstractBaseController):
 
         if tier.name.lower() == 'webserver':
             if not cname and not provided_clone_name:
-                cname = get_cname(clone_name, region)
+                cname = get_cname(clone_name)
             elif not cname:
                 cname = None
 
         if not exact:
             if not provided_clone_name:  # interactive mode
                 latest = commonops.get_latest_solution_stack(
-                    env.platform.version, region=region)
+                    env.platform.version)
                 if latest != env.platform:
                     # ask for latest or exact
                     io.echo()
@@ -112,7 +111,7 @@ class CloneController(AbstractBaseController):
             else:
                 # assume latest - get original platform
                 platform = commonops.get_latest_solution_stack(
-                    env.platform.version, region=region)
+                    env.platform.version)
                 if platform != env.platform:
                     io.log_warning(prompts['clone.latestwarn'])
 
@@ -129,7 +128,7 @@ class CloneController(AbstractBaseController):
 
         clone_request.option_settings += envvars
 
-        cloneops.make_cloned_env(clone_request, region, nohang=nohang,
+        cloneops.make_cloned_env(clone_request, nohang=nohang,
                                    timeout=timeout)
 
     def complete_command(self, commands):

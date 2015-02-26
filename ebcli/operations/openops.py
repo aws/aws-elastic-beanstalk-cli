@@ -15,8 +15,8 @@ from ..lib import elasticbeanstalk
 from . import commonops
 
 
-def open_app(app_name, env_name, region):
+def open_app(app_name, env_name):
     # get cname
-    env = elasticbeanstalk.get_environment(app_name, env_name, region)
+    env = elasticbeanstalk.get_environment(app_name, env_name)
 
     commonops.open_webpage_in_browser(env.cname)

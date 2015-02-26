@@ -35,7 +35,6 @@ class SSHController(AbstractBaseController):
 
     def do_command(self):
         app_name = self.get_app_name()
-        region = self.get_region()
         number = self.app.pargs.number
         env_name = self.get_env_name()
         instance = self.app.pargs.instance
@@ -43,14 +42,14 @@ class SSHController(AbstractBaseController):
         setup = self.app.pargs.setup
 
         if setup:
-            self.setup_ssh(env_name, region)
+            self.setup_ssh(env_name)
             return
 
         if instance and number:
             raise InvalidOptionsError(strings['ssh.instanceandnumber'])
 
         if not instance:
-            instances = commonops.get_instance_ids(app_name, env_name, region)
+            instances = commonops.get_instance_ids(app_name, env_name)
             if number is not None:
                 if number > len(instances) or number < 1:
                     raise InvalidOptionsError(
@@ -68,29 +67,27 @@ class SSHController(AbstractBaseController):
                 instance = utils.prompt_for_item_in_list(instances)
 
         try:
-            sshops.ssh_into_instance(instance, region, keep_open=keep_open)
+            sshops.ssh_into_instance(instance, keep_open=keep_open)
         except NoKeypairError:
             io.log_error(prompts['ssh.nokey'])
 
-    def setup_ssh(self, env_name, region):
+    def setup_ssh(self, env_name):
         # Instance does not have a keypair
         io.log_warning(prompts['ssh.setupwarn'].replace('{env-name}',
                                                         env_name))
-        keyname = sshops.prompt_for_ec2_keyname(region, env_name=env_name)
+        keyname = sshops.prompt_for_ec2_keyname(env_name=env_name)
         if keyname:
             options = [
                 {'Namespace': 'aws:autoscaling:launchconfiguration',
                  'OptionName': 'EC2KeyName',
                  'Value': keyname}
             ]
-            commonops.update_environment(env_name, options,
-                                          region, False)
+            commonops.update_environment(env_name, options, False)
 
     def complete_command(self, commands):
         if not self.complete_region(commands):
             # Environment names are the second positional argument in this
             ## controller, so we only complete if its the second
             if len(commands) == 2 and commands[-1].startswith('-'):
-                region = fileoperations.get_default_region()
                 app_name = fileoperations.get_application_name()
-                io.echo(commonops.get_env_names(app_name, region))
+                io.echo(commonops.get_env_names(app_name))

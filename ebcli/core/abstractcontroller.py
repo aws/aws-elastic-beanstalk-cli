@@ -93,19 +93,12 @@ class AbstractBaseController(controller.CementBaseController):
 
         return env_name
 
-    def get_region(self):
-        region = self.app.pargs.region
-        if not region:
-            region = fileoperations.get_default_region()
-        return region
-
     def complete_command(self, commands):
         if not self.complete_region(commands):
             if len(commands) == 1:  # They only have the main command so far
                 # lets complete for positional args
-                region = fileoperations.get_default_region()
                 app_name = fileoperations.get_application_name()
-                io.echo(*commonops.get_env_names(app_name, region))
+                io.echo(*commonops.get_env_names(app_name))
 
     def complete_region(self, commands):
         # we only care about top command

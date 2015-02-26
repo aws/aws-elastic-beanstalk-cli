@@ -35,7 +35,6 @@ class TerminateController(AbstractBaseController):
         epilog = strings['terminate.epilog']
 
     def do_command(self):
-        region = self.get_region()
         app_name = self.get_app_name()
         force = self.app.pargs.force
         all = self.app.pargs.all
@@ -44,7 +43,7 @@ class TerminateController(AbstractBaseController):
 
         if all:
             cleanup = False if self.app.pargs.region else True
-            terminateops.delete_app(app_name, region, force, nohang=nohang,
+            terminateops.delete_app(app_name, force, nohang=nohang,
                                     cleanup=cleanup, timeout=timeout)
 
         else:
@@ -56,7 +55,7 @@ class TerminateController(AbstractBaseController):
 
             if not force:
                 # make sure env exists
-                env_names = commonops.get_env_names(app_name, region)
+                env_names = commonops.get_env_names(app_name)
                 if env_name not in env_names:
                     raise NotFoundError('Environment ' +
                                         env_name + ' not found')
@@ -65,5 +64,5 @@ class TerminateController(AbstractBaseController):
                 io.validate_action(prompts['terminate.validate'], env_name)
 
 
-            terminateops.terminate(env_name, region, nohang=nohang,
+            terminateops.terminate(env_name, nohang=nohang,
                                    timeout=timeout)

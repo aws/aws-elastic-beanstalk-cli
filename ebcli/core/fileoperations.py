@@ -223,7 +223,10 @@ def get_application_name(default=_marker):
 
 
 def get_default_region():
-    return get_config_setting('global', 'default_region')
+    try:
+        return get_config_setting('global', 'default_region')
+    except NotInitializedError:
+        return None
 
 
 def get_default_solution_stack():
