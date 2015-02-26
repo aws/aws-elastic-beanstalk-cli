@@ -33,14 +33,8 @@ DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
 
 
 def _make_api_call(operation_name, **operation_options):
-    try:
-        endpoint_url = globals.app.pargs.endpoint_url
-    except AttributeError:
-        endpoint_url = None
-
     return aws.make_api_call('elasticbeanstalk',
                              operation_name,
-                             endpoint_url=endpoint_url,
                              **operation_options)
 
 

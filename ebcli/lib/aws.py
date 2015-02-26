@@ -35,6 +35,7 @@ _id = None
 _key = None
 _region_name = None
 _verify_ssl = True
+_endpoint_url = None
 
 apply_patches()
 
@@ -62,6 +63,11 @@ def set_region(region_name):
     _region_name = region_name
 
 
+def set_endpoint_url(endpoint_url):
+    global _endpoint_url
+    _endpoint_url = endpoint_url
+
+
 def no_verify_ssl():
     global _verify_ssl
     _verify_ssl = False
@@ -78,15 +84,18 @@ def _set_user_agent_for_session(session):
     session.user_agent_version = __version__
 
 
-def _get_client(service_name, endpoint_url=None):
+def _get_client(service_name):
     aws_access_key_id = _id
     aws_secret_key = _key
     if service_name in _api_clients:
         return _api_clients[service_name]
 
     session = _get_botocore_session()
+    if service_name == 'elasticbeanstalk':
+        endpoint_url = _endpoint_url
+    else:
+        endpoint_url = None
     try:
-
         LOG.debug('Creating new Botocore Client for ' + str(service_name))
         client = session.create_client(service_name,
                                        endpoint_url=endpoint_url,
@@ -125,10 +134,9 @@ def get_default_region():
         raise NoRegionError(e)
 
 
-def make_api_call(service_name, operation_name, endpoint_url=None,
-                  **operation_options):
+def make_api_call(service_name, operation_name, **operation_options):
     try:
-        client = _get_client(service_name, endpoint_url=endpoint_url)
+        client = _get_client(service_name)
     except botocore.exceptions.UnknownEndpointError as e:
         raise NoRegionError(e)
     except botocore.exceptions.PartialCredentialsError:

@@ -29,6 +29,7 @@ def pre_run_hook(app):
         LoggingLogHandler.set_level(app.log, 'INFO')
     set_profile(app.pargs.profile)
     set_region(app.pargs.region)
+    set_endpoint(app.pargs.endpoint_url)
     set_ssl(app.pargs.no_verify_ssl)
 
 
@@ -54,3 +55,8 @@ def set_region(region_name):
         region_name = fileoperations.get_default_region()
 
     aws.set_region(region_name)
+
+
+def set_endpoint(endpoint_url):
+    if endpoint_url:
+        aws.set_endpoint_url(endpoint_url)
