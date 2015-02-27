@@ -3,6 +3,13 @@ Changelog
 =========
 
 ------------------
+3.1.2 (2015-02-26)
+------------------
+- Fix multithreaded issue on python 3.4.3
+- Fix environment names printing in columns
+- Update botocore to 0.93.0
+
+------------------
 3.1.1 (2015-02-24)
 ------------------
 - Fix git issue on windows
