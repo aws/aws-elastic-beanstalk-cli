@@ -213,7 +213,8 @@ def make_api_call(service_name, operation_name, **operation_options):
             LOG.debug('Credentials incomplete')
             raise CredentialsError(str(e))
 
-        except botocore.exceptions.ValidationError as e:
+        except (botocore.exceptions.ValidationError,
+                botocore.exceptions.ParamValidationError) as e:
             raise InvalidSyntaxError(e)
 
         except botocore.exceptions.BotoCoreError as e:
