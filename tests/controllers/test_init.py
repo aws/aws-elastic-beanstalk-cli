@@ -13,7 +13,7 @@
 
 import mock
 
-from controllers.basecontrollertest import BaseControllerTest
+from .basecontrollertest import BaseControllerTest
 
 from ebcli.core.ebcore import EB
 from ebcli.objects.solutionstack import SolutionStack

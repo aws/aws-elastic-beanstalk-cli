@@ -17,14 +17,15 @@ from cement.utils import test
 
 
 class BaseOperationsTest(test.CementTestCase):
+    module_name = 'base'
 
     def setUp(self):
         super(BaseOperationsTest, self).setUp()
         self.reset_backend()
         self.patcher_input = mock.patch('ebcli.core.io.get_input')
-        self.patcher_eb = mock.patch('ebcli.core.operations.elasticbeanstalk')
+        self.patcher_eb = mock.patch('ebcli.operations.' + self.module_name + '.elasticbeanstalk')
         self.patcher_output = mock.patch('ebcli.core.io.echo')
-        self.patcher_file = mock.patch('ebcli.core.operations.fileoperations')
+        self.patcher_file = mock.patch('ebcli.operations.' + self.module_name + '.fileoperations')
 
         self.mock_input = self.patcher_input.start()
         self.mock_elasticbeanstalk = self.patcher_eb.start()

@@ -10,20 +10,13 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import pytest
 
-from mock import patch
-
-from ebcli.core.ebcore import EB
-from .baseinttest import BaseIntegrationTest
-from ebcli.resources.strings import strings
-from ebcli.core import fileoperations
-from ebcli.objects.sourcecontrol import NoSC
-from ebcli.objects.solutionstack import SolutionStack
-
-from ebcli.objects.exceptions import CredentialsError
+def pytest_addoption(parser):
+    parser.addoption("--end2end", action="store_true",
+                     help="run end2end tests")
 
 
-class TestInit(BaseIntegrationTest):
-
-    def test_init_standard(self):
-        pass
+def pytest_runtest_setup(item):
+    if 'end2end' in item.keywords and not item.config.getoption("--end2end"):
+        pytest.skip("Need --end2end option to run")

@@ -14,7 +14,7 @@
 from ebcli.core.ebcore import EB
 from ebcli.core import fileoperations
 
-from integration.baseinttest import BaseIntegrationTest
+from .baseinttest import BaseIntegrationTest
 
 
 class TestCreate(BaseIntegrationTest):

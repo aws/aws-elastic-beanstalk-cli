@@ -14,6 +14,7 @@
 import os
 import shutil
 from random import randint
+import pytest
 
 import mock
 from six import print_
@@ -55,6 +56,7 @@ class TestEnd2End(test.CementTestCase):
 
     """
 
+    @pytest.mark.end2end
     def test_end2end(self):
         """ Run all tests in this one method in order to preserve order """
         self.create_index_file()

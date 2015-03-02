@@ -13,7 +13,7 @@
 
 import mock
 
-from controllers.basecontrollertest import BaseControllerTest
+from .basecontrollertest import BaseControllerTest
 
 from ebcli.core.ebcore import EB
 from ebcli.objects.solutionstack import SolutionStack
@@ -68,7 +68,6 @@ class TestCreate(BaseControllerTest):
         )
         args, kwargs = self.mock_operations.make_new_env.call_args
         self.assertEqual(args[0], env_request)
-        self.assertEqual(args[1], 'us-west-2')
 
     def test_create_defaults(self):
         """
@@ -98,7 +97,6 @@ class TestCreate(BaseControllerTest):
         )
         args, kwargs = self.mock_operations.make_new_env.call_args
         self.assertEqual(args[0], env_request)
-        self.assertEqual(args[1], 'us-west-2')
 
     @mock.patch('ebcli.core.io.log_error')
     def test_create_sample_and_label(self, mock_error):
@@ -185,5 +183,4 @@ class TestCreate(BaseControllerTest):
         )
         args, kwargs = self.mock_operations.make_new_env.call_args
         self.assertEqual(args[0], env_request)
-        self.assertEqual(args[1], 'us-east-1')
         self.assertEqual(kwargs['branch_default'], True)

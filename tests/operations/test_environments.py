@@ -11,13 +11,14 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from baseoperationstest import BaseOperationsTest
-from ebcli.core import operations
+from .baseoperationstest import BaseOperationsTest
+from ebcli.operations import createops
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.requests import CreateEnvironmentRequest
 
 
 class TestCreateEnvironment(BaseOperationsTest):
+    module_name = 'createops'
 
     def test_create_new_environment_envname_taken(self):
         self.mock_elasticbeanstalk.create_environment.side_effect = [
@@ -31,7 +32,7 @@ class TestCreateEnvironment(BaseOperationsTest):
             app_name='app-name',
             env_name='env-name',
         )
-        operations.create_env(env_request, 'region', interactive=True)
+        createops.create_env(env_request, interactive=True)
         self.assertEqual(self.mock_elasticbeanstalk.create_environment.call_count, 2)
 
     def test_create_new_environment_envname_taken_script(self):
@@ -44,7 +45,7 @@ class TestCreateEnvironment(BaseOperationsTest):
                 app_name='app-name',
                 env_name='env-name',
                 )
-            operations.create_env(env_request, 'region', interactive=False)
+            createops.create_env(env_request, interactive=False)
             self.fail('Should have thrown InvalidParameterValueError')
         except InvalidParameterValueError:
             # Expected
@@ -62,7 +63,7 @@ class TestCreateEnvironment(BaseOperationsTest):
             app_name='app-name',
             env_name='env-name',
             )
-        operations.create_env(env_request, 'region', interactive=True)
+        createops.create_env(env_request, interactive=True)
 
         self.assertEqual(self.mock_elasticbeanstalk.create_environment.call_count, 2)
 
@@ -76,7 +77,7 @@ class TestCreateEnvironment(BaseOperationsTest):
                 app_name='app-name',
                 env_name='env-name',
                 )
-            operations.create_env(env_request, 'region', interactive=False)
+            createops.create_env(env_request, interactive=False)
             self.fail('Should have thrown InvalidParameterValueError')
         except InvalidParameterValueError:
             # Expected
@@ -92,7 +93,7 @@ class TestCreateEnvironment(BaseOperationsTest):
                 app_name='app-name',
                 env_name='env-name',
                 )
-            operations.create_env(env_request, 'region', interactive=True)
+            createops.create_env(env_request, interactive=True)
             self.fail('Should have thrown InvalidParameterValueError')
         except InvalidParameterValueError:
             # Expected
@@ -108,7 +109,7 @@ class TestCreateEnvironment(BaseOperationsTest):
                 app_name='app-name',
                 env_name='env-name',
                 )
-            operations.create_env(env_request, 'region', interactive=False)
+            createops.create_env(env_request, interactive=False)
             self.fail('Should have thrown InvalidParameterValueError')
         except InvalidParameterValueError:
             #Expected

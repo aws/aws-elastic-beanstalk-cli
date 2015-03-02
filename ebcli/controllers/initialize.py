@@ -107,7 +107,8 @@ class InitController(AbstractBaseController):
             initializeops.credentials_are_valid()
             return profile
         except NoRegionError:
-            aws.set_region(self.get_region())
+            self.region = self.get_region()
+            aws.set_region(self.region)
             return profile
         except InvalidProfileError:
             if given_profile:
