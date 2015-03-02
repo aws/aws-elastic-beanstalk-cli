@@ -33,4 +33,5 @@ def deploy(app_name, env_name, version, label, message, timeout=5):
         env_name, app_version_label)
 
     commonops.wait_for_success_events(request_id,
-                                      timeout_in_minutes=timeout)
+                                      timeout_in_minutes=timeout,
+                                      can_abort=True)

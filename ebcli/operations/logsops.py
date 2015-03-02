@@ -19,7 +19,7 @@ from six import iteritems
 
 from ..core import fileoperations, io
 from ..lib import elasticbeanstalk, utils
-from ..resources.strings import strings
+from ..resources.strings import strings, prompts
 from . import commonops
 
 
@@ -29,6 +29,7 @@ def logs(env_name, info_type, do_zip=False, instance_id=None):
 
     # Wait for logs to finish
     request_id = result['ResponseMetadata']['RequestId']
+    io.echo(prompts['logs.retrieving'])
     commonops.wait_for_success_events(request_id, timeout_in_minutes=2,
                                       sleep_time=1, stream_events=False)
 

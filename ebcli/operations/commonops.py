@@ -33,7 +33,7 @@ LOG = minimal_logger(__name__)
 
 
 def wait_for_success_events(request_id, timeout_in_minutes=None,
-                            sleep_time=5, stream_events=True):
+                            sleep_time=5, stream_events=True, can_abort=False):
     if timeout_in_minutes == 0:
         return
     if timeout_in_minutes is None:
@@ -44,43 +44,51 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
 
     last_time = None
 
+    streamer = io.get_event_streamer()
+    if can_abort:
+        streamer.prompt += strings['events.abortmessage']
+
     #Get first events
     events = []
-    while not events:
-        events = elasticbeanstalk.get_new_events(
-            None, None, request_id, last_event_time=None
-        )
+    try:
+        while not events:
+            events = elasticbeanstalk.get_new_events(
+                None, None, request_id, last_event_time=None
+            )
 
-        if len(events) > 0:
-            event = events[-1]
-            app_name = event.app_name
-            env_name = event.environment_name
+            if len(events) > 0:
+                event = events[-1]
+                app_name = event.app_name
+                env_name = event.environment_name
 
-            log_event(event)
-            # Test event message for success string
-            _is_success_string(event.message)
-            last_time = event.event_date
-        else:
+                if stream_events:
+                    streamer.stream_event(get_event_string(event))
+                # Test event message for success string
+                if _is_success_string(event.message):
+                    return
+                last_time = event.event_date
+            else:
+                time.sleep(sleep_time)
+
+        while (datetime.now() - start) < timediff:
             time.sleep(sleep_time)
 
-    while (datetime.now() - start) < timediff:
-        time.sleep(sleep_time)
+            events = elasticbeanstalk.get_new_events(
+                app_name, env_name, None, last_event_time=last_time
+            )
 
-        events = elasticbeanstalk.get_new_events(
-            app_name, env_name, None, last_event_time=last_time
-        )
+            for event in reversed(events):
+                if stream_events:
+                    streamer.stream_event(get_event_string(event))
+                    # We dont need to update last_time if we are not printing.
+                    # This can solve timing issues
+                    last_time = event.event_date
 
-        for event in reversed(events):
-            if stream_events:
-                log_event(event)
-                # We dont need to update last_time if we are not printing.
-                # This can solve timing issues
-                last_time = event.event_date
-
-            # Test event message for success string
-            if _is_success_string(event.message):
-                return
-
+                # Test event message for success string
+                if _is_success_string(event.message):
+                    return
+    finally:
+        streamer.end_stream()
     # We have timed out
     raise TimeoutError('Timed out while waiting for command to Complete')
 
@@ -118,29 +126,17 @@ def _is_success_string(message):
     return False
 
 
-def log_event(event, echo=False):
+def get_event_string(event, long_format=False):
     message = event.message
     severity = event.severity
     date = event.event_date
-    if echo:
-        io.echo(get_event_string(event))
-    elif severity == 'INFO':
-        io.echo('INFO:', message)
-    elif severity == 'WARN':
-        io.log_warning(message)
-    elif severity == 'ERROR':
-        io.log_error(message)
-
-    return message, date
-
-
-def get_event_string(event):
-    message = event.message
-    severity = event.severity
-    date = event.event_date
-
-    return '{0} {1} {2}'.format(date.strftime("%Y-%m-%d %H:%M:%S").ljust(22),
-                                severity.ljust(7), message)
+    if long_format:
+        return '{0} {1} {2}'.format(
+            date.strftime("%Y-%m-%d %H:%M:%S").ljust(22),
+            severity.ljust(7),
+            message)
+    else:
+        return '{0}: {1}'.format(severity, message)
 
 
 def get_all_env_names():
@@ -461,7 +457,8 @@ def update_environment(env_name, changes, nohang, remove=None,
 
     io.echo('Printing Status:')
     try:
-        wait_for_success_events(request_id, timeout_in_minutes=timeout)
+        wait_for_success_events(request_id, timeout_in_minutes=timeout,
+                                can_abort=True)
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 

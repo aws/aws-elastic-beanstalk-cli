@@ -30,20 +30,24 @@ def print_events(app_name, env_name, follow):
 
         data = []
         for event in reversed(events):
-            data.append(commonops.get_event_string(event))
+            data.append(commonops.get_event_string(event, long_format=True))
         io.echo_with_pager(os.linesep.join(data))
 
 
 def follow_events(app_name, env_name):
-    io.echo(prompts['events.hanging'])
     last_time = None
-    while True:
-        events = elasticbeanstalk.get_new_events(
-            app_name, env_name, None, last_event_time=last_time
-        )
+    streamer = io.get_event_streamer()
+    try:
+        while True:
+            events = elasticbeanstalk.get_new_events(
+                app_name, env_name, None, last_event_time=last_time
+            )
 
-        for event in reversed(events):
-            commonops.log_event(event, echo=True)
-            last_time = event.event_date
+            for event in reversed(events):
+                message = commonops.get_event_string(event)
+                streamer.stream_event(message)
+                last_time = event.event_date
 
-        time.sleep(4)
+            time.sleep(4)
+    finally:
+        streamer.end_stream()
