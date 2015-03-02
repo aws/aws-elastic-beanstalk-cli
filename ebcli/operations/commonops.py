@@ -123,8 +123,7 @@ def log_event(event, echo=False):
     severity = event.severity
     date = event.event_date
     if echo:
-        io.echo(date.strftime("%Y-%m-%d %H:%M:%S").ljust(23),
-                severity.ljust(7), message)
+        io.echo(get_event_string(event))
     elif severity == 'INFO':
         io.echo('INFO:', message)
     elif severity == 'WARN':
@@ -133,6 +132,15 @@ def log_event(event, echo=False):
         io.log_error(message)
 
     return message, date
+
+
+def get_event_string(event):
+    message = event.message
+    severity = event.severity
+    date = event.event_date
+
+    return '{0} {1} {2}'.format(date.strftime("%Y-%m-%d %H:%M:%S").ljust(22),
+                                severity.ljust(7), message)
 
 
 def get_all_env_names():

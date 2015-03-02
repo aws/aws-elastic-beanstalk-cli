@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import os
+
 import time
 from ..core import io
 from ..lib import elasticbeanstalk
@@ -20,7 +22,20 @@ from . import commonops
 
 def print_events(app_name, env_name, follow):
     if follow:
-        io.echo(prompts['events.hanging'])
+        follow_events(app_name, env_name)
+    else:
+
+        events = elasticbeanstalk.get_new_events(
+            app_name, env_name, None)
+
+        data = []
+        for event in reversed(events):
+            data.append(commonops.get_event_string(event))
+        io.echo_with_pager(os.linesep.join(data))
+
+
+def follow_events(app_name, env_name):
+    io.echo(prompts['events.hanging'])
     last_time = None
     while True:
         events = elasticbeanstalk.get_new_events(
@@ -31,7 +46,4 @@ def print_events(app_name, env_name, follow):
             commonops.log_event(event, echo=True)
             last_time = event.event_date
 
-        if follow:
-            time.sleep(4)
-        else:
-            break
+        time.sleep(4)
