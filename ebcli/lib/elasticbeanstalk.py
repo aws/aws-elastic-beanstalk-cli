@@ -367,7 +367,8 @@ def get_storage_location():
 
 
 def update_environment(env_name, options, remove=None,
-                       template=None, template_body=None):
+                       template=None, template_body=None,
+                       solution_stack_name=None):
     LOG.debug('Inside update_environment api wrapper')
     if remove is None:
         remove = []
@@ -385,6 +386,8 @@ def update_environment(env_name, options, remove=None,
         kwargs['TemplateSpecification'] = \
             {'TemplateSource':
                 {'SourceContents': template_body}}
+    if solution_stack_name:
+        kwargs['SolutionStackName'] = solution_stack_name
 
     try:
         response = _make_api_call('update_environment',

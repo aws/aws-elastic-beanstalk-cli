@@ -2436,6 +2436,10 @@
         "TemplateSpecification":{
           "shape":"EnvironmentTemplateSpecification",
           "documentation":""
+        },
+        "SolutionStackName": {
+          "shape": "SolutionStackName",
+          "documentation": ""
         }
       },
       "documentation":"<p>This documentation target is not reported in the API reference.</p>"

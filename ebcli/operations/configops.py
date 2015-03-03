@@ -36,18 +36,23 @@ def update_environment_configuration(app_name, env_name, nohang,
     try:
         usr_model = fileoperations.get_environment_from_file(env_name)
         changes, remove = configuration.collect_changes(api_model, usr_model)
+        if api_model['SolutionStackName'] != usr_model['SolutionStackName']:
+            solution_name = usr_model['SolutionStackName']
+        else:
+            solution_name = None
         fileoperations.delete_env_file(env_name)
     except InvalidSyntaxError:
         io.log_error(prompts['update.invalidsyntax'])
         return
 
-    if not changes and not remove:
+    if not changes and not remove and not solution_name:
         # no changes made, exit
         io.log_warning('No changes made. Exiting.')
         return
 
     commonops.update_environment(env_name, changes, nohang,
-                                 remove=remove, timeout=timeout)
+                                 remove=remove, timeout=timeout,
+                                 solution_stack_name=solution_name)
 
 
 def save_env_file(api_model):

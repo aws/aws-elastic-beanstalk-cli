@@ -120,6 +120,7 @@ def convert_api_to_usr_model(api_model):
     _get_key('ApplicationName', usr_model, api_model)
     _get_key('EnvironmentName', usr_model, api_model)
     _get_key('DateUpdated', usr_model, api_model)
+    _get_key('SolutionStackName', usr_model, api_model)
     usr_model['settings'] = dict()
     usr_model_settings = usr_model['settings']
 

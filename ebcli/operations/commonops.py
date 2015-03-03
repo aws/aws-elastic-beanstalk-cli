@@ -439,11 +439,13 @@ def create_app_version(app_name, label=None, message=None):
 
 
 def update_environment(env_name, changes, nohang, remove=None,
-                       template=None, timeout=None, template_body=None):
+                       template=None, timeout=None, template_body=None,
+                       solution_stack_name=None):
     try:
         request_id = elasticbeanstalk.update_environment(
             env_name, changes, remove=remove, template=template,
-            template_body=template_body)
+            template_body=template_body,
+            solution_stack_name=solution_stack_name)
     except InvalidStateError:
         io.log_error(prompts['update.invalidstate'])
         return
