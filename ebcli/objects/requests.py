@@ -165,6 +165,14 @@ class CreateEnvironmentRequest(object):
             'aws:elasticbeanstalk:command',
             'BatchSizeType',
             'Percentage')
+        self.add_option_setting(
+            'aws:autoscaling:updatepolicy:rollingupdate',
+            'RollingUpdateEnabled',
+            'true')
+        self.add_option_setting(
+            'aws:autoscaling:updatepolicy:rollingupdate',
+            'RollingUpdateType',
+            'Health')
         if not self.tier or self.tier.name.lower() != 'worker':
             self.add_option_setting(
                 'aws:elb:policies',
