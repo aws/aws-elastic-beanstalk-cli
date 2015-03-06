@@ -31,6 +31,7 @@ def pre_run_hook(app):
     set_region(app.pargs.region)
     set_endpoint(app.pargs.endpoint_url)
     set_ssl(app.pargs.no_verify_ssl)
+    set_debugboto(app.pargs.debugboto)
 
 
 def set_profile(profile):
@@ -60,3 +61,8 @@ def set_region(region_name):
 def set_endpoint(endpoint_url):
     if endpoint_url:
         aws.set_endpoint_url(endpoint_url)
+
+
+def set_debugboto(debugboto):
+    if debugboto:
+        aws.set_debug()

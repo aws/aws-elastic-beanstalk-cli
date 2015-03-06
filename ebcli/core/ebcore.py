@@ -110,6 +110,8 @@ class EB(foundation.CementApp):
         self.add_arg('--endpoint-url', help=SUPPRESS)
         self.add_arg('--no-verify-ssl',
                      action='store_true', help=flag_text['base.noverify'])
+        self.add_arg('--debugboto',  # show debug info for botocore
+                     action='store_true', help=SUPPRESS)
 
         globals.app = self
 

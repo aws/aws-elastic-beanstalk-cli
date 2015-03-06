@@ -36,6 +36,7 @@ _key = None
 _region_name = None
 _verify_ssl = True
 _endpoint_url = None
+_debug = False
 
 apply_patches()
 
@@ -77,6 +78,11 @@ def set_profile_override(profile):
     global _profile_env_var
     set_profile(profile)
     _profile_env_var = None
+
+
+def set_debug():
+    global _debug
+    _debug = True
 
 
 def _set_user_agent_for_session(session):
@@ -121,6 +127,8 @@ def _get_botocore_session():
             'profile': (None, _profile_env_var, _profile)})
         _set_user_agent_for_session(session)
         _get_botocore_session.botocore_session = session
+        if _debug:
+            session.set_debug_logger()
 
     return _get_botocore_session.botocore_session
 
