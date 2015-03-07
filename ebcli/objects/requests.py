@@ -165,15 +165,7 @@ class CreateEnvironmentRequest(object):
             'aws:elasticbeanstalk:command',
             'BatchSizeType',
             'Percentage')
-        self.add_option_setting(
-            'aws:autoscaling:updatepolicy:rollingupdate',
-            'RollingUpdateEnabled',
-            'true')
-        self.add_option_setting(
-            'aws:autoscaling:updatepolicy:rollingupdate',
-            'RollingUpdateType',
-            'Health')
-        if not self.tier or self.tier.name.lower() != 'worker':
+        if not self.tier or self.tier.name.lower() == 'webserver':
             self.add_option_setting(
                 'aws:elb:policies',
                 'ConnectionDrainingEnabled',
@@ -186,6 +178,14 @@ class CreateEnvironmentRequest(object):
                 'aws:elb:loadbalancer',
                 'CrossZone',
                 'true')
+            self.add_option_setting(
+                'aws:autoscaling:updatepolicy:rollingupdate',
+                'RollingUpdateEnabled',
+                'true')
+            self.add_option_setting(
+                'aws:autoscaling:updatepolicy:rollingupdate',
+                'RollingUpdateType',
+                'Health')
 
     def compile_database_options(self):
         if not self.database:
