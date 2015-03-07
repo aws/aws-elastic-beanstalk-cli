@@ -122,7 +122,7 @@ strings = {
     'sc.unstagedchanges': 'You have uncommitted changes.',
     'sc.gitnotinstalled': 'Your project is using git, but git doesn\'t appear to be installed.\n'
                           'Have you added git to your PATH?',
-    'events.streamprompt': ' -- Events -- (safe to Ctrl+C).',
+    'events.streamprompt': ' -- Events -- (safe to Ctrl+C)',
     'events.abortmessage': ' Use "eb abort" to abort command.',
 }
 
