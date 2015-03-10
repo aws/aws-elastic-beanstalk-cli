@@ -21,7 +21,7 @@ from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
 from ..objects.exceptions import ServiceError, NotAuthorizedError, \
-    InvalidSyntaxError, CredentialsError, NoRegionError, \
+    CredentialsError, NoRegionError,  ValidationError, \
     InvalidProfileError, ConnectionError, AlreadyExistsError, NotFoundError
 from .utils import static_var
 from .botopatch import apply_patches
@@ -223,7 +223,7 @@ def make_api_call(service_name, operation_name, **operation_options):
 
         except (botocore.exceptions.ValidationError,
                 botocore.exceptions.ParamValidationError) as e:
-            raise InvalidSyntaxError(e)
+            raise ValidationError(str(e))
 
         except botocore.exceptions.BotoCoreError as e:
             LOG.error('Botocore Error')

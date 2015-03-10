@@ -17,17 +17,18 @@ import sys
 
 # Add vendor directory to module search path
 # Need this for botocore
-
-parent_folder = os.path.dirname(__file__)
-parent_dir = os.path.abspath(parent_folder)
-while not parent_folder.endswith('ebcli'):
-    # Keep going up until we get to the right folder
-    parent_folder = os.path.dirname(parent_folder)
+def fix_path():
+    parent_folder = os.path.dirname(__file__)
     parent_dir = os.path.abspath(parent_folder)
+    while not parent_folder.endswith('ebcli'):
+        # Keep going up until we get to the right folder
+        parent_folder = os.path.dirname(parent_folder)
+        parent_dir = os.path.abspath(parent_folder)
 
-vendor_dir = os.path.join(parent_dir, 'bundled')
+    vendor_dir = os.path.join(parent_dir, 'bundled')
 
-sys.path.insert(0, vendor_dir)
+    sys.path.insert(0, vendor_dir)
+fix_path()
 
 import logging
 from argparse import SUPPRESS
@@ -58,6 +59,7 @@ from ..controllers.list import ListController
 from ..controllers.printenv import PrintEnvController
 from ..controllers.clone import CloneController
 from ..controllers.swap import SwapController
+from ..controllers.upgrade import UpgradeController
 from ..core.completer import CompleterController
 from ..objects.exceptions import *
 from ..resources.strings import strings, flag_text
@@ -91,6 +93,7 @@ class EB(foundation.CementApp):
             SetEnvController,
             ListController,
             CloneController,
+            UpgradeController,
         ]
 
         # register all controllers

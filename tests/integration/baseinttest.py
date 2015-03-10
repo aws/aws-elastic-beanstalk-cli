@@ -16,26 +16,35 @@ import os
 import shutil
 
 from cement.utils import test
-from ebcli.core.ebcore import EB
-from ebcli.core import fileoperations
+from ebcli.core import ebcore, fileoperations
+from . import mockservice
+
+ebcore.fix_path()
+
 
 class BaseIntegrationTest(test.CementTestCase):
-    app_class = EB
+    app_class = ebcore.EB
 
     def setUp(self):
         super(BaseIntegrationTest, self).setUp()
         self.reset_backend()
+        # Set up mock input and output
         self.patcher_input = mock.patch('ebcli.core.io.get_input')
-        self.patcher_aws = mock.patch('ebcli.lib.elasticbeanstalk.aws')
         self.patcher_output = mock.patch('ebcli.core.io.echo')
-
+        self.patcher_warning = mock.patch('ebcli.core.io.log_warning')
         self.mock_input = self.patcher_input.start()
-        self.mock_aws = self.patcher_aws.start()
         self.mock_output = self.patcher_output.start()
+        self.mock_warning = self.patcher_warning.start()
+
+        # Set up mock endpoints
+        self.patcher_endpoint = mock.patch('botocore.endpoint.Endpoint')
+        self.mock_endpoint = self.patcher_endpoint.start()
+        instance = self.mock_endpoint.return_value
+        instance.make_request = mockservice.handle_response
 
         # set up test directory
-        if not os.path.exists('testDir/.git'):
-            os.makedirs('testDir/.git')
+        if not os.path.exists('testDir/'):
+            os.makedirs('testDir/')
         os.chdir('testDir')
 
         # set up mock elastic beanstalk directory
@@ -53,11 +62,29 @@ class BaseIntegrationTest(test.CementTestCase):
         fileoperations.aws_config_location \
             = fileoperations.aws_config_folder + 'config'
 
+    def run_command(self, *args):
+        self.app = ebcore.EB(argv=list(args))
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
     def tearDown(self):
-        self.patcher_aws.stop()
+        # self.patcher_aws.stop()
         self.patcher_input.stop()
         self.patcher_output.stop()
+        self.patcher_endpoint.stop()
+        self.patcher_warning.stop()
 
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
+        mockservice.reset()
+
+    def patch_botocore_endpoint(self):
+        from ebcli.bundled.botocore.endpoint import Endpoint
+
+
+        def make_request(*args):
+            return 200, 'awdadw'
+
+        Endpoint.make_request = make_request

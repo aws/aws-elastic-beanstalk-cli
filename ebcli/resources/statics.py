@@ -10,19 +10,13 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-import pytest
-from ebcli.core.ebcore import fix_path
 
 
-def pytest_configure(config):
-    fix_path()
+class namespaces(object):
+    ROLLING_UPDATES = 'aws:autoscaling:updatepolicy:rollingupdate'
+    ENVIRONMENT_TYPE = 'aws:elasticbeanstalk:environment'
 
 
-def pytest_addoption(parser):
-    parser.addoption("--end2end", action="store_true",
-                     help="run end2end tests")
-
-
-def pytest_runtest_setup(item):
-    if 'end2end' in item.keywords and not item.config.getoption("--end2end"):
-        pytest.skip("Need --end2end option to run")
+class option_names(object):
+    ROLLING_UPDATE_ENABLED = 'RollingUpdateEnabled'
+    ROLLING_UPDATE_TYPE = 'RollingUpdateType'

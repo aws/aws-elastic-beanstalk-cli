@@ -113,18 +113,6 @@ def clone_environment(clone):
 
 
 def _api_to_environment(api_dict):
-    try:
-        cname = api_dict['CNAME']
-    except KeyError:
-        cname = 'UNKNOWN'
-    try:
-        version_label = api_dict['VersionLabel']
-    except KeyError:
-        version_label = None
-    try:
-        description = api_dict['Description']
-    except KeyError:
-        description = None
 
     # Convert solution_stack and tier to objects
     solution_stack = SolutionStack(api_dict['SolutionStackName'])
@@ -132,20 +120,28 @@ def _api_to_environment(api_dict):
     tier = Tier(tier['Name'], tier['Type'], tier['Version'])
 
     env = Environment(
-        version_label=version_label,
-        status=api_dict['Status'],
+        version_label=_get_api_value(api_dict, 'VersionLabel'),
+        status=_get_api_value(api_dict, 'Status'),
         app_name=api_dict['ApplicationName'],
-        health=api_dict['Health'],
-        id=api_dict['EnvironmentId'],
+        health=_get_api_value(api_dict, 'Health'),
+        id=_get_api_value(api_dict, 'EnvironmentId'),
         date_updated=api_dict['DateUpdated'],
         platform=solution_stack,
-        description=description,
+        description=_get_api_value(api_dict, 'Description'),
         name=api_dict['EnvironmentName'],
         date_created=api_dict['DateCreated'],
         tier=tier,
-        cname=cname,
+        cname=_get_api_value(api_dict, 'CNAME', default='UNKNOWN'),
+        option_settings=_get_api_value(api_dict, 'OptionSettings')
     )
     return env
+
+
+def _get_api_value(api_dict, keyname, default=None):
+    try:
+        return api_dict[keyname]
+    except KeyError:
+        return default
 
 
 def delete_application(app_name):
@@ -202,8 +198,8 @@ def describe_configuration_settings(app_name, env_name):
     return result['ConfigurationSettings'][0]
 
 
-def get_specific_configuration(env_config, namespace, option):
-    for setting in env_config['OptionSettings']:
+def get_option_setting(option_settings, namespace, option):
+    for setting in option_settings:
         if setting['Namespace'] == namespace and \
                                 setting['OptionName'] == option:
             try:
@@ -212,6 +208,18 @@ def get_specific_configuration(env_config, namespace, option):
                 return None
 
     return None
+
+
+def create_option_setting(namespace, option, value):
+    return {
+        'Namespace': namespace,
+        'OptionName': option,
+        'Value': value
+    }
+
+
+def get_specific_configuration(env_config, namespace, option):
+    return get_option_setting(env_config['OptionSettings'], namespace, option)
 
 
 def get_specific_configuration_for_env(app_name, env_name, namespace, option):
@@ -302,6 +310,15 @@ def get_environment(app_name, env_name):
         raise NotFoundError('Environment "' + env_name + '" not Found.')
     else:
         return _api_to_environment(envs[0])
+
+
+def get_environment_settings(app_name, env_name):
+    LOG.debug('Inside get_environment_settings api wrapper')
+    result = _make_api_call('describe_configuration_settings',
+                            ApplicationName=app_name,
+                            EnvironmentName=env_name)
+
+    return _api_to_environment(result['ConfigurationSettings'][0])
 
 
 def get_environment_resources(env_name):

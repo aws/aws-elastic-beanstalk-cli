@@ -12,12 +12,12 @@
 # language governing permissions and limitations under the License.
 
 
-class Environment():
+class Environment(object):
     def __init__(self, version_label=None, status=None, app_name=None,
                  health=None, id=None, date_updated=None,
                  platform=None, description=None,
                  name=None, date_created=None, tier=None,
-                 cname=None):
+                 cname=None, option_settings=None):
 
         self.version_label = version_label
         self.status = status
@@ -31,6 +31,7 @@ class Environment():
         self.date_created = date_created
         self.tier = tier
         self.cname = cname
+        self.option_settings = option_settings
 
     def __str__(self):
         return self.name

@@ -11,6 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+from mock import patch
+
 from .baseoperationstest import BaseOperationsTest
 from ebcli.operations import createops
 from ebcli.lib.aws import InvalidParameterValueError
@@ -20,7 +22,9 @@ from ebcli.objects.requests import CreateEnvironmentRequest
 class TestCreateEnvironment(BaseOperationsTest):
     module_name = 'createops'
 
-    def test_create_new_environment_envname_taken(self):
+    @patch('ebcli.operations.createops.commonops.get_all_env_names')
+    def test_create_new_environment_envname_taken(self, mock_names):
+        mock_names.return_value = ['my-env', 'my-env2']
         self.mock_elasticbeanstalk.create_environment.side_effect = [
             InvalidParameterValueError('Environment env-name already exists.'),
             None,
