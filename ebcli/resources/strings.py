@@ -33,6 +33,7 @@ strings = {
     'clone.info': 'Clones an environment.',
     'clone.epilog': 'This command clones your environment and attempts to upgrade the platform to the latest version.\n'
                     'To create a clone with the same platform version, use the "--exact" option.',
+    'abort.info': 'Abort an environment update.',
     'logs.info': 'Gets recent logs.',
     'use.info': 'Sets default environment.',
     'logs.epilog': 'This command displays the last 100 lines of logs. To retrieve all logs, use the "--all" option.',
@@ -125,6 +126,7 @@ strings = {
                           'Have you added git to your PATH?',
     'events.streamprompt': ' -- Events -- (safe to Ctrl+C)',
     'events.abortmessage': ' Use "eb abort" to abort command.',
+    'abort.noabortableenvs': 'There are currently no abortable environments.',
 }
 
 prompts = {
@@ -172,6 +174,7 @@ prompts = {
     'vpc.dbsubnets': 'Enter a comma-separated list of database subnets',
     'logs.retrieving': 'Retrieving logs...',
     'swap.envprompt': 'Select the environment with which you want to swap CNAMEs.',
+    'abort.envprompt': 'Select the environment you want to abort.',
     'clone.latest': 'There is a newer version of the platform used by the environment you are cloning.\n'
                     'Select the version of the platform that you want to use for the clone.',
     'clone.latestwarn': 'Launching environment clone on most recent platform version. Override this behavior by using the "--exact" option.',

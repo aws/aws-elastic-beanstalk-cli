@@ -42,6 +42,7 @@ from six import iteritems
 
 from . import globals, base, io, hooks
 from ..controllers.initialize import InitController
+from ..controllers.abort import AbortController
 from ..controllers.create import CreateController
 from ..controllers.events import EventsController
 from ..controllers.logs import LogsController
@@ -94,6 +95,7 @@ class EB(foundation.CementApp):
             ListController,
             CloneController,
             UpgradeController,
+            AbortController,
         ]
 
         # register all controllers

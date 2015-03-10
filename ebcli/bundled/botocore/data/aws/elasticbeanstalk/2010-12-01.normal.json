@@ -689,6 +689,35 @@
       ],
       "documentation":"<p> Updates the environment description, deploys a new application version, updates the configuration settings to an entirely new configuration template, or updates select configuration option values in the running environment. </p> <p> Attempting to update both the release and configuration is not allowed and AWS Elastic Beanstalk returns an <code>InvalidParameterCombination</code> error. </p> <p> When updating the configuration settings to a new template or individual settings, a draft configuration is created and <a>DescribeConfigurationSettings</a> for this environment returns two setting descriptions with different <code>DeploymentStatus</code> values. </p>"
     },
+    "AbortEnvironmentUpdate":{
+      "name":"AbortEnvironmentUpdate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"AbortEnvironmentUpdateMessage",
+        "documentation":"<p>This documentation target is not reported in the API reference.</p>"
+      },
+      "output":{
+        "shape":"AbortEnvironmentUpdateDescription",
+        "documentation":"<p>Describes the properties of an environment.</p>",
+        "resultWrapper":"AbortEnvironmentUpdateResponse"
+      },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        }
+      ],
+      "documentation":"<p> Aborts and Environment Update </p>"
+    },
     "ValidateConfigurationSettings":{
       "name":"ValidateConfigurationSettings",
       "http":{
@@ -720,6 +749,22 @@
     }
   },
   "shapes":{
+    "AbortEnvironmentUpdateMessage":{
+      "type": "structure",
+      "members":{
+        "EnvironmentName":{
+          "shape":"EnvironmentName"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId"
+        }
+      }
+    },
+    "AbortEnvironmentUpdateDescription":{
+      "type": "structure",
+      "members":{
+      }
+    },
     "ApplicationDescription":{
       "type":"structure",
       "members":{
@@ -1555,6 +1600,9 @@
         "Tier":{
           "shape":"EnvironmentTier",
           "documentation":"<p>Describes the current tier of this environment.</p>"
+        },
+        "AbortableOperationInProgress":{
+          "shape": "EnvironmentAbortableOperationInProgress"
         }
       },
       "documentation":"<p>Describes the properties of an environment.</p>"
@@ -1562,6 +1610,9 @@
     "EnvironmentDescriptionsList":{
       "type":"list",
       "member":{"shape":"EnvironmentDescription"}
+    },
+    "EnvironmentAbortableOperationInProgress":{
+      "type":"boolean"
     },
     "EnvironmentDescriptionsMessage":{
       "type":"structure",

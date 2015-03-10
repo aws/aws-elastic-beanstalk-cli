@@ -131,6 +131,9 @@ class MockBeanstalk(MockService):
     def UpdateEnvironment(self):
         return Http(200), standard_update_environment()
 
+    def DescribeEnvironments(self):
+        return Http(200), stadard_describe_environments()
+
 
 class MockS3(MockService):
     def get_object(self):
@@ -142,6 +145,62 @@ def replace_option_setting(namespace, option_name, new_value, option_settings):
         if setting['Namespace'] == namespace \
                 and setting['OptionName'] == option_name:
             setting['Value'] = new_value
+
+
+def stadard_describe_environments():
+    return dict(
+        ResponseMetadata={'HTTPStatusCode': 200,
+                          'RequestId':
+                              '3f979fef-c775-11e4-84bf-d7f83bbc1d71'},
+        Environments=[
+            {u'ApplicationName': 'myEBCLItest',
+             u'EnvironmentName': 'single-env',
+             u'VersionLabel': '1_1_1', u'Status': 'Ready',
+             u'Description': 'Environment created from the '
+                             'EB CLI using "eb create"',
+             u'EnvironmentId': 'e-b8msckgkmc',
+             u'EndpointURL': '99.99.99.99',
+             u'SolutionStackName': '64bit Amazon Linux '
+                                   '2014.09 v1.2.0 running '
+                                   'Python 2.7',
+             u'CNAME':
+                 'single-env124141adw.elasticbeanstalk.com',
+             u'Health': 'Green',
+             u'Tier': {u'Version': ' ', u'Type': 'Standard',
+                       u'Name': 'WebServer'},
+             u'AbortableOperationInProgress': False,
+             u'DateUpdated': datetime.datetime(2015, 3, 7, 0,
+                                               27, 7, 343000,
+                                               tzinfo=tzutc()),
+             u'DateCreated': datetime.datetime(2015, 3, 5,
+                                               20, 2, 13,
+                                               210000,
+                                               tzinfo=tzutc())},
+            {u'ApplicationName': 'myEBCLItest',
+             u'EnvironmentName': 'my-env',
+             u'VersionLabel': 'a926', u'Status': 'Ready',
+             u'Description': 'Environment created from the '
+                             'EB CLI using "eb create"',
+             u'EnvironmentId': 'e-xxmxq9dyju',
+             u'EndpointURL':
+                 'awseb-e-x-AWSEBLoa-1B7U4N0QJJOCF-1944394517.us-west-2.elb.amazonaws.com',
+             u'SolutionStackName': '64bit Amazon Linux '
+                                   '2014.09 v1.2.0 running '
+                                   'Python 2.7',
+             u'CNAME': 'my-env-f8wj8tawyq.elasticbeanstalk.com',
+             u'Health': 'Green',
+             u'AbortableOperationInProgress': False,
+             u'Tier': {u'Version': ' ', u'Type': 'Standard',
+                       u'Name': 'WebServer'},
+             u'DateUpdated': datetime.datetime(2015, 3, 5,
+                                               20, 22, 11,
+                                               786000,
+                                               tzinfo=tzutc()),
+             u'DateCreated': datetime.datetime(2015, 3, 5,
+                                               19, 56, 20,
+                                               893000,
+                                               tzinfo=tzutc())},
+            ])
 
 
 def standard_update_environment():

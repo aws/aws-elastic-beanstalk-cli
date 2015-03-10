@@ -132,7 +132,9 @@ def _api_to_environment(api_dict):
         date_created=api_dict['DateCreated'],
         tier=tier,
         cname=_get_api_value(api_dict, 'CNAME', default='UNKNOWN'),
-        option_settings=_get_api_value(api_dict, 'OptionSettings')
+        option_settings=_get_api_value(api_dict, 'OptionSettings'),
+        is_abortable=_get_api_value(api_dict, 'AbortableOperationInProgress',
+                                    default=False)
     )
     return env
 
@@ -417,6 +419,12 @@ def update_environment(env_name, options, remove=None,
             raise
     return response['ResponseMetadata']['RequestId']
 
+
+def abort_environment_update(env_name):
+    LOG.debug('Inside abort_environment_update')
+    result = _make_api_call('abort_environment_update',
+                            EnvironmentName=env_name)
+    return result
 
 def update_env_application_version(env_name,
                                    version_label):
