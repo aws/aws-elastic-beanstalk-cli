@@ -120,30 +120,22 @@ def _api_to_environment(api_dict):
     tier = Tier(tier['Name'], tier['Type'], tier['Version'])
 
     env = Environment(
-        version_label=_get_api_value(api_dict, 'VersionLabel'),
-        status=_get_api_value(api_dict, 'Status'),
-        app_name=api_dict['ApplicationName'],
-        health=_get_api_value(api_dict, 'Health'),
-        id=_get_api_value(api_dict, 'EnvironmentId'),
-        date_updated=api_dict['DateUpdated'],
+        version_label=api_dict.get('VersionLabel'),
+        status=api_dict.get('Status'),
+        app_name=api_dict.get('ApplicationName'),
+        health=api_dict.get('Health'),
+        id=api_dict.get('EnvironmentId'),
+        date_updated=api_dict.get('DateUpdated'),
         platform=solution_stack,
-        description=_get_api_value(api_dict, 'Description'),
-        name=api_dict['EnvironmentName'],
-        date_created=api_dict['DateCreated'],
+        description=api_dict.get('Description'),
+        name=api_dict.get('EnvironmentName'),
+        date_created=api_dict.get('DateCreated'),
         tier=tier,
-        cname=_get_api_value(api_dict, 'CNAME', default='UNKNOWN'),
-        option_settings=_get_api_value(api_dict, 'OptionSettings'),
-        is_abortable=_get_api_value(api_dict, 'AbortableOperationInProgress',
-                                    default=False)
+        cname=api_dict.get('CNAME', 'UNKNOWN'),
+        option_settings=api_dict.get('OptionSettings'),
+        is_abortable=api_dict.get('AbortableOperationInProgress', False)
     )
     return env
-
-
-def _get_api_value(api_dict, keyname, default=None):
-    try:
-        return api_dict[keyname]
-    except KeyError:
-        return default
 
 
 def delete_application(app_name):
@@ -425,6 +417,7 @@ def abort_environment_update(env_name):
     result = _make_api_call('abort_environment_update',
                             EnvironmentName=env_name)
     return result
+
 
 def update_env_application_version(env_name,
                                    version_label):
