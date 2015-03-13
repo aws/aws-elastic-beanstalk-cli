@@ -236,7 +236,8 @@ class CreateController(AbstractBaseController):
         version = self.app.pargs.db_version
 
         # Do we want a database?
-        if create_db or username or password or engine or size or instance:
+        if create_db or username or password or engine or size \
+                or instance or version:
             db_object = dict()
             if not username:
                 io.echo()
