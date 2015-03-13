@@ -33,12 +33,12 @@ strings = {
     'clone.info': 'Clones an environment.',
     'clone.epilog': 'This command clones your environment and attempts to upgrade the platform to the latest version.\n'
                     'To create a clone with the same platform version, use the "--exact" option.',
-    'abort.info': 'Abort an environment update.',
+    'abort.info': 'Cancels an environment update or deployment.',
     'logs.info': 'Gets recent logs.',
     'use.info': 'Sets default environment.',
     'logs.epilog': 'This command displays the last 100 lines of logs. To retrieve all logs, use the "--all" option.',
     'deploy.info': 'Deploys your source code to the environment.',
-    'upgrade.info': 'Updates the environment to the latest platform.',
+    'upgrade.info': 'Updates the environment to the most recent platform version.',
     'scale.info': 'Changes the number of running instances.',
     'status.info': 'Gets environment information and status.',
     'setenv.info': 'Sets environment variables.',
@@ -125,8 +125,8 @@ strings = {
     'sc.gitnotinstalled': 'Your project is using git, but git doesn\'t appear to be installed.\n'
                           'Have you added git to your PATH?',
     'events.streamprompt': ' -- Events -- (safe to Ctrl+C)',
-    'events.abortmessage': ' Use "eb abort" to abort command.',
-    'abort.noabortableenvs': 'There are currently no abortable environments.',
+    'events.abortmessage': ' Use "eb abort" to cancel the command.',
+    'abort.noabortableenvs': 'There are no environments currently being updated.',
 }
 
 prompts = {
@@ -174,18 +174,18 @@ prompts = {
     'vpc.dbsubnets': 'Enter a comma-separated list of database subnets',
     'logs.retrieving': 'Retrieving logs...',
     'swap.envprompt': 'Select the environment with which you want to swap CNAMEs.',
-    'abort.envprompt': 'Select the environment you want to abort.',
+    'abort.envprompt': 'Select the environment you want to stop updating.',
     'clone.latest': 'There is a newer version of the platform used by the environment you are cloning.\n'
                     'Select the version of the platform that you want to use for the clone.',
     'clone.latestwarn': 'Launching environment clone on most recent platform version. Override this behavior by using the "--exact" option.',
-    'upgrade.altmessage': 'An alternative way to change your platform version is to use "eb clone" followed by "eb swap".',
-    'upgrade.singleinstance': 'This operation will replace your instance and cause outage to your environment.',
-    'upgrade.norollingapply': 'In order to prevent this operation from replacing all your instances at once and causing outages to your environment, {0} based rolling updates will be applied to your environment to avoid application outages. You may abort the upgrade by using "eb abort". To upgrade without rolling updates, please retry the command with the "--noroll" option.',
-    'upgrade.norollingforce': 'This operation will replace your instances and cause outages to your environment. It is recommended that you apply "Rolling Update" feature to avoid application outages.',
-    'upgrade.rollingupdate': 'This operation will replace your instances with minimum or no outages. You will be able to cancel this operation using "eb abort".',
-    'upgrade.infodialog': 'The environment "{0}" will be updated to use the latest platform.',
-    'upgrade.alreadylatest': 'Environment already on latest platform version.',
-    'upgrade.applyrolling': 'Adding {0} based rolling updates to environment.',
+    'upgrade.altmessage': 'You can also change your platform version by typing "eb clone" and then "eb swap".',
+    'upgrade.singleinstance': 'This operation causes application downtime while Elastic Beanstalk replaces the instance.',
+    'upgrade.norollingapply': 'Elastic Beanstalk will enable {0}-based rolling updates to avoid application downtime while it replaces your instances. You may cancel the upgrade after it has started by typing "eb abort". To upgrade without rolling updates, type "eb upgrade --noroll".',
+    'upgrade.norollingforce': 'This operation causes application downtime while Elastic Beanstalk replaces your instances.',
+    'upgrade.rollingupdate': 'This operation replaces your instances with minimal or zero downtime. You may cancel the upgrade after it has started by typing "eb abort".',
+    'upgrade.infodialog': 'The environment "{0}" will be updated to use the most recent platform version.',
+    'upgrade.alreadylatest': 'Environment already on most recent platform version.',
+    'upgrade.applyrolling': 'Enabling {0}-based rolling updates to environment.',
 }
 
 alerts = {
@@ -278,7 +278,7 @@ flag_text = {
     'terminate.nohang': 'return immediately, do not wait for terminate to be completed',
 
     # Upgrade
-    'upgrade.noroll': 'do not add health based rolling updates before upgrade',
+    'upgrade.noroll': 'do not enable rolling updates before upgrade',
 
     # use
     'use.env': 'environment name',
