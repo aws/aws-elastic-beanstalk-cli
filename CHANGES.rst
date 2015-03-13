@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------------------
+3.1.3 (2015-03-13)
+------------------
+- Added option on create for specifying database version (--database.version)
+
+------------------
 3.1.2 (2015-02-26)
 ------------------
 - Fix multithreaded issue on python 3.4.3
