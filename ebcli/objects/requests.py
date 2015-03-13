@@ -196,6 +196,9 @@ class CreateEnvironmentRequest(object):
         if self.database['engine']:
             self.add_option_setting(namespace, 'DBEngine',
                                     self.database['engine'])
+        if self.database['version']:
+            self.add_option_setting(namespace, 'DBEngineVersion',
+                                    self.database['version'])
         self.add_option_setting(namespace, 'DBDeletionPolicy', 'Snapshot')
 
     def compile_vpc_options(self):

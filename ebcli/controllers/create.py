@@ -65,6 +65,8 @@ class CreateController(AbstractBaseController):
                 dict(dest='db_pass', help=argparse.SUPPRESS)),
             (['-db.i', '--database.instance'],
                 dict(dest='db_instance', help=argparse.SUPPRESS)),
+            (['-db.version', '--database.version'],
+                dict(dest='db_version', help=argparse.SUPPRESS)),
             (['-db.size', '--database.size'],
                 dict(type=int, dest='db_size', help=argparse.SUPPRESS)),
             (['-db.engine', '--database.engine'],
@@ -234,6 +236,7 @@ class CreateController(AbstractBaseController):
         engine = self.app.pargs.db_engine
         size = self.app.pargs.db_size
         instance = self.app.pargs.db_instance
+        version = self.app.pargs.db_version
 
         # Do we want a database?
         if create_db or username or password or engine or size or instance:
@@ -249,6 +252,7 @@ class CreateController(AbstractBaseController):
             db_object['engine'] = engine
             db_object['size'] = str(size) if size else None
             db_object['instance'] = instance
+            db_object['version'] = version
             return db_object
         else:
             return {}
