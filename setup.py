@@ -9,7 +9,7 @@ requires = ['pyyaml>=3.11',
             'cement==2.4',
             ## For botocore we need the following
             'python-dateutil>=2.1,<3.0.0',
-            'jmespath>=0.5.0'
+            'jmespath>=0.6.1'
             ]
 
 try:
