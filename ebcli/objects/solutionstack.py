@@ -35,12 +35,12 @@ class SolutionStack():
 
     @staticmethod
     def get_platform(ss_string):
-        pattern = re.compile('.+running\s([^\s]*).*')
+        pattern = re.compile('.+running\s([^0-9]+).*')
         matcher = re.match(pattern, ss_string)
         if matcher is None:
             eb.app.log.debug("Can not find a platform in string: " + ss_string)
             return ss_string
-        return matcher.group(1)
+        return matcher.group(1).strip()
 
     @staticmethod
     def get_version(ss_string):
