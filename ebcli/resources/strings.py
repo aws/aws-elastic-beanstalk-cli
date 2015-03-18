@@ -138,7 +138,8 @@ strings = {
     'labs.info': 'Extra experimental commands.',
     'quicklink.info': 'Generate a quick-launch link for your project.',
     'quicklink.epilog': 'Applications and environments created from the quick link are accessible to your account only. \n'
-                        'To share the link with other accounts, you must explicitly grant those accounts read access to your S3 application version .zip file.'
+                        'To share the link with other accounts, you must explicitly grant those accounts read access to your S3 application version .zip file.',
+    'download.info': 'Download Application Version',
 }
 
 prompts = {

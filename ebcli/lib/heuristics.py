@@ -79,7 +79,7 @@ def has_index_html():
 
 def directory_is_empty():
     """
-    Directory containes no files or folders (ignote dot-files)
+    Directory contains no files or folders (ignore dot-files)
     """
     lst = [f for f in os.listdir('./') if not f.startswith('.')]
     if len(lst) < 1:
@@ -87,9 +87,10 @@ def directory_is_empty():
     else:
         return False
 
+
 def smells_of_node_js():
     """
-    JS files are too comon in web apps, so instead we just look for the package.json file
+    JS files are too common in web apps, so instead we just look for the package.json file
     True is directory has a package.json file
     """
     return _contains_file_types('package.json')
@@ -104,7 +105,7 @@ def smells_of_iis():
 
 def smells_of_tomcat():
     """
-    True of directory has a jsp file or a WEB-INF directory
+    True if directory has a jsp file or a WEB-INF directory
     """
 
     if has_tomcat_war_file():

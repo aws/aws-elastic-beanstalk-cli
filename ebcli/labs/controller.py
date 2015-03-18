@@ -15,13 +15,15 @@ from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings
 from ..core import io
 from .quicklink import QuicklinkController
+from .download import DownloadController
 
 
 class LabsController(AbstractBaseController):
     class Meta:
         label = 'labs'
         description = strings['labs.info']
-        usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
+        usage = AbstractBaseController.Meta.usage.\
+            replace('{cmd}', 'labs <download|quicklink>')
         arguments = []
 
     def do_command(self):
@@ -32,7 +34,7 @@ class LabsController(AbstractBaseController):
         if len(commands) == 1:
             # They only have the main command so far
             # lets complete for next level command
-            io.echo(*['quicklink'])
+            io.echo(*['quicklink', 'download'])
         elif len(commands) > 1:
             # TODO pass to next level controller
             pass
@@ -42,3 +44,4 @@ class LabsController(AbstractBaseController):
         handler.register(cls)
         # Register child controllers
         handler.register(QuicklinkController)
+        handler.register(DownloadController)
