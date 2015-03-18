@@ -65,6 +65,7 @@ from ..controllers.upgrade import UpgradeController
 from ..core.completer import CompleterController
 from ..objects.exceptions import *
 from ..resources.strings import strings, flag_text
+from ..labs.controller import LabsController
 
 
 class EB(foundation.CementApp):
@@ -98,6 +99,7 @@ class EB(foundation.CementApp):
             CloneController,
             UpgradeController,
             AbortController,
+            LabsController,
         ]
 
         # register all controllers
