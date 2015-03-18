@@ -38,7 +38,7 @@ from cement.utils.misc import init_defaults
 from cement.core.exc import CaughtSignal
 import botocore
 from botocore.compat import six
-from six import iteritems
+iteritems = six.iteritems
 
 from . import globals, base, io, hooks
 from ..controllers.initialize import InitController
@@ -60,6 +60,7 @@ from ..controllers.list import ListController
 from ..controllers.printenv import PrintEnvController
 from ..controllers.clone import CloneController
 from ..controllers.swap import SwapController
+from ..controllers.platform import PlatformController
 from ..controllers.upgrade import UpgradeController
 from ..core.completer import CompleterController
 from ..objects.exceptions import *
@@ -93,6 +94,7 @@ class EB(foundation.CementApp):
             UseController,
             SetEnvController,
             ListController,
+            PlatformController,
             CloneController,
             UpgradeController,
             AbortController,

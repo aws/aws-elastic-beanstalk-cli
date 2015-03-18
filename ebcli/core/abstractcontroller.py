@@ -142,7 +142,7 @@ class AbstractBaseController(controller.CementBaseController):
                     cmd_txt += "%s (alias: %s)\n" % \
                                (first, ', '.join(cmd['aliases']))
                 else:
-                    cmd_txt += "%s" % cmd['alias'][0]
+                    cmd_txt += "%s" % cmd['aliases'][0]
             elif len(cmd['aliases']) > 0:
                 cmd_txt += "%s (alias: %s)\n" % (label, ', '.join(cmd['aliases']))
             else:

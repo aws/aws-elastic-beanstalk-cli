@@ -235,10 +235,14 @@ def get_available_solution_stacks():
     return solution_stacks
 
 
-def get_application_versions(app_name):
+def get_application_versions(app_name, version_labels=None):
     LOG.debug('Inside get_application_versions api wrapper')
+    kwargs = {}
+    if version_labels:
+        kwargs['VersionLabels'] = version_labels
     result = _make_api_call('describe_application_versions',
-                            ApplicationName=app_name)
+                            ApplicationName=app_name,
+                            **kwargs)
     return result['ApplicationVersions']
 
 

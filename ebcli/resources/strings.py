@@ -38,6 +38,14 @@ strings = {
     'use.info': 'Sets default environment.',
     'logs.epilog': 'This command displays the last 100 lines of logs. To retrieve all logs, use the "--all" option.',
     'deploy.info': 'Deploys your source code to the environment.',
+    'platform.info': 'Manages platforms.',
+    'platformshow.info': 'Shows information about current platform.',
+    'platformlist.info': 'Lists available platforms.',
+    'platformselect.info': 'Selects a default platform.',
+    'platformselect.epilog': 'This command is an alternative to "eb init -i" and "eb init -p". It does not change the platform on any existing environments.\n'
+                             'To upgrade an environment\'s platform, type:\n'
+                             '    eb upgrade',
+    'platformlist.epilog': 'Shows a list of platforms for use with "eb init -p". Type "--verbose" to get the full platform name.',
     'upgrade.info': 'Updates the environment to the most recent platform version.',
     'scale.info': 'Changes the number of running instances.',
     'status.info': 'Gets environment information and status.',
@@ -127,6 +135,10 @@ strings = {
     'events.streamprompt': ' -- Events -- (safe to Ctrl+C)',
     'events.abortmessage': ' Use "eb abort" to cancel the command.',
     'abort.noabortableenvs': 'There are no environments currently being updated.',
+    'labs.info': 'Extra experimental commands.',
+    'quicklink.info': 'Generate a quick-launch link for your project.',
+    'quicklink.epilog': 'Applications and environments created from the quick link are accessible to your account only. \n'
+                        'To share the link with other accounts, you must explicitly grant those accounts read access to your S3 application version .zip file.'
 }
 
 prompts = {

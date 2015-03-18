@@ -59,3 +59,6 @@ class SolutionStack():
             eb.app.log.debug("Can not find a server in string: " + ss_string)
             return ss_string
         return matcher.group(1)
+
+    def pythonify(self):
+        return self.version.lower().replace(' ', '-').replace('---', '-')
