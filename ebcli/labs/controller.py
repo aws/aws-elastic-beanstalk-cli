@@ -16,6 +16,7 @@ from ..resources.strings import strings
 from ..core import io
 from .quicklink import QuicklinkController
 from .download import DownloadController
+from .convertdockerrun import ConvertDockerrunController
 
 
 class LabsController(AbstractBaseController):
@@ -23,7 +24,7 @@ class LabsController(AbstractBaseController):
         label = 'labs'
         description = strings['labs.info']
         usage = AbstractBaseController.Meta.usage.\
-            replace('{cmd}', 'labs <download|quicklink>')
+            replace('{cmd}', 'labs <download|quicklink|convert-dockerrun>')
         arguments = []
 
     def do_command(self):
@@ -34,7 +35,7 @@ class LabsController(AbstractBaseController):
         if len(commands) == 1:
             # They only have the main command so far
             # lets complete for next level command
-            io.echo(*['quicklink', 'download'])
+            io.echo(*['quicklink', 'download', 'convert-dockerrun'])
         elif len(commands) > 1:
             # TODO pass to next level controller
             pass
@@ -45,3 +46,4 @@ class LabsController(AbstractBaseController):
         # Register child controllers
         handler.register(QuicklinkController)
         handler.register(DownloadController)
+        handler.register(ConvertDockerrunController)

@@ -140,6 +140,7 @@ strings = {
     'quicklink.epilog': 'Applications and environments created from the quick link are accessible to your account only. \n'
                         'To share the link with other accounts, you must explicitly grant those accounts read access to your S3 application version .zip file.',
     'download.info': 'Download Application Version',
+    'convert-dockkerrun.info': 'Converts Dockerrun.aws.json from version 1 to version 2',
 }
 
 prompts = {
@@ -199,6 +200,7 @@ prompts = {
     'upgrade.infodialog': 'The environment "{0}" will be updated to use the most recent platform version.',
     'upgrade.alreadylatest': 'Environment already on most recent platform version.',
     'upgrade.applyrolling': 'Enabling {0}-based rolling updates to environment.',
+    'create.dockerrunupgrade': 'The Dockerrun.aws.json file version you provided is not supported by ECS. Type "eb labs convert-dockerrun" to convert it to version 2 format.'
 }
 
 alerts = {
@@ -333,6 +335,7 @@ responses = {
     'swap.success': 'Completed swapping CNAMEs for environments',
     'cfg.nameexists': 'Configuration Template {name} already exists.',
     'create.noplatform': 'Unable to determine base for template pack (no solution stack)',
+    'create.ecsdockerrun1': 'ECS Application sourcebundle validation error: Unsupported AWSEBDockerrunVersion:',
 }
 git_ignore = [
     '# Elastic Beanstalk Files',        # comment line

@@ -44,9 +44,9 @@ def find_language_type():
 def smells_of_docker():
     """
     True if the current directory has a docker file
-    'Dockerfile' should exist in the root directory
+    'Dockerfile' or 'Dockerrun.aws.json' should exist in the root directory
     """
-    return _contains_file_types('Dockerfile')
+    return _contains_file_types('Dockerfile', 'Dockerrun.aws.json')
 
 
 def smells_of_python():

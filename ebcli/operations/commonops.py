@@ -28,6 +28,7 @@ from ..objects.exceptions import *
 from ..objects.solutionstack import SolutionStack
 from ..lib.aws import InvalidParameterValueError
 from ..lib import heuristics
+from ..docker import dockerrun
 
 LOG = minimal_logger(__name__)
 
@@ -122,6 +123,8 @@ def _is_success_string(message):
         return True
     if message.startswith(responses['swap.success']):
         return True
+    if message.startswith(responses['create.ecsdockerrun1']):
+        raise NotSupportedError(prompts['create.dockerrunupgrade'])
 
     return False
 
@@ -164,8 +167,22 @@ def prompt_for_solution_stack():
         if stack.platform not in platforms:
             platforms.append(stack.platform)
 
+    cwd = os.getcwd()
     # First check to see if we know what language the project is in
-    platform = heuristics.find_language_type()
+    try:
+        platform = heuristics.find_language_type()
+
+        if platform == 'Docker':
+            # Check to see if dockerrun is version one or two
+            dockerrun_file = dockerrun.get_dockerrun(
+                os.path.join(os.getcwd(), 'Dockerrun.aws.json'))
+            if dockerrun_file:
+                if dockerrun_file.get('AWSEBDockerrunVersion') == 1:
+                    platform = 'Docker'
+                else:
+                    platform = 'Multi-container Docker'
+    finally:
+        os.chdir(cwd)
 
     if platform is not None:
         io.echo()
@@ -525,6 +542,8 @@ def get_solution_stack(solution_string):
     string = solution_string.replace('-', ' ')
     # put dash back in preconfigured types
     string = re.sub('preconfigured\\s+docker', 'preconfigured - docker', string)
+    # put dash back in multi-container types
+    string = re.sub('multi\\s+container', 'multi-container', string)
     string = re.sub(r'([a-z])([0-9])', '\\1 \\2', string)
     stacks = [x for x in solution_stacks if x.version.lower() == string]
 
