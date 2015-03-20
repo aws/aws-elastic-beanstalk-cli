@@ -13,6 +13,7 @@
 
 import time
 import random
+import warnings
 
 import botocore
 import botocore.session
@@ -150,6 +151,9 @@ def make_api_call(service_name, operation_name, **operation_options):
     except botocore.exceptions.PartialCredentialsError:
         LOG.debug('Credentials incomplete')
         raise CredentialsError('Your credentials are not complete')
+
+    if not _verify_ssl:
+        warnings.filterwarnings("ignore")
 
     operation = getattr(client, operation_name)
 

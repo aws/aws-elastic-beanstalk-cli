@@ -122,6 +122,7 @@ class PlatformSelectController(AbstractBaseController):
         epilog = strings['platformselect.epilog']
 
     def do_command(self):
+        app_name = self.get_app_name()
         platform = commonops.prompt_for_solution_stack()
         fileoperations.write_config_setting('global', 'default_platform',
                                             platform.version)
