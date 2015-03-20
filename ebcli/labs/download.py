@@ -12,11 +12,13 @@
 # language governing permissions and limitations under the License.
 
 import os
+import re
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings
+from ..objects.exceptions import NotFoundError
 from ..core import io, fileoperations
-from ..lib import elasticbeanstalk, s3, heuristics
+from ..lib import elasticbeanstalk, s3, heuristics, cloudformation, utils
 
 
 class DownloadController(AbstractBaseController):
@@ -36,17 +38,29 @@ class DownloadController(AbstractBaseController):
 
 def download_source_bundle(app_name, env_name):
     env = elasticbeanstalk.get_environment(app_name, env_name)
-    app_version = elasticbeanstalk.get_application_versions(
+    if env.version_label:
+        app_version = elasticbeanstalk.get_application_versions(
         app_name, version_labels=[env.version_label])[0]
-    source_bundle = app_version['SourceBundle']
-    bucket_name = source_bundle['S3Bucket']
-    key_name = source_bundle['S3Key']
 
-    io.echo('Downloading application version...')
-    data = s3.get_object(bucket_name, key_name)
+        source_bundle = app_version['SourceBundle']
+        bucket_name = source_bundle['S3Bucket']
+        key_name = source_bundle['S3Key']
+        io.echo('Downloading application version...')
+        data = s3.get_object(bucket_name, key_name)
+        filename = get_filename(key_name)
+    else:
+        # sample app
+        template = cloudformation.get_template('awseb-' + env.id + '-stack')
+        try:
+            url = template['TemplateBody']['Parameters']['AppSource']['Default']
+        except KeyError:
+            raise NotFoundError('Can not find app source for environment')
+        utils.get_data_from_url(url)
+        io.echo('Downloading application version...')
+        data = utils.get_data_from_url(url, timeout=30)
+        filename = 'sample.zip'
 
     fileoperations.make_eb_dir('downloads/')
-    filename = os.path.basename(key_name)
     location = fileoperations.get_eb_file_full_location(
         'downloads/' + filename)
     fileoperations.write_to_data_file(location, data)
@@ -62,3 +76,8 @@ def download_source_bundle(app_name, env_name):
             io.echo('Done.')
     finally:
         os.chdir(cwd)
+
+def get_filename(url):
+    pattern = re.compile('^.*[//]?([^//]+)$')
+    matcher = re.match(pattern, url)
+    return matcher.group(1).strip()
