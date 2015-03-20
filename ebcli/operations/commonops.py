@@ -11,24 +11,23 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from datetime import datetime, timedelta
-import time
-import re
 import os
+import re
+import time
+from datetime import datetime, timedelta
 
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
 
-from ..lib import elasticbeanstalk, s3, aws, ec2
 from ..core import fileoperations, io
-from ..objects.sourcecontrol import SourceControl
-from ..resources.strings import strings, responses, prompts
-from ..lib import utils
+from ..core.fileoperations import _marker
+from ..docker import dockerrun
+from ..lib import aws, ec2, elasticbeanstalk, heuristics, s3, utils
+from ..lib.aws import InvalidParameterValueError
 from ..objects.exceptions import *
 from ..objects.solutionstack import SolutionStack
-from ..lib.aws import InvalidParameterValueError
-from ..lib import heuristics
-from ..docker import dockerrun
+from ..objects.sourcecontrol import SourceControl
+from ..resources.strings import strings, responses, prompts
 
 LOG = minimal_logger(__name__)
 
@@ -304,6 +303,7 @@ def pull_down_app_info(app_name, default_env=None):
     )
     if keyname is None:
         keyname = -1
+
     return env.platform.name, keyname
 
 
@@ -501,12 +501,33 @@ def set_environment_for_current_branch(value):
     write_setting_to_current_branch('environment', value)
 
 
+def get_current_branch_environment():
+    return get_setting_from_current_branch('environment')
+
+
+def get_default_keyname():
+    return get_config_setting_from_branch_or_default('default_ec2_keyname')
+
+
+def get_default_profile():
+    return get_config_setting_from_branch_or_default('profile')
+
+
+def get_default_region():
+    return get_config_setting_from_branch_or_default('default_region')
+
+
+def get_default_solution_stack():
+    return get_config_setting_from_branch_or_default('default_platform')
+
+
 def get_setting_from_current_branch(keyname):
     source_control = SourceControl.get_source_control()
 
     branch_name = source_control.get_current_branch()
 
     branch_dict = fileoperations.get_config_setting('branch-defaults', branch_name)
+
     if branch_dict is None:
         return None
     else:
@@ -516,8 +537,13 @@ def get_setting_from_current_branch(keyname):
             return None
 
 
-def get_current_branch_environment():
-    return get_setting_from_current_branch('environment')
+def get_config_setting_from_branch_or_default(key_name, default=_marker):
+    setting = get_setting_from_current_branch(key_name)
+
+    if setting is not None:
+        return setting
+    else:
+        return fileoperations.get_config_setting('global', key_name, default=default)
 
 
 def get_solution_stack(solution_string):

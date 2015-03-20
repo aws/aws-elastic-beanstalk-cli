@@ -11,10 +11,11 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+from ..core import fileoperations, io
+from ..lib import elasticbeanstalk, heuristics, aws
 from ..objects.exceptions import CredentialsError, NotAuthorizedError
 from ..objects.sourcecontrol import SourceControl
-from ..lib import elasticbeanstalk, heuristics, aws
-from ..core import fileoperations, io
+from ..operations import commonops
 from ..resources.strings import strings
 
 

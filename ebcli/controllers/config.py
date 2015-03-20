@@ -82,7 +82,7 @@ class ConfigController(AbstractBaseController):
     def put(self):
         app_name = self.get_app_name()
         name = self._get_cfg_name('put')
-        platform = fileoperations.get_default_solution_stack()
+        platform = commonops.get_default_solution_stack()
         platform = commonops.get_solution_stack(platform)
         platform = platform.name
 

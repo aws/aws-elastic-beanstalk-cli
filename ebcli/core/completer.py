@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from cement.core import controller, handler
+
 from ..core import fileoperations, io
 from ..lib import aws
 
@@ -74,7 +75,7 @@ class CompleterController(controller.CementBaseController):
 
                 try:
                     #Set up aws profile just in case we need to make a service call
-                    profile = fileoperations.get_default_profile()
+                    profile = commonops.get_default_profile()
                     if profile:
                         aws.set_profile(profile)
                     ctrlr.complete_command(commands)

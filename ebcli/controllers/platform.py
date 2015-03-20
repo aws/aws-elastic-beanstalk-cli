@@ -15,8 +15,8 @@ import os
 
 from ..core import fileoperations, io
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, prompts
 from ..operations import commonops, platformops
+from ..resources.strings import strings, prompts
 
 
 class PlatformController(AbstractBaseController):
@@ -61,7 +61,7 @@ class PlatformShowController(AbstractBaseController):
     def do_command(self):
         app_name = self.get_app_name()
         env_name = self.get_env_name(noerror=True)
-        config_platform = fileoperations.get_default_solution_stack()
+        config_platform = commonops.get_default_solution_stack()
         full_platform = commonops.get_solution_stack(config_platform)
 
         io.echo('Current default platform:', config_platform)

@@ -12,19 +12,18 @@
 # language governing permissions and limitations under the License.
 
 from __future__ import print_function
-import os
-import fileinput
 import datetime
+import fileinput
+import os
 import sys
 
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
 
-from ..resources.strings import git_ignore, strings
-from ..core.fileoperations import get_config_setting
+from ..core import fileoperations, io
 from ..objects.exceptions import NoSourceControlError, CommandError, \
     NotInitializedError
-from ..core import fileoperations, io
+from ..resources.strings import git_ignore, strings
 
 LOG = minimal_logger(__name__)
 
@@ -57,7 +56,7 @@ class SourceControl():
     def get_source_control():
         # First check for setting in config file
         try:
-            git_installed = get_config_setting('global', 'sc')
+            git_installed = fileoperations.get_config_setting('global', 'sc')
         except NotInitializedError:
             git_installed = False
 

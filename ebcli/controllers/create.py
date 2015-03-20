@@ -14,15 +14,15 @@
 import re
 import argparse
 
+from ..core import io, fileoperations
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, prompts, flag_text
 from ..lib import elasticbeanstalk, utils
 from ..objects.exceptions import NotFoundError, AlreadyExistsError, \
     InvalidOptionsError
-from ..core import io, fileoperations
-from ..objects.tier import Tier
 from ..objects.requests import CreateEnvironmentRequest
+from ..objects.tier import Tier
 from ..operations import saved_configs, commonops, createops
+from ..resources.strings import strings, prompts, flag_text
 
 
 class CreateController(AbstractBaseController):
@@ -127,7 +127,7 @@ class CreateController(AbstractBaseController):
 
         #load solution stack
         if not solution_string:
-            solution_string = fileoperations.get_default_solution_stack()
+            solution_string = commonops.get_default_solution_stack()
 
         # Test out sstack and tier before we ask any questions (Fast Fail)
         if solution_string:
@@ -183,7 +183,7 @@ class CreateController(AbstractBaseController):
                 cname = None
 
         if not key_name:
-            key_name = fileoperations.get_default_keyname()
+            key_name = commonops.get_default_keyname()
 
 
         database = self.form_database_object()

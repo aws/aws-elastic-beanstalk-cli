@@ -16,8 +16,9 @@ import sys
 from cement.ext.ext_logging import LoggingLogHandler
 
 from ebcli import __version__
-from ..lib import aws
 from ..core import fileoperations, io
+from ..lib import aws
+from ..operations import commonops
 
 
 def pre_run_hook(app):
@@ -38,7 +39,7 @@ def set_profile(profile):
     if profile:
         aws.set_profile_override(profile)
     else:
-        profile = fileoperations.get_default_profile()
+        profile = commonops.get_default_profile()
         if profile:
             aws.set_profile(profile)
 
@@ -53,7 +54,7 @@ def set_ssl(noverify):
 
 def set_region(region_name):
     if not region_name:
-        region_name = fileoperations.get_default_region()
+        region_name = commonops.get_default_region()
 
     aws.set_region(region_name)
 

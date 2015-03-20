@@ -11,15 +11,18 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import codecs
+import glob
+import json
 import os
 import shutil
-import zipfile
-import sys
-import glob
 import stat
-import codecs
-import json
+import sys
+import zipfile
 
+from botocore.compat import six
+from cement.utils.misc import minimal_logger
+from six import StringIO
 from yaml import load, dump, safe_dump
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
@@ -27,10 +30,6 @@ try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
-
-from botocore.compat import six
-from six import StringIO
-from cement.utils.misc import minimal_logger
 
 from ..core import io
 from ..objects.exceptions import NotInitializedError, InvalidSyntaxError, \
@@ -67,6 +66,7 @@ ebcli_section = 'profile eb-cli'
 app_version_folder = beanstalk_directory + 'app_versions'
 logs_folder = beanstalk_directory + 'logs' + os.path.sep
 
+_marker = object()
 
 def _get_option(config, section, key, default):
     try:
@@ -171,9 +171,6 @@ def save_to_aws_config(access_key, secret_key):
     set_user_only_permissions(aws_config_location)
 
 
-_marker = object()
-
-
 def set_user_only_permissions(location):
     """
     Sets permissions so that only a user can read/write (chmod 400).
@@ -221,28 +218,6 @@ def get_application_name(default=_marker):
     if default is _marker:
         raise NotInitializedError
     return default
-
-
-def get_default_region():
-    try:
-        return get_config_setting('global', 'default_region')
-    except NotInitializedError:
-        return None
-
-
-def get_default_solution_stack():
-    return get_config_setting('global', 'default_platform')
-
-
-def get_default_keyname():
-    return get_config_setting('global', 'default_ec2_keyname')
-
-
-def get_default_profile():
-    try:
-        return get_config_setting('global', 'profile')
-    except NotInitializedError:
-        return None
 
 
 def touch_config_folder():
@@ -510,6 +485,7 @@ def write_config_setting(section, key_name, value):
 def get_config_setting(section, key_name, default=_marker):
     # get setting from global if it exists
     cwd = os.getcwd()  # save working directory
+
     try:
         _traverse_to_project_root()
 

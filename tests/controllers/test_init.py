@@ -15,10 +15,10 @@ import mock
 
 from .basecontrollertest import BaseControllerTest
 
-from ebcli.core.ebcore import EB
-from ebcli.objects.solutionstack import SolutionStack
 from ebcli.core import fileoperations
+from ebcli.core.ebcore import EB
 from ebcli.objects.exceptions import NotInitializedError, NoRegionError
+from ebcli.objects.solutionstack import SolutionStack
 
 
 class TestInit(BaseControllerTest):
@@ -57,6 +57,9 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
         self.mock_commonops.create_app.return_value = None, None
+        self.mock_commonops.get_default_keyname.return_value = ''
+        self.mock_commonops.get_default_region.return_value = ''
+        self.mock_commonops.get_default_solution_stack.return_value = ''
 
         self.mock_input.side_effect = [
             '3',  # region number
@@ -128,6 +131,9 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
         self.mock_commonops.create_app.return_value = None, None
+        self.mock_commonops.get_default_keyname.return_value = ''
+        self.mock_commonops.get_default_region.return_value = ''
+        self.mock_commonops.get_default_solution_stack.return_value = ''
 
         # run cmd
         self.app = EB(argv=['init',
@@ -158,6 +164,9 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
         self.mock_commonops.create_app.return_value = None, None
+        self.mock_commonops.get_default_keyname.return_value = ''
+        self.mock_commonops.get_default_region.return_value = ''
+        self.mock_commonops.get_default_solution_stack.return_value = ''
 
         # run cmd
         self.app = EB(argv=['init', '-p', 'php'])

@@ -15,12 +15,13 @@ import mock
 
 from .basecontrollertest import BaseControllerTest
 
-from ebcli.core.ebcore import EB
-from ebcli.objects.solutionstack import SolutionStack
 from ebcli.core import fileoperations
-from ebcli.objects.tier import Tier
+from ebcli.core.ebcore import EB
 from ebcli.objects.exceptions import InvalidOptionsError
 from ebcli.objects.requests import CreateEnvironmentRequest
+from ebcli.objects.solutionstack import SolutionStack
+from ebcli.objects.tier import Tier
+from ebcli.operations import commonops
 
 
 class TestCreate(BaseControllerTest):
@@ -46,6 +47,7 @@ class TestCreate(BaseControllerTest):
         cname_prefix = env_name
         self.mock_commonops.get_solution_stack.return_value = self.solution
         self.mock_commonops.is_cname_available.return_value = True
+        self.mock_commonops.get_default_keyname = commonops.get_default_keyname
 
         self.mock_input.side_effect = [
             env_name,
@@ -79,6 +81,7 @@ class TestCreate(BaseControllerTest):
         cname_prefix = 'myenv-cname'
         self.mock_commonops.get_solution_stack.return_value = self.solution
         self.mock_commonops.is_cname_available.return_value = True
+        self.mock_commonops.get_default_keyname = commonops.get_default_keyname
 
         self.mock_input.return_value = None
 

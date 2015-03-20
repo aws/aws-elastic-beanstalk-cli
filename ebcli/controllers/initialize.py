@@ -13,14 +13,14 @@
 
 import sys
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, flag_text
 from ..core import fileoperations, io
+from ..core.abstractcontroller import AbstractBaseController
+from ..lib import utils, elasticbeanstalk, aws
+from ..objects import region as regions
 from ..objects.exceptions import NotInitializedError, NoRegionError, \
     InvalidProfileError
-from ..objects import region as regions
-from ..lib import utils, elasticbeanstalk, aws
 from ..operations import commonops, initializeops, sshops
+from ..resources.strings import strings, flag_text
 
 
 class InitController(AbstractBaseController):
@@ -174,7 +174,7 @@ class InitController(AbstractBaseController):
         # Get region from config file
         if not region:
             try:
-                region = fileoperations.get_default_region()
+                region = commonops.get_default_region()
             except NotInitializedError:
                 region = None
 
@@ -207,7 +207,7 @@ class InitController(AbstractBaseController):
         # Get solution stack from config file, if exists
         if not solution_string:
             try:
-                solution_string = fileoperations.get_default_solution_stack()
+                solution_string = commonops.get_default_solution_stack()
             except NotInitializedError:
                 solution_string = None
 
@@ -225,7 +225,7 @@ class InitController(AbstractBaseController):
         # Get keyname from config file, if exists
         if not keyname:
             try:
-                keyname = fileoperations.get_default_keyname()
+                keyname = commonops.get_default_keyname()
             except NotInitializedError:
                 keyname = None
 
