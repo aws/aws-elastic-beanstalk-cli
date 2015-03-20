@@ -547,7 +547,7 @@ def get_json_dict(fullpath):
     :return: dict
     """
 
-    return json.loads(read_from_data_file(fullpath))
+    return json.loads(read_from_text_file(fullpath))
 
 
 def _get_yaml_dict(filename):
@@ -610,6 +610,11 @@ def write_to_data_file(location, data):
 
 def read_from_data_file(location):
     with codecs.open(location, 'rb', encoding=None) as f:
+        return f.read()
+
+
+def read_from_text_file(location):
+    with codecs.open(location, 'rt', encoding=None) as f:
         return f.read()
 
 
