@@ -61,6 +61,7 @@ class BaseControllerTest(test.CementTestCase):
         self.patcher_operations.stop()
         self.patcher_input.stop()
         self.patcher_output.stop()
+        self.patcher_commonops.stop()
 
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
