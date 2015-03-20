@@ -13,6 +13,7 @@
 
 from datetime import datetime, timedelta
 import os
+import sys
 
 from botocore.compat import six
 from six import iteritems
@@ -97,6 +98,8 @@ def get_logs(env_name, info_type, do_zip=False, instance_id=None):
         data = []
         for i_id, url in iteritems(log_list):
             data.append('============= ' + str(i_id) + ' ==============')
-            data.append(utils.get_data_from_url(url))
-
+            log_result = utils.get_data_from_url(url)
+            if sys.version_info[0] >= 3:
+                log_result = log_result.decode()
+            data.append(log_result)
         io.echo_with_pager(os.linesep.join(data))
