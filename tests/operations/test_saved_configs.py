@@ -14,6 +14,7 @@
 import os
 import shutil
 import unittest
+import sys
 
 from ebcli.core import fileoperations
 from ebcli.operations import saved_configs
@@ -32,7 +33,10 @@ class TestResolveConfigLocations(unittest.TestCase):
         if not os.path.exists(fileoperations.beanstalk_directory):
             os.makedirs(fileoperations.beanstalk_directory)
 
-        self.data = bytes('', 'UTF-8')
+        if sys.version_info[0] >= 3:
+            self.data = bytes('', 'UTF-8')
+        else:
+            self.data = ''
 
 
     def tearDown(self):
