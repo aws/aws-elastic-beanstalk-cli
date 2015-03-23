@@ -328,6 +328,7 @@ responses = {
     'logs.pulled': 'Pulled logs for environment instances.',
     'logs.successtail': 'Successfully finished tailing',
     'logs.successbundle': 'Successfully finished bundling',
+    'logs.fail': 'Failed to pull logs for environment instances.',
     'env.terminated': 'terminateEnvironment completed successfully.',
     'env.invalidstate': 'Environment named {env-name} is in an invalid state for this operation. Must be Ready.',
     'loadbalancer.notfound': 'There is no ACTIVE Load Balancer named',
