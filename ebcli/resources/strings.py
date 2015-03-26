@@ -200,11 +200,11 @@ prompts = {
     'upgrade.infodialog': 'The environment "{0}" will be updated to use the most recent platform version.',
     'upgrade.alreadylatest': 'Environment already on most recent platform version.',
     'upgrade.applyrolling': 'Enabling {0}-based rolling updates to environment.',
-    'create.dockerrunupgrade': 'The Dockerrun.aws.json file version you provided is not supported by ECS. Type "eb labs convert-dockerrun" to convert it to version 2 format.'
+    'create.dockerrunupgrade': 'Multicontainer Docker environments do not support the version number of the Dockerrun.aws.json file that you provided. Type "eb labs convert-dockerrun" to convert it to a newer format.'
 }
 
 alerts = {
-    'platform.old': 'There is a newer version of the platform used by your environment. You can create an environment on the most recent platform version by typing "eb clone".'
+    'platform.old': 'There is a newer version of the platform used by your environment. You can upgrade your environment to the most recent platform version by typing "eb upgrade".'
 }
 
 flag_text = {

@@ -701,8 +701,7 @@
       },
       "output":{
         "shape":"AbortEnvironmentUpdateDescription",
-        "documentation":"<p>Describes the properties of an environment.</p>",
-        "resultWrapper":"AbortEnvironmentUpdateResponse"
+        "documentation":"<p>Describes the properties of an environment.</p>"
       },
       "errors":[
         {

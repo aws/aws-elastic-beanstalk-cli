@@ -420,7 +420,7 @@ def abort_environment_update(env_name):
     LOG.debug('Inside abort_environment_update')
     result = _make_api_call('abort_environment_update',
                             EnvironmentName=env_name)
-    return result
+    return result['ResponseMetadata']['RequestId']
 
 
 def update_env_application_version(env_name,
