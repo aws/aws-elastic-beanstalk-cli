@@ -16,7 +16,7 @@ from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings
 from ..core import io, fileoperations
 from ..docker import dockerrun
-from ..objects.exceptions import NotFoundError
+from ..objects.exceptions import NotFoundError, NotSupportedError
 
 DOCKERRUN_FILENAME = 'Dockerrun.aws.json'
 
@@ -33,6 +33,9 @@ class ConvertDockerrunController(AbstractBaseController):
         dockerrun_location = fileoperations.\
             get_project_file_full_location(DOCKERRUN_FILENAME)
         v1_json = dockerrun.get_dockerrun(dockerrun_location)
+        if v1_json['AWSEBDockerrunVersion'] == 2:
+            raise NotSupportedError('Dockerrun file already at version 2')
+
         fileoperations.write_json_dict(v1_json, dockerrun_location + '_backup')
         io.echo('Version 1 file saved as Dockerrun.aws.json_backup.')
 
@@ -61,12 +64,12 @@ def get_dockerrun_v2(v1_json):
         ]
     }
     try:
-        v2_json['containerDefinitions']['containerPort'] = \
+        v2_json['containerDefinitions'][0]['containerPort'] = \
             int(v1_json['Ports'][0]['ContainerPort'])
     except (KeyError, IndexError):
         raise NotFoundError('The "port" field is required for v2 conversion.')
     try:
-        v2_json['containerDefinitions']['image'] = v1_json['Image']['Name']
+        v2_json['containerDefinitions'][0]['image'] = v1_json['Image']['Name']
     except KeyError:
         raise NotFoundError('The "image" field is required for v2 conversion.')
 
