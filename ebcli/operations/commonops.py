@@ -172,6 +172,7 @@ def prompt_for_solution_stack():
     cwd = os.getcwd()
     # First check to see if we know what language the project is in
     try:
+        fileoperations._traverse_to_project_root()
         platform = heuristics.find_language_type()
 
         if platform == 'Docker':

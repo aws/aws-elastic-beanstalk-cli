@@ -550,6 +550,11 @@ def get_json_dict(fullpath):
     return json.loads(read_from_text_file(fullpath))
 
 
+def write_json_dict(json_data, fullpath):
+    data = json.dumps(json_data, sort_keys=True, indent=4)
+    write_to_text_file(data, fullpath)
+
+
 def _get_yaml_dict(filename):
     try:
         with codecs.open(filename, 'r', encoding='utf8') as f:
@@ -617,13 +622,20 @@ def read_from_text_file(location):
     with codecs.open(location, 'rt', encoding=None) as f:
         return f.read()
 
+def write_to_text_file(data, location):
+    with codecs.open(location, 'wt', encoding=None) as f:
+        f.write(data)
 
-def get_eb_file_full_location(location):
+
+def get_project_file_full_location(location):
     cwd = os.getcwd()
     try:
         _traverse_to_project_root()
-        path = beanstalk_directory + location
-        full_path = os.path.abspath(path)
+        full_path = os.path.abspath(location)
         return full_path
     finally:
         os.chdir(cwd)
+
+
+def get_eb_file_full_location(location):
+    return get_project_file_full_location(beanstalk_directory + location)
