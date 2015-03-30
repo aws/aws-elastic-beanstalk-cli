@@ -171,5 +171,8 @@ def validate_config_file(app_name, cfg_name, platform):
         if severity == 'error':
             io.log_error(message)
         elif severity == 'warning':
-            io.log_warning(message)
+            # Ignore warnings. They are common on partial configurations
+            # and almost always completely irrelevant.
+            # io.log_warning(message)
+            pass
 
