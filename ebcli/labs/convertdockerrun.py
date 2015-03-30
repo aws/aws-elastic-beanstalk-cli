@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import os
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings
@@ -30,9 +31,10 @@ class ConvertDockerrunController(AbstractBaseController):
         usage = 'eb labs convert-dockerrun [options...]'
 
     def do_command(self):
-        dockerrun_location = fileoperations.\
-            get_project_file_full_location(DOCKERRUN_FILENAME)
+        dockerrun_location = os.path.join(os.getcwd(), DOCKERRUN_FILENAME)
         v1_json = dockerrun.get_dockerrun(dockerrun_location)
+        if not v1_json:
+            raise NotFoundError('Dockerrun.aws.json file not found in current directory.')
         if v1_json['AWSEBDockerrunVersion'] == 2:
             raise NotSupportedError('Dockerrun file already at version 2')
 
@@ -64,14 +66,14 @@ def get_dockerrun_v2(v1_json):
         ]
     }
     try:
+        v2_json['containerDefinitions'][0]['image'] = v1_json['Image']['Name']
+    except KeyError:
+        raise NotFoundError('The "image" field is required for v2 conversion.')
+    try:
         v2_json['containerDefinitions'][0]['containerPort'] = \
             int(v1_json['Ports'][0]['ContainerPort'])
     except (KeyError, IndexError):
         raise NotFoundError('The "port" field is required for v2 conversion.')
-    try:
-        v2_json['containerDefinitions'][0]['image'] = v1_json['Image']['Name']
-    except KeyError:
-        raise NotFoundError('The "image" field is required for v2 conversion.')
 
     if 'Authentication' in v1_json:
         v2_json['authentication'] = {

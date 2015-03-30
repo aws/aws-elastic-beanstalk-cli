@@ -180,7 +180,7 @@ def prompt_for_solution_stack():
             dockerrun_file = dockerrun.get_dockerrun(
                 os.path.join(os.getcwd(), 'Dockerrun.aws.json'))
             if dockerrun_file:
-                if dockerrun_file.get('AWSEBDockerrunVersion') == 1:
+                if dockerrun_file.get('AWSEBDockerrunVersion') in (1, '1'):
                     platform = 'Docker'
                 else:
                     platform = 'Multi-container Docker'
