@@ -2,6 +2,11 @@
 Changelog
 =========
 
+------------------
+3.2.1 (2015-04-02)
+------------------
+- Added warning string for Multi-container permissions on "create"
+
 ----------------
 3.2 (2015-03-30)
 ----------------
