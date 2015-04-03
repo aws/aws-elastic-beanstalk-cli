@@ -152,6 +152,12 @@ class CreateController(AbstractBaseController):
                                          replace('{cname}', cname))
 
         # If we still dont have what we need, ask for it
+        if not solution_string:
+            solution = commonops.prompt_for_solution_stack()
+
+        if solution.platform == 'Multi-container Docker' and iprofile is None:
+            io.log_warning(prompts['ecs.permissions'])
+
         if not env_name:
             # default is app-name plus '-dev'
             default_name = app_name + '-dev'
@@ -160,8 +166,6 @@ class CreateController(AbstractBaseController):
                                                 current_environments)
             env_name = io.prompt_for_environment_name(unique_name)
 
-        if not solution_string:
-            solution = commonops.prompt_for_solution_stack()
 
         # Get template if applicable
         template_name = get_template_name(app_name, cfg)

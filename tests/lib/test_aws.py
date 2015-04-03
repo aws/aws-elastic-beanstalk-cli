@@ -21,4 +21,5 @@ class TestAws(unittest.TestCase):
     def test_user_agent(self):
         aws.set_region('us-east-1')
         client = aws._get_client('elasticbeanstalk')
-        self.assertTrue(client._endpoint._user_agent.startswith('eb-cli'))
+        user_agent = client._endpoint._user_agent
+        self.assertTrue(user_agent.startswith('eb-cli'))

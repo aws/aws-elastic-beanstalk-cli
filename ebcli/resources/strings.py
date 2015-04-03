@@ -200,7 +200,9 @@ prompts = {
     'upgrade.infodialog': 'The environment "{0}" will be updated to use the most recent platform version.',
     'upgrade.alreadylatest': 'Environment already on most recent platform version.',
     'upgrade.applyrolling': 'Enabling {0}-based rolling updates to environment.',
-    'create.dockerrunupgrade': 'Multicontainer Docker environments do not support the version number of the Dockerrun.aws.json file that you provided. Type "eb labs convert-dockerrun" to convert it to a newer format.'
+    'create.dockerrunupgrade': 'Multicontainer Docker environments do not support the version number of the Dockerrun.aws.json file that you provided. Type "eb labs convert-dockerrun" to convert it to a newer format.',
+    'ecs.permissions': 'The Multi-container Docker platform requires additional ECS permissions. Add the permissions to the aws-elasticbeanstalk-ec2-role or use your own instance profile by typing "-ip {profile-name}".\n'
+                       'For more information see: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker_ecstutorial.html#create_deploy_docker_ecstutorial_role',
 }
 
 alerts = {
