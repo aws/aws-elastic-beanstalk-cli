@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------------------
+3.2.2 (2015-04-06)
+------------------
+- Fix issue with creating single instance environments
+
+------------------
 3.2.1 (2015-04-02)
 ------------------
 - Added warning string for Multi-container permissions on "create"
