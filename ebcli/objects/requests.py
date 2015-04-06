@@ -178,14 +178,15 @@ class CreateEnvironmentRequest(object):
                 'aws:elb:loadbalancer',
                 'CrossZone',
                 'true')
-            self.add_option_setting(
-                'aws:autoscaling:updatepolicy:rollingupdate',
-                'RollingUpdateEnabled',
-                'true')
-            self.add_option_setting(
-                'aws:autoscaling:updatepolicy:rollingupdate',
-                'RollingUpdateType',
-                'Health')
+            if not self.single_instance:
+                self.add_option_setting(
+                    'aws:autoscaling:updatepolicy:rollingupdate',
+                    'RollingUpdateEnabled',
+                    'true')
+                self.add_option_setting(
+                    'aws:autoscaling:updatepolicy:rollingupdate',
+                    'RollingUpdateType',
+                    'Health')
 
     def compile_database_options(self):
         if not self.database:
