@@ -576,8 +576,8 @@ def check_preconditions():
         sys.exit(1)
     # This is not strictly an error, *but* we should be using the latest
     # release of python2.7 so we're going to enforce that here.
-    if sys.version_info[:3] != (3, 4, 2):
-        sys.stderr.write("Must have python 3.4.2 installed, not: %s\n" % sys.version)
+    if sys.version_info[:2] != (2, 7):
+        sys.stderr.write("Must have python 2.7.x installed, not: %s\n" % sys.version)
         sys.exit(1)
 
 

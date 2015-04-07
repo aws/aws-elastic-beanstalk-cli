@@ -8,10 +8,10 @@ import ebcli
 requires = ['pyyaml>=3.11',
             'cement==2.4',
             ## For botocore we need the following
-            'python-dateutil>=2.1,<3.0.0',
             'jmespath>=0.6.1',
+            'python-dateutil>=2.1,<3.0.0',
             'docker-compose>=1.1.0',
-            ]
+           ]
 
 try:
     with open('/etc/bash_completion.d/eb_completion.extra', 'w') as eo:
@@ -61,6 +61,19 @@ setup_options = dict(
     }
 )
 
+def _unpack_eggs(egg_list):
+    import os
+    for pkg in egg_list:
+        import pkg_resources
+        eggs = pkg_resources.require(pkg)
+        from setuptools.archive_util import unpack_archive
+        for egg in eggs:
+           if os.path.isdir(egg.location):
+               sys.path.insert(0, egg.location)
+               continue
+           unpack_archive(egg.location, os.path.abspath(os.path.dirname(egg.location)))
+
+
 if 'py2exe' in sys.argv:
     data_files = setup_options['package_data']
     # This will actually give us a py2exe command.
@@ -70,6 +83,7 @@ if 'py2exe' in sys.argv:
     import encodings
     # We need to manually include all cement.ext modules since py2exe doesnt
     # pull them in.
+    _unpack_eggs(['jmespath', 'python-dateutil', 'pyyaml'])
     includes = []
     for importer, modname, ispkg in pkgutil.iter_modules(cement.ext.__path__):
         includes.append('cement.ext.' + modname)
@@ -77,6 +91,7 @@ if 'py2exe' in sys.argv:
     setup_options['options'] = {
         'py2exe': {
             'includes': ['encodings'] + includes,
+            'excludes': ['Tkinter', 'tcl'],
             'optimize': 0,
             'skip_archive': True,
             'packages': ['ebcli'],
