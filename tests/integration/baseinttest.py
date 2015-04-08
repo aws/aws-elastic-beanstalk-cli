@@ -17,6 +17,7 @@ import shutil
 
 from cement.utils import test
 from ebcli.core import ebcore, fileoperations
+from ebcli.lib import aws
 from . import mockservice
 
 ebcore.fix_path()
@@ -27,6 +28,7 @@ class BaseIntegrationTest(test.CementTestCase):
 
     def setUp(self):
         super(BaseIntegrationTest, self).setUp()
+        aws._flush()
         self.reset_backend()
         # Set up mock input and output
         self.patcher_input = mock.patch('ebcli.core.io.get_input')
@@ -79,12 +81,3 @@ class BaseIntegrationTest(test.CementTestCase):
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
         mockservice.reset()
-
-    def patch_botocore_endpoint(self):
-        from ebcli.bundled.botocore.endpoint import Endpoint
-
-
-        def make_request(*args):
-            return 200, 'awdadw'
-
-        Endpoint.make_request = make_request

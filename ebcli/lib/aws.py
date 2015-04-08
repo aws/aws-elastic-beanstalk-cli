@@ -42,6 +42,18 @@ _debug = False
 apply_patches()
 
 
+def _flush():
+    # Should be used for resetting tests only
+    global _api_clients, _profile, _id, _key, _region_name, _verify_ssl
+    _api_clients = {}
+    _get_botocore_session.botocore_session = None
+    _profile = None
+    _id = None
+    _key = None
+    _region_name = None
+    _verify_ssl = True
+
+
 def set_session_creds(id, key):
     global _api_clients, _id, _key
     _id = id
