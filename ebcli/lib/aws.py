@@ -160,9 +160,10 @@ def make_api_call(service_name, operation_name, **operation_options):
         client = _get_client(service_name)
     except botocore.exceptions.UnknownEndpointError as e:
         raise NoRegionError(e)
-    except botocore.exceptions.PartialCredentialsError:
+    except botocore.exceptions.PartialCredentialsError as e:
         LOG.debug('Credentials incomplete')
-        raise CredentialsError('Your credentials are not complete')
+        raise CredentialsError('Your credentials are not complete. Error: {0}'
+                               .format(e))
 
     if not _verify_ssl:
         warnings.filterwarnings("ignore")
