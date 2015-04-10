@@ -13,8 +13,9 @@
 
 from cement.core import controller, handler
 
-from ..core import fileoperations, io
+from ..core import io
 from ..lib import aws
+from ..operations import commonops
 
 
 class CompleterController(controller.CementBaseController):
@@ -34,7 +35,7 @@ class CompleterController(controller.CementBaseController):
         Creates a space separated list of possible completions.
         We actually do not need to calculate the completions. We can simply
         just generate a list of ALL possibilities, and then the bash completer
-         module is smart enough to filter out the ones that don't match/
+         module is smart enough to filter out the ones that don't match.
 
          Results must be printed through stdin for the completer module
          to read then.
@@ -64,7 +65,8 @@ class CompleterController(controller.CementBaseController):
         else:
             if ctrlr == self.base_controller:
                 # Get standard command list
-                io.echo(*[c.Meta.label for c in self.controllers])
+                io.echo(*[c.Meta.label for c in self.controllers
+                          if not hasattr(c.Meta, 'stacked_type')])
             else:
                 # A command has been provided. Complete at a deeper level
 

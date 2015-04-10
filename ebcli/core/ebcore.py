@@ -106,7 +106,7 @@ class EB(foundation.CementApp):
         for c in controllers:
             c._add_to_handler(handler)
 
-        #Add special controllers
+        # Add special controllers
         handler.register(CompleterController)
 
         super(EB, self).setup()

@@ -21,7 +21,7 @@ from six import print_
 
 from cement.utils import test
 from ebcli.core.ebcore import EB
-from ebcli.lib import elasticbeanstalk
+from ebcli.lib import elasticbeanstalk, aws
 from ebcli.objects.exceptions import *
 
 
@@ -59,6 +59,7 @@ class TestEnd2End(test.CementTestCase):
     @pytest.mark.end2end
     def test_end2end(self):
         """ Run all tests in this one method in order to preserve order """
+        aws._flush()
         self.create_index_file()
         self.region = 'us-east-1'
         self.get_app_name()

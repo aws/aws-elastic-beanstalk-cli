@@ -16,12 +16,11 @@ import os
 import shutil
 
 from cement.utils import test
-from ebcli.core.ebcore import EB
+from ebcli.core import ebcore
 from ebcli.core import fileoperations
 
 
 class BaseControllerTest(test.CementTestCase):
-    app_class = EB
 
     def setUp(self):
         super(BaseControllerTest, self).setUp()
@@ -66,3 +65,9 @@ class BaseControllerTest(test.CementTestCase):
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
+
+    def run_command(self, *args):
+        self.app = ebcore.EB(argv=list(args))
+        self.app.setup()
+        self.app.run()
+        self.app.close()
