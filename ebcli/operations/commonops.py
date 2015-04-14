@@ -309,23 +309,42 @@ def pull_down_app_info(app_name, default_env=None):
 
 def open_webpage_in_browser(url, ssl=False):
     io.log_info('Opening webpage with default browser.')
-    if ssl:
-        url = 'https://' + url
-    else:
-        url = 'http://' + url
-
+    if not url.startswith('http'):
+        if ssl:
+            url = 'https://' + url
+        else:
+            url = 'http://' + url
+    LOG.debug('url={}'.format(url))
     if (not fileoperations.program_is_installed('python')) or \
             utils.is_ssh():
         # python probably isn't on path
         ## try to run webbrowser internally
+        LOG.debug('Running webbrowser inline.')
         import webbrowser
         webbrowser.open_new_tab(url)
     else:
-        #By running as a subprocess, we can capture stdout
+        # this is the prefered way to open a web browser.
+        LOG.debug('Running webbrowser as subprocess.')
         from subprocess import Popen, PIPE
 
-        Popen(['python -m webbrowser \'' + url + '\''], stderr=PIPE,
+        p = Popen(['python -m webbrowser \'' + url + '\''], stderr=PIPE,
               stdout=PIPE, shell=True)
+        '''
+         We need to fork the process for various reasons
+            1. Calling p.communicate waits for the thread. Some browsers
+                (if opening a new window) dont return to the thread until
+                 the browser closes. We dont want the terminal to hang in
+                 this case
+            2. If we dont call p.communicate, there is a race condition. If
+                the main process terminates before the browser call is made,
+                the call never gets made and the browser doesn't open.
+            Therefor the solution is to fork, then wait for the child
+            in the backround.
+         '''
+        pid = os.fork()
+        if pid == 0:  # Is child
+            p.communicate()
+        # Else exit
 
 
 def get_application_names():
