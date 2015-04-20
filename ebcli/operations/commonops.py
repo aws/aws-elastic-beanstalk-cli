@@ -529,11 +529,17 @@ def get_default_keyname():
 
 
 def get_default_profile():
-    return get_config_setting_from_branch_or_default('profile')
+    try:
+        return get_config_setting_from_branch_or_default('profile')
+    except NotInitializedError:
+        return None
 
 
 def get_default_region():
-    return get_config_setting_from_branch_or_default('default_region')
+    try:
+        return get_config_setting_from_branch_or_default('default_region')
+    except NotInitializedError:
+        return None
 
 
 def get_default_solution_stack():
