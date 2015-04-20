@@ -9,7 +9,8 @@ requires = ['pyyaml>=3.11',
             'cement==2.4',
             ## For botocore we need the following
             'python-dateutil>=2.1,<3.0.0',
-            'jmespath>=0.6.1'
+            'jmespath>=0.6.1',
+            'docker-compose>=1.1.0',
             ]
 
 try:
@@ -35,9 +36,10 @@ setup_options = dict(
     packages=find_packages('.', exclude=['tests*', 'docs*', 'sampleApps*']),
     package_dir={'ebcli': 'ebcli'},
     package_data={
-        'ebcli': ['bundled/botocore/data/aws/*.json',
-                  'bundled/botocore/data/aws/*/*.json'],
-        'ebcli.bundled.botocore.vendored.requests': ['*.pem']},
+        'ebcli.bundled.botocore': ['data/aws/*.json',
+                                   'data/aws/*/*.json'],
+        'ebcli.bundled.botocore.vendored.requests': ['*.pem'],
+        'ebcli.docker': ['containerfiles/*']},
     install_requires=requires,
     license="Apache License 2.0",
     classifiers=(

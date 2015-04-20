@@ -11,20 +11,33 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import re
-import warnings
-import sys
+import datetime
+import logging
 import os
 import platform
+import re
 import subprocess
+import sys
+import warnings
 
 from botocore.compat import six
+from cement.utils.misc import minimal_logger
 from six.moves import urllib
+from subprocess import Popen, PIPE, STDOUT
 
+from ..objects.exceptions import CommandError
 from ..core import io, fileoperations
 
 
+LOG = minimal_logger(__name__)
+
+
 def prompt_for_item_in_list(lst, default=1):
+    ind = prompt_for_index_in_list(lst, default)
+    return lst[ind]
+
+
+def prompt_for_index_in_list(lst, default=1):
     for x in range(0, len(lst)):
         io.echo(str(x + 1) + ')', lst[x])
 
@@ -40,7 +53,7 @@ def prompt_for_item_in_list(lst, default=1):
             io.echo('Sorry, that is not a valid choice. '
                     'Please choose a number between 1 and ' +
                     str(len(lst)) + '.')
-    return lst[choice - 1]
+    return choice - 1
 
 
 def get_unique_name(name, current_uniques):
@@ -127,6 +140,77 @@ def static_var(varname, value):
     return decorate
 
 
+def exec_cmd(args, live_output=True):
+    """
+    Execute a child program (args) in a new process. Displays
+    live output by default.
+    :param args: list: describes the command to be run
+    :param live_output: bool: whether to print live output
+    :return str: child program output
+    """
+
+    LOG.debug(' '.join(args))
+
+    process = Popen(args, stdout=PIPE, stderr=STDOUT)
+    output = []
+
+    for line in iter(process.stdout.readline, b''):
+        line = line.decode('utf-8')
+        if line != os.linesep:
+            if live_output:
+                sys.stdout.write(line)
+                sys.stdout.flush()
+            else:
+                LOG.debug(line)
+
+        output.append(line)
+
+    process.stdout.close()
+    process.wait()
+
+    error_msg = 'Exited with return code {}'.format(process.returncode)
+
+    if process.returncode:
+        raise CommandError(error_msg)
+    return ''.join(output)
+
+
+exec_cmd_live_output = exec_cmd
+
+
+def exec_cmd_quiet(args):
+    return exec_cmd(args, False)
+
+
+def flatten(lists):
+    """
+    Return a new (shallow) flattened list.
+    :param lists: list: a list of lists
+    :return list
+    """
+
+    return [item for sublist in lists for item in sublist]
+
+
+def anykey(d):
+    """
+    Return any key in dictionary.
+    :param d: dict: dictionary
+    :return object
+    """
+    return next(six.iterkeys(d))
+
+
+def last_modified_file(filepaths):
+    """
+    Return the most recently modified file.
+    :param filepaths: list: paths to files
+    :return str
+    """
+
+    return max(filepaths, key=os.path.getmtime)
+
+
 def get_data_from_url(url, timeout=20):
     return urllib.request.urlopen(url, timeout=timeout).read()
 
@@ -140,3 +224,30 @@ def save_file_from_url(url, location, filename):
     result = get_data_from_url(url)
 
     return fileoperations.save_to_file(result, location, filename)
+
+
+# http://stackoverflow.com/a/5164027
+def prettydate(d):
+    if isinstance(d, float):  # epoch timestamp
+        d = datetime.datetime.utcfromtimestamp(d)
+
+    diff = datetime.datetime.utcnow() - d
+    s = diff.seconds
+    if diff.days > 7 or diff.days < 0:
+        return d.strftime('%d %b %y')
+    elif diff.days == 1:
+        return '1 day ago'
+    elif diff.days > 1:
+        return '{0} days ago'.format(diff.days)
+    elif s <= 1:
+        return 'just now'
+    elif s < 60:
+        return '{0} seconds ago'.format(s)
+    elif s < 120:
+        return '1 minute ago'
+    elif s < 3600:
+        return '{0} minutes ago'.format(s // 60)
+    elif s < 7200:
+        return '1 hour ago'
+    else:
+        return '{0} hours ago'.format(s // 3600)

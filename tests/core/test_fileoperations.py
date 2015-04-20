@@ -17,9 +17,15 @@ import unittest
 import yaml
 
 from ebcli.core import fileoperations
+from ebcli.objects.exceptions import NotInitializedError
+from mock import patch
 
 
 class TestFileOperations(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        self.test_root = os.getcwd()
+
     def setUp(self):
         # set up test directory
         if not os.path.exists('testDir'):
@@ -40,7 +46,7 @@ class TestFileOperations(unittest.TestCase):
             = fileoperations.aws_config_folder + 'config'
 
     def tearDown(self):
-        os.chdir(os.path.pardir)
+        os.chdir(self.test_root)
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
 
@@ -132,9 +138,7 @@ class TestFileOperations(unittest.TestCase):
         cwd = os.getcwd()
 
         # create and swap to deep subdirectory
-        dir = 'fol1' + os.path.sep + 'fol2' + os.path.sep + 'fol3'
-        os.makedirs(dir)
-        os.chdir(dir)
+        self._traverse_to_deeper_subdir()
 
         fileoperations._traverse_to_project_root()
 
@@ -307,3 +311,53 @@ class TestFileOperations(unittest.TestCase):
 
         # should return result from local NOT global
         self.assertEqual(result, 'ebcli-test')
+
+    def test_get_project_root_at_root(self):
+        cwd = os.getcwd()
+        self.assertEquals(cwd, fileoperations.get_project_root())
+        self.assertEquals(cwd, os.getcwd())
+
+    def test_traverse_to_project_root_deep2(self):
+        cwd = os.getcwd()
+        self._traverse_to_deeper_subdir()
+        self.assertEquals(cwd, fileoperations.get_project_root())
+
+    def test_traverse_to_project_no_root(self):
+        os.chdir(os.path.pardir)
+        os.chdir(os.path.pardir)
+
+        self.assertRaises(NotInitializedError, fileoperations.get_project_root)
+
+    @patch('ebcli.core.fileoperations.json.loads')
+    @patch('ebcli.core.fileoperations.read_from_text_file')
+    def test_get_json_dict(self, read_from_data_file, loads):
+        read_from_data_file.return_value = '{}'
+        loads.return_value = {}
+        mock_path = '/a/b/c/file.json'
+
+        self.assertEquals(fileoperations.get_json_dict(mock_path), {})
+        read_from_data_file.assert_called_once_with(mock_path)
+        loads.assert_called_once_with('{}')
+
+    @patch('ebcli.core.fileoperations.get_project_root')
+    def test_project_file_path(self, get_project_root):
+        get_project_root.side_effect = ['/']
+        expected_file_path = os.path.join('/', 'foo')
+        self.assertEquals(fileoperations.project_file_path('foo'),
+                          expected_file_path)
+
+    @patch('ebcli.core.fileoperations.file_exists')
+    @patch('ebcli.core.fileoperations.project_file_path')
+    def test_project_file_exists(self, project_file_path,
+                                 file_exists):
+        project_file_path.side_effect = ['/foo']
+        file_exists.return_value = True
+
+        self.assertTrue(fileoperations.project_file_exists('foo'))
+        project_file_path.assert_called_once_with('foo')
+        file_exists.assert_called_once_with('/foo')
+
+    def _traverse_to_deeper_subdir(self):
+        dir = 'fol1' + os.path.sep + 'fol2' + os.path.sep + 'fol3'
+        os.makedirs(dir)
+        os.chdir(dir)

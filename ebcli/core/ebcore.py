@@ -63,6 +63,8 @@ from ..controllers.swap import SwapController
 from ..controllers.platform import PlatformController
 from ..controllers.upgrade import UpgradeController
 from ..core.completer import CompleterController
+from ..controllers.local import LocalController, LocalRunController,\
+        LocalLogsController, LocalOpenController, LocalStatusController
 from ..objects.exceptions import *
 from ..resources.strings import strings, flag_text
 from ..labs.controller import LabsController
@@ -100,6 +102,11 @@ class EB(foundation.CementApp):
             UpgradeController,
             AbortController,
             LabsController,
+            LocalController,
+            LocalLogsController,
+            LocalRunController,
+            LocalOpenController,
+            LocalStatusController
         ]
 
         # register all controllers

@@ -67,8 +67,12 @@ strings = {
     'config.info': 'Edits the environment configuration settings or manages saved configurations.',
     'ssh.info': 'Opens the SSH client to connect to an instance.',
     'printenv.info': 'Shows the environment variables.',
-
-    # Error when --sample and --label falg are both used on create
+    'local.info': 'Runs commands on your local machine.',
+    'local.run.info': 'Runs the Docker container on your local machine.',
+    'local.logs.info': 'Prints where logs are locally saved.',
+    'local.open.info': 'Opens the application URL in a browser.',
+    'local.status.info': 'Gets container information and status.',
+    # Error when --sample and --label flag are both used on create
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" options together.',
     'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
     'appversion.create': 'Creating application version archive "{version}".',
@@ -108,7 +112,10 @@ strings = {
     'ssh.notpresent': 'SSH is not installed. You must install SSH before continuing.',
     'ssh.filenotfound': 'The EB CLI cannot find your SSH key file for keyname "{key-name}".'
                         ' Your SSH key file must be located in the .ssh folder in your home directory.',
-    'logs.location': 'Logs saved to {location}',
+    'logs.location': 'Logs were saved to {location}',
+    'local.logs.location': 'Elastic Beanstalk will write logs locally to {}.',
+    'local.logs.lastlocation': 'Logs were most recently created {} and written to {}.',
+    'local.logs.nologs': 'There are currently no local logs.',
     'setenv.invalidformat': 'You must use the format VAR_NAME=KEY to set an environment variable. Variables and keys '
                             'cannot contain any spaces or =. They must start'
                             ' with a letter, number or one of the following symbols: \\ _ . : / + - @',
@@ -135,6 +142,19 @@ strings = {
     'events.streamprompt': ' -- Events -- (safe to Ctrl+C)',
     'events.abortmessage': ' Use "eb abort" to cancel the command.',
     'abort.noabortableenvs': 'There are no environments currently being updated.',
+    'local.unsupported': 'You can use "eb local" only with preconfigured, generic and multicontainer Docker platforms.',
+    'local.dockernotpresent': 'You must install Docker version {} to continue. If you are using Mac OS X, ensure you have boot2docker version {}. Currently, "eb local" does not support Windows.',
+    'local.filenotfound': 'The EB CLI cannot find Dockerfile or the Dockerrun.aws.json file in the application root directory.',
+    'local.missingdockerrun': 'This environment requires a Dockerrun.aws.json file to run.',
+    'local.invaliddockerrunversion': 'The AWSEBDockerrunVersion key in the Dockerrun.aws.json file is not valid or is not included.',
+    'local.missingdockerrunimage': 'The Dockerrun.aws.json file requires the Image key.',
+    'local.missingdockerrunports': 'The Dockerrun.aws.json file requires the Ports key.',
+    'local.missingdockerruncontainerport': 'The Dockerrun.aws.json file requires the ContainerPort field.',
+    'local.invalidjson': 'The Dockerrun.aws.json file is not in valid JSON format.',
+    'local.run.noportexposed': 'The Dockerfile must list ports to expose on the Docker container. Specify at least one port, and then try again.',
+    'local.run.nobaseimg': 'The Dockerfile or Dockerrun.aws.json file does not specify a base image. Specify a base image, and then try again.',
+    'local.open.nocontainer': 'Elastic Beanstalk did not detect a running Docker container. Ensure that a container is running before you use "eb local open".',
+    'local.open.noexposedport': 'This container has no exposed host ports.',
     'labs.info': 'Extra experimental commands.',
     'quicklink.info': 'Generate a quick-launch link for your project.',
     'quicklink.epilog': 'Applications and environments created from the quick link are accessible to your account only. \n'
@@ -270,6 +290,9 @@ flag_text = {
     # List
     'list.all': 'show environments for all applications',
 
+    # Local
+    'local.run.envvars': 'a comma-separated list of environment variables as key=value pairs',
+    'local.run.hostport': 'the host port that is exposed and mapped to the container port',
     # Logs
     'logs.all': 'retrieve all logs',
     'logs.zip': 'retrieve all logs as .zip',
@@ -346,3 +369,5 @@ git_ignore = [
     '!.elasticbeanstalk/*.cfg.yml',       # don't ignore configuration templates
     '!.elasticbeanstalk/*.global.yml',    # don't ignore global configurations
 ]
+
+docker_ignore = git_ignore[:2] + ['.git', '.gitignore']

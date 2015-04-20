@@ -1,0 +1,34 @@
+# Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"). You
+# may not use this file except in compliance with the License. A copy of
+# the License is located at
+#
+# http://aws.amazon.com/apache2.0/
+#
+# or in the "license" file accompanying this file. This file is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+# ANY KIND, either express or implied. See the License for the specific
+# language governing permissions and limitations under the License.
+
+from . import dockerrun
+from .container import Container
+from ..objects.exceptions import NotFoundError
+from ..resources.strings import strings
+
+
+class GenericContainer(Container):
+    """
+    Immutable class used for running Generic Docker containers.
+    """
+
+    def validate(self):
+        if (not self.fs_handler.dockerfile_exists and
+            not self.fs_handler.dockerrun_exists):
+            raise NotFoundError(strings['local.filenotfound'])
+        dockerrun.validate_dockerrun_v1(self.fs_handler.dockerrun,
+                                        not self.fs_handler.dockerfile_exists)
+
+    def _containerize(self):
+        # This gets called if user only provides Dockerrun.aws.json
+        self.fs_handler.make_dockerfile()

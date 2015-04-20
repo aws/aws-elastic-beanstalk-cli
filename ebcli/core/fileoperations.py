@@ -117,6 +117,14 @@ def config_file_present():
     return os.path.isfile(local_config_file)
 
 
+def project_file_path(filename):
+    return os.path.join(get_project_root(), filename)
+
+
+def project_file_exists(filename):
+    return file_exists(project_file_path(filename))
+
+
 def get_values_from_old_eb():
     old_config_file = beanstalk_directory + 'config'
     config = configparser.ConfigParser()
@@ -200,6 +208,15 @@ def _set_user_only_permissions_file(location, ex=False):
     os.chmod(location, permission)
 
 
+def set_all_unrestricted_permissions(location):
+    """
+    Set permissions so that user, group, and others all have read,
+    write and execute permissions (chmod 777).
+    :param location: Full location of either a folder or a location
+    """
+    os.chmod(location, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+
+
 def get_current_directory_name():
     dirname, filename = os.path.split(os.getcwd())
     if sys.version_info[0] < 3:
@@ -259,6 +276,13 @@ def _traverse_to_project_root():
     else:
         LOG.debug('Project root found at: ' + cwd)
 
+def get_project_root():
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        return os.getcwd()
+    finally:
+        os.chdir(cwd)
 
 def get_zip_location(file_name):
     cwd = os.getcwd()
@@ -553,6 +577,10 @@ def eb_file_exists(location):
         os.chdir(cwd)
 
 
+def directory_empty(location):
+    return not os.listdir(location)
+
+
 def make_eb_dir(location):
     cwd = os.getcwd()
     try:
@@ -603,6 +631,16 @@ def write_to_text_file(data, location):
         f.write(data)
 
 
+def append_to_text_file(location, data):
+    with codecs.open(location, 'at', encoding=None) as f:
+        f.write(data)
+
+
+def readlines_from_text_file(location):
+    with codecs.open(location, 'rt', encoding=None) as f:
+        return f.readlines()
+
+
 def get_project_file_full_location(location):
     cwd = os.getcwd()
     try:
@@ -615,3 +653,7 @@ def get_project_file_full_location(location):
 
 def get_eb_file_full_location(location):
     return get_project_file_full_location(beanstalk_directory + location)
+
+
+def get_home():
+    return os.path.expanduser('~')

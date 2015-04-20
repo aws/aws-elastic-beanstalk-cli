@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+from ..core.fileoperations import program_is_installed
 import glob
 import os
 
@@ -118,6 +119,18 @@ def has_tomcat_war_file():
     True if there is a war file located at ./build/lib/*.war
     """
     return _contains_file_types('build/libs/*.war')
+
+
+def is_docker_installed():
+    return program_is_installed('docker')
+
+
+def is_docker_compose_installed():
+    return program_is_installed('docker-compose')
+
+
+def is_boot2docker_installed():
+    return program_is_installed('boot2docker')
 
 
 def _get_file_list(*args):
