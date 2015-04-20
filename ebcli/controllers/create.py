@@ -285,7 +285,7 @@ class CreateController(AbstractBaseController):
             if not securitygroups:
                 securitygroups = io.get_input(prompts['vpc.securitygroups'])
             if not elbpublic:
-                publicip = io.get_boolean_response(
+                elbpublic = io.get_boolean_response(
                     text=prompts['vpc.elbpublic'])
             if not dbsubnets and database:
                 dbsubnets = io.get_input(prompts['vpc.dbsubnets'])
