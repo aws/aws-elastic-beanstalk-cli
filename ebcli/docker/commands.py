@@ -56,7 +56,7 @@ def build_img(docker_path, file_path=None):
 
     opts = ['-f', file_path] if file_path else []
     args = ['docker', 'build'] + opts + [docker_path]
-    output = utils.exec_cmd_live_output(args)
+    output = _run_live(args)
     return _grab_built_image_id(output)
 
 
@@ -92,7 +92,7 @@ def rm_container(container_id, force=False):
     force_arg = ['-f'] if force else []
 
     args = ['docker', 'rm'] + force_arg + [container_id]
-    utils.exec_cmd_quiet(args)
+    _run_quiet(args)
 
 
 def up(compose_path=None):
@@ -115,7 +115,7 @@ def get_container_lowlvl_info(container_id):
     """
 
     args = ['docker', 'inspect', container_id]
-    info = json.loads(utils.exec_cmd_quiet(args))
+    info = json.loads(_run_quiet(args))
 
     return info[0]
 
@@ -172,7 +172,7 @@ def get_exposed_hostports(container_id):
 
 def version():
     args = ['docker', '--version']
-    version_str = utils.exec_cmd_quiet(args)
+    version_str = _run_quiet(args)
     # Format: Docker version 1.5.0, build a8a31ef
     return version_str.split()[2].strip(',')
 
@@ -180,7 +180,7 @@ def version():
 def compose_version():
     args = ['docker-compose', '--version']
     # Format: docker-compose 1.1.0
-    return utils.exec_cmd_quiet(args).split()[-1]
+    return _run_quiet(args).split()[-1]
 
 
 def _get_network_settings(container_id):
@@ -190,7 +190,7 @@ def _get_network_settings(container_id):
 
 def _pull_img(img):
     args = ['docker', 'pull', img]
-    return utils.exec_cmd_live_output(args)
+    return _run_live(args)
 
 
 def _grab_built_image_id(build_output):
@@ -214,7 +214,7 @@ def _run_container(image_id, container_port, host_port, envvars_map,
             port_opt + envvar_opt + volume_opt + name_opt)
 
     args = ['docker', 'run'] + opts + [image_id]
-    return utils.exec_cmd_live_output(args)
+    return _run_live(args)
 
 
 def _get_container_port(full_docker_path):
@@ -256,3 +256,25 @@ def _get_opts(_map, opt_name, val_format):
     kv_pairs = six.iteritems(_map)
     return utils.flatten([[opt_name, val_format.format(k, v)] for k, v
                           in kv_pairs])
+
+
+def _run_quiet(args):
+    try:
+        return utils.exec_cmd_quiet(args)
+    except CommandError as e:
+        _handle_command_error(e)
+
+def _run_live(args):
+    try:
+        return utils.exec_cmd_live_output(args)
+    except CommandError as e:
+        _handle_command_error(e)
+
+
+def _handle_command_error(e):
+    socket_perm_msg = "dial unix /var/run/docker.sock: permission denied."
+
+    if socket_perm_msg in e.output:
+        raise CommandError(strings['local.run.socketperms'], e.output, e.code)
+    else:
+        raise e

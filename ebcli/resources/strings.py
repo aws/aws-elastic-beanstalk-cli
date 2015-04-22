@@ -113,8 +113,8 @@ strings = {
     'ssh.filenotfound': 'The EB CLI cannot find your SSH key file for keyname "{key-name}".'
                         ' Your SSH key file must be located in the .ssh folder in your home directory.',
     'logs.location': 'Logs were saved to {location}',
-    'local.logs.location': 'Elastic Beanstalk will write logs locally to {}.',
-    'local.logs.lastlocation': 'Logs were most recently created {} and written to {}.',
+    'local.logs.location': 'Elastic Beanstalk will write logs locally to {}',
+    'local.logs.lastlocation': 'Logs were most recently created {} and written to {}',
     'local.logs.nologs': 'There are currently no local logs.',
     'setenv.invalidformat': 'You must use the format VAR_NAME=KEY to set an environment variable. Variables and keys '
                             'cannot contain any spaces or =. They must start'
@@ -153,6 +153,8 @@ strings = {
     'local.invalidjson': 'The Dockerrun.aws.json file is not in valid JSON format.',
     'local.run.noportexposed': 'The Dockerfile must list ports to expose on the Docker container. Specify at least one port, and then try again.',
     'local.run.nobaseimg': 'The Dockerfile or Dockerrun.aws.json file does not specify a base image. Specify a base image, and then try again.',
+    'local.run.socketperms': 'If you are on Ubuntu, ensure that you have added yourself into the Unix docker group by running "sudo usermod -aG docker $USER" '
+                             'and then log out and log back in.',
     'local.open.nocontainer': 'Elastic Beanstalk did not detect a running Docker container. Ensure that a container is running before you use "eb local open".',
     'local.open.noexposedport': 'This container has no exposed host ports.',
     'labs.info': 'Extra experimental commands.',

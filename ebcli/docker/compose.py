@@ -65,7 +65,7 @@ def _add_service(services, definition, volume_map, host_log, envvars_map):
     realname = definition[CONTAINER_DEF_NAME_KEY]
     img = definition[CONTAINER_DEF_IMG_KEY]
     links = definition.get(CONTAINER_DEF_LINKS_KEY, [])
-    command = ' '.join(definition.get(CONTAINER_DEF_CMD_KEY, []))
+    command = definition.get(CONTAINER_DEF_CMD_KEY, [])
     dockerrun_port_mappings = definition.get(CONTAINER_DEF_PORT_MAPPINGS_KEY, [])
     ports = _get_port_maps(dockerrun_port_mappings)
     remote_mountpoints = definition.get(MOUNT_POINTS, [])

@@ -168,11 +168,14 @@ def exec_cmd(args, live_output=True):
     process.stdout.close()
     process.wait()
 
-    error_msg = 'Exited with return code {}'.format(process.returncode)
 
-    if process.returncode:
-        raise CommandError(error_msg)
-    return ''.join(output)
+    returncode = process.returncode
+    error_msg = 'Exited with return code {}'.format(returncode)
+    output_str = ''.join(output)
+
+    if returncode:
+        raise CommandError(error_msg, output_str, returncode)
+    return output_str
 
 
 exec_cmd_live_output = exec_cmd

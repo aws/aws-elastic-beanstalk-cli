@@ -184,7 +184,7 @@ def _get_expected_multicontainer_compose_dict_complex():
             'environment': ENVVARS_MAP
         },
         "nodeapp": {
-            "command": "/bin/bash /usr/src/app/run.sh",
+            "command": ["/bin/bash", "/usr/src/app/run.sh"],
             "image": "node:0.12",
             'environment': ENVVARS_MAP
         },

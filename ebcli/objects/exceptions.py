@@ -35,7 +35,10 @@ class NotFoundError(EBCLIException):
 
 class CommandError(EBCLIException):
     """ Error occurred executing some non eb cli command """
-    pass
+    def __init__(self, message=None, output=None, code=None):
+        super(CommandError, self).__init__(message)
+        self.output = output
+        self.code = code
 
 
 class ServiceError(EBCLIException):

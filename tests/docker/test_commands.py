@@ -179,7 +179,7 @@ class TestCommands(TestCase):
     @patch('ebcli.docker.commands.json.loads')
     def test_get_container_lowlvl_info_command_error(self, loads,
                                                      exec_cmd_quiet):
-        exec_cmd_quiet.side_effect = CommandError
+        exec_cmd_quiet.side_effect = CommandError(message='', output='', code=1)
 
         self.assertRaises(CommandError, commands.get_container_lowlvl_info,
                           MOCK_CONTAINER_NAME)

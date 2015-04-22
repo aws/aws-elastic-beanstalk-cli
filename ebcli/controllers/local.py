@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+from ..core import io
 from ..core.abstractcontroller import AbstractBaseController
 from ..docker import container_factory as factory
 from ..docker import log, compat
@@ -29,6 +30,7 @@ class LocalController(AbstractBaseController):
     def do_command(self):
         self.app.args.print_help()
 
+
     @classmethod
     def _add_to_handler(cls, handler):
         handler.register(cls)
@@ -37,6 +39,12 @@ class LocalController(AbstractBaseController):
         handler.register(LocalRunController)
         handler.register(LocalOpenController)
         handler.register(LocalStatusController)
+
+
+    def complete_command(self, commands):
+        if len(commands) == 1:
+            io.echo('logs', 'open', 'run', 'status')
+
 
 
 class LocalRunController(AbstractBaseController):
