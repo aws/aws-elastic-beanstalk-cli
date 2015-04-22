@@ -103,10 +103,6 @@ class EB(foundation.CementApp):
             AbortController,
             LabsController,
             LocalController,
-            LocalLogsController,
-            LocalRunController,
-            LocalOpenController,
-            LocalStatusController
         ]
 
         # register all controllers

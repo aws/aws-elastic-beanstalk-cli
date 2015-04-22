@@ -29,6 +29,15 @@ class LocalController(AbstractBaseController):
     def do_command(self):
         self.app.args.print_help()
 
+    @classmethod
+    def _add_to_handler(cls, handler):
+        handler.register(cls)
+        # Register child controllers
+        handler.register(LocalLogsController)
+        handler.register(LocalRunController)
+        handler.register(LocalOpenController)
+        handler.register(LocalStatusController)
+
 
 class LocalRunController(AbstractBaseController):
     class Meta:
