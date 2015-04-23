@@ -27,14 +27,13 @@ class TestContainerViewModel(TestCase):
                                                 ip=IP,
                                                 service_infos=self.service_infos)
 
-
     def test_get_cids_multiple(self):
-        self.assertListEqual(['123', '543', 'zzz'],
-                             sorted(self.cnt_viewmodel.get_cids()))
+        self.assertItemsEqual(['123', '543', 'zzz'],
+                              self.cnt_viewmodel.get_cids())
 
     def test_get_cids_zero(self):
         self.cnt_viewmodel.service_infos = []
-        self.assertEquals([], sorted(self.cnt_viewmodel.get_cids()))
+        self.assertItemsEqual([], self.cnt_viewmodel.get_cids())
 
     def test_get_cid_hostports_map(self):
         expected_map = {'123': ['9000', '9001'],
@@ -47,8 +46,8 @@ class TestContainerViewModel(TestCase):
     def test_get_cid_hostport_pairs(self):
         expected_list = [('123', '9000'), ('123', '9001'), ('543', '80'),
                          ('543', '9005')]
-        self.assertListEqual(expected_list,
-                             sorted(self.cnt_viewmodel.get_cid_hostport_pairs()))
+        self.assertItemsEqual(expected_list,
+                              self.cnt_viewmodel.get_cid_hostport_pairs())
 
     def test_is_running_multiple_true(self):
         self.assertTrue(self.cnt_viewmodel.is_running())

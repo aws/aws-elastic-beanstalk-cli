@@ -39,20 +39,20 @@ LAST_MODIFIED_FILE_PATH = '/a'
 
 class TestLog(TestCase):
     def test_get_log_volume_map_dockerrun_none(self):
-        self.assertDictEqual(log.get_log_volume_map(ROOT_LOG_DIR, None), {})
+        self.assertDictEqual({}, log.get_log_volume_map(ROOT_LOG_DIR, None))
 
     @patch('ebcli.docker.log.get_host_log_path')
     def test_get_log_volume_map_dockerrun_logging_exists(self,
                                                          get_host_log_path):
         get_host_log_path.return_value = HOST_LOG
-        self.assertDictEqual(log.get_log_volume_map(ROOT_LOG_DIR, DOCKERRUN),
-                             LOG_VOLUME_MAP)
+        self.assertDictEqual(LOG_VOLUME_MAP,
+                             log.get_log_volume_map(ROOT_LOG_DIR, DOCKERRUN))
 
     @patch('ebcli.docker.log.get_host_log_path')
     def test_get_log_volume_map_dockerrun_logging_not_exists(self,
                                                              get_host_log_path):
         get_host_log_path.return_value = HOST_LOG
-        self.assertDictEqual(log.get_log_volume_map(ROOT_LOG_DIR, {}), {})
+        self.assertDictEqual({}, log.get_log_volume_map(ROOT_LOG_DIR, {}))
 
     @patch('ebcli.docker.log.datetime')
     def test_get_host_log_path(self, datetime):

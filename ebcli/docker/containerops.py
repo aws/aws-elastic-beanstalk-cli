@@ -66,6 +66,7 @@ def is_generic(soln_stk, container_config):
     expected_platform = container_config[GENERIC_CONTAINER_KEY][PLATFORM_KEY]
     return expected_platform == soln_stk.platform
 
+
 def is_multi(soln_stk, container_config):
     """
     Whether the solution stack runs Multi Containers
@@ -105,6 +106,7 @@ def _get_preconfig_info(soln_stk, container_config):
     containers = container_config[PRECONFIG_CONTAINER_KEY]
     return next((c for c in containers if c[VERSION_KEY] == soln_stk.version),
                 None)
+
 
 def _get_runtime_dockerfile_path(soln_stk, container_config):
     cont_info = _get_preconfig_info(soln_stk, container_config)

@@ -31,6 +31,7 @@ PRECONFIG_CONTAINER_LOG_PATH = '/foo'
 SOLN_STK = Mock()
 SOLN_STK.version = 'Multi-container Docker 1.3.3 (Generic)'
 
+
 class TestPreconfiguredContainer(TestCase):
     def setUp(self):
         self.fs_handler = Mock()
@@ -74,7 +75,6 @@ class TestPreconfiguredContainer(TestCase):
         _get_base_img.return_value = None
 
         self.assertRaises(ValidationError, self.container.validate)
-
 
     @patch('ebcli.docker.preconfigured_container.dockerrun')
     def test_validate_dockerrun_v1(self, dockerrun):

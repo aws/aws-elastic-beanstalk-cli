@@ -27,18 +27,18 @@ class TestGenericContainer(TestCase):
         self.fs_handler.dockerrun = None
         self.container = GenericContainer(self.fs_handler, None, None, None)
 
-    def test_constructor_no_dockerfile_or_dockerrun(self):
+    def test_validate_no_dockerfile_or_dockerrun(self):
         self.fs_handler.dockerfile_exists = False
         self.fs_handler.dockerrun_exists = False
 
         self.assertRaises(NotFoundError, self.container.validate)
 
     @patch('ebcli.docker.generic_container.dockerrun.validate_dockerrun_v1')
-    def test_constructor_dockerrun_validation_fail(self, validate_dockerrun_v1):
+    def test_validate_dockerrun_validation_fail(self, validate_dockerrun_v1):
         self.fs_handler.dockerfile_exists = True
         validate_dockerrun_v1.side_effect = ValidationError
 
-        self.assertRaises(ValidationError,self.container.validate)
+        self.assertRaises(ValidationError, self.container.validate)
 
     def test_containerize(self):
         self.fs_handler.dockerfile_exists = True

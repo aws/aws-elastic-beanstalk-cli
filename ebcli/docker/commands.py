@@ -175,6 +175,7 @@ def get_exposed_hostports(container_id):
     except CommandError:  # Not running
         return []
 
+
 def version():
     args = ['docker', '--version']
     version_str = _run_quiet(args)
@@ -268,6 +269,7 @@ def _run_quiet(args):
         return utils.exec_cmd_quiet(args)
     except CommandError as e:
         _handle_command_error(e)
+
 
 def _run_live(args):
     try:

@@ -24,16 +24,13 @@ class MultiContainer(object):
         self.soln_stk = soln_stk
         self.envvars_map = envvars_map
 
-
     def start(self):
         self._containerize()
         self._remove()
         self._up()
 
-
     def is_running(self):
         return any(commands.is_running(cid) for cid in self.list_services())
-
 
     def list_services(self):
         compose_path = self.fs_handler.compose_path

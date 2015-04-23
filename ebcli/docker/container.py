@@ -46,12 +46,11 @@ class Container(object):
         self.envvars_map = envvars_map
         self.host_port = host_port
 
-
     def start(self):
         """
-        Download S3 object storing .dockercfg if Authentication provided
-        in Dockerrun.aws.json, containerize app by adding Dockerfile if user
-        doesn't provide one, then pull, build, and run the container.
+        Ensure .elasticbeanstalk/* ignored in .dockerignore, containerize app
+        by adding Dockerfile if user doesn't provide one, then pull, build, and
+        run the container.
         :return None
         """
 
@@ -86,7 +85,6 @@ class Container(object):
 
     def is_running(self):
         return commands.is_running(self.get_name())
-
 
     @abc.abstractmethod
     def _containerize(self, destination_dockerfile=None):

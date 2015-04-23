@@ -144,5 +144,7 @@ def _get_volume_map(volumes, docker_proj_path):
             vmap[name] = local_source_path
     return vmap
 
+
 def _fakename(realname):
+    # docker-compose service names can't have dashes
     return realname.replace('-', '')

@@ -139,7 +139,6 @@ class TestContainerFactory(TestCase):
                                                         compose_path=COMPOSE_PATH,
                                                         dockerrun=DOCKERRUN)
 
-
     def test_validate_non_docker_soln_stk(self):
         self.assertRaises(NotSupportedError, container_factory._validate,
                           False, False)

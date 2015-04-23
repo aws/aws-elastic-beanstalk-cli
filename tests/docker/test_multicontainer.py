@@ -47,8 +47,8 @@ class TestMultiContainer(TestCase):
         expected_list = ['elasticbeanstalk_a_1', 'elasticbeanstalk_b_1',
                          'elasticbeanstalk_c_1']
 
-        self.assertListEqual(sorted(expected_list),
-                             sorted(self.multicontainer.list_services()))
+        self.assertItemsEqual(expected_list,
+                              self.multicontainer.list_services())
 
     @patch('ebcli.docker.multicontainer.commands')
     @patch('ebcli.docker.multicontainer.MultiContainer.list_services')

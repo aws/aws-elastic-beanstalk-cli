@@ -169,6 +169,7 @@ def _get_auth(dockerrun):
 
     return dockerrun[auth_key]
 
+
 def _get_version(dockerrun):
     if VERSION_KEY in dockerrun:
         return str(dockerrun[VERSION_KEY])

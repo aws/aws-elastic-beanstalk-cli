@@ -16,15 +16,10 @@ from mock import patch, Mock
 from unittest import TestCase
 
 
-PRECONFIG_SOLN_STK = Mock()
-PRECONFIG_SOLN_STK.version = 'GlassFish 4.1 Java 8 (Preconfigured - Docker)'
-GENERIC_SOLN_STK = Mock()
-GENERIC_SOLN_STK.platform = 'Docker'
-MULTI_SOLN_STK = Mock()
-MULTI_SOLN_STK.platform = 'Multi-container Docker'
-NON_DOCKER_SOLN_STK = Mock()
-NON_DOCKER_SOLN_STK.version = 'Ruby 2.0 (Puma)'
-NON_DOCKER_SOLN_STK.platform = 'Ruby'
+PRECONFIG_SOLN_STK = Mock(version='GlassFish 4.1 Java 8 (Preconfigured - Docker)')
+GENERIC_SOLN_STK = Mock(platform='Docker')
+MULTI_SOLN_STK = Mock(platform='Multi-container Docker')
+NON_DOCKER_SOLN_STK = Mock(version='Ruby 2.0 (Puma)', platform='Ruby')
 EXPECTED_PRECONFIG_LOG_PATH = '/usr/local/glassfish4/glassfish/domains/domain1/logs'
 
 
@@ -62,4 +57,4 @@ class TestContainerOps(TestCase):
     def test_get_runtime_default_log_path(self):
         actual_log = cops.get_runtime_default_log_path(PRECONFIG_SOLN_STK,
                                                        self.config)
-        self.assertEqual(actual_log, EXPECTED_PRECONFIG_LOG_PATH)
+        self.assertEqual(EXPECTED_PRECONFIG_LOG_PATH, actual_log)

@@ -37,6 +37,7 @@ def supported_docker_installed():
 def validate_docker_installed():
     _validate_docker_installed(supported_docker_installed())
 
+
 def _validate_docker_installed(supported_docker_installed):
     err = strings['local.dockernotpresent'].format(SUPPORTED_DOCKER_V,
                                                    SUPPORTED_BOOT2DOCKER_V)
@@ -94,7 +95,6 @@ def boot2docker_setup(env=os.environ):
         if git_bin_path not in path:
             env['PATH'] = env.get('PATH', '') + ';' + git_bin_path
 
-
     LOG.debug('DOCKER_HOST is set to ' + env['DOCKER_HOST'])
     LOG.debug('DOCKER_CERT_PATH is set to ' + env['DOCKER_CERT_PATH'])
     LOG.debug('DOCKER_TLS_VERIFY is set to ' + env['DOCKER_TLS_VERIFY'])
@@ -104,14 +104,18 @@ def boot2docker_setup(env=os.environ):
 def is_windows():
     return 'win32' in str(sys.platform).lower()
 
+
 def _is_boot2docker_running():
     return _get_boot2docker_status() == BOOT2DOCKER_RUNNING
+
 
 def _get_boot2docker_status():
     return utils.exec_cmd_quiet(['boot2docker', 'status']).strip()
 
+
 def _start_boot2docker():
     utils.exec_cmd_quiet(['boot2docker', 'start'])
+
 
 def _init_boot2docker():
     utils.exec_cmd_quiet(['boot2docker', 'init'])

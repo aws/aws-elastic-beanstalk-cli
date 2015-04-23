@@ -11,11 +11,14 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import os
 from unittest import TestCase
+
+from botocore.compat import six
 from mock import patch
+
 from ebcli.lib import utils
 from ebcli.objects.exceptions import CommandError
-from botocore.compat import six
 StringIO = six.moves.StringIO
 
 
@@ -30,7 +33,7 @@ class TestUtils(TestCase):
     @patch('ebcli.lib.utils.LOG')
     @patch('ebcli.lib.utils.sys.stdout', new_callable=StringIO)
     def test_exec_cmd_live_output_happy_case(self, out, LOG):
-        expected_output = HELLO_WORLD_MSG + '\n'
+        expected_output = HELLO_WORLD_MSG + os.linesep
 
         self.assertEquals(utils.exec_cmd(HAPPY_ARGS), expected_output)
         LOG.debug.assert_called_once_with(' '.join(HAPPY_ARGS))
@@ -48,20 +51,20 @@ class TestUtils(TestCase):
         LOG.debug.assert_called_once_with(' '.join(COMMAND_ERROR_ARGS))
 
     def test_flatten_empty_list(self):
-        self.assertEquals(utils.flatten([]), [])
+        self.assertEquals([], utils.flatten([]))
 
     def test_flatten_nested_single_list(self):
-        self.assertEquals(utils.flatten([[0]]), [0])
+        self.assertEquals([0], utils.flatten([[0]]))
 
     def test_flatten_nested_long_list(self):
-        self.assertEquals(utils.flatten([[0],[1],[2]]), [0,1,2])
+        self.assertEquals([0,1,2], utils.flatten([[0],[1],[2]]))
 
     @patch('os.path.getmtime')
     def test_last_modified_file(self, getmtime):
         getmtime.side_effect = [9.01, 200.0, 300.0, 5000.0]
         expected_last_mod_file = MOCK_FILES[-1]
-        self.assertEquals(utils.last_modified_file(MOCK_FILES),
-                          expected_last_mod_file)
+        self.assertEquals(expected_last_mod_file,
+                          utils.last_modified_file(MOCK_FILES))
 
     def test_anykey(self):
         key0, key1 = 'a', 'b'

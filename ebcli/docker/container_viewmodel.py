@@ -21,28 +21,22 @@ class ContainerViewModel(object):
         self.ip = ip
         self.service_infos = service_infos
 
-
     def get_cids(self):
         return six.iterkeys(self.get_cid_hostports_map())
 
-
     def get_cid_hostports_map(self):
         return {s.cid: s.hostports for s in self.service_infos}
-
 
     def get_cid_hostport_pairs(self):
         return utils.flatten([[(cid, p) for p in hostports]
                              for cid, hostports
                              in six.iteritems(self.get_cid_hostports_map())])
 
-
     def is_running(self):
         return any(s.is_running for s in self.service_infos)
 
-
     def num_exposed_hostports(self):
         return sum(s.num_exposed_hostports() for s in self.service_infos)
-
 
     @classmethod
     def from_container(cls, container):

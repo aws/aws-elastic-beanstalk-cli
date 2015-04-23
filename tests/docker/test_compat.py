@@ -21,6 +21,7 @@ EXPECTED_ENVIRON_VARS_SET = {DOCKER_HOST_KEY: DOCKER_HOST_VAL,
                              DOCKER_TLS_VERIFY_KEY: DOCKER_TLS_VERIFY_VAL,
                              DOCKER_CERT_PATH_KEY: DOCKER_CERT_PATH_VAL}
 
+
 class TestCompat(TestCase):
 
     @patch('ebcli.docker.compat.commands.version')
