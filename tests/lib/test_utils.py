@@ -22,7 +22,7 @@ StringIO = six.moves.StringIO
 HELLO_WORLD_MSG = 'Hello, world!'
 HAPPY_ARGS = ['echo', HELLO_WORLD_MSG]
 OS_ERROR_ARGS = ['this_is_not_a_command']
-COMMAND_ERROR_ARGS = ['docker', 'nope']
+COMMAND_ERROR_ARGS = ['date', 'illegal_argument']
 MOCK_FILES = ['/a', '/b', '/c', '/d']
 
 
