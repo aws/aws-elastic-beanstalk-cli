@@ -342,6 +342,7 @@ responses = {
     'event.launchbad': 'Create environment operation is CompleterController, '
                        'but with errors',
     'event.failedlaunch': 'Failed to launch environment.',
+    'event.faileddeploy': 'Failed to deploy application.',
     'event.updatebad': 'Update environment operation is complete, but with errors.',
     'git.norepository': 'Error: Not a git repository '
                         '(or any of the parent directories): .git',
