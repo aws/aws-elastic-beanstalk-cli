@@ -11,10 +11,15 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..lib import elasticbeanstalk
+from collections import defaultdict
+
+from botocore.compat import six
+
+from ..lib import elasticbeanstalk, s3
 from ..resources.strings import prompts
 from ..core import io, fileoperations
 from ..objects.sourcecontrol import SourceControl
+from ..objects.exceptions import NotAuthorizedError
 from . import commonops
 
 
@@ -52,6 +57,7 @@ def delete_app(app_name, force, nohang=False, cleanup=True,
         io.echo(confirm_message)
         io.validate_action(prompts['delete.validate'], app_name)
 
+    cleanup_application_versions(app_name)
 
     request_id = elasticbeanstalk.delete_application_and_envs(app_name)
 
@@ -61,6 +67,27 @@ def delete_app(app_name, force, nohang=False, cleanup=True,
     if not nohang:
         commonops.wait_for_success_events(request_id, sleep_time=1,
                                           timeout_in_minutes=timeout)
+
+
+def cleanup_application_versions(app_name):
+    # Clean up app versions from s3
+    io.echo('Removing application versions from s3.')
+    versions = elasticbeanstalk.get_application_versions(app_name)
+    buckets = defaultdict(list)
+    for version in versions:
+        bundle = version.get('SourceBundle', {})
+        bucket = bundle.get('S3Bucket', None)
+        key = bundle.get('S3Key', None)
+        if bucket and key:
+            buckets[bucket].append(key)
+
+    # Delete all keys in batches per bucket
+    for bucket, keys in six.iteritems(buckets):
+        try:
+            s3.delete_objects(bucket, keys)
+        except NotAuthorizedError:
+            io.log_warning('Error deleting application '
+                           'versions from bucket "{0}"'.format(bucket))
 
 
 def cleanup_ignore_file():

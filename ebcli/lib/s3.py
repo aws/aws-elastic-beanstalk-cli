@@ -68,6 +68,14 @@ def get_object(bucket, key):
     return result['Body'].read()
 
 
+def delete_objects(bucket, keys):
+    objects = [dict(Key=k) for k in keys]
+    result = _make_api_call('delete_objects',
+                            Bucket=bucket,
+                            Delete={'Objects': objects})
+    return result
+
+
 def upload_application_version(bucket, key, file_path):
     size = os.path.getsize(file_path)
     LOG.debug('Upload Application Version. File size = ' + str(size))
