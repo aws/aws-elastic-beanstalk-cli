@@ -12,8 +12,4 @@
 /out
 eb.py
 awsebcli.egg-info/
-
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.ebe.*
-!.elasticbeanstalk/*.global.*
+.eggs/
