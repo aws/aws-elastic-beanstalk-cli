@@ -2,6 +2,18 @@
 Changelog
 =========
 
+----------------
+3.3 (2015-04-28)
+----------------
+- Added "local" commands
+- Added "eb labs cleanup-versions" for cleaning up old app versions
+- Added support for an .ebignore file
+- using "eb terminate --all" now removes application bundles from s3
+- Add support for branch specific defaults in config.yml
+- Fix interactive vpc bug
+- Fix "eb open" race condition
+- Incomplete credentials errors are now more verbose
+
 ------------------
 3.2.2 (2015-04-06)
 ------------------
