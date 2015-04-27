@@ -7,10 +7,11 @@ import ebcli
 
 requires = ['pyyaml>=3.11',
             'cement==2.4',
+            'docker-compose>=1.2.0',
+            'pathspec==0.3.3'
             ## For botocore we need the following
             'jmespath>=0.6.1',
             'python-dateutil>=2.1,<3.0.0',
-            'docker-compose==1.2.0',
            ]
 
 try:

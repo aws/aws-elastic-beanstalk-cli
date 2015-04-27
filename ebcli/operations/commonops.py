@@ -433,16 +433,8 @@ def create_app_version(app_name, label=None, message=None):
         file_path = artifact
     else:
         # Create zip file
-        file_name = version_label + '.zip'
-        file_path = fileoperations.get_zip_location(file_name)
-        # Check to see if file already exists from previous attempt
-        if not fileoperations.file_exists(file_path) and \
-                                version_label not in \
-                                get_app_version_labels(app_name):
-            # If it doesn't already exist, create it
-            io.echo(strings['appversion.create'].replace('{version}',
-                                                         version_label))
-            source_control.do_zip(file_path)
+        file_name, file_path = _zip_up_project(
+            app_name, version_label, source_control)
 
     # Get s3 location
     bucket = elasticbeanstalk.get_storage_location()
@@ -477,6 +469,26 @@ def create_app_version(app_name, label=None, message=None):
                 create_app(app_name)
             else:
                 raise
+
+
+def _zip_up_project(app_name, version_label, source_control):
+    # Create zip file
+    file_name = version_label + '.zip'
+    file_path = fileoperations.get_zip_location(file_name)
+    # Check to see if file already exists from previous attempt
+    if not fileoperations.file_exists(file_path) and \
+                            version_label not in \
+                            get_app_version_labels(app_name):
+        # If it doesn't already exist, create it
+        io.echo(strings['appversion.create'].replace('{version}',
+                                                     version_label))
+        ignore_files = fileoperations.get_ebignore_list()
+        if ignore_files is None:
+            source_control.do_zip(file_path)
+        else:
+            io.log_info('Found .ebignore, using system zip.')
+            fileoperations.zip_up_project(file_path, ignore_list=ignore_files)
+    return file_name, file_path
 
 
 def update_environment(env_name, changes, nohang, remove=None,

@@ -26,6 +26,7 @@ from six import StringIO
 from yaml import load, dump, safe_dump
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
+import pathspec
 try:
     import configparser
 except ImportError:
@@ -276,6 +277,7 @@ def _traverse_to_project_root():
     else:
         LOG.debug('Project root found at: ' + cwd)
 
+
 def get_project_root():
     cwd = os.getcwd()
     try:
@@ -283,6 +285,7 @@ def get_project_root():
         return os.getcwd()
     finally:
         os.chdir(cwd)
+
 
 def get_zip_location(file_name):
     cwd = os.getcwd()
@@ -346,32 +349,35 @@ def delete_app_versions():
         os.chdir(cwd)
 
 
-def zip_up_folder(directory, location):
+def zip_up_folder(directory, location, ignore_list=None):
     cwd = os.getcwd()
     try:
         os.chdir(directory)
         io.log_info('Zipping up folder at location: ' + str(os.getcwd()))
         zipf = zipfile.ZipFile(location, 'w', zipfile.ZIP_DEFLATED)
-        _zipdir('./', zipf)
+        _zipdir('./', zipf, ignore_list=ignore_list)
         zipf.close()
         LOG.debug('File size: ' + str(os.path.getsize(location)))
     finally:
         os.chdir(cwd)
 
 
-def zip_up_project(location):
+def zip_up_project(location, ignore_list=None):
     cwd = os.getcwd()
 
     try:
         _traverse_to_project_root()
 
-        zip_up_folder('./', location)
+        zip_up_folder('./', location, ignore_list=ignore_list)
 
     finally:
         os.chdir(cwd)
 
 
-def _zipdir(path, zipf):
+def _zipdir(path, zipf, ignore_list=None):
+    if ignore_list is None:
+        ignore_list = list()
+    ignore_list = ['./' + i for i in ignore_list]
     zipped_roots = []
     for root, dirs, files in os.walk(path):
         if '.elasticbeanstalk' in root:
@@ -383,8 +389,9 @@ def _zipdir(path, zipf):
                 zipf.write(root)
                 zipped_roots.append(root)
             cur_file = os.path.join(root, f)
-            if cur_file.endswith('~'):
+            if cur_file.endswith('~') or cur_file in ignore_list:
                 # Ignore editor backup files (like file.txt~)
+                # Ignore anything in the .ebignore file
                 io.log_info('  -skipping: ' + str(cur_file))
             else:
                 io.log_info('  +adding: ' + str(cur_file))
@@ -581,6 +588,23 @@ def directory_empty(location):
     return not os.listdir(location)
 
 
+def get_ebignore_list():
+    location = get_project_file_full_location('.ebignore')
+
+    if not os.path.isfile(location):
+        return None
+
+    '''
+    This library will parse the ignore file, compare it to the current files
+    and give us a list of files to ignore
+    '''
+    with open(location, 'r') as f:
+        spec = pathspec.PathSpec.from_lines('gitignore', f)
+
+    ignore_list = [f for f in spec.match_tree(get_project_root())]
+    return ignore_list
+
+
 def make_eb_dir(location):
     cwd = os.getcwd()
     try:
@@ -625,6 +649,7 @@ def read_from_data_file(location):
 def read_from_text_file(location):
     with codecs.open(location, 'rt', encoding=None) as f:
         return f.read()
+
 
 def write_to_text_file(data, location):
     with codecs.open(location, 'wt', encoding=None) as f:

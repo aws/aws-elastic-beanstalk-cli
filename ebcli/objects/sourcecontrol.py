@@ -106,8 +106,8 @@ class NoSC(SourceControl):
 
 class Git(SourceControl):
     """
-        The user has git installed
-        """
+    The user has git installed
+    """
 
     def get_name(self):
         return 'git'
