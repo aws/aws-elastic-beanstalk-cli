@@ -238,7 +238,7 @@ class TestCommands(TestCase):
     @patch('ebcli.docker.commands.os.system')
     def test_up_with_compose_path(self, system):
         commands.up(MOCK_COMPOSE_PATH)
-        expected_args = ['docker-compose', '-f', MOCK_COMPOSE_PATH, 'up']
+        expected_args = ['docker-compose', '-f', '"{}"'.format(MOCK_COMPOSE_PATH), 'up']
         system.assert_called_once_with(' '.join(expected_args))
 
     @patch('ebcli.docker.commands.utils.exec_cmd_quiet')

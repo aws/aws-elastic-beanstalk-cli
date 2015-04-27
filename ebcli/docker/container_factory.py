@@ -18,19 +18,24 @@ from . import containerops
 from . import dockerrun
 from . import fshandler
 from . import log
+
+from cement.utils.misc import minimal_logger
+
 from .fshandler import ContainerFSHandler, MultiContainerFSHandler
 from .generic_container import GenericContainer
 from .multicontainer import MultiContainer
 from .preconfigured_container import PreconfiguredContainer
 from ..controllers.create import get_and_validate_envars
 from ..core import fileoperations as fops
-from ..objects.exceptions import NotSupportedError, CommandError, NotFoundError
+from ..objects.exceptions import NotSupportedError, CommandError, \
+        NotFoundError, NotInitializedError
 from ..operations import commonops
 from ..resources.strings import strings
 
 
 ENVVAR_OPT_NAME_KEY = 'OptionName'
 ENVVAR_VAL_KEY = 'Value'
+LOG = minimal_logger(__name__)
 
 
 def make_container(envvars=None, host_port=None):
@@ -146,14 +151,21 @@ def _make_container(soln_stk, fs_handler, container_cfg,
 
 def _get_solution_stack():
     solution_string = commonops.get_default_solution_stack()
+    soln_stk = None
 
     # Test out sstack and tier before we ask any questions (Fast Fail)
     if solution_string:
         try:
-            return commonops.get_solution_stack(solution_string)
+            soln_stk = commonops.get_solution_stack(solution_string)
         except NotFoundError:
             raise NotFoundError('Solution stack ' + solution_string +
                                 ' does not appear to be valid')
+
+    LOG.debug(soln_stk)
+    if soln_stk is None:
+        raise NotInitializedError
+    else:
+        return soln_stk
 
 
 def _dict_envvars(envvars):

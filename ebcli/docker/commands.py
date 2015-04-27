@@ -15,6 +15,7 @@ import os
 import json
 
 from botocore.compat import six
+from cement.utils.misc import minimal_logger
 
 from ..core import fileoperations
 from ..lib import utils
@@ -30,6 +31,7 @@ PORTS_KEY = 'Ports'
 HOST_PORT_KEY = 'HostPort'
 STATE_KEY = 'State'
 RUNNING_KEY = 'Running'
+LOG = minimal_logger(__name__)
 
 
 def pull_img(full_docker_path):
@@ -102,8 +104,9 @@ def up(compose_path=None):
     :return None
     """
 
-    file_opt = ['-f', compose_path] if compose_path else []
+    file_opt = ['-f', '"{}"'.format(compose_path)] if compose_path else []
     args = ['docker-compose'] + file_opt + ['up']
+    LOG.debug(args)
     os.system(' '.join(args))
 
 

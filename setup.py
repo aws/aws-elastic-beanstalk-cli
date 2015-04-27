@@ -10,7 +10,7 @@ requires = ['pyyaml>=3.11',
             ## For botocore we need the following
             'jmespath>=0.6.1',
             'python-dateutil>=2.1,<3.0.0',
-            'docker-compose>=1.1.0',
+            'docker-compose==1.2.0',
            ]
 
 try:
