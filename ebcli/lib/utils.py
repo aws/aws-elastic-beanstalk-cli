@@ -11,19 +11,16 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import datetime
-import logging
 import os
-import platform
 import re
-import subprocess
 import sys
-import warnings
+from datetime import datetime
 
+from dateutil import tz
 from botocore.compat import six
 from cement.utils.misc import minimal_logger
-from six.moves import urllib
 from subprocess import Popen, PIPE, STDOUT
+urllib = six.moves.urllib
 
 from ..objects.exceptions import CommandError
 from ..core import io, fileoperations
@@ -129,6 +126,17 @@ def url_encode(data):
     return urllib.parse.quote(data)
 
 
+def get_delta_from_now_and_datetime(date):
+    return datetime.now(tz.tzlocal()) - get_local_time(date)
+
+
+def get_local_time(utctime):
+    from_zone = tz.tzutc()
+    to_zone = tz.tzlocal()
+    utctime.replace(tzinfo=from_zone)
+    return utctime.astimezone(to_zone)
+
+
 def is_ssh():
     return "SSH_CLIENT" in os.environ or "SSH_TTY" in os.environ
 
@@ -232,9 +240,9 @@ def save_file_from_url(url, location, filename):
 # http://stackoverflow.com/a/5164027
 def prettydate(d):
     if isinstance(d, float):  # epoch timestamp
-        d = datetime.datetime.utcfromtimestamp(d)
+        d = datetime.utcfromtimestamp(d)
 
-    diff = datetime.datetime.utcnow() - d
+    diff = datetime.utcnow() - d
     s = diff.seconds
     if diff.days > 7 or diff.days < 0:
         return d.strftime('%d %b %y')

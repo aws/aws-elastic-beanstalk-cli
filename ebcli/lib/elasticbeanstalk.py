@@ -145,6 +145,14 @@ def delete_application(app_name):
     return result['ResponseMetadata']['RequestId']
 
 
+def delete_application_version(app_name, version_label):
+    LOG.debug('Inside delete_application_version api wrapper')
+    result = _make_api_call('delete_application_version',
+                            ApplicationName=app_name,
+                            VersionLabel=version_label,
+                            DeleteSourceBundle=True)
+
+
 def delete_application_and_envs(app_name):
     LOG.debug('Inside delete_application_and_envs')
     result = _make_api_call('delete_application',
