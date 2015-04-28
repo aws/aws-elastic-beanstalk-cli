@@ -16,7 +16,6 @@ import json
 
 from botocore.compat import six
 from cement.utils.misc import minimal_logger
-from ebcli.bundled._compose.cli.main import main as compose_run
 
 from ..core import fileoperations
 from ..lib import utils
@@ -104,6 +103,8 @@ def up(compose_path=None):
     :param compose_path: str: optional alternate path to docker-compose.yml
     :return None
     """
+
+    from ebcli.bundled._compose.cli.main import main as compose_run
 
     file_opt = ['-f', '{}'.format(compose_path)] if compose_path else []
     args = file_opt + ['up']
