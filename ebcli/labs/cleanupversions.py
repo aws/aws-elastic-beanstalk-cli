@@ -62,10 +62,11 @@ class CleanupVersionsController(AbstractBaseController):
         app_versions = app_versions[num_to_leave:]
 
         if app_versions:
-            response = io.get_boolean_response('{} application versions will be deleted. '
-                                    'Continue?'.format(len(app_versions)))
-            if not response:
-                return
+            if not force:
+                response = io.get_boolean_response('{} application versions will be deleted. '
+                                        'Continue?'.format(len(app_versions)))
+                if not response:
+                    return
         else:
             io.echo('No application versions to delete.')
             return
