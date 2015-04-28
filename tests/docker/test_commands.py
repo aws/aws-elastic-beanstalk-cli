@@ -229,18 +229,6 @@ class TestCommands(TestCase):
         expected_args = ['docker', 'rm', '-f', MOCK_IMG_ID]
         exec_cmd_quiet.assert_called_once_with(expected_args)
 
-    @patch('ebcli.docker.commands.os.system')
-    def test_up_no_compose_path(self, system):
-        commands.up()
-        expected_args = ['docker-compose', 'up']
-        system.assert_called_once_with(' '.join(expected_args))
-
-    @patch('ebcli.docker.commands.os.system')
-    def test_up_with_compose_path(self, system):
-        commands.up(MOCK_COMPOSE_PATH)
-        expected_args = ['docker-compose', '-f', '"{}"'.format(MOCK_COMPOSE_PATH), 'up']
-        system.assert_called_once_with(' '.join(expected_args))
-
     @patch('ebcli.docker.commands.utils.exec_cmd_quiet')
     def test_version(self, exec_cmd_quiet):
         exec_cmd_quiet.return_value = 'Docker version 1.1.0, build a8a31ef'

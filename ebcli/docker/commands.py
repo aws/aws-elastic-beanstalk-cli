@@ -16,6 +16,7 @@ import json
 
 from botocore.compat import six
 from cement.utils.misc import minimal_logger
+from ebcli.bundled._compose.cli.main import main as compose_run
 
 from ..core import fileoperations
 from ..lib import utils
@@ -104,10 +105,10 @@ def up(compose_path=None):
     :return None
     """
 
-    file_opt = ['-f', '"{}"'.format(compose_path)] if compose_path else []
-    args = ['docker-compose'] + file_opt + ['up']
+    file_opt = ['-f', '{}'.format(compose_path)] if compose_path else []
+    args = file_opt + ['up']
     LOG.debug(args)
-    os.system(' '.join(args))
+    compose_run(*args)
 
 
 def get_container_lowlvl_info(container_id):
