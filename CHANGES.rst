@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------------------
+3.3.2 (2015-04-30)
+------------------
+- Fix "eb open" for windows
+
+------------------
 3.3.1 (2015-04-28)
 ------------------
 - Fix --force option on "eb labs cleanup-versions"
