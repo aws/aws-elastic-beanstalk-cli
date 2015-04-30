@@ -15,6 +15,7 @@ import os
 import re
 import time
 from datetime import datetime, timedelta
+import platform
 
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
@@ -317,20 +318,21 @@ def open_webpage_in_browser(url, ssl=False):
         else:
             url = 'http://' + url
     LOG.debug('url={}'.format(url))
-    if (not fileoperations.program_is_installed('python')) or \
-            utils.is_ssh():
-        # python probably isn't on path
-        ## try to run webbrowser internally
+    if utils.is_ssh() or platform.system().startswith('Win'):
+        # Prefered way for ssh or windows
+        # Windows cant do a fork so we have to do inline
         LOG.debug('Running webbrowser inline.')
         import webbrowser
         webbrowser.open_new_tab(url)
     else:
-        # this is the prefered way to open a web browser.
+        # this is the prefered way to open a web browser on *nix.
+        # It squashes all output which can be typical on *nix.
         LOG.debug('Running webbrowser as subprocess.')
         from subprocess import Popen, PIPE
 
-        p = Popen(['python -m webbrowser \'' + url + '\''], stderr=PIPE,
-              stdout=PIPE, shell=True)
+        p = Popen(['{python} -m webbrowser \'{url}\''
+                  .format(python=sys.executable, url=url)],
+                  stderr=PIPE, stdout=PIPE, shell=True)
         '''
          We need to fork the process for various reasons
             1. Calling p.communicate waits for the thread. Some browsers
