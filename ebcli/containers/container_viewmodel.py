@@ -1,7 +1,7 @@
 from botocore.compat import six
 
 from . import commands, compat
-from .container import Container
+from .abstractcontainer import AbstractContainer
 from ..lib import utils
 
 
@@ -85,4 +85,4 @@ class ServiceInfo(object):
 
 
 def _get_cids(c):
-    return [c.get_name()] if isinstance(c, Container) else c.list_services()
+    return [c.get_name()] if isinstance(c, AbstractContainer) else c.list_services()

@@ -14,12 +14,13 @@
 from mock import patch
 from unittest import TestCase
 
-from ebcli.docker import compose
+from ebcli.containers import compose
+from ebcli.containers.envvarcollector import EnvvarCollector
 
 
 DOCKER_PROJ_PATH = '/a/b/c'
 HOST_LOG = '/a/b/c/.elasticbeanstalk/logs/local/12345_6789'
-ENVVARS_MAP = {'a': 'b', 'c': 'd'}
+ENV_COLLECTOR = EnvvarCollector({'a': 'b', 'c': 'd'})
 
 
 class TestCompose(TestCase):
@@ -40,16 +41,16 @@ class TestCompose(TestCase):
         dockerrun = _get_mock_multicontainer_dockerrun_simple()
         expected_compose = _get_expected_multicontainer_compose_dict_simple()
         actual_compose = compose.compose_dict(dockerrun, DOCKER_PROJ_PATH,
-                                              HOST_LOG, ENVVARS_MAP)
+                                              HOST_LOG, ENV_COLLECTOR)
 
         self.assertDictEqual(expected_compose, actual_compose)
 
-    @patch('ebcli.docker.compose.os.makedirs')
+    @patch('ebcli.containers.compose.os.makedirs')
     def test_compose_complex(self, makedirs):
         dockerrun = _get_mock_multicontainer_dockerrun_complex()
         expected_compose = _get_expected_multicontainer_compose_dict_complex()
         actual_compose = compose.compose_dict(dockerrun, DOCKER_PROJ_PATH,
-                                              HOST_LOG, ENVVARS_MAP)
+                                              HOST_LOG, ENV_COLLECTOR)
 
         self.assertDictEqual(expected_compose, actual_compose)
 
@@ -88,11 +89,11 @@ def _get_expected_multicontainer_compose_dict_simple():
             "ports": [
                 "80:80"
             ],
-            'environment': ENVVARS_MAP
+            'environment': ENV_COLLECTOR.map
         },
         "phpapp": {
             "image": "php:fpm",
-            'environment': ENVVARS_MAP
+            'environment': ENV_COLLECTOR.map
         }
     }
 
@@ -182,18 +183,74 @@ def _get_expected_multicontainer_compose_dict_complex():
                 "{}/nginx-proxy:/var/log/nginx".format(HOST_LOG),
                 "{}/proxy/conf.d:/etc/nginx/conf.d:ro".format(DOCKER_PROJ_PATH)
             ],
-            'environment': ENVVARS_MAP
+            'environment': ENV_COLLECTOR.map
         },
         "nodeapp": {
             "command": ["/bin/bash", "/usr/src/app/run.sh"],
             "image": "node:0.12",
-            'environment': ENVVARS_MAP
+            'environment': ENV_COLLECTOR.map
         },
         "tomcatapp": {
             "image": "tomcat:8.0",
             "volumes": [
                 "{}/tomcat-app:/usr/local/tomcat/logs".format(HOST_LOG)
             ],
-            'environment': ENVVARS_MAP
+            'environment': ENV_COLLECTOR.map
+        }
+    }
+
+def _get_mock_multicontainer_dockerrun_with_envvars():
+    return {
+        "containerDefinitions": [
+            {
+                "image": "php:fpm",
+                "name": "php-app"
+            },
+            {
+                "image": "nginx",
+                "links": [
+                    "php-app"
+                ],
+                "name": "nginx-proxy",
+                "portMappings": [
+                    {
+                        "containerPort": 80,
+                        "hostPort": 80
+                    }
+                ],
+               "environment": [
+                    {
+                      "name": "a",
+                      "value": 1000
+                    },
+                    {
+                      "name": "c",
+                      "value": 2000
+                    },
+                    {
+                      "name": "e",
+                      "value": "f"
+                    },
+                ]
+            }
+        ]
+    }
+
+
+def _get_expected_multicontainer_compose_dict_with_envvars():
+    return {
+        "nginxproxy": {
+            "image": "nginx",
+            "links": [
+                "phpapp:php-app"
+            ],
+            "ports": [
+                "80:80"
+            ],
+            'environment': ENV_COLLECTOR.map
+        },
+        "phpapp": {
+            "image": "php:fpm",
+            'environment': {'a': 'b', 'c': 'd', 'e': 'f'}
         }
     }

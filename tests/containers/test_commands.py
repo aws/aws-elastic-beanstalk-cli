@@ -11,7 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ebcli.docker import commands
+from ebcli.containers import commands
 from ebcli.objects.exceptions import ValidationError, CommandError
 from mock import patch
 from unittest import TestCase
@@ -48,8 +48,8 @@ MOCK_COMPOSE_PATH = '.elasticbeanstalk/docker-compose.yml'
 
 
 class TestCommands(TestCase):
-    @patch('ebcli.docker.commands.utils.exec_cmd_live_output')
-    @patch('ebcli.docker.commands.fileoperations.readlines_from_text_file')
+    @patch('ebcli.containers.commands.utils.exec_cmd_live_output')
+    @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')
     def test_pull_img_happy_case_has_tag(self, readlines_file, exec_cmd_live_output):
         _expect_dockerfile_lines(readlines_file, MOCK_IMG_TAG, None)
         commands.pull_img(MOCK_DOCKER_PATH)
@@ -58,8 +58,8 @@ class TestCommands(TestCase):
         expected_args = ['docker', 'pull', MOCK_IMG_TAG]
         exec_cmd_live_output.assert_called_once_with(expected_args)
 
-    @patch('ebcli.docker.commands.utils.exec_cmd_live_output')
-    @patch('ebcli.docker.commands.fileoperations.readlines_from_text_file')
+    @patch('ebcli.containers.commands.utils.exec_cmd_live_output')
+    @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')
     def test_pull_img_happy_case_no_tag(self, readlines_file, exec_cmd_live_output):
         _expect_dockerfile_lines(readlines_file, MOCK_IMG, None)
         commands.pull_img(MOCK_DOCKER_PATH)
@@ -68,15 +68,15 @@ class TestCommands(TestCase):
         expected_args = ['docker', 'pull', MOCK_IMG_LATEST_TAG]
         exec_cmd_live_output.assert_called_once_with(expected_args)
 
-    @patch('ebcli.docker.commands.utils.exec_cmd')
-    @patch('ebcli.docker.commands.fileoperations.readlines_from_text_file')
+    @patch('ebcli.containers.commands.utils.exec_cmd')
+    @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')
     def test_pull_img_no_img(self, readlines_file, exec_cmd):
         _expect_dockerfile_lines(readlines_file, None, MOCK_CONTAINER_PORT)
         self.assertRaises(ValidationError, commands.pull_img, MOCK_DOCKER_PATH)
         readlines_file.assert_called_once_with(MOCK_DOCKER_PATH)
 
-    @patch('ebcli.docker.commands.utils.exec_cmd_live_output')
-    @patch('ebcli.docker.commands.fileoperations.readlines_from_text_file')
+    @patch('ebcli.containers.commands.utils.exec_cmd_live_output')
+    @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')
     def test_build_img_happy_case(self, readlines_file, exec_cmd_live_output):
         _expect_dockerfile_lines(readlines_file, None, MOCK_CONTAINER_PORT)
         exec_cmd_live_output.return_value = MOCK_BUILD_OUTPUT
@@ -87,8 +87,8 @@ class TestCommands(TestCase):
         expected_args = ['docker', 'build', MOCK_DOCKER_PATH]
         exec_cmd_live_output.assert_called_once_with(expected_args)
 
-    @patch('ebcli.docker.commands.utils.exec_cmd_live_output')
-    @patch('ebcli.docker.commands.fileoperations.readlines_from_text_file')
+    @patch('ebcli.containers.commands.utils.exec_cmd_live_output')
+    @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')
     def test_build_img_happy_case_has_file_path(self, readlines_file,
                                                 exec_cmd_live_output):
         _expect_dockerfile_lines(readlines_file, None, MOCK_CONTAINER_PORT)
@@ -101,8 +101,8 @@ class TestCommands(TestCase):
                          MOCK_DOCKER_PATH]
         exec_cmd_live_output.assert_called_once_with(expected_args)
 
-    @patch('ebcli.docker.commands.utils.exec_cmd_live_output')
-    @patch('ebcli.docker.commands.fileoperations.readlines_from_text_file')
+    @patch('ebcli.containers.commands.utils.exec_cmd_live_output')
+    @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')
     def test_run_container_happy_case(self, readlines_file, exec_cmd_live_output):
         _expect_dockerfile_lines(readlines_file, None, MOCK_CONTAINER_PORT)
         commands.run_container(MOCK_DOCKER_PATH, MOCK_IMG_ID)
@@ -112,8 +112,8 @@ class TestCommands(TestCase):
                          MOCK_IMG_ID]
         exec_cmd_live_output.assert_called_once_with(expected_args)
 
-    @patch('ebcli.docker.commands.utils.exec_cmd_live_output')
-    @patch('ebcli.docker.commands.fileoperations.readlines_from_text_file')
+    @patch('ebcli.containers.commands.utils.exec_cmd_live_output')
+    @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')
     def test_run_container_happy_case_has_envvars(self, readlines_file,
                                                   exec_cmd_live_output):
         _expect_dockerfile_lines(readlines_file, None, MOCK_CONTAINER_PORT)
@@ -130,15 +130,15 @@ class TestCommands(TestCase):
         self.assertEqual(1, len(actual_args))
         self.assertItemsEqual(expected_args, actual_args[0])
 
-    @patch('ebcli.docker.commands.utils.exec_cmd')
-    @patch('ebcli.docker.commands.fileoperations.readlines_from_text_file')
+    @patch('ebcli.containers.commands.utils.exec_cmd')
+    @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')
     def test_run_container_no_port(self, readlines_file, exec_cmd):
         _expect_dockerfile_lines(readlines_file, None, None)
         self.assertRaises(ValidationError, commands.run_container,
                           MOCK_DOCKER_PATH, MOCK_IMG_ID)
 
-    @patch('ebcli.docker.commands.utils.exec_cmd_live_output')
-    @patch('ebcli.docker.commands.fileoperations.readlines_from_text_file')
+    @patch('ebcli.containers.commands.utils.exec_cmd_live_output')
+    @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')
     def test_run_container_has_volume_map(self, readlines_file,
                                           exec_cmd_live_output):
         _expect_dockerfile_lines(readlines_file, None, MOCK_CONTAINER_PORT)
@@ -151,8 +151,8 @@ class TestCommands(TestCase):
                          '-v', volume_map, MOCK_IMG_ID]
         exec_cmd_live_output.assert_called_once_with(expected_args)
 
-    @patch('ebcli.docker.commands.utils.exec_cmd_live_output')
-    @patch('ebcli.docker.commands.fileoperations.readlines_from_text_file')
+    @patch('ebcli.containers.commands.utils.exec_cmd_live_output')
+    @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')
     def test_run_container_has_name(self, readlines_file, exec_cmd_live_output):
         _expect_dockerfile_lines(readlines_file, None, MOCK_CONTAINER_PORT)
         commands.run_container(MOCK_DOCKER_PATH, MOCK_IMG_ID,
@@ -163,8 +163,8 @@ class TestCommands(TestCase):
                          '--name', MOCK_CONTAINER_NAME, MOCK_IMG_ID]
         exec_cmd_live_output.assert_called_once_with(expected_args)
 
-    @patch('ebcli.docker.commands.utils.exec_cmd_quiet')
-    @patch('ebcli.docker.commands.json.loads')
+    @patch('ebcli.containers.commands.utils.exec_cmd_quiet')
+    @patch('ebcli.containers.commands.json.loads')
     def test_get_container_lowlvl_info_happy_case(self, loads, exec_cmd_quiet):
         loads.return_value = [{}]
         exec_cmd_quiet.return_value = '[{}]'
@@ -175,8 +175,8 @@ class TestCommands(TestCase):
         exec_cmd_quiet.assert_called_once_with(expected_args)
         loads.assert_called_once_with('[{}]')
 
-    @patch('ebcli.docker.commands.utils.exec_cmd_quiet')
-    @patch('ebcli.docker.commands.json.loads')
+    @patch('ebcli.containers.commands.utils.exec_cmd_quiet')
+    @patch('ebcli.containers.commands.json.loads')
     def test_get_container_lowlvl_info_command_error(self, loads,
                                                      exec_cmd_quiet):
         exec_cmd_quiet.side_effect = CommandError(message='', output='', code=1)
@@ -184,57 +184,57 @@ class TestCommands(TestCase):
         self.assertRaises(CommandError, commands.get_container_lowlvl_info,
                           MOCK_CONTAINER_NAME)
 
-    @patch('ebcli.docker.commands.get_container_lowlvl_info')
+    @patch('ebcli.containers.commands.get_container_lowlvl_info')
     def test_is_running_happy_case(self, get_container_lowlvl_info):
         get_container_lowlvl_info.return_value = MOCK_CONTAINER_INFO
         self.assertEquals(MOCK_IS_RUNNING,
                           commands.is_running(MOCK_CONTAINER_NAME))
 
-    @patch('ebcli.docker.commands.get_container_lowlvl_info')
+    @patch('ebcli.containers.commands.get_container_lowlvl_info')
     def test_is_running_command_error(self, get_container_lowlvl_info):
         get_container_lowlvl_info.side_effect = CommandError
         self.assertFalse(commands.is_running(MOCK_CONTAINER_NAME))
 
-    @patch('ebcli.docker.commands.get_container_lowlvl_info')
+    @patch('ebcli.containers.commands.get_container_lowlvl_info')
     def test_get_exposed_hostports_happy_case(self, get_container_lowlvl_info):
         get_container_lowlvl_info.return_value = MOCK_CONTAINER_NETWORK
         self.assertEquals([MOCK_HOST_PORT],
                           commands.get_exposed_hostports(MOCK_CONTAINER_NAME))
 
-    @patch('ebcli.docker.commands.get_container_lowlvl_info')
+    @patch('ebcli.containers.commands.get_container_lowlvl_info')
     def test_get_exposed_hostports_command_error_case(self,
                                                       get_container_lowlvl_info):
         get_container_lowlvl_info.side_effect = CommandError
         self.assertListEqual([], commands.get_exposed_hostports(MOCK_CONTAINER_NAME))
 
-    @patch('ebcli.docker.commands.get_container_lowlvl_info')
+    @patch('ebcli.containers.commands.get_container_lowlvl_info')
     def test_is_container_existent_happy_case(self, get_container_lowlvl_info):
         self.assertTrue(commands.is_container_existent(MOCK_CONTAINER_NAME))
 
-    @patch('ebcli.docker.commands.get_container_lowlvl_info')
+    @patch('ebcli.containers.commands.get_container_lowlvl_info')
     def test_is_container_existent_command_error(self,
                                                  get_container_lowlvl_info):
         get_container_lowlvl_info.side_effect = CommandError
         self.assertFalse(commands.is_container_existent(MOCK_CONTAINER_NAME))
 
-    @patch('ebcli.docker.commands.utils.exec_cmd_quiet')
+    @patch('ebcli.containers.commands.utils.exec_cmd_quiet')
     def test_rm_container(self, exec_cmd_quiet):
         commands.rm_container(MOCK_IMG_ID)
         expected_args = ['docker', 'rm', MOCK_IMG_ID]
         exec_cmd_quiet.assert_called_once_with(expected_args)
 
-    @patch('ebcli.docker.commands.utils.exec_cmd_quiet')
+    @patch('ebcli.containers.commands.utils.exec_cmd_quiet')
     def test_rm_container_with_force(self, exec_cmd_quiet):
         commands.rm_container(MOCK_IMG_ID, force=True)
         expected_args = ['docker', 'rm', '-f', MOCK_IMG_ID]
         exec_cmd_quiet.assert_called_once_with(expected_args)
 
-    @patch('ebcli.docker.commands.utils.exec_cmd_quiet')
+    @patch('ebcli.containers.commands.utils.exec_cmd_quiet')
     def test_version(self, exec_cmd_quiet):
         exec_cmd_quiet.return_value = 'Docker version 1.1.0, build a8a31ef'
         self.assertEquals('1.1.0', commands.version())
 
-    @patch('ebcli.docker.commands.utils.exec_cmd_quiet')
+    @patch('ebcli.containers.commands.utils.exec_cmd_quiet')
     def test_compose_version(self, exec_cmd_quiet):
         exec_cmd_quiet.return_value = 'docker-compose 1.1.0'
         self.assertEquals('1.1.0', commands.compose_version())

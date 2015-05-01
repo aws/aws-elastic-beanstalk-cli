@@ -239,6 +239,12 @@ def save_file_from_url(url, location, filename):
 
 # http://stackoverflow.com/a/5164027
 def prettydate(d):
+    """
+    Return a human readable str of how long d was compared to now.
+    :param d: datetime/float: datetime or unix timestamp
+    :return str
+    """
+
     if isinstance(d, float):  # epoch timestamp
         d = datetime.utcfromtimestamp(d)
 
@@ -262,3 +268,17 @@ def prettydate(d):
         return '1 hour ago'
     else:
         return '{0} hours ago'.format(s // 3600)
+
+
+def merge_dicts(low_priority, high_priority):
+    """
+    Return a new dict that is a merge of low_priority and high_priority dicts.
+    When keys collide, takes the value of higher_priority dict.
+    :param low_priority: dict: shallow dictionary
+    :param high_priority: dict: shallow dictionary
+    :return dict
+    """
+
+    result_dict = low_priority.copy()
+    result_dict.update(high_priority)
+    return result_dict

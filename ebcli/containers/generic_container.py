@@ -12,23 +12,23 @@
 # language governing permissions and limitations under the License.
 
 from . import dockerrun
-from .container import Container
+from .abstractcontainer import AbstractContainer
 from ..objects.exceptions import NotFoundError
 from ..resources.strings import strings
 
 
-class GenericContainer(Container):
+class GenericContainer(AbstractContainer):
     """
     Immutable class used for running Generic Docker containers.
     """
 
     def validate(self):
-        if (not self.fs_handler.dockerfile_exists and
-            not self.fs_handler.dockerrun_exists):
+        if (not self.pathconfig.dockerfile_exists() and
+            not self.pathconfig.dockerrun_exists()):
             raise NotFoundError(strings['local.filenotfound'])
         dockerrun.validate_dockerrun_v1(self.fs_handler.dockerrun,
-                                        not self.fs_handler.dockerfile_exists)
+                                        not self.pathconfig.dockerfile_exists())
 
+    # This gets called if user only provides Dockerrun.aws.json and not Dockerfile
     def _containerize(self):
-        # This gets called if user only provides Dockerrun.aws.json
         self.fs_handler.make_dockerfile()

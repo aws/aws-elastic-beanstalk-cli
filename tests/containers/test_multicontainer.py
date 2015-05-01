@@ -1,8 +1,10 @@
 from mock import patch, Mock
 from unittest import TestCase
 
-from ebcli.docker.multicontainer import MultiContainer
-from ebcli.docker import dockerrun
+from ebcli.containers import dockerrun
+from ebcli.containers.envvarcollector import EnvvarCollector
+from ebcli.containers.multicontainer import MultiContainer
+from tests.containers import dummy
 
 
 COMPOSE_PATH = '/.elsaticbeanstalk/docker-compose.yml'
@@ -10,28 +12,37 @@ COMPOSE_PATH = '/.elsaticbeanstalk/docker-compose.yml'
 
 class TestMultiContainer(TestCase):
     def setUp(self):
-        self.soln_stk = Mock()
-        self.fs_handler = Mock()
+        self.soln_stk = dummy.get_soln_stk()
+        self.fs_handler = dummy.get_multicontainer_fs_handler()
+        self.pathconfig = self.fs_handler.pathconfig
         self.fs_handler.make_docker_compose = Mock()
-        self.fs_handler.compose_path = COMPOSE_PATH
         self.fs_handler.dockerrun = {dockerrun.VERSION_KEY:
                                      dockerrun.VERSION_TWO}
-        self.env = {'a': 'b'}
+        self.fs_handler.get_setenv_env.return_value = EnvvarCollector({'a': '3',
+                                                                       'z': '0'})
+        self.env = EnvvarCollector({'a': '1', 'b': '2', 'c': '5'})
         self.multicontainer = MultiContainer(self.fs_handler, self.env,
                                              self.soln_stk)
 
     def test_containerize(self):
         self.multicontainer._containerize()
-        self.fs_handler.make_docker_compose.assert_called_once_with(self.env)
 
-    @patch('ebcli.docker.multicontainer.commands')
+        make_docker_compose_args = self.fs_handler.make_docker_compose.call_args[0]
+        actual_env_arg = make_docker_compose_args[0]
+
+        # Optional --envvars has higher priority than ones set through setenv
+        self.assertDictEqual({'a': '1', 'b': '2', 'z': '0', 'c': '5'}, actual_env_arg.map)
+        self.assertSetEqual(set(), actual_env_arg.to_remove)
+
+
+    @patch('ebcli.containers.multicontainer.commands')
     def test_up(self, commands):
         self.multicontainer._up()
-        commands.up.assert_called_once_with(COMPOSE_PATH)
+        commands.up.assert_called_once_with(dummy.COMPOSE_PATH)
 
-    @patch('ebcli.docker.multicontainer.MultiContainer._remove')
-    @patch('ebcli.docker.multicontainer.MultiContainer._up')
-    @patch('ebcli.docker.multicontainer.MultiContainer._containerize')
+    @patch('ebcli.containers.multicontainer.MultiContainer._remove')
+    @patch('ebcli.containers.multicontainer.MultiContainer._up')
+    @patch('ebcli.containers.multicontainer.MultiContainer._containerize')
     def test_start(self, _containerize, _up, _remove):
         self.multicontainer.start()
 
@@ -39,7 +50,7 @@ class TestMultiContainer(TestCase):
         _up.assert_called_once_with()
         _remove.assert_called_once_with()
 
-    @patch('ebcli.docker.multicontainer.fileoperations')
+    @patch('ebcli.containers.multicontainer.fileoperations')
     def test_list_services(self, fops):
         fops._get_yaml_dict.return_value = {'a': {}, 'b': {}, 'c': {}}
         proj_name = MultiContainer.PROJ_NAME
@@ -50,24 +61,24 @@ class TestMultiContainer(TestCase):
         self.assertItemsEqual(expected_list,
                               self.multicontainer.list_services())
 
-    @patch('ebcli.docker.multicontainer.commands')
-    @patch('ebcli.docker.multicontainer.MultiContainer.list_services')
+    @patch('ebcli.containers.multicontainer.commands')
+    @patch('ebcli.containers.multicontainer.MultiContainer.list_services')
     def test_is_running_one(self, list_services, commands):
         list_services.return_value = ['a', 'b', 'c']
         commands.is_running.side_effeect = [False, False, True]
 
         self.assertTrue(self.multicontainer.is_running())
 
-    @patch('ebcli.docker.multicontainer.commands')
-    @patch('ebcli.docker.multicontainer.MultiContainer.list_services')
+    @patch('ebcli.containers.multicontainer.commands')
+    @patch('ebcli.containers.multicontainer.MultiContainer.list_services')
     def test_is_running_none(self, list_services, commands):
         list_services.return_value = ['a', 'b', 'c']
         commands.is_running.side_effect = [False, False, False]
 
         self.assertFalse(self.multicontainer.is_running())
 
-    @patch('ebcli.docker.multicontainer.commands')
-    @patch('ebcli.docker.multicontainer.MultiContainer.list_services')
+    @patch('ebcli.containers.multicontainer.commands')
+    @patch('ebcli.containers.multicontainer.MultiContainer.list_services')
     def test_remove(self, list_services, commands):
         list_services.return_value = ['a', 'b', 'c']
         self.multicontainer._remove()

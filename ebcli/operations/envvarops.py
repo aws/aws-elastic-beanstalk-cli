@@ -22,13 +22,17 @@ from ..objects.exceptions import TimeoutError
 from . import commonops
 
 
-def print_environment_vars(app_name, env_name):
+def get_and_print_environment_vars(app_name, env_name):
     settings = elasticbeanstalk.describe_configuration_settings(
         app_name, env_name
     )['OptionSettings']
     namespace = 'aws:elasticbeanstalk:application:environment'
     vars = {n['OptionName']: n['Value'] for n in settings
             if n["Namespace"] == namespace}
+    print_environment_vars(vars)
+
+
+def print_environment_vars(vars):
     io.echo(' Environment Variables:')
     for key, value in iteritems(vars):
         key, value = utils.mask_vars(key, value)

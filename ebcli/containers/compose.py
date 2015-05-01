@@ -3,6 +3,7 @@ import os
 from botocore.compat import six
 
 from . import log
+from .envvarcollector import EnvvarCollector
 
 
 AWSEB_LOGS = 'awseb-logs-'
@@ -14,6 +15,9 @@ COMPOSE_PORTS_KEY = 'ports'
 COMPOSE_VOLUMES_KEY = 'volumes'
 CONTAINER_DEF_CMD_KEY = 'command'
 CONTAINER_DEF_CONTAINERPORT_KEY = 'containerPort'
+CONTAINER_DEF_ENV_KEY = 'environment'
+CONTAINER_DEF_ENV_NAME_KEY = 'name'
+CONTAINER_DEF_ENV_VALUE_KEY = 'value'
 CONTAINER_DEF_HOSTPORT_KEY = 'hostPort'
 CONTAINER_DEF_IMG_KEY = 'image'
 CONTAINER_DEF_KEY = 'containerDefinitions'
@@ -35,14 +39,14 @@ VOLUMES_SOURCE_PATH_KEY = 'sourcePath'
 iter_services = six.iterkeys
 
 
-def compose_dict(dockerrun, docker_proj_path, host_log, envvars_map):
+def compose_dict(dockerrun, docker_proj_path, host_log, high_priority_env):
     """
     Return a docker-compose.yml representation as dict translated from the info
     provided in Dockerrun.aws.json.
     :param dockerrun: dict: dictionary representation of Dockerrun.aws.json
     :param docker_proj_path: str: path of the project directory
     :param host_log: str: path to the root host logs
-    :param envvars_map: dict: key val map of environment variables
+    :param high_priority_env: EnvvarCollector: Contains environment variables to add and remove
     :return dict
     """
 
@@ -56,12 +60,12 @@ def compose_dict(dockerrun, docker_proj_path, host_log, envvars_map):
     volume_map = _get_volume_map(dockerrun.get(VOLUMES_KEY, []), docker_proj_path)
 
     for definition in definitions:
-        _add_service(services, definition, volume_map, host_log, envvars_map)
+        _add_service(services, definition, volume_map, host_log, high_priority_env)
 
     return services
 
 
-def _add_service(services, definition, volume_map, host_log, envvars_map):
+def _add_service(services, definition, volume_map, host_log, high_priority_env):
     realname = definition[CONTAINER_DEF_NAME_KEY]
     img = definition[CONTAINER_DEF_IMG_KEY]
     links = definition.get(CONTAINER_DEF_LINKS_KEY, [])
@@ -69,6 +73,8 @@ def _add_service(services, definition, volume_map, host_log, envvars_map):
     dockerrun_port_mappings = definition.get(CONTAINER_DEF_PORT_MAPPINGS_KEY, [])
     ports = _get_port_maps(dockerrun_port_mappings)
     remote_mountpoints = definition.get(MOUNT_POINTS, [])
+    definition_env = EnvvarCollector(_get_definition_envvars(definition))
+    merged_envvars = definition_env.merge(high_priority_env).get_envvars()
 
     service = {COMPOSE_IMG_KEY: img}
 
@@ -81,8 +87,8 @@ def _add_service(services, definition, volume_map, host_log, envvars_map):
     if links:
         service[COMPOSE_LINKS_KEY] = ['{}:{}'.format(_fakename(n), n)
                                       for n in links]
-    if envvars_map:
-        service[COMPOSE_ENV_KEY] = envvars_map
+    if merged_envvars:
+        service[COMPOSE_ENV_KEY] = merged_envvars
 
     volumes = []
     for mp in remote_mountpoints:
@@ -148,3 +154,7 @@ def _get_volume_map(volumes, docker_proj_path):
 def _fakename(realname):
     # docker-compose service names can't have dashes
     return realname.replace('-', '')
+
+def _get_definition_envvars(definition):
+    return {e[CONTAINER_DEF_ENV_NAME_KEY]: e[CONTAINER_DEF_ENV_VALUE_KEY] for e
+            in definition.get(CONTAINER_DEF_ENV_KEY, [])}

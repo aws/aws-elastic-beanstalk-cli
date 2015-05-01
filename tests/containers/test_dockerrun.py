@@ -14,7 +14,7 @@
 from ebcli.objects.exceptions import ValidationError
 from mock import patch
 from unittest import TestCase
-import ebcli.docker.dockerrun as dr
+import ebcli.containers.dockerrun as dr
 
 
 INVALID_VERSION = '3.5'
@@ -100,17 +100,17 @@ class TestDockerrun(TestCase):
         msg = 'Expected False on when Image.Update=' + dr.JSON_FALSE
         self.assertFalse(dr.require_docker_pull(dockerrun), msg)
 
-    @patch('ebcli.docker.dockerrun.fileoperations.get_json_dict')
+    @patch('ebcli.containers.dockerrun.fileoperations.get_json_dict')
     def test_get_dockerrun_happy_case(self, get_json_dict):
         get_json_dict.return_value = {}
         self.assertEquals({}, dr.get_dockerrun(MOCK_DOCKERRUN_PATH))
 
-    @patch('ebcli.docker.dockerrun.fileoperations.get_json_dict')
+    @patch('ebcli.containers.dockerrun.fileoperations.get_json_dict')
     def test_get_dockerrun_ioerror_case(self, get_json_dict):
         get_json_dict.side_effect = IOError
         self.assertIsNone(dr.get_dockerrun(MOCK_DOCKERRUN_PATH))
 
-    @patch('ebcli.docker.dockerrun.fileoperations.get_json_dict')
+    @patch('ebcli.containers.dockerrun.fileoperations.get_json_dict')
     def test_get_dockerrun_valueerror_case(self, get_json_dict):
         get_json_dict.side_effect = ValueError
         self.assertRaises(ValidationError, dr.get_dockerrun,

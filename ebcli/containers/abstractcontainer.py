@@ -20,7 +20,7 @@ from . import log
 from ..objects.exceptions import CommandError
 
 
-class Container(object):
+class AbstractContainer(object):
     """
     Abstract class subclassed by PreconfiguredContainer and GenericContainer.
     Container holds all of the data and most of the functionality needed to
@@ -30,20 +30,21 @@ class Container(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, fs_handler, soln_stk, container_cfg,
-                 envvars_map=None, host_port=None):
+                 opt_env=None, host_port=None):
         """
         Constructor for Container.
         :param fs_handler: ContainerFSHandler: manages container related files
         :param soln_stk: SolutionStack: environment's solution stack
         :param container_cfg: dict: container_config.json as dict
-        :param envvars_map: dict: optional key-val map of environment variables
+        :param opt_env: EnvvarCollector: Optional env (--envvars) variables to add and remove
         :param host_port: str: optional host port. Same as container port by default
         """
 
         self.fs_handler = fs_handler
+        self.pathconfig = fs_handler.pathconfig
         self.soln_stk = soln_stk
         self.container_cfg = container_cfg
-        self.envvars_map = envvars_map
+        self.opt_env = opt_env
         self.host_port = host_port
 
     def start(self):
@@ -74,13 +75,17 @@ class Container(object):
         """
         pass
 
+    def final_envvars(self):
+        setenv_env = self.fs_handler.get_setenv_env()
+        return setenv_env.merge(self.opt_env).get_envvars()
+
     def get_name(self, hash_obj=hashlib.sha1):
         """
         Return the name that is or will be assigned to this container.
         :return str
         """
 
-        hash_key = self.fs_handler.docker_proj_path.encode('utf-8')
+        hash_key = self.pathconfig.docker_proj_path().encode('utf-8')
         return hash_obj(hash_key).hexdigest()
 
     def is_running(self):
@@ -103,10 +108,10 @@ class Container(object):
         :return str
         """
 
-        if self.fs_handler.dockerfile_exists:
-            return self.fs_handler.dockerfile_path
+        if self.pathconfig.dockerfile_exists():
+            return self.pathconfig.dockerfile_path()
         else:  # Then we create one at .elasticbeanstalk/Dockerfile.local
-            return self.fs_handler.new_dockerfile_path
+            return self.pathconfig.new_dockerfile_path()
 
     def _require_pull(self):
         return dockerrun.require_docker_pull(self.fs_handler.dockerrun)
@@ -115,23 +120,23 @@ class Container(object):
         return commands.pull_img(self._get_full_docker_path())
 
     def _build(self):
-        return commands.build_img(self.fs_handler.docker_proj_path,
+        return commands.build_img(self.pathconfig.docker_proj_path(),
                                   self._get_full_docker_path())
 
     def _run(self, img_id):
         log_volume_map = self._get_log_volume_map()
         if log_volume_map:
-            log.make_logdirs(self.fs_handler.logdir_path, log_volume_map)
+            log.make_logdirs(self.pathconfig.logdir_path(), log_volume_map)
 
-        return commands.run_container(self._get_full_docker_path(),
-                                      img_id,
-                                      envvars_map=self.envvars_map,
+        return commands.run_container(full_docker_path=self._get_full_docker_path(),
+                                      image_id=img_id,
+                                      envvars_map=self.final_envvars(),
                                       host_port=self.host_port,
                                       volume_map=log_volume_map,
                                       name=self.get_name())
 
     def _get_log_volume_map(self):
-        return log.get_log_volume_map(self.fs_handler.logdir_path,
+        return log.get_log_volume_map(self.pathconfig.logdir_path(),
                                       self.fs_handler.dockerrun)
 
     def _remove(self):

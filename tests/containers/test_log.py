@@ -17,7 +17,7 @@ from unittest import TestCase
 import os
 import time
 
-from ebcli.docker import log, dockerrun
+from ebcli.containers import log, dockerrun
 from ebcli.resources.strings import strings
 
 
@@ -41,30 +41,30 @@ class TestLog(TestCase):
     def test_get_log_volume_map_dockerrun_none(self):
         self.assertDictEqual({}, log.get_log_volume_map(ROOT_LOG_DIR, None))
 
-    @patch('ebcli.docker.log.get_host_log_path')
+    @patch('ebcli.containers.log.new_host_log_path')
     def test_get_log_volume_map_dockerrun_logging_exists(self,
-                                                         get_host_log_path):
-        get_host_log_path.return_value = HOST_LOG
+                                                         new_host_log_path):
+        new_host_log_path.return_value = HOST_LOG
         self.assertDictEqual(LOG_VOLUME_MAP,
                              log.get_log_volume_map(ROOT_LOG_DIR, DOCKERRUN))
 
-    @patch('ebcli.docker.log.get_host_log_path')
+    @patch('ebcli.containers.log.new_host_log_path')
     def test_get_log_volume_map_dockerrun_logging_not_exists(self,
-                                                             get_host_log_path):
-        get_host_log_path.return_value = HOST_LOG
+                                                             new_host_log_path):
+        new_host_log_path.return_value = HOST_LOG
         self.assertDictEqual({}, log.get_log_volume_map(ROOT_LOG_DIR, {}))
 
-    @patch('ebcli.docker.log.datetime')
-    def test_get_host_log_path(self, datetime):
+    @patch('ebcli.containers.log.datetime')
+    def test_new_host_log_path(self, datetime):
         datetime.now.return_value = MOCK_DATETIME
         datetime.strftime.return_value = EXPECTED_DATETIME_STR
 
-        self.assertEquals(EXPECTED_HOST_LOG_PATH, log.get_host_log_path(ROOT_LOG_DIR))
+        self.assertEquals(EXPECTED_HOST_LOG_PATH, log.new_host_log_path(ROOT_LOG_DIR))
         datetime.now.assert_called_once()
         datetime.strftime.assert_called_once()
 
-    @patch('ebcli.docker.log.fileoperations.set_all_unrestricted_permissions')
-    @patch('ebcli.docker.log.os')
+    @patch('ebcli.containers.log.fileoperations.set_all_unrestricted_permissions')
+    @patch('ebcli.containers.log.os')
     def test_make_logdirs(self, os, set_all_unrestricted_permissions):
         os.path.join.return_value = LATEST_SYMLINK
 
@@ -77,9 +77,9 @@ class TestLog(TestCase):
         os.unlink.assert_called_with(LATEST_SYMLINK)
         os.symlink.assert_called_with(HOST_LOG, LATEST_SYMLINK)
 
-    @patch('ebcli.docker.log.os')
-    @patch('ebcli.docker.log.io.echo')
-    @patch('ebcli.docker.log.fileoperations.get_logs_location')
+    @patch('ebcli.containers.log.os')
+    @patch('ebcli.containers.log.io.echo')
+    @patch('ebcli.containers.log.fileoperations.get_logs_location')
     def test_print_log_location_no_root_logs(self, get_logs_location, echo,
                                              os):
         get_logs_location.return_value = EXPECTED_LOGDIR_PATH
@@ -89,10 +89,10 @@ class TestLog(TestCase):
 
         echo.assert_called_once_with(strings['local.logs.nologs'])
 
-    @patch('ebcli.docker.log.os')
-    @patch('ebcli.docker.log.io.echo')
-    @patch('ebcli.docker.log.fileoperations.get_logs_location')
-    @patch('ebcli.docker.log.fileoperations.directory_empty')
+    @patch('ebcli.containers.log.os')
+    @patch('ebcli.containers.log.io.echo')
+    @patch('ebcli.containers.log.fileoperations.get_logs_location')
+    @patch('ebcli.containers.log.fileoperations.directory_empty')
     def test_print_log_location_no_sub_logs(self, directory_empty,
                                             get_logs_location, echo, os):
         get_logs_location.return_value = EXPECTED_LOGDIR_PATH
@@ -103,9 +103,9 @@ class TestLog(TestCase):
 
         echo.assert_called_once_with(strings['local.logs.nologs'])
 
-    @patch('ebcli.docker.log.os')
-    @patch('ebcli.docker.log.io.echo')
-    @patch('ebcli.docker.log.fileoperations.directory_empty')
+    @patch('ebcli.containers.log.os')
+    @patch('ebcli.containers.log.io.echo')
+    @patch('ebcli.containers.log.fileoperations.directory_empty')
     def test_print_log_location_some_log_exists(self, directory_empty, echo,
                                                 os):
         timestamp = time.time()

@@ -22,7 +22,7 @@ from cement.utils.shell import exec_cmd
 
 from ..core import fileoperations, io
 from ..core.fileoperations import _marker
-from ..docker import dockerrun
+from ..containers import dockerrun
 from ..lib import aws, ec2, elasticbeanstalk, heuristics, s3, utils
 from ..lib.aws import InvalidParameterValueError
 from ..objects.exceptions import *

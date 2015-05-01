@@ -13,9 +13,12 @@
 
 import os
 
+from ..containers import fshandler
+from ..containers.envvarcollector import EnvvarCollector
+from ..containers.pathconfig import PathConfig
 from ..core import fileoperations, io
 from ..lib import utils
-from ..operations import commonops
+from ..operations import commonops, envvarops
 from ..resources.strings import strings
 
 
@@ -85,3 +88,17 @@ def _print_service_details(service_info):
 
 def _get_cids(c):
     return [c.get_name()] if isinstance(c, Container) else c.iter_services()
+
+
+def get_and_print_environment_vars(pathconfig=PathConfig):
+    envvars_map = fileoperations._get_yaml_dict(pathconfig.setenv_path())
+    envvarops.print_environment_vars(envvars_map)
+
+
+def setenv(var_list, pathconfig=PathConfig):
+    setenv_env = EnvvarCollector.from_json_path(pathconfig.setenv_path())
+    opt_env = EnvvarCollector.from_str(','.join(var_list))
+    merged_envvars = setenv_env.merge(opt_env).get_envvars()
+
+    fileoperations.write_json_dict(json_data=merged_envvars,
+                                   fullpath=pathconfig.setenv_path())

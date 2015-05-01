@@ -23,12 +23,12 @@ def get_log_volume_map(root_log_dir, dockerrun_dict):
 
     if not dockerrun_dict:
         return {}
-    host_log = get_host_log_path(root_log_dir)
+    host_log = new_host_log_path(root_log_dir)
     container_log = dockerrun.get_logdir(dockerrun_dict)
     return {host_log: container_log} if container_log else {}
 
 
-def get_host_log_path(root_log_dir):
+def new_host_log_path(root_log_dir):
     """
     Return the host log path that will be used to make the new local logs dir.
     Format is like .elasticbeanstalk/logs/local/150318_132014410947/

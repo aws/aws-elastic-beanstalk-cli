@@ -13,6 +13,7 @@
 
 import os
 import json
+import sys
 
 from botocore.compat import six
 from cement.utils.misc import minimal_logger
@@ -284,4 +285,4 @@ def _handle_command_error(e):
     if socket_perm_msg in e.output:
         raise CommandError(strings['local.run.socketperms'], e.output, e.code)
     else:
-        raise e
+        raise CommandError

@@ -1,4 +1,4 @@
-from ebcli.docker.container_viewmodel import ContainerViewModel, ServiceInfo
+from ebcli.containers.container_viewmodel import ContainerViewModel, ServiceInfo
 from mock import patch, Mock
 from unittest import TestCase
 

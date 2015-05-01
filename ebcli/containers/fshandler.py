@@ -7,17 +7,10 @@ from . import compose
 from . import containerops
 from . import dockerrun
 from . import log
+from .envvarcollector import EnvvarCollector
 from ..core import fileoperations
 from ..lib import s3
 from ..resources.strings import docker_ignore
-
-
-COMPOSE_FILENAME = 'docker-compose.yml'
-DOCKERCFG_FILENAME = '.dockercfg'
-DOCKERIGNORE_FILENAME = '.dockerignore'
-DOCKERFILE_FILENAME = 'Dockerfile'
-DOCKERRUN_FILENAME = 'Dockerrun.aws.json'
-NEW_DOCKERFILE_FILENAME = 'Dockerfile.local'
 
 
 class ContainerFSHandler(object):
@@ -25,41 +18,16 @@ class ContainerFSHandler(object):
     Handles Container related file operations.
     """
 
-    def __init__(self,
-                 docker_proj_path,
-                 dockerrun_path,
-                 dockerfile_path,
-                 dockercfg_path,
-                 dockerignore_path,
-                 new_dockerfile_path,
-                 logdir_path,
-                 dockerfile_exists,
-                 dockerrun_exists,
-                 dockerrun):
+    def __init__(self, pathconfig, dockerrun):
         """
         Constructor for ContainerFSHandler.
-        :param docker_proj_path: str: path of the project directory
-        :param dockerrun_path: str: path to the Dockerrun.aws.json
-        :param dockerfile_path: str: path where we expect user's Dockerfile
-        :param dockercfg_path: str: path to .dockercfg
-        :param dockerignore: str: path to .dockerignore
-        :param logdir_path: str: path to the dir containing volume mapped logs
-        :param new_dockerfile_path: str: path we put new Dockerfile if needed
-        :param dockerfile_exists: bool: whether user provided Dockerfile
-        :param dockerrun_exists: bool: whether user provided Dockerrun.aws.json
+        :param pathconfig: PathConfig: Holds path/existence info
         :param dockerrun: dict: Dockerrun.aws.json as dict
         """
 
-        self.docker_proj_path = docker_proj_path
-        self.dockerrun_path = dockerrun_path
-        self.dockerfile_path = dockerfile_path
-        self.dockercfg_path = dockercfg_path
-        self.dockerignore_path = dockerignore_path
-        self.new_dockerfile_path = new_dockerfile_path
-        self.logdir_path = logdir_path
-        self.dockerfile_exists = dockerfile_exists
-        self.dockerrun_exists = dockerrun_exists
+        self.pathconfig = pathconfig
         self.dockerrun = dockerrun
+
 
     def require_new_dockerfile(self):
         """
@@ -68,7 +36,7 @@ class ContainerFSHandler(object):
         :return bool
         """
 
-        return not self.dockerfile_exists
+        return not self.pathconfig.dockerfile_exists()
 
     def make_dockerfile(self):
         """
@@ -76,7 +44,7 @@ class ContainerFSHandler(object):
         :return None
         """
 
-        destination = self.new_dockerfile_path
+        destination = self.pathconfig.new_dockerfile_path()
 
         base_img = dockerrun.get_base_img(self.dockerrun)
         exposed_port = dockerrun.get_exposed_port(self.dockerrun)
@@ -95,7 +63,7 @@ class ContainerFSHandler(object):
         :return bool
         """
 
-        return _require_append_dockerignore(self.dockerignore_path)
+        return _require_append_dockerignore(self.pathconfig.dockerignore_path())
 
     def append_dockerignore(self):
         """
@@ -103,7 +71,7 @@ class ContainerFSHandler(object):
         :return None
         """
 
-        _append_dockerignore(self.dockerignore_path)
+        _append_dockerignore(self.pathconfig.dockerignore_path())
 
     def copy_dockerfile(self, soln_stk, container_cfg):
         """
@@ -129,64 +97,49 @@ class ContainerFSHandler(object):
 
         dfile_path = containerops._get_runtime_dockerfile_path(soln_stk,
                                                                container_cfg)
-        shutil.copyfile(dfile_path, self.new_dockerfile_path)
+        shutil.copyfile(dfile_path, self.pathconfig.new_dockerfile_path())
 
-    def download_dockercfg(self):
-        """
-        Download the S3 bucket using bucket and key info in Dockerrun.aws.json.
-        :return None
-        """
 
-        _download_dockercfg(self.dockerrun, self.dockercfg_path)
-
-    def require_dockercfg(self):
-        return dockerrun.require_auth_download(self.dockerrun)
+    def get_setenv_env(self):
+        return EnvvarCollector.from_json_path(self.pathconfig.setenv_path())
 
 
 class MultiContainerFSHandler(object):
     """
     Handles MultiContainer related file operations.
     """
-    def __init__(self,
-                 docker_proj_path,
-                 dockercfg_path,
-                 dockerignore_path,
-                 hostlog_path,
-                 compose_path,
-                 dockerrun):
+    def __init__(self, pathconfig, hostlog_path, dockerrun):
         """
         Constructor for MultiContainerFSHandler.
-        :param docker_proj_path: str: path of the project directory
-        :param dockercfg_path: str: path to .dockercfg
-        :param dockerignore_path: str: path to .dockerignore
+        :param pathconfig: PathConfig: Holds path/existence info
         :param hostlog_path: str: path to the dir containing container logs
-        :param compose_path: str: path to docker-compose.yml
         :param dockerrun: dict: Dockerrun.aws.json as dict
         """
 
-        self.docker_proj_path = docker_proj_path
-        self.dockercfg_path = dockercfg_path
-        self.dockerignore_path = dockerignore_path
+        self.pathconfig = pathconfig
         self.hostlog_path = hostlog_path
-        self.compose_path = compose_path
         self.dockerrun = dockerrun
 
-    def make_docker_compose(self, envvars_map):
+    def make_docker_compose(self, env):
         """
         Create docker-compose.yml by using Dockerrun.aws.json.
-        :param envvars_map: dict: key val map of environment variables
+        :param env: EnvvarCollector: contains envvars map and envvars to remove
         :return None
         """
-        compose_dict = compose.compose_dict(self.dockerrun,
-                                            self.docker_proj_path,
-                                            self.hostlog_path,
-                                            envvars_map)
-        compose_yaml = yaml.safe_dump(compose_dict, default_flow_style=False)
-        fileoperations.write_to_text_file(location=self.compose_path,
+
+        compose_yaml = yaml.safe_dump(self._get_compose_dict(env),
+                                      default_flow_style=False)
+        fileoperations.write_to_text_file(location=self.pathconfig.compose_path(),
                                           data=compose_yaml)
 
-    def require_dockercfg(self):
-        return dockerrun.require_auth_download(self.dockerrun)
+    def _get_compose_dict(self, env):
+        return compose.compose_dict(self.dockerrun,
+                                    self.pathconfig.docker_proj_path(),
+                                    self.hostlog_path,
+                                    env)
+
+    def get_setenv_env(self):
+        return EnvvarCollector.from_json_path(self.pathconfig.setenv_path())
 
 
 def _require_append_dockerignore(dockerignore_path):

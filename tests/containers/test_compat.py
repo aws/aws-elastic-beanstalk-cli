@@ -2,7 +2,7 @@ import os
 from mock import patch, Mock
 from unittest import TestCase
 
-from ebcli.docker import compat
+from ebcli.containers import compat
 from ebcli.objects.exceptions import CommandError
 
 
@@ -24,53 +24,53 @@ EXPECTED_ENVIRON_VARS_SET = {DOCKER_HOST_KEY: DOCKER_HOST_VAL,
 
 class TestCompat(TestCase):
 
-    @patch('ebcli.docker.compat.commands.version')
+    @patch('ebcli.containers.compat.commands.version')
     def test_supported_docker_installed_not_installed(self, version):
         version.side_effect = OSError
         self.assertFalse(compat.supported_docker_installed())
 
-    @patch('ebcli.docker.compat.commands.version')
+    @patch('ebcli.containers.compat.commands.version')
     def test_supported_docker_installed_lower_version(self,
                                                       version):
         version.side_effect = CommandError
         self.assertFalse(compat.supported_docker_installed())
 
-    @patch('ebcli.docker.compat.commands.version')
+    @patch('ebcli.containers.compat.commands.version')
     def test_supported_docker_installed_same_version(self,
                                                      version):
         version.return_value = compat.SUPPORTED_DOCKER_V
         self.assertTrue(compat.supported_docker_installed())
 
-    @patch('ebcli.docker.compat.commands.version')
+    @patch('ebcli.containers.compat.commands.version')
     def test_supported_docker_installed_higher_version(self,
                                                        version):
         version.return_value = '1.9.0'
         self.assertTrue(compat.supported_docker_installed())
 
-    @patch('ebcli.docker.compat.utils.exec_cmd_quiet')
+    @patch('ebcli.containers.compat.utils.exec_cmd_quiet')
     def test_container_ip_boot2docker_works(self, exec_cmd_quiet):
         exec_cmd_quiet.return_value = MOCK_MAC_CONTAINER_IP
         self.assertEquals(MOCK_MAC_CONTAINER_IP, compat.container_ip())
 
-    @patch('ebcli.docker.compat.utils.exec_cmd_quiet')
+    @patch('ebcli.containers.compat.utils.exec_cmd_quiet')
     def test_container_ip_boot2docker_oserror(self, exec_cmd_quiet):
         exec_cmd_quiet.side_effect = OSError
         self.assertEquals(compat.LOCALHOST, compat.container_ip())
 
-    @patch('ebcli.docker.compat.utils')
-    @patch('ebcli.docker.compat.heuristics.is_boot2docker_installed')
+    @patch('ebcli.containers.compat.utils')
+    @patch('ebcli.containers.compat.heuristics.is_boot2docker_installed')
     def test_boot2docker_setup_not_installed(self, is_boot2docker_installed,
                                              utils):
         is_boot2docker_installed.return_value = False
         compat.boot2docker_setup({})
         self.assertFalse(utils.exec_cmd_quiet.called)
 
-    @patch('ebcli.docker.compat.supported_docker_installed')
+    @patch('ebcli.containers.compat.supported_docker_installed')
     def test_validate_docker_installed_not_installed(self, supported_docker_installed):
         supported_docker_installed.return_value = False
         self.assertRaises(CommandError, compat.validate_docker_installed)
 
-    @patch('ebcli.docker.compat.supported_docker_installed')
+    @patch('ebcli.containers.compat.supported_docker_installed')
     def test_validate_docker_installed_is_installed(self, supported_docker_installed):
         supported_docker_installed.return_value = True
         try:
@@ -87,8 +87,8 @@ class TestCompat(TestCase):
         except CommandError:
             self.fail('Docker is installed')
 
-    @patch('ebcli.docker.compat.boot2docker_setup')
-    @patch('ebcli.docker.compat.validate_docker_installed')
+    @patch('ebcli.containers.compat.boot2docker_setup')
+    @patch('ebcli.containers.compat.validate_docker_installed')
     def test_setup(self, validate_docker_installed, boot2docker_setup):
         compat.setup(os.environ)
         validate_docker_installed.assert_called_once_with()

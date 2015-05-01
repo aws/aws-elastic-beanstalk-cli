@@ -11,19 +11,3 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..operations import envvarops
-
-
-class PrintEnvController(AbstractBaseController):
-    class Meta:
-        label = 'printenv'
-        description = strings['printenv.info']
-        usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
-
-    def do_command(self):
-        app_name = self.get_app_name()
-        env_name = self.get_env_name()
-
-        envvarops.get_and_print_environment_vars(app_name, env_name)

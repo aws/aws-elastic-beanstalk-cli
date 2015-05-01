@@ -11,7 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ebcli.docker import containerops as cops
+from ebcli.containers import containerops as cops
 from mock import patch, Mock
 from unittest import TestCase
 
@@ -48,7 +48,7 @@ class TestContainerOps(TestCase):
         self.assertFalse(cops.is_multi(GENERIC_SOLN_STK, self.config))
         self.assertFalse(cops.is_multi(NON_DOCKER_SOLN_STK, self.config))
 
-    @patch('ebcli.docker.containerops.fileoperations.get_json_dict')
+    @patch('ebcli.containers.containerops.fileoperations.get_json_dict')
     def test_get_configuration(self, get_json_dict):
         get_json_dict.return_value = {}
         self.assertEquals({}, cops.get_configuration())

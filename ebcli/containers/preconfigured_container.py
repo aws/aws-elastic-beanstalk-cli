@@ -15,20 +15,20 @@ from . import commands
 from . import containerops
 from . import dockerrun
 from . import log
-from .container import Container
+from .abstractcontainer import AbstractContainer
 from ..objects.exceptions import ValidationError
 
 
-class PreconfiguredContainer(Container):
+class PreconfiguredContainer(AbstractContainer):
     """
     Immutable class used for running Preconfigured Docker containers.
     """
 
     def validate(self):
-        if self.fs_handler.dockerfile_exists:
+        if self.pathconfig.dockerfile_exists():
             _validate_preconfig_dockerfile(self.soln_stk,
                                            self.container_cfg,
-                                           self.fs_handler.dockerfile_path)
+                                           self.pathconfig.dockerfile_path())
         dockerrun.validate_dockerrun_v1(self.fs_handler.dockerrun, False)
 
     def _containerize(self):
@@ -40,7 +40,7 @@ class PreconfiguredContainer(Container):
         if log_volume_map:  # User provided Logging in Dockerrun.aws.json
             return log_volume_map
         else:
-            host_log = log.get_host_log_path(self.fs_handler.logdir_path)
+            host_log = log.new_host_log_path(self.pathconfig.logdir_path())
             cont_log = containerops.get_runtime_default_log_path(self.soln_stk,
                                                                  self.container_cfg)
             return {host_log: cont_log}

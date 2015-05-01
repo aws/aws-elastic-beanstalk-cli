@@ -16,7 +16,7 @@ import os
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings
 from ..core import io, fileoperations
-from ..docker import dockerrun
+from ..containers import dockerrun
 from ..objects.exceptions import NotFoundError, NotSupportedError
 
 DOCKERRUN_FILENAME = 'Dockerrun.aws.json'
