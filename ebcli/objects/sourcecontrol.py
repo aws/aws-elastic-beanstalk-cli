@@ -40,7 +40,7 @@ class SourceControl():
     def get_current_branch(self):
         pass
 
-    def do_zip(self, location):
+    def do_zip(self, location, staged=False):
         pass
 
     def set_up_ignore_file(self):
@@ -84,7 +84,7 @@ class NoSC(SourceControl):
     def get_current_branch(self):
         return 'default'
 
-    def do_zip(self, location):
+    def do_zip(self, location, staged=False):
         io.log_info('Creating zip using systems zip')
         fileoperations.zip_up_project(location)
 
@@ -127,24 +127,13 @@ class Git(SourceControl):
     def get_version_label(self):
         io.log_info('Getting version label from git with git-describe')
         stdout, stderr, exitcode = \
-            exec_cmd(['git', 'describe', '--always', '--abbrev=4'])
-        if sys.version_info[0] >= 3:
-            stdout = stdout.decode('utf8')
-            stderr = stderr.decode('utf8')
-
-        self._handle_exitcode(exitcode, stderr)
+            self._run_cmd(['git', 'describe', '--always', '--abbrev=4'])
 
         #Replace dots with underscores
-        return stdout[:-1].replace('.', '_')
+        return stdout.replace('.', '_')
 
     def untracked_changes_exist(self):
-        stdout, stderr, exitcode = \
-            exec_cmd(['git', 'diff', '--numstat'])
-
-        if sys.version_info[0] >= 3:
-            stdout = stdout.decode('utf8')
-            stderr = stderr.decode('utf8')
-        stdout = stdout.strip()
+        stdout, stderr, exitcode = self._run_cmd(['git', 'diff', '--numstat'])
         LOG.debug('git diff --numstat result: ' + stdout +
                   ' with errors: ' + stderr)
         if stdout:
@@ -153,57 +142,46 @@ class Git(SourceControl):
 
     def get_current_branch(self):
         try:
-            stdout, stderr, exitcode = \
-                exec_cmd(['git', '--version'])
-            if sys.version_info[0] >= 3:
-                stdout = stdout.decode('utf8')
+            stdout, stderr, exitcode = self._run_cmd(['git', '--version'])
             LOG.debug('Git Version: ' + stdout)
         except:
             raise CommandError('Error getting "git --version".')
 
-        stdout, stderr, exitcode = \
-            exec_cmd(['git', 'symbolic-ref', 'HEAD'])
+        stdout, stderr, exitcode = self._run_cmd(
+            ['git', 'symbolic-ref', 'HEAD'])
 
-        if sys.version_info[0] >= 3:
-            stdout = stdout.decode('utf8')
-            stderr = stderr.decode('utf8')
-        stdout = stdout.rstrip()
         if exitcode != 0:
             io.log_warning('Git is in a detached head state. Using branch "default".')
             return 'default'
 
-        self._handle_exitcode(exitcode, stderr)
         LOG.debug('git symbolic-ref result: ' + stdout)
         # Need to parse branch from ref manually because "--short" is
         # not supported on git < 1.8
         return stdout.split('/')[-1]
 
-    def do_zip(self, location):
+    def do_zip(self, location, staged=False):
         cwd = os.getcwd()
         try:
             # must be in project root for git archive to work.
             fileoperations._traverse_to_project_root()
 
+            if staged:
+                commit_id, stderr, exitcode = self._run_cmd(
+                    ['git', 'write-tree'])
+            else:
+                commit_id = 'HEAD'
             io.log_info('creating zip using git archive HEAD')
-            stdout, stderr, exitcode = \
-                exec_cmd(['git', 'archive', '-v', '--format=zip',
-                          '-o', location, 'HEAD'])
-            if sys.version_info[0] >= 3:
-                stderr = stderr.decode('utf8')
-            self._handle_exitcode(exitcode, stderr)
+            stdout, stderr, exitcode = self._run_cmd(
+                ['git', 'archive', '-v', '--format=zip',
+                 '-o', location, commit_id])
             io.log_info('git archive output: ' + stderr)
-
         finally:
             os.chdir(cwd)
 
     def get_message(self):
-        stdout, stderr, exitcode = \
-            exec_cmd(['git', 'log', '--oneline', '-1'])
-        if sys.version_info[0] >= 3:
-            stdout = stdout.decode('utf8')
-            stderr = stderr.decode('utf8')
-        self._handle_exitcode(exitcode, stderr)
-        return stdout.rstrip().split(' ', 1)[1]
+        stdout, stderr, exitcode = self._run_cmd(
+            ['git', 'log', '--oneline', '-1'])
+        return stdout.split(' ', 1)[1]
 
     def is_setup(self):
         if fileoperations.is_git_directory_present():
@@ -246,3 +224,13 @@ class Git(SourceControl):
 
         finally:
             os.chdir(cwd)
+
+    def _run_cmd(self, cmd):
+        stdout, stderr, exitcode = exec_cmd(cmd)
+        if sys.version_info[0] >= 3:
+            stdout = stdout.decode('utf8')
+            stderr = stderr.decode('utf8')
+        stdout = stdout.strip()
+        stderr = stderr.strip()
+        self._handle_exitcode(exitcode, stderr)
+        return stdout, stderr, exitcode

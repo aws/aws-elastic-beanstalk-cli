@@ -397,7 +397,7 @@ def create_envvars_list(var_list):
     return options, options_to_remove
 
 
-def create_app_version(app_name, label=None, message=None):
+def create_app_version(app_name, label=None, message=None, staged=False):
     cwd = os.getcwd()
     fileoperations._traverse_to_project_root()
     try:
@@ -416,6 +416,11 @@ def create_app_version(app_name, label=None, message=None):
         version_label = label
     else:
         version_label = source_control.get_version_label()
+        if staged:
+            # Make a unique version label
+            timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            version_label = version_label + '-stage-' + timestamp
+
 
     # get description
     if message:
@@ -436,7 +441,7 @@ def create_app_version(app_name, label=None, message=None):
     else:
         # Create zip file
         file_name, file_path = _zip_up_project(
-            app_name, version_label, source_control)
+            app_name, version_label, source_control, staged=staged)
 
     # Get s3 location
     bucket = elasticbeanstalk.get_storage_location()
@@ -473,7 +478,7 @@ def create_app_version(app_name, label=None, message=None):
                 raise
 
 
-def _zip_up_project(app_name, version_label, source_control):
+def _zip_up_project(app_name, version_label, source_control, staged=False):
     # Create zip file
     file_name = version_label + '.zip'
     file_path = fileoperations.get_zip_location(file_name)
@@ -486,7 +491,7 @@ def _zip_up_project(app_name, version_label, source_control):
                                                      version_label))
         ignore_files = fileoperations.get_ebignore_list()
         if ignore_files is None:
-            source_control.do_zip(file_path)
+            source_control.do_zip(file_path, staged)
         else:
             io.log_info('Found .ebignore, using system zip.')
             fileoperations.zip_up_project(file_path, ignore_list=ignore_files)

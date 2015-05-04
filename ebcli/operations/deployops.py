@@ -16,7 +16,8 @@ from ..core import io
 from . import commonops
 
 
-def deploy(app_name, env_name, version, label, message, timeout=5):
+def deploy(app_name, env_name, version, label, message, staged=False,
+           timeout=5):
     region_name = aws.get_default_region()
 
     io.log_info('Deploying code to ' + env_name + " in region " + region_name)
@@ -26,7 +27,7 @@ def deploy(app_name, env_name, version, label, message, timeout=5):
     else:
         # Create app version
         app_version_label = commonops.create_app_version(
-            app_name, label=label, message=message)
+            app_name, label=label, message=message, staged=staged)
 
     # swap env to new app version
     request_id = elasticbeanstalk.update_env_application_version(

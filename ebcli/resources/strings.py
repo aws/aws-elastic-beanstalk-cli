@@ -280,6 +280,7 @@ flag_text = {
     'deploy.label': 'label name which version will be given',
     'deploy.message': 'description for version',
     'deploy.nohang': 'return immediately, do not wait for deploy to be completed',
+    'deploy.staged': 'deploy files staged in git rather than the HEAD commit',
 
     # Events
     'events.follow': 'wait and continue to print events as they come',

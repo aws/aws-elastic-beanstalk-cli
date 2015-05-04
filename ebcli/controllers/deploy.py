@@ -33,6 +33,8 @@ class DeployController(AbstractBaseController):
             (['-m', '--message'], dict(help=flag_text['deploy.message'])),
             (['-nh', '--nohang'], dict(
                 action='store_true', help=flag_text['deploy.nohang'])),
+            (['--staged'], dict(
+                action='store_true', help=flag_text['deploy.staged'])),
             (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
             ]
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
@@ -44,6 +46,7 @@ class DeployController(AbstractBaseController):
         label = self.app.pargs.label
         timeout = self.app.pargs.timeout
         message = self.app.pargs.message
+        staged = self.app.pargs.staged
 
         if version and (message or label):
             raise InvalidOptionsError(strings['deploy.invalidoptions'])
@@ -64,7 +67,7 @@ class DeployController(AbstractBaseController):
         #     ## Right now you can only list one
 
         deployops.deploy(app_name, env_name, version, label, message,
-                         timeout=timeout)
+                         staged=staged, timeout=timeout)
 
     def complete_command(self, commands):
         #ToDo, edit this if we ever support multiple env deploys
