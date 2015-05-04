@@ -53,6 +53,23 @@ def describe_instance(instance_id):
         raise NotFoundError('Instance {0} not found.'.format(instance_id))
 
 
+def has_default_vpc():
+    result = _make_api_call('describe_account_attributes',
+                            AttributeNames=['default-vpc'])
+    default_vpc = None
+    for attribute in result['AccountAttributes']:
+        if attribute['AttributeName'] == 'default-vpc':
+            try:
+                default_vpc = attribute['AttributeValues'][0]['AttributeValue']
+            except (KeyError, IndexError) as e:
+                default_vpc = None
+
+    if default_vpc and default_vpc.lower() != 'none':
+        return True
+    else:
+        return False
+
+
 def revoke_ssh(security_group_id):
     try:
         _make_api_call('revoke_security_group_ingress',

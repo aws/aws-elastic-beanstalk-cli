@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from ..resources.strings import strings
-
+from ..lib import ec2
 
 class CreateEnvironmentRequest(object):
 
@@ -156,6 +156,15 @@ class CreateEnvironmentRequest(object):
         if self.template_name:
             # dont add client defaults if a template is being used
             return
+
+        if not self.instance_type:
+            if ec2.has_default_vpc():
+                # Launch with t2 micro if not a classic account
+                self.add_option_setting(
+                    'aws:autoscaling:launchconfiguration',
+                    'InstanceType',
+                    't2.micro'
+                )
 
         self.add_option_setting(
             'aws:elasticbeanstalk:command',
