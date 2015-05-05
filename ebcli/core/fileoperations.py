@@ -598,6 +598,46 @@ def get_ebignore_list():
     This library will parse the ignore file, compare it to the current files
     and give us a list of files to ignore
     '''
+    # Patch iter_tree to not throw recursion error on non recursive links
+    from pathspec import util
+    def iter_tree(root):
+        """
+        Walks the specified root path for all files.
+        *root* (``str``) is the root directory to search for files.
+        Raises ``RecursionError`` if recursion is detected.
+        Returns an ``Iterable`` yielding each file path (``str``) relative to
+        *root*.
+        .. _`recursion`: http://docs.python.org/2/library/os.html#os.walk
+        """
+        # Keep track of files encountered. Map real path to relative path.
+        memo = {}
+
+        root = os.path.abspath(root)
+        for parent, _dirs, files in os.walk(root, followlinks=True):
+            # Get parent path relative to root path.
+            parent = os.path.relpath(parent, root)
+
+            # Check for recursion.
+            real = os.path.realpath(parent)
+            if real in memo:
+                abspath = os.path.abspath(parent)
+                if real != abspath and real in abspath:
+                    # if real is a parent of current parent
+                    raise util.RecursionError(real_path=real, first_path=memo[real], second_path=parent)
+                else:
+                    # not recursion, just a sideways link
+                    continue
+
+            memo[real] = parent
+
+            # Yield files.
+            for path in files:
+                if parent != '.':
+                    path = os.path.join(parent, path)
+                yield path
+    util.iter_tree = iter_tree
+
+
     with open(location, 'r') as f:
         spec = pathspec.PathSpec.from_lines('gitignore', f)
 
