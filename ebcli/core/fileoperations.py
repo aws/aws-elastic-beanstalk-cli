@@ -722,3 +722,12 @@ def get_eb_file_full_location(location):
 
 def get_home():
     return os.path.expanduser('~')
+
+
+def get_filename_without_extension(file_location):
+    filename = os.path.basename(file_location)
+    extension = 'fake'
+    while extension != '':
+        # Split multiple extensions
+        filename, extension = os.path.splitext(filename)
+    return filename

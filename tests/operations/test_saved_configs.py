@@ -15,6 +15,7 @@ import os
 import shutil
 import unittest
 import sys
+import mock
 
 from ebcli.core import fileoperations
 from ebcli.operations import saved_configs
@@ -64,7 +65,7 @@ class TestResolveConfigLocations(unittest.TestCase):
         fileoperations.write_to_data_file(location, self.data)
 
         result = saved_configs.resolve_config_location(location)
-        self.assertEqual(result, location)
+        self.assertEqual(result, os.path.abspath(location))
 
     def test_resolve_config_location_public(self):
         cfg_name = 'myfile'
@@ -151,3 +152,40 @@ class TestResolveConfigLocations(unittest.TestCase):
 
         result = saved_configs.resolve_config_location(cfg_name)
         self.assertEqual(result, location_private)
+
+    def test_resolve_config_location_relative_without_slash(self):
+        cfg_name = 'myfile.cfg.yml'
+        location = fileoperations.get_project_file_full_location(cfg_name)
+        fileoperations.write_to_data_file(location, self.data)
+
+        result = saved_configs.resolve_config_location(cfg_name)
+        self.assertEqual(result, location)
+
+    @mock.patch('ebcli.operations.saved_configs.upload_config_file')
+    def test_update_config_resolve_normal(self, mock_upload):
+        cfg_name = 'myfile.cfg.yml'
+        location = 'saved_configs' + os.path.sep + cfg_name
+        fileoperations.make_eb_dir('saved_configs')
+        fileoperations.write_to_eb_data_file(location, self.data)
+
+        location = os.getcwd() + os.path.sep + \
+                   fileoperations.beanstalk_directory + location
+
+        saved_configs.update_config('app', 'myfile')
+
+        mock_upload.assert_called_with('app', 'myfile', location)
+
+
+    @mock.patch('ebcli.operations.saved_configs.upload_config_file')
+    def test_update_config_resolve_path(self, mock_upload):
+        cfg_name = 'myfile.cfg.yml'
+        location = fileoperations.get_project_file_full_location(cfg_name)
+        fileoperations.write_to_data_file(location, self.data)
+
+
+        saved_configs.update_config('app',
+                                    './myfile.cfg.yml')
+
+        mock_upload.assert_called_with('app', 'myfile', location)
+
+

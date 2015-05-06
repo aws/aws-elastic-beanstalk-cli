@@ -73,10 +73,10 @@ def update_config(app_name, cfg_name):
     if config_location is None:
         raise NotFoundError('No local version of ' + cfg_name + ' found.')
 
-    if cfg_name.endswith('.cfg.yml'):
-        cfg_name = cfg_name.rstrip('.cfg.yml')
+    # Get just the name of the file
+    filename = fileoperations.get_filename_without_extension(config_location)
 
-    upload_config_file(app_name, cfg_name, config_location)
+    upload_config_file(app_name, filename, config_location)
 
 
 def upload_config_file(app_name, cfg_name, file_location):
@@ -99,6 +99,9 @@ def resolve_config_location(cfg_name):
     Acceptable formats are:
     /full/path/to/file.cfg.yml
     ./relative/path/to/file.cfg.yml
+    ~/user/path/to/file.cfg.yml
+    relativefile.cfg.yml
+    relative/path/to/filename.whatever
     filename.cfg.yml
     filename
 
@@ -107,21 +110,27 @@ def resolve_config_location(cfg_name):
      2. Public config files: .elasticbeanstalk/cfg_name.cfg.yml
     """
     slash = os.path.sep
-    if cfg_name.startswith(slash) or \
-            cfg_name.startswith('.' + slash):
-        # Using path
-        if not os.path.isfile(cfg_name):
-            raise NotFoundError('File ' + cfg_name + ' not found.')
+    # First, check to see path to file
+    filename = os.path.expanduser(cfg_name)
+    full_path = os.path.abspath(filename)
+    if os.path.isfile(full_path):
+        return full_path
 
-        return os.path.expanduser(cfg_name)
-    else:
+    if slash not in cfg_name:  # not a path, possibly a cfg name
+        # Check for file in elasticbeanstalk folder and child /saved_configs
         for folder in ('saved_configs' + os.path.sep, ''):
             folder = folder + cfg_name
             for extension in ('.cfg.yml', ''):
                 file_location = folder + extension
                 if fileoperations.eb_file_exists(file_location):
-                    return fileoperations.\
+                    return fileoperations. \
                         get_eb_file_full_location(file_location)
+
+    else:  # cfg_name is a path to a file, but doesnt exist
+        raise NotFoundError('File ' + cfg_name + ' not found.')
+
+    # still haven't found file, could be reference to one in cloud
+    return None
 
 
 def resolve_config_name(app_name, cfg_name):
@@ -135,9 +144,8 @@ def resolve_config_name(app_name, cfg_name):
     if config_location is None:
         return cfg_name
     else:
-        if cfg_name.endswith('.cfg.yml'):
-            cfg_name = cfg_name.rstrip('.cfg.yml')
-        upload_config_file(app_name, cfg_name, config_location)
+        name = fileoperations.get_filename_without_extension(config_location)
+        upload_config_file(app_name, name, config_location)
         return cfg_name
 
 
