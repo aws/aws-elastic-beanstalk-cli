@@ -116,8 +116,9 @@ strings = {
     'ssh.filenotfound': 'The EB CLI cannot find your SSH key file for keyname "{key-name}".'
                         ' Your SSH key file must be located in the .ssh folder in your home directory.',
     'logs.location': 'Logs were saved to {location}',
-    'local.logs.location': 'Elastic Beanstalk will write logs locally to {}',
-    'local.logs.lastlocation': 'Logs were most recently created {} and written to {}',
+    'local.logs.location': 'Elastic Beanstalk will write logs locally to {location}',
+    'local.logs.lastlocation': 'Logs were most recently created {prettydate} and written to {location}',
+    'local.logs.symlink': 'Updated symlink at {symlink}',
     'local.logs.nologs': 'There are currently no local logs.',
     'setenv.invalidformat': 'You must use the format VAR_NAME=KEY to set an environment variable. Variables and keys '
                             'cannot contain any spaces or =. They must start'
@@ -146,7 +147,7 @@ strings = {
     'events.abortmessage': ' Use "eb abort" to cancel the command.',
     'abort.noabortableenvs': 'There are no environments currently being updated.',
     'local.unsupported': 'You can use "eb local" only with preconfigured, generic and multicontainer Docker platforms.',
-    'local.dockernotpresent': 'You must install Docker version {} to continue. If you are using Mac OS X, ensure you have boot2docker version {}. Currently, "eb local" does not support Windows.',
+    'local.dockernotpresent': 'You must install Docker version {docker-version} to continue. If you are using Mac OS X, ensure you have boot2docker version {boot2docker-version}. Currently, "eb local" does not support Windows.',
     'local.filenotfound': 'The EB CLI cannot find Dockerfile or the Dockerrun.aws.json file in the application root directory.',
     'local.missingdockerrun': 'This environment requires a Dockerrun.aws.json file to run.',
     'local.invaliddockerrunversion': 'The AWSEBDockerrunVersion key in the Dockerrun.aws.json file is not valid or is not included.',

@@ -39,8 +39,9 @@ def validate_docker_installed():
 
 
 def _validate_docker_installed(supported_docker_installed):
-    err = strings['local.dockernotpresent'].format(SUPPORTED_DOCKER_V,
-                                                   SUPPORTED_BOOT2DOCKER_V)
+    versions = {'boot2docker-version': SUPPORTED_BOOT2DOCKER_V,
+                'docker-version': SUPPORTED_DOCKER_V}
+    err = strings['local.dockernotpresent'].format(**versions)
 
     if not supported_docker_installed:
         raise CommandError(err)

@@ -80,11 +80,8 @@ def make_multicontainer_fs_handler(pathconfig):
     :return: MultiContainerFSHandler
     """
 
-    hostlog_path = log.new_host_log_path(pathconfig.logdir_path())
     dockerrun_dict = dockerrun.get_dockerrun(pathconfig.dockerrun_path())
-
     return MultiContainerFSHandler(pathconfig=pathconfig,
-                                   hostlog_path=hostlog_path,
                                    dockerrun=dockerrun_dict)
 
 

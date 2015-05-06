@@ -68,7 +68,7 @@ class TestLog(TestCase):
     def test_make_logdirs(self, os, set_all_unrestricted_permissions):
         os.path.join.return_value = LATEST_SYMLINK
 
-        log.make_logdirs(ROOT_LOG_DIR, LOG_VOLUME_MAP)
+        log.make_logdirs(ROOT_LOG_DIR, HOST_LOG)
 
         os.path.join.assert_called_once_with(ROOT_LOG_DIR,
                                              log.LATEST_LOGS_DIRNAME)
@@ -115,8 +115,8 @@ class TestLog(TestCase):
         log._print_logs(EXPECTED_LOGDIR_PATH, LAST_MODIFIED_FILE_PATH,
                         timestamp)
 
-        fst_msg = strings['local.logs.location'].format(EXPECTED_LOGDIR_PATH)
-        snd_msg = strings['local.logs.lastlocation'].format('just now',
-                                                            LAST_MODIFIED_FILE_PATH)
+        fst_msg = strings['local.logs.location'].format(location=EXPECTED_LOGDIR_PATH)
+        snd_msg = strings['local.logs.lastlocation'].format(prettydate='just now',
+                                                            location=LAST_MODIFIED_FILE_PATH)
         echo.assert_any_call(fst_msg)
         echo.assert_any_call(snd_msg)

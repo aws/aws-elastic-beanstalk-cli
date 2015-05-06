@@ -108,16 +108,14 @@ class MultiContainerFSHandler(object):
     """
     Handles MultiContainer related file operations.
     """
-    def __init__(self, pathconfig, hostlog_path, dockerrun):
+    def __init__(self, pathconfig, dockerrun):
         """
         Constructor for MultiContainerFSHandler.
         :param pathconfig: PathConfig: Holds path/existence info
-        :param hostlog_path: str: path to the dir containing container logs
         :param dockerrun: dict: Dockerrun.aws.json as dict
         """
 
         self.pathconfig = pathconfig
-        self.hostlog_path = hostlog_path
         self.dockerrun = dockerrun
 
     def make_docker_compose(self, env):
@@ -127,20 +125,26 @@ class MultiContainerFSHandler(object):
         :return None
         """
 
-        compose_yaml = yaml.safe_dump(self._get_compose_dict(env),
+        hostlog_path = self._make_and_get_new_host_log()
+        compose_yaml = yaml.safe_dump(self._get_compose_dict(env, hostlog_path),
                                       default_flow_style=False)
         fileoperations.write_to_text_file(location=self.pathconfig.compose_path(),
                                           data=compose_yaml)
 
-    def _get_compose_dict(self, env):
+    def _get_compose_dict(self, env, hostlog_path):
         return compose.compose_dict(self.dockerrun,
                                     self.pathconfig.docker_proj_path(),
-                                    self.hostlog_path,
+                                    hostlog_path,
                                     env)
 
     def get_setenv_env(self):
         return EnvvarCollector.from_json_path(self.pathconfig.setenv_path())
 
+    def _make_and_get_new_host_log(self):
+        root_log_dir = self.pathconfig.logdir_path()
+        hostlog_path = log.new_host_log_path(root_log_dir)
+        log.make_logdirs(root_log_dir, hostlog_path)
+        return hostlog_path
 
 def _require_append_dockerignore(dockerignore_path):
     if not os.path.isfile(dockerignore_path):

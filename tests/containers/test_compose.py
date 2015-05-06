@@ -55,6 +55,27 @@ class TestCompose(TestCase):
         self.assertDictEqual(expected_compose, actual_compose)
 
 
+    def test_compose_with_envvars(self):
+        dockerrun = _get_mock_multicontainer_dockerrun_with_envvars()
+        expected_compose = _get_expected_multicontainer_compose_dict_with_envvars()
+
+        actual_compose = compose.compose_dict(dockerrun, DOCKER_PROJ_PATH,
+                                              HOST_LOG, ENV_COLLECTOR)
+
+        self.assertDictEqual(expected_compose, actual_compose)
+
+
+    def test_compose_with_local_definitions(self):
+        dockerrun = _get_mock_multicontainer_dockerrun_with_local_definitions()
+        expected_compose = _get_expected_multicontainer_compose_dict_with_local_definitions()
+
+        actual_compose = compose.compose_dict(dockerrun, DOCKER_PROJ_PATH,
+                                              HOST_LOG, ENV_COLLECTOR)
+
+        self.assertDictEqual(expected_compose, actual_compose)
+
+
+
 def _get_mock_multicontainer_dockerrun_simple():
     return {
         "containerDefinitions": [
@@ -247,10 +268,54 @@ def _get_expected_multicontainer_compose_dict_with_envvars():
             "ports": [
                 "80:80"
             ],
-            'environment': ENV_COLLECTOR.map
+            'environment': {'a': 'b', 'c': 'd', 'e': 'f'}
         },
         "phpapp": {
             "image": "php:fpm",
-            'environment': {'a': 'b', 'c': 'd', 'e': 'f'}
+            'environment': ENV_COLLECTOR.map
         }
     }
+
+
+
+def _get_mock_multicontainer_dockerrun_with_local_definitions():
+    return {
+        "containerDefinitions": [
+            {
+                "image": "php:fpm",
+                "name": "php-app"
+            }
+        ],
+        'localContainerDefinitions': [
+            {
+                "image": "nginx",
+                "links": [
+                    "php-app"
+                ],
+                "name": "nginx-proxy",
+                "portMappings": [
+                    {
+                        "containerPort": 80,
+                        "hostPort": 80
+                    }
+                ],
+               "environment": [
+                    {
+                      "name": "a",
+                      "value": 1000
+                    },
+                    {
+                      "name": "c",
+                      "value": 2000
+                    },
+                    {
+                      "name": "e",
+                      "value": "f"
+                    },
+                ]
+            }
+        ]
+    }
+
+# They are the same since only difference is php-app was moved into localContainerDefinitions
+_get_expected_multicontainer_compose_dict_with_local_definitions = _get_expected_multicontainer_compose_dict_with_envvars

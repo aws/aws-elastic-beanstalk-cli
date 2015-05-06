@@ -25,6 +25,7 @@ CONTAINER_DEF_LINKS_KEY = 'links'
 CONTAINER_DEF_NAME_KEY = 'name'
 CONTAINER_DEF_PORT_MAPPINGS_KEY = 'portMappings'
 CONTAINER_PATH_KEY = 'containerPath'
+LOCAL_CONTAINER_DEF_KEY = 'localContainerDefinitions'
 MOUNT_POINTS = 'mountPoints'
 READ_ONLY_KEY = 'readOnly'
 READ_ONLY_VOLUME = ':ro'
@@ -53,7 +54,8 @@ def compose_dict(dockerrun, docker_proj_path, host_log, high_priority_env):
     # Service is to docker-compose.yml as container definition
     # is to Dockerrun.aws.json. We want to turn definition -> service
     services = {}
-    definitions = _get_container_definitions(dockerrun)
+    definitions = (dockerrun.get(CONTAINER_DEF_KEY, []) +
+                   dockerrun.get(LOCAL_CONTAINER_DEF_KEY, []))
 
     # Maps 'volume name' to local path
     # E.x.: proxy-static -> /workspace/eb-project/proxy/html
@@ -132,10 +134,6 @@ def _get_port_maps(dockerrun_port_mappings):
     return port_maps
 
 
-def _get_container_definitions(dockerrun):
-    return dockerrun.get(CONTAINER_DEF_KEY, [])
-
-
 def _get_volume_map(volumes, docker_proj_path):
     vmap = {}
 
@@ -152,8 +150,8 @@ def _get_volume_map(volumes, docker_proj_path):
 
 
 def _fakename(realname):
-    # docker-compose service names can't have dashes
-    return realname.replace('-', '')
+    # docker-compose service names must be alphanumeric
+    return ''.join(c for c in realname if c.isalnum())
 
 def _get_definition_envvars(definition):
     return {e[CONTAINER_DEF_ENV_NAME_KEY]: e[CONTAINER_DEF_ENV_VALUE_KEY] for e

@@ -1,5 +1,5 @@
-import os
 from datetime import datetime
+import os
 
 from . import dockerrun
 from ..core import fileoperations, io
@@ -40,23 +40,24 @@ def new_host_log_path(root_log_dir):
                         datetime.now().strftime(HOST_LOG_FILENAME_PATTERN))
 
 
-def make_logdirs(root_log_dir, log_volume_map):
+def make_logdirs(root_log_dir, new_local_dir):
     """
-    Create the new local directory and symlink that new directory inside
-    root_log_dir.
-    :param root_log_dir: str: the root local logs directory
-    :param log_volume_map: dict: host log (new local dir) to container log map
+    Create new_local_dir and make a symlink 'latest' that points to
+    that new_local_dir inside root_log_dir.
+    :param root_log_dir: str: path to root local logs directory
+    :param new_local_dir: str: path to new host log
     :return: None
     """
 
-    return _make_logdirs(root_log_dir, utils.anykey(log_volume_map))
+    os.makedirs(new_local_dir)
+    fileoperations.set_all_unrestricted_permissions(new_local_dir)
+    _symlink_new_log_dir(root_log_dir, new_local_dir)
 
 
 def print_logs():
     """
-    Print the location of the root local logs directory we expect as well as
-    the most recent local logs directory. Then tail -f all the log files
-    and ignore if tail not installed.
+    Print the path to root local logs directory, the most recently written
+    local logs directory and the path to 'latest' symlink.
     :return: None
     """
 
@@ -69,13 +70,14 @@ def print_logs():
 
 def _print_logs(root_log, last_local_logs=None, timestamp=None):
     if os.path.isdir(root_log):
-        io.echo(strings['local.logs.location'].format(root_log))
+        io.echo(strings['local.logs.location'].format(location=root_log))
 
     if last_local_logs and not fileoperations.directory_empty(last_local_logs):
         prettydate = utils.prettydate(timestamp)
-        msg = strings['local.logs.lastlocation'].format(prettydate,
-                                                        last_local_logs)
+        msg = strings['local.logs.lastlocation'].format(prettydate=prettydate,
+                                                        location=last_local_logs)
         io.echo(msg)
+        io.echo(strings['local.logs.symlink'].format(symlink=_symlink_path(root_log)))
     else:
         io.echo(strings['local.logs.nologs'])
 
@@ -89,12 +91,10 @@ def _get_last_local_logs(root_log):
     return None
 
 
-def _make_logdirs(root_log_dir, new_local_dir):
-    os.makedirs(new_local_dir)
-    fileoperations.set_all_unrestricted_permissions(new_local_dir)
+
+def _symlink_new_log_dir(root_log_dir, new_local_dir):
     # Symlink latest
-    latest_symlink_path = os.path.join(root_log_dir,
-                                       LATEST_LOGS_DIRNAME)
+    latest_symlink_path = _symlink_path(root_log_dir)
 
     try:
         os.unlink(latest_symlink_path)
@@ -104,3 +104,7 @@ def _make_logdirs(root_log_dir, new_local_dir):
         os.symlink(new_local_dir, latest_symlink_path)
     except OSError:
         pass
+
+
+def _symlink_path(root_log_dir):
+    return os.path.join(root_log_dir, LATEST_LOGS_DIRNAME)

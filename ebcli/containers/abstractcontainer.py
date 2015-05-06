@@ -18,6 +18,7 @@ from . import commands
 from . import dockerrun
 from . import log
 from ..objects.exceptions import CommandError
+from ..lib import utils
 
 
 class AbstractContainer(object):
@@ -126,7 +127,7 @@ class AbstractContainer(object):
     def _run(self, img_id):
         log_volume_map = self._get_log_volume_map()
         if log_volume_map:
-            log.make_logdirs(self.pathconfig.logdir_path(), log_volume_map)
+            log.make_logdirs(self.pathconfig.logdir_path(), utils.anykey(log_volume_map))
 
         return commands.run_container(full_docker_path=self._get_full_docker_path(),
                                       image_id=img_id,

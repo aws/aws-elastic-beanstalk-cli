@@ -13,7 +13,6 @@ NEW_DOCKERFILE_CONTENTS = '''{} {}
 {} {}'''.format(commands.FROM_CMD, IMG_NAME, commands.EXPOSE_CMD, PORT)
 DOCKERRUN = {dockerrun.IMG_KEY: {dockerrun.IMG_NAME_KEY: IMG_NAME},
              dockerrun.PORTS_KEY: [{dockerrun.CONTAINER_PORT_KEY: PORT}]}
-
 RUNTIME_DOCKERFILE_PATH = '/abcd/runtime'
 DOCKERIGNORE_CONTENTS = 'abcdefg'
 COMPOSE_PATH = '/.elasticbeanstalk/docker-compose.yml'
@@ -23,15 +22,11 @@ ENVVARS_MAP = {'a': 'b', 'z': '3', 'd': '5'}
 HOSTLOG_PATH = '/.elasticbeanstalk/logs/local/1234_6789'
 
 
-
 class TestContainerFSHandler(TestCase):
     def setUp(self):
         self.pathconfig = dummy.get_pathconfig()
         self.fs_handler = ContainerFSHandler(pathconfig=self.pathconfig,
                                              dockerrun=DOCKERRUN)
-        self.multi_fs_handler = MultiContainerFSHandler(pathconfig=self.pathconfig,
-                                                        dockerrun=DOCKERRUN,
-                                                        hostlog_path=HOSTLOG_PATH)
 
     def test_require_new_dockerfile(self):
         self.pathconfig.dockerfile_exists = lambda: True
@@ -83,18 +78,19 @@ class TestMultiContainerFSHandler(TestCase):
     def setUp(self):
         self.pathconfig = dummy.get_pathconfig()
         self.multi_fs_handler = MultiContainerFSHandler(pathconfig=self.pathconfig,
-                                                        dockerrun=DOCKERRUN,
-                                                        hostlog_path=HOSTLOG_PATH)
+                                                        dockerrun=DOCKERRUN)
 
 
+    @patch('ebcli.containers.fshandler.log')
     @patch('ebcli.containers.fshandler.compose.compose_dict')
     @patch('ebcli.containers.fshandler.yaml.safe_dump')
     @patch('ebcli.containers.fshandler.fileoperations.write_to_text_file')
     def test_multicontainer_make_docker_compose(self, write_to_text_file,
-                                                safe_dump, compose_dict):
+                                                safe_dump, compose_dict, log):
         multi_fs_handler = self.multi_fs_handler
         compose_dict.return_value = COMPOSE_DICT
         safe_dump.return_value = COMPOSE_YAML
+        log.new_host_log_path.return_value = HOSTLOG_PATH
 
         multi_fs_handler.make_docker_compose(ENVVARS_MAP)
 
