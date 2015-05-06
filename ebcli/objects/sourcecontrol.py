@@ -148,11 +148,12 @@ class Git(SourceControl):
             raise CommandError('Error getting "git --version".')
 
         stdout, stderr, exitcode = self._run_cmd(
-            ['git', 'symbolic-ref', 'HEAD'])
-
+            ['git', 'symbolic-ref', 'HEAD'], handle_exitcode=False)
         if exitcode != 0:
             io.log_warning('Git is in a detached head state. Using branch "default".')
             return 'default'
+        else:
+            self._handle_exitcode(exitcode, stderr)
 
         LOG.debug('git symbolic-ref result: ' + stdout)
         # Need to parse branch from ref manually because "--short" is
@@ -225,12 +226,13 @@ class Git(SourceControl):
         finally:
             os.chdir(cwd)
 
-    def _run_cmd(self, cmd):
+    def _run_cmd(self, cmd, handle_exitcode=True):
         stdout, stderr, exitcode = exec_cmd(cmd)
         if sys.version_info[0] >= 3:
             stdout = stdout.decode('utf8')
             stderr = stderr.decode('utf8')
         stdout = stdout.strip()
         stderr = stderr.strip()
-        self._handle_exitcode(exitcode, stderr)
+        if handle_exitcode:
+            self._handle_exitcode(exitcode, stderr)
         return stdout, stderr, exitcode
