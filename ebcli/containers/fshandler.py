@@ -10,6 +10,7 @@ from . import log
 from .envvarcollector import EnvvarCollector
 from ..core import fileoperations
 from ..lib import s3
+from ..operations.localops import LocalState
 from ..resources.strings import docker_ignore
 
 
@@ -99,9 +100,8 @@ class ContainerFSHandler(object):
                                                                container_cfg)
         shutil.copyfile(dfile_path, self.pathconfig.new_dockerfile_path())
 
-
     def get_setenv_env(self):
-        return EnvvarCollector.from_json_path(self.pathconfig.setenv_path())
+        return LocalState.get_envvarcollector(self.pathconfig.local_state_path())
 
 
 class MultiContainerFSHandler(object):
@@ -138,7 +138,7 @@ class MultiContainerFSHandler(object):
                                     env)
 
     def get_setenv_env(self):
-        return EnvvarCollector.from_json_path(self.pathconfig.setenv_path())
+        return LocalState.get_envvarcollector(self.pathconfig.local_state_path())
 
     def _make_and_get_new_host_log(self):
         root_log_dir = self.pathconfig.logdir_path()

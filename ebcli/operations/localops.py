@@ -11,15 +11,50 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+from botocore.compat import six
+cPickle = six.moves.cPickle
 import os
 
-from ..containers import fshandler
 from ..containers.envvarcollector import EnvvarCollector
 from ..containers.pathconfig import PathConfig
 from ..core import fileoperations, io
 from ..lib import utils
 from ..operations import commonops, envvarops
 from ..resources.strings import strings
+
+
+class LocalState(object):
+    """
+    Class used for storing local state in a file.
+    """
+
+    def __init__(self, envvarcollector):
+        self.envvarcollector = envvarcollector
+
+
+    def dumps(self, path):
+        fileoperations.write_to_data_file(data=cPickle.dumps(self, protocol=2),
+                                          location=path)
+
+    @classmethod
+    def loads(cls, path):
+        try:
+            data = fileoperations.read_from_data_file(path)
+            return cPickle.loads(data)
+        except IOError:  # file doesn't exist, so no local state
+            return cls(EnvvarCollector())
+
+
+    @classmethod
+    def get_envvarcollector(cls, path):
+        return cls.loads(path).envvarcollector
+
+
+    @classmethod
+    def save_envvarcollector(cls, envvarcollector, path):
+        localstate = cls.loads(path)
+        localstate.envvarcollector = envvarcollector
+        localstate.dumps(path)
 
 
 def print_container_details(cnt_viewmodel):
@@ -91,14 +126,14 @@ def _get_cids(c):
 
 
 def get_and_print_environment_vars(pathconfig=PathConfig):
-    envvars_map = fileoperations._get_yaml_dict(pathconfig.setenv_path())
+    envvars_map = LocalState.get_envvarcollector(pathconfig.local_state_path()).map
     envvarops.print_environment_vars(envvars_map)
 
 
 def setenv(var_list, pathconfig=PathConfig):
-    setenv_env = EnvvarCollector.from_json_path(pathconfig.setenv_path())
+    setenv_env = LocalState.get_envvarcollector(pathconfig.local_state_path())
     opt_env = EnvvarCollector.from_str(','.join(var_list))
-    merged_envvars = setenv_env.merge(opt_env).get_envvars()
+    merged_env = setenv_env.merge(opt_env)
 
-    fileoperations.write_json_dict(json_data=merged_envvars,
-                                   fullpath=pathconfig.setenv_path())
+    LocalState.save_envvarcollector(merged_env.filtered(),
+                                    pathconfig.local_state_path())

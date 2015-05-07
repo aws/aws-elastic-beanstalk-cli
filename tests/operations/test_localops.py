@@ -14,41 +14,70 @@
 from mock import patch, Mock
 from unittest import TestCase
 
+from ebcli.containers.envvarcollector import EnvvarCollector
 from ebcli.operations import localops
+from ebcli.operations.localops import LocalState
 from tests.containers import dummy
 
 
+LOCAL_STATE_PATH = '/.elasticbeanstalk/.localstate'
+
 
 class TestLocalops(TestCase):
-    @patch('ebcli.operations.localops.fileoperations')
-    def test_setenv_delete_and_overwrite(self, fileoperations):
-        setenv_envvars = {'a': '1', 'b': '2'}
+    @patch('ebcli.operations.localops.LocalState')
+    def test_setenv_delete_and_overwrite(self, LocalState):
+        setenv_env = EnvvarCollector({'a': '1', 'b': '2'})
         var_list = ['a=', 'b=3', 'c=55']
         expected_envvars = {'b': '3', 'c': '55'}
+        self._test_setenv(setenv_env, var_list, expected_envvars, LocalState)
 
-        self._test_setenv(setenv_envvars, var_list, expected_envvars, fileoperations)
-
-    @patch('ebcli.operations.localops.fileoperations')
-    def test_setenv_delete_only(self, fileoperations):
-        setenv_envvars = {'a': '1', 'b': '2'}
+    @patch('ebcli.operations.localops.LocalState')
+    def test_setenv_delete_only(self, LocalState):
+        setenv_env = EnvvarCollector({'a': '1', 'b': '2'})
         var_list = ['a=', 'b=']
         expected_envvars = {}
+        self._test_setenv(setenv_env, var_list, expected_envvars, LocalState)
 
-        self._test_setenv(setenv_envvars, var_list, expected_envvars, fileoperations)
-
-    @patch('ebcli.operations.localops.fileoperations')
-    def test_setenv_overwrite_only(self, fileoperations):
-        setenv_envvars = {'a': '1', 'b': '2'}
+    @patch('ebcli.operations.localops.LocalState')
+    def test_setenv_overwrite_only(self, LocalState):
+        setenv_env = EnvvarCollector({'a': '1', 'b': '2'})
         var_list = ['a=6', 'b=7']
         expected_envvars = {'a': '6', 'b': '7'}
+        self._test_setenv(setenv_env, var_list, expected_envvars, LocalState)
 
-        self._test_setenv(setenv_envvars, var_list, expected_envvars, fileoperations)
-
-
-    def _test_setenv(self, setenv_envvars, var_list, expected_envvars, fileoperations):
-        fileoperations._get_yaml_dict.return_value = setenv_envvars
+    def _test_setenv(self, setenv_env, var_list, expected_envvars, LocalState):
+        LocalState.get_envvarcollector.return_value = setenv_env
 
         localops.setenv(var_list, dummy.PATH_CONFIG)
 
-        fileoperations.write_json_dict.assert_called_once_with(json_data=expected_envvars,
-                                                               fullpath=dummy.SETENV_PATH)
+        call_args = LocalState.save_envvarcollector.call_args[0]
+        called_env, called_path = call_args
+
+        self.assertDictEqual(expected_envvars, called_env.map)
+        self.assertSetEqual(set(), called_env.to_remove)
+        self.assertEqual(dummy.PATH_CONFIG.local_state_path(), called_path)
+
+
+class TestLocalState(TestCase):
+    def setUp(self):
+        self.envvarcollector = EnvvarCollector({'a': 'b', 'c': 'd'})
+        self.localstate = LocalState(self.envvarcollector)
+
+    def test_constructor(self):
+        self.assertEqual(self.envvarcollector, self.localstate.envvarcollector)
+
+    @patch('ebcli.operations.localops.cPickle')
+    @patch('ebcli.operations.localops.fileoperations')
+    def test_loads(self, fileoperations, cPickle):
+        fileoperations.read_from_data_file.return_value = b'foo'
+        cPickle.loads.return_value = self.localstate
+
+        self.assertEqual(self.localstate, LocalState.loads(LOCAL_STATE_PATH))
+        cPickle.loads.assert_called_once_with(b'foo')
+
+    @patch('ebcli.operations.localops.LocalState.loads')
+    def test_get_envvarcollector(self, loads):
+        loads.return_value = self.localstate
+
+        self.assertEqual(self.envvarcollector,
+                         LocalState.get_envvarcollector(LOCAL_STATE_PATH))

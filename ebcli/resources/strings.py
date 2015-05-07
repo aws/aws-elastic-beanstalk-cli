@@ -68,13 +68,13 @@ strings = {
     'ssh.info': 'Opens the SSH client to connect to an instance.',
     'printenv.info': 'Shows the environment variables.',
     'local.info': 'Runs commands on your local machine.',
-    'local.printenv.info': 'Shows the local environment variables.',
+    'local.printenv.info': 'Shows local environment variables.',
     'local.run.info': 'Runs the Docker container on your local machine.',
     'local.setenv.info': 'Sets local environment variables.',
     'local.logs.info': 'Prints where logs are locally saved.',
     'local.open.info': 'Opens the application URL in a browser.',
     'local.status.info': 'Gets container information and status.',
-    'local.setenv.epilog': 'Use this command to set environment variables by typing a space-separated list of key=value pairs.\n',
+    'local.setenv.epilog': 'Use this command to set environment variables by typing a space-separated list of key=value pairs.',
     # Error when --sample and --label flag are both used on create
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" options together.',
     'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
@@ -301,7 +301,7 @@ flag_text = {
     # Local
     'local.run.envvars': 'a comma-separated list of environment variables as key=value pairs',
     'local.run.hostport': 'the host port that is exposed and mapped to the container port',
-    'local.setenv.vars': 'space separated list in format: VAR_NAME=KEY',
+    'local.setenv.vars': 'space-separated list in format: VAR_NAME=KEY',
     # Logs
     'logs.all': 'retrieve all logs',
     'logs.zip': 'retrieve all logs as .zip',
@@ -312,7 +312,7 @@ flag_text = {
     'scale.force': 'skip confirmation prompt',
 
     # Setenv
-    'setenv.vars': 'space separated list in format: VAR_NAME=KEY',
+    'setenv.vars': 'space-separated list in format: VAR_NAME=KEY',
     'setenv.env': 'environment name',
 
     # SSH

@@ -78,7 +78,8 @@ class AbstractContainer(object):
 
     def final_envvars(self):
         setenv_env = self.fs_handler.get_setenv_env()
-        return setenv_env.merge(self.opt_env).get_envvars()
+        merged = setenv_env.merge(self.opt_env).filtered()
+        return merged.map
 
     def get_name(self, hash_obj=hashlib.sha1):
         """

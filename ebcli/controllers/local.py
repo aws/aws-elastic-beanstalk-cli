@@ -34,17 +34,21 @@ class LocalController(AbstractBaseController):
     def _add_to_handler(cls, handler):
         handler.register(cls)
         # Register child controllers
-        handler.register(LocalLogsController)
-        handler.register(LocalRunController)
-        handler.register(LocalOpenController)
-        handler.register(LocalStatusController)
-        handler.register(LocalSetEnvController)
-        handler.register(LocalPrintEnvController)
+        for child_controller in cls._get_child_controllers():
+            handler.register(child_controller)
 
+    @staticmethod
+    def _get_child_controllers():
+        return [LocalLogsController, LocalOpenController,
+                LocalPrintEnvController, LocalRunController,
+                LocalSetEnvController, LocalStatusController]
 
     def complete_command(self, commands):
         if len(commands) == 1:
-            io.echo('logs', 'open', 'run', 'status')
+            aliases = [c.Meta.aliases[0] for c in self._get_child_controllers()]
+            io.echo(*aliases)
+        else: # Need to pass to next controller
+            pass
 
 
 class LocalRunController(AbstractBaseController):
@@ -147,7 +151,8 @@ class LocalPrintEnvController(AbstractBaseController):
         aliases_only = True
         stacked_on = 'local'
         stacked_type = 'nested'
-        usage = AbstractBaseController.Meta.usage.replace('{cmd}', aliases[0])
+        usage = 'eb local printenv [options ...]'
+        arguments = []
 
     def do_command(self):
         localops.get_and_print_environment_vars()

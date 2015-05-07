@@ -7,7 +7,7 @@ class PathConfig(object):
     DOCKERIGNORE_FILENAME = '.dockerignore'
     DOCKERFILE_FILENAME = 'Dockerfile'
     DOCKERRUN_FILENAME = 'Dockerrun.aws.json'
-    LOCALENV_FILENAME = '.envvars'
+    LOCAL_STATE_FILENAME = '.localstate'
     NEW_DOCKERFILE_FILENAME = 'Dockerfile.local'
     ROOT_LOCAL_LOGS_DIRNAME = 'local'
 
@@ -40,8 +40,8 @@ class PathConfig(object):
         return fileoperations.get_eb_file_full_location(cls.COMPOSE_FILENAME)
 
     @classmethod
-    def setenv_path(cls):
-        return fileoperations.get_eb_file_full_location(cls.LOCALENV_FILENAME)
+    def local_state_path(cls):
+        return fileoperations.get_eb_file_full_location(cls.LOCAL_STATE_FILENAME)
 
     @classmethod
     def dockerfile_exists(cls):

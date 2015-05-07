@@ -54,11 +54,6 @@ class EnvvarCollector(object):
         return cls(envvars_map, envvars_to_remove)
 
 
-    @classmethod
-    def from_json_path(cls, json_path):
-        return cls(fileoperations._get_yaml_dict(json_path))
-
-
     def merge(self, higher_priority_env):
         """
         Merge self with higher_priority_env.
@@ -73,10 +68,13 @@ class EnvvarCollector(object):
         return EnvvarCollector(envvars_map, to_remove)
 
 
-    def get_envvars(self):
+    def filtered(self):
         """
-        Return all environment variables in map that are not in to_remove
-        :return dict
+        Return new Envvarcollector with all environment variables in self.map that
+        are not in to_remove
+        :return EnvvarCollector
         """
-        return {k: v for k, v in six.iteritems(self.map) if k not in
-                self.to_remove}
+
+        filtered_envvars = {k: v for k, v in six.iteritems(self.map) if k not in
+                            self.to_remove}
+        return EnvvarCollector(filtered_envvars)

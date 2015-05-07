@@ -76,7 +76,7 @@ def _add_service(services, definition, volume_map, host_log, high_priority_env):
     ports = _get_port_maps(dockerrun_port_mappings)
     remote_mountpoints = definition.get(MOUNT_POINTS, [])
     definition_env = EnvvarCollector(_get_definition_envvars(definition))
-    merged_envvars = definition_env.merge(high_priority_env).get_envvars()
+    merged_envvars = definition_env.merge(high_priority_env).filtered().map
 
     service = {COMPOSE_IMG_KEY: img}
 

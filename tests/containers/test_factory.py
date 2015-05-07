@@ -41,7 +41,7 @@ class TestFactory(TestCase):
 
     @patch('ebcli.containers.factory._get_solution_stack')
     @patch('ebcli.containers.factory.containerops')
-    def test_container_not_supported(self, containerops, _get_solution_stack):
+    def test_make_container_not_supported(self, containerops, _get_solution_stack):
         containerops.is_multi.return_value = False
         containerops.is_generic.return_value = False
         containerops.is_preconfigured.return_value = False
@@ -51,8 +51,8 @@ class TestFactory(TestCase):
     @patch('ebcli.containers.factory.make_multicontainer_fs_handler')
     @patch('ebcli.containers.factory._get_solution_stack')
     @patch('ebcli.containers.factory.containerops')
-    def test_container_multi(self, containerops, _get_solution_stack,
-                             make_multicontainer_fs_handler):
+    def test_make_container_multi(self, containerops, _get_solution_stack,
+                                  make_multicontainer_fs_handler):
         containerops.is_multi.return_value = True
         containerops.is_generic.return_value = False
         containerops.is_preconfigured.return_value = False
@@ -65,7 +65,7 @@ class TestFactory(TestCase):
         self.assertIsInstance(multicontainer, MultiContainer)
         self.assertEqual(dummy.MULTICONTAINER_FS_HANDLER, multicontainer.fs_handler)
         self.assertEqual(dummy.SOLN_STK, multicontainer.soln_stk)
-        self.assertDictEqual({'a': 'b', 'c': 'd'}, multicontainer.opt_env.get_envvars())
+        self.assertDictEqual({'a': 'b', 'c': 'd'}, multicontainer.opt_env.filtered().map)
 
     @patch('ebcli.containers.factory.make_container_fs_handler')
     @patch('ebcli.containers.factory._get_solution_stack')
@@ -87,7 +87,7 @@ class TestFactory(TestCase):
         self.assertEqual(dummy.CONTAINER_FS_HANDLER, generic_container.fs_handler)
         self.assertEqual(dummy.SOLN_STK, generic_container.soln_stk)
         self.assertEqual(dummy.HOST_PORT, generic_container.host_port)
-        self.assertDictEqual({'a': 'b', 'c': 'd'}, generic_container.opt_env.get_envvars())
+        self.assertDictEqual({'a': 'b', 'c': 'd'}, generic_container.opt_env.filtered().map)
 
     @patch('ebcli.containers.factory.make_container_fs_handler')
     @patch('ebcli.containers.factory._get_solution_stack')
@@ -109,4 +109,4 @@ class TestFactory(TestCase):
         self.assertEqual(dummy.CONTAINER_FS_HANDLER, generic_container.fs_handler)
         self.assertEqual(dummy.SOLN_STK, generic_container.soln_stk)
         self.assertEqual(dummy.HOST_PORT, generic_container.host_port)
-        self.assertDictEqual({'a': 'b', 'c': 'd'}, generic_container.opt_env.get_envvars())
+        self.assertDictEqual({'a': 'b', 'c': 'd'}, generic_container.opt_env.filtered().map)
