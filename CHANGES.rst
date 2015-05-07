@@ -2,6 +2,16 @@
 Changelog
 =========
 
+----------------
+3.4 (2015-04-28)
+----------------
+- Added 'localContainerDefinitions' section for multi-continer docker
+- Multi-container docker containers now correctly read 'environment'
+- Added printenv/setenv commands to eb local
+- t2.micro is now default instance type for accounts with a default vpc
+- add --staged option to eb deploy for deploying git stage rather then commit
+- Fix config file path resolution
+
 ------------------
 3.3.2 (2015-04-30)
 ------------------
