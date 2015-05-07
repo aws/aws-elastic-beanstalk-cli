@@ -128,7 +128,7 @@ class TestCommands(TestCase):
         actual_args, _ = exec_cmd_live_output.call_args
 
         self.assertEqual(1, len(actual_args))
-        self.assertItemsEqual(expected_args, actual_args[0])
+        self.assertListEqual(sorted(expected_args), sorted(actual_args[0]))
 
     @patch('ebcli.containers.commands.utils.exec_cmd')
     @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')

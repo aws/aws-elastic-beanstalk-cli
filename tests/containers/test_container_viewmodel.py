@@ -1,6 +1,20 @@
-from ebcli.containers.container_viewmodel import ContainerViewModel, ServiceInfo
+# Copyright 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the 'License'). You
+# may not use this file except in compliance with the License. A copy of
+# the License is located at
+#
+# http://aws.amazon.com/apache2.0/
+#
+# or in the 'license' file accompanying this file. This file is
+# distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+# ANY KIND, either express or implied. See the License for the specific
+# language governing permissions and limitations under the License.
+
 from mock import patch, Mock
 from unittest import TestCase
+
+from ebcli.containers.container_viewmodel import ContainerViewModel, ServiceInfo
 
 
 IP = '127.0.0.1'
@@ -28,12 +42,12 @@ class TestContainerViewModel(TestCase):
                                                 service_infos=self.service_infos)
 
     def test_get_cids_multiple(self):
-        self.assertItemsEqual(['123', '543', 'zzz'],
-                              self.cnt_viewmodel.get_cids())
+        self.assertListEqual(sorted(['123', '543', 'zzz']),
+                             sorted(self.cnt_viewmodel.get_cids()))
 
     def test_get_cids_zero(self):
         self.cnt_viewmodel.service_infos = []
-        self.assertItemsEqual([], self.cnt_viewmodel.get_cids())
+        self.assertListEqual([], sorted(self.cnt_viewmodel.get_cids()))
 
     def test_get_cid_hostports_map(self):
         expected_map = {'123': ['9000', '9001'],
@@ -46,8 +60,8 @@ class TestContainerViewModel(TestCase):
     def test_get_cid_hostport_pairs(self):
         expected_list = [('123', '9000'), ('123', '9001'), ('543', '80'),
                          ('543', '9005')]
-        self.assertItemsEqual(expected_list,
-                              self.cnt_viewmodel.get_cid_hostport_pairs())
+        self.assertListEqual(sorted(expected_list),
+                             sorted(self.cnt_viewmodel.get_cid_hostport_pairs()))
 
     def test_is_running_multiple_true(self):
         self.assertTrue(self.cnt_viewmodel.is_running())

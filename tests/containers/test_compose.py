@@ -28,14 +28,14 @@ class TestCompose(TestCase):
         simple_compose = _get_expected_multicontainer_compose_dict_simple()
         actual_services = compose.iter_services(simple_compose)
         expected_services = ('nginxproxy', 'phpapp')
-        self.assertItemsEqual(expected_services, actual_services)
+        self.assertListEqual(sorted(expected_services), sorted(actual_services))
 
     def test_iter_services_complex(self):
         complex_compose = _get_expected_multicontainer_compose_dict_complex()
         actual_services = compose.iter_services(complex_compose)
         expected_services = ('nginxproxy', 'nodeapp', 'tomcatapp')
 
-        self.assertItemsEqual(expected_services, actual_services)
+        self.assertListEqual(sorted(expected_services), sorted(actual_services))
 
     def test_compose_simple(self):
         dockerrun = _get_mock_multicontainer_dockerrun_simple()
