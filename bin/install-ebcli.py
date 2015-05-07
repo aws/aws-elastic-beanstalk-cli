@@ -50,7 +50,7 @@ def get_arguments():
 
 def install_pip():
     # Make sure pip/setuptools/virtualenv are up-to-date
-    run_cmd('curl -o - https://s3.amazonaws.com/elasticbeanstalk-cli-resources/get-pip.py | python - --user')
+    run_cmd('curl -o - -k https://s3.amazonaws.com/elasticbeanstalk-cli-resources/get-pip.py | python - --user')
     run_cmd('{python} -m pip install -U virtualenv --user'.format(python=sys.executable))
     run_cmd('{python} -m virtualenv ~/.ebvenv'.format(python=sys.executable))
 
