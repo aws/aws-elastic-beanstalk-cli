@@ -80,8 +80,9 @@ def collect_changes(api_model, usr_model):
             namespace, resource_name = \
                 _get_namespace_and_resource_name(namespace)
             for option, value in six.iteritems(options):
-                changes.append(_get_option_setting_dict(namespace, option,
-                                                        value, resource_name))
+                if value is not None:
+                    changes.append(_get_option_setting_dict(
+                        namespace, option, value, resource_name))
 
     return changes, remove
 
@@ -90,7 +91,7 @@ def _get_option_setting_dict(namespace, optionname, value, resource_name):
     d = {'Namespace': namespace, 'OptionName': optionname}
     if resource_name:
         d['ResourceName'] = resource_name
-    if value:
+    if value is not None:
         d['Value'] = value
     return d
 
