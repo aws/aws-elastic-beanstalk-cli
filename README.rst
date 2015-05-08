@@ -219,8 +219,11 @@ EB CLI enables you to associate different branches with different branches of yo
 For example:
 
     git checkout master
+
     eb use prod
+
     git checkout develop
+
     eb use dev
 
 Now whenever you switch to a new branch, your default environment will also switch.
