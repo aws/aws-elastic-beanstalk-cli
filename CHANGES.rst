@@ -2,8 +2,13 @@
 Changelog
 =========
 
+------------------
+3.4.2 (2015-05-09)
+------------------
+- Fix issue with installation for eb local files
+
 ----------------
-3.4 (2015-04-28)
+3.4 (2015-05-07)
 ----------------
 - Added 'localContainerDefinitions' section for multi-continer docker
 - Multi-container docker containers now correctly read 'environment'
