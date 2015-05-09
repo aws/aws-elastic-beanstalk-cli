@@ -3,7 +3,7 @@ Changelog
 =========
 
 ------------------
-3.4.1 (2015-05-09)
+3.4.2 (2015-05-09)
 ------------------
 - Fix issue with installation for eb local files
 
