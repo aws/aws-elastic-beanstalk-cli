@@ -46,7 +46,7 @@ setup_options = dict(
         'ebcli.bundled.botocore': ['data/aws/*.json',
                                    'data/aws/*/*.json'],
         'ebcli.bundled.botocore.vendored.requests': ['*.pem'],
-        'ebcli.docker': ['containerfiles/*']},
+        'ebcli.containers': ['containerfiles/*']},
     install_requires=requires,
     license="Apache License 2.0",
     classifiers=(
