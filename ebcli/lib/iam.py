@@ -52,3 +52,17 @@ def create_role(role, document):
     _make_api_call('create_role',
                    RoleName=role,
                    AssumeRolePolicyDocument=document)
+
+
+def upload_server_certificate(cert_name, cert, private_key, chain=None):
+    kwargs = dict(
+        ServerCertificateName=cert_name,
+        CertificateBody=cert,
+        PrivateKey=private_key
+    )
+    if chain:
+        kwargs['CertificateChain'] = chain
+
+    result = _make_api_call('upload_server_certificate',
+                            **kwargs)
+    return result['ServerCertificateMetadata']

@@ -15,8 +15,13 @@
 class namespaces(object):
     ROLLING_UPDATES = 'aws:autoscaling:updatepolicy:rollingupdate'
     ENVIRONMENT_TYPE = 'aws:elasticbeanstalk:environment'
+    LOAD_BALANCER = 'aws:elb:loadbalancer'
 
 
 class option_names(object):
     ROLLING_UPDATE_ENABLED = 'RollingUpdateEnabled'
     ROLLING_UPDATE_TYPE = 'RollingUpdateType'
+    LOAD_BALANCER_HTTP_PORT = 'LoadBalancerHTTPPort'
+    LOAD_BALANCER_HTTPS_PORT = 'LoadBalancerHTTPSPort'
+    SSL_CERT_ID = 'SSLCertificateId'
+    ENVIRONMENT_TYPE = 'EnvironmentType'

@@ -182,6 +182,7 @@ strings = {
     'cloudwatch-setup.removetext': 'Removed .ebextensions. In order to complete removal you\n'
                                    'will need to check in any changes, (if applicable) an run\n'
                                    '"eb deploy".',
+    'setup-ssl.info': 'Sets up ssl on your environment.',
 }
 
 prompts = {
