@@ -3,6 +3,13 @@ Changelog
 =========
 
 ------------------
+3.4.3 (2015-05-12)
+------------------
+- Fix issue with "eb config" when adding new option settings
+- Update golang local container file
+- Fix issue with overwriting docker environment variables during local
+
+------------------
 3.4.2 (2015-05-09)
 ------------------
 - Fix issue with installation for eb local files
