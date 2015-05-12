@@ -17,6 +17,9 @@ SUPPORTED_BOOT2DOCKER_V = '1.6.0'
 LOCALHOST = '127.0.0.1'
 EXPORT = 'export'
 BOOT2DOCKER_RUNNING = 'running'
+DOCKER_HOST = 'DOCKER_HOST'
+DOCKER_CERT_PATH = 'DOCKER_CERT_PATH'
+DOCKER_TLS_VERIFY = 'DOCKER_TLS_VERIFY'
 
 
 def supported_docker_installed():
@@ -80,26 +83,22 @@ def boot2docker_setup(env=os.environ):
     # The rest of this function is really hacky and I need to fix it soon,
     # but I'm not sure how to fix it yet. boot2docker hasn't a good api to use.
     boot2docker_certs_path = os.path.sep.join(['.boot2docker', 'certs',
-                                              'boot2docker-vm'])
+                                               'boot2docker-vm'])
 
-    env['DOCKER_HOST'] = 'tcp://{}:2376'.format(_boot2docker_ip())
-    env['DOCKER_CERT_PATH'] = os.path.join(fileoperations.get_home(),
-                                           boot2docker_certs_path)
-    env['DOCKER_TLS_VERIFY'] = '1'
+    # If they are not set, set it to the defaults (in boot2docker shellinit)
+    if DOCKER_HOST not in env:
+        env[DOCKER_HOST] = 'tcp://{}:2376'.format(_boot2docker_ip())
 
-    # This is a Docker/boot2docker 1.6 thing for Windows. They need ssh.exe to
-    # to be in $PATH so we include the bin folder of Git which has ssh.exe
-    if is_windows():
-        git_bin_path = "c:\Program Files (x86)\Git\bin"
-        path = env.get('PATH', '')
+    if DOCKER_CERT_PATH not in env:
+        env[DOCKER_CERT_PATH] = os.path.join(fileoperations.get_home(),
+                                             boot2docker_certs_path)
+    if DOCKER_TLS_VERIFY not in env:
+        env[DOCKER_TLS_VERIFY] = '1'
 
-        if git_bin_path not in path:
-            env['PATH'] = env.get('PATH', '') + ';' + git_bin_path
-
-    LOG.debug('DOCKER_HOST is set to ' + env['DOCKER_HOST'])
-    LOG.debug('DOCKER_CERT_PATH is set to ' + env['DOCKER_CERT_PATH'])
-    LOG.debug('DOCKER_TLS_VERIFY is set to ' + env['DOCKER_TLS_VERIFY'])
-    LOG.debug('PATH is set to' + env['PATH'])
+    LOG.debug('DOCKER_HOST is set to ' + env[DOCKER_HOST])
+    LOG.debug('DOCKER_CERT_PATH is set to ' + env[DOCKER_CERT_PATH])
+    LOG.debug('DOCKER_TLS_VERIFY is set to ' + env[DOCKER_TLS_VERIFY])
+    LOG.debug('PATH is set to ' + env.get('PATH', ''))
 
 
 def is_windows():

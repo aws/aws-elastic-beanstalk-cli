@@ -65,6 +65,54 @@ class TestCompat(TestCase):
         compat.boot2docker_setup({})
         self.assertFalse(utils.exec_cmd_quiet.called)
 
+    @patch('ebcli.containers.compat.fileoperations')
+    @patch('ebcli.containers.compat._boot2docker_ip')
+    @patch('ebcli.containers.compat.utils')
+    @patch('ebcli.containers.compat.heuristics.is_boot2docker_installed')
+    def test_boot2docker_setup_envvars_not_set(self, is_boot2docker_installed,
+                                               utils, _boot2docker_ip,
+                                               fileoperations):
+        env = {}
+        expected_env = {'DOCKER_HOST': 'tcp://192.168.59.103:2376',
+                        'DOCKER_CERT_PATH': '/home/.boot2docker/certs/boot2docker-vm',
+                        'DOCKER_TLS_VERIFY': '1'}
+
+        is_boot2docker_installed.return_value = True
+        _boot2docker_ip.return_value = '192.168.59.103'
+        fileoperations.get_home.return_value = '/home'
+
+        compat.boot2docker_setup(env)
+
+        self.assertDictEqual(expected_env, env)
+
+    @patch('ebcli.containers.compat.utils')
+    @patch('ebcli.containers.compat.heuristics.is_boot2docker_installed')
+    def test_boot2docker_setup_envvars_is_set(self, is_boot2docker_installed,
+                                              utils):
+        env = {'DOCKER_HOST': 'tcp://192.168.59.103:9000',
+               'DOCKER_CERT_PATH': '/new-path/certs',
+               'DOCKER_TLS_VERIFY': '1'}
+        expected_env = env.copy()
+        is_boot2docker_installed.return_value = True
+
+        compat.boot2docker_setup(env)
+
+        self.assertDictEqual(expected_env, env)
+
+    @patch('ebcli.containers.compat.utils')
+    @patch('ebcli.containers.compat.heuristics.is_boot2docker_installed')
+    def test_boot2docker_init_and_start(self, is_boot2docker_installed, utils):
+        is_boot2docker_installed.return_value = True
+
+        # init=None, status='running', start=None, ip=192.168.59.103
+        utils.exec_cmd_quiet.side_effect = [None, 'poweroff',
+                                            None, '192.168.59.103']
+
+        compat.boot2docker_setup({})
+
+        utils.exec_cmd_quiet.assert_any_call(['boot2docker', 'init'])
+        utils.exec_cmd_quiet.assert_any_call(['boot2docker', 'start'])
+
     @patch('ebcli.containers.compat.supported_docker_installed')
     def test_validate_docker_installed_not_installed(self, supported_docker_installed):
         supported_docker_installed.return_value = False
