@@ -98,20 +98,27 @@ def rm_container(container_id, force=False):
     _run_quiet(args)
 
 
-def up(compose_path=None):
+def up(compose_path=None, allow_insecure_ssl=False):
     """
     Build and run the entire app using services defined in docker-compose.yml.
     :param compose_path: str: optional alternate path to docker-compose.yml
+    :param allow_insecure_ssl: bool: allow insecure connection to docker registry
     :return None
     """
 
-    from ebcli.bundled._compose.cli.main import main as compose_run
 
     file_opt = ['-f', '{}'.format(compose_path)] if compose_path else []
-    args = file_opt + ['up']
-    LOG.debug(args)
-    compose_run(*args)
+    insecure_ssl_opt = ['--allow-insecure-ssl'] if allow_insecure_ssl else []
+    args = file_opt + ['up'] + insecure_ssl_opt
 
+    LOG.debug(args)
+    _compose_run(args)
+
+
+def _compose_run(args):
+    from ebcli.bundled._compose.cli.main import main as compose_run
+
+    compose_run(*args)
 
 def get_container_lowlvl_info(container_id):
     """

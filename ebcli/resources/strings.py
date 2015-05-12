@@ -301,7 +301,9 @@ flag_text = {
     # Local
     'local.run.envvars': 'a comma-separated list of environment variables as key=value pairs',
     'local.run.hostport': 'the host port that is exposed and mapped to the container port',
+    'local.run.insecuressl': 'Allow insecure connections to the docker registry',
     'local.setenv.vars': 'space-separated list in format: VAR_NAME=KEY',
+
     # Logs
     'logs.all': 'retrieve all logs',
     'logs.zip': 'retrieve all logs as .zip',

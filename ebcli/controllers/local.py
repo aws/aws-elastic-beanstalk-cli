@@ -62,12 +62,15 @@ class LocalRunController(AbstractBaseController):
         usage = 'eb local run [options ...]'
         arguments = [(['--envvars'], dict(help=flag_text['local.run.envvars'])),
                      (['--port'],
-                         dict(type=int, help=flag_text['local.run.hostport']))]
+                         dict(type=int, help=flag_text['local.run.hostport'])),
+                     (['--allow-insecure-ssl'],
+                         dict(action='store_true', help=flag_text['local.run.insecuressl']))]
 
     def do_command(self):
         compat.setup()
         cnt = factory.make_container(self.app.pargs.envvars,
-                                     self.app.pargs.port)
+                                     self.app.pargs.port,
+                                     self.app.pargs.allow_insecure_ssl)
         cnt.validate()
         cnt.start()
 

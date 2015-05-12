@@ -239,6 +239,22 @@ class TestCommands(TestCase):
         exec_cmd_quiet.return_value = 'docker-compose 1.1.0'
         self.assertEquals('1.1.0', commands.compose_version())
 
+    @patch('ebcli.containers.commands._compose_run')
+    def test_up_not_allow_insecure_ssl(self, _compose_run):
+        compose_path = '/.elasticbeanstalk/docker-compose.yml'
+        expected_args = ['-f', compose_path, 'up']
+
+        commands.up(compose_path, False)
+        _compose_run.assert_called_once_with(expected_args)
+
+    @patch('ebcli.containers.commands._compose_run')
+    def test_up_do_allow_insecure_ssl(self, _compose_run):
+        compose_path = '/.elasticbeanstalk/docker-compose.yml'
+        expected_args = ['-f', compose_path, 'up', '--allow-insecure-ssl']
+
+        commands.up(compose_path, True)
+        _compose_run.assert_called_once_with(expected_args)
+
 
 def _expect_dockerfile_lines(readlines_from_text_file, img=None,
                              port_exposed=None):

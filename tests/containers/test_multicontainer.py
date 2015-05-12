@@ -7,9 +7,6 @@ from ebcli.containers.multicontainer import MultiContainer
 from tests.containers import dummy
 
 
-COMPOSE_PATH = '/.elsaticbeanstalk/docker-compose.yml'
-
-
 class TestMultiContainer(TestCase):
     def setUp(self):
         self.soln_stk = dummy.get_soln_stk()
@@ -21,8 +18,9 @@ class TestMultiContainer(TestCase):
         self.fs_handler.get_setenv_env.return_value = EnvvarCollector({'a': '3',
                                                                        'z': '0'})
         self.env = EnvvarCollector({'a': '1', 'b': '2', 'c': '5'})
-        self.multicontainer = MultiContainer(self.fs_handler, self.env,
-                                             self.soln_stk)
+        self.multicontainer = MultiContainer(fs_handler=self.fs_handler,
+                                             soln_stk=self.soln_stk,
+                                             opt_env=self.env)
 
     def test_containerize(self):
         self.multicontainer._containerize()
@@ -36,9 +34,20 @@ class TestMultiContainer(TestCase):
 
 
     @patch('ebcli.containers.multicontainer.commands')
-    def test_up(self, commands):
+    def test_up_not_allow_insecure_ssl(self, commands):
+        self.multicontainer.allow_insecure_ssl = False
         self.multicontainer._up()
-        commands.up.assert_called_once_with(dummy.COMPOSE_PATH)
+
+        commands.up.assert_called_once_with(compose_path=dummy.COMPOSE_PATH,
+                                            allow_insecure_ssl=False)
+
+    @patch('ebcli.containers.multicontainer.commands')
+    def test_up_allow_insecure_ssl(self, commands):
+        self.multicontainer.allow_insecure_ssl = True
+        self.multicontainer._up()
+
+        commands.up.assert_called_once_with(compose_path=dummy.COMPOSE_PATH,
+                                            allow_insecure_ssl=True)
 
     @patch('ebcli.containers.multicontainer.MultiContainer._remove')
     @patch('ebcli.containers.multicontainer.MultiContainer._up')

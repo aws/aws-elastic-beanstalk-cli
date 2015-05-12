@@ -7,24 +7,25 @@ from ..objects.exceptions import CommandError
 
 class MultiContainer(object):
     """
-    Immutable class used to run Multi containers.
+    Immutable class used to run Multi-containers.
     """
 
     PROJ_NAME = 'elasticbeanstalk'
 
-    def __init__(self, fs_handler, opt_env, soln_stk):
+    def __init__(self, fs_handler, soln_stk, opt_env, allow_insecure_ssl=False):
         """
         Constructor for MultiContainer.
         :param fs_handler: MultiContainerFSHandler: manages file operations
-        :param envvars_map: dict: key val map of environment variables
-        :param opt_env: EnvvarCollector: Optional env (--envvars) variables to add and remove
         :param soln_stk: SolutionStack: the solution stack
+        :param opt_env: EnvvarCollector: Optional env (--envvars) variables to add and remove
+        :param allow_insecure_ssl: bool: allow insecure connection to docker registry
         """
 
         self.fs_handler = fs_handler
         self.pathconfig = fs_handler.pathconfig
-        self.opt_env = opt_env
         self.soln_stk = soln_stk
+        self.opt_env = opt_env
+        self.allow_insecure_ssl = allow_insecure_ssl
 
     def start(self):
         self._containerize()
@@ -55,7 +56,8 @@ class MultiContainer(object):
         self.fs_handler.make_docker_compose(merged_env)
 
     def _up(self):
-        commands.up(self.pathconfig.compose_path())
+        commands.up(compose_path=self.pathconfig.compose_path(),
+                    allow_insecure_ssl=self.allow_insecure_ssl)
 
     def _remove(self):
         for service in self.list_services():

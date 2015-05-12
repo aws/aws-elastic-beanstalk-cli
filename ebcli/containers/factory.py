@@ -38,11 +38,14 @@ from ..resources.strings import strings
 LOG = minimal_logger(__name__)
 
 
-def make_container(envvars_str=None, host_port=None, pathconfig=PathConfig):
+def make_container(envvars_str=None, host_port=None, allow_insecure_ssl=False,
+                   pathconfig=PathConfig):
     """
     Factory function for making a container or multicontainer.
     :param envvars_str: str: key=val str of environment variables
     :param host_port: str: optional host port mapped to container port
+    :param allow_insecure_ssl: bool: allow insecure connection to docker registry
+    :param pathconfig: PathConfig: Holds path/existence info
     :return Container/MultiContainer
     """
 
@@ -53,6 +56,7 @@ def make_container(envvars_str=None, host_port=None, pathconfig=PathConfig):
     if containerops.is_multi(soln_stk, container_cfg):
         return MultiContainer(fs_handler=make_multicontainer_fs_handler(pathconfig),
                               opt_env=opt_env,
+                              allow_insecure_ssl=allow_insecure_ssl,
                               soln_stk=soln_stk)
 
     elif containerops.is_generic(soln_stk, container_cfg):
@@ -77,6 +81,7 @@ def make_multicontainer_fs_handler(pathconfig):
     """
     Factory function for making MultiContainerFSHandler. Uses the current project
     directory to retrieve all paths and info about whether certain files exist.
+    :param pathconfig: PathConfig: Holds path/existence info
     :return: MultiContainerFSHandler
     """
 
@@ -89,6 +94,7 @@ def make_container_fs_handler(pathconfig):
     """
     Factory function for making ContainerFSHandler. Uses the current project
     directory to retrieve all paths and info about whether certain files exist.
+    :param pathconfig: PathConfig: Holds path/existence info
     :return: ContainerFSHandler
     """
 
