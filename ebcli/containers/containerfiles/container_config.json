@@ -20,7 +20,7 @@
         },
         {
             "version":"Go 1.4 (Preconfigured - Docker)",
-            "runtime_image":"golang:1.4.1-onbuild",
+            "runtime_image":"golang:1.4.2-onbuild",
             "runtime_dockerfile":"golang-runtime-1.4",
             "runtime_default_log":"/var/log"
         },
