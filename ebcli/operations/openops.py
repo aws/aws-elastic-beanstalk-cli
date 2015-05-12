@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+from ..resources.statics import namespaces, option_names
 from ..lib import elasticbeanstalk
 from . import commonops
 
@@ -18,5 +19,18 @@ from . import commonops
 def open_app(app_name, env_name):
     # get cname
     env = elasticbeanstalk.get_environment(app_name, env_name)
+    settings = elasticbeanstalk.describe_configuration_settings(
+        app_name, env_name)
 
-    commonops.open_webpage_in_browser(env.cname)
+    option_settings = settings.get('OptionSettings', [])
+    http_port = elasticbeanstalk.get_option_setting(
+        option_settings,
+        namespaces.LOAD_BALANCER,
+        option_names.LOAD_BALANCER_HTTP_PORT)
+
+    if http_port == 'OFF':
+        ssl = True
+    else:
+        ssl = False
+
+    commonops.open_webpage_in_browser(env.cname, ssl=ssl)
