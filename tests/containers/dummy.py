@@ -15,14 +15,14 @@ def get_pathconfig():
 
 
 def get_container_fs_handler():
-    return  Mock(pathconfig=get_pathconfig(),
-                 dockerrun=get_dockerrun_dict())
+    return Mock(pathconfig=get_pathconfig(),
+                dockerrun=get_dockerrun_dict())
 
 
 def get_multicontainer_fs_handler():
-    return  Mock(pathconfig=get_pathconfig(),
-                 hostlog_path=HOSTLOG_PATH,
-                 dockerrun=get_container_fs_handler())
+    return Mock(pathconfig=get_pathconfig(),
+                hostlog_path=HOSTLOG_PATH,
+                dockerrun=get_container_fs_handler())
 
 
 def get_soln_stk():

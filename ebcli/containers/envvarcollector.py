@@ -53,7 +53,6 @@ class EnvvarCollector(object):
 
         return cls(envvars_map, envvars_to_remove)
 
-
     def merge(self, higher_priority_env):
         """
         Merge self with higher_priority_env.
@@ -66,7 +65,6 @@ class EnvvarCollector(object):
         to_remove = self.to_remove | higher_priority_env.to_remove
 
         return EnvvarCollector(envvars_map, to_remove)
-
 
     def filtered(self):
         """

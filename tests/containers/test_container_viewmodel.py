@@ -30,7 +30,7 @@ SERVICE_INFO2 = ServiceInfo(is_running=False,
                             cid='zzz',
                             ip=IP,
                             hostports=[])
-NUM_EXPOSED_HOSTPORS = 4
+NUM_EXPOSED_HOSTPORS = 4  # They are [9000, 9001, 80, 9005]
 
 
 class TestContainerViewModel(TestCase):

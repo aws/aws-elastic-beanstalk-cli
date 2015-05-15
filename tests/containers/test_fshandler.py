@@ -80,7 +80,6 @@ class TestMultiContainerFSHandler(TestCase):
         self.multi_fs_handler = MultiContainerFSHandler(pathconfig=self.pathconfig,
                                                         dockerrun=DOCKERRUN)
 
-
     @patch('ebcli.containers.fshandler.log')
     @patch('ebcli.containers.fshandler.compose.compose_dict')
     @patch('ebcli.containers.fshandler.yaml.safe_dump')

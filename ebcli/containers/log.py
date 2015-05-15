@@ -91,7 +91,6 @@ def _get_last_local_logs(root_log):
     return None
 
 
-
 def _symlink_new_log_dir(root_log_dir, new_local_dir):
     # Symlink latest
     latest_symlink_path = _symlink_path(root_log_dir)

@@ -51,7 +51,6 @@ class TestPreconfiguredContainer(TestCase):
 
         self.assertFalse(_validate_preconfig_dockerfile.called)
 
-
     @patch('ebcli.containers.preconfigured_container.containerops._get_preconfig_info')
     @patch('ebcli.containers.preconfigured_container.commands._get_base_img')
     def test_validation_pass(self, _get_base_img, _get_preconfig_info):

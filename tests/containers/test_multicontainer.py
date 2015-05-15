@@ -32,7 +32,6 @@ class TestMultiContainer(TestCase):
         self.assertDictEqual({'a': '1', 'b': '2', 'z': '0', 'c': '5'}, actual_env_arg.map)
         self.assertSetEqual(set(), actual_env_arg.to_remove)
 
-
     @patch('ebcli.containers.multicontainer.commands')
     def test_up_not_allow_insecure_ssl(self, commands):
         self.multicontainer.allow_insecure_ssl = False

@@ -106,7 +106,6 @@ def up(compose_path=None, allow_insecure_ssl=False):
     :return None
     """
 
-
     file_opt = ['-f', '{}'.format(compose_path)] if compose_path else []
     insecure_ssl_opt = ['--allow-insecure-ssl'] if allow_insecure_ssl else []
     args = file_opt + ['up'] + insecure_ssl_opt
@@ -119,6 +118,7 @@ def _compose_run(args):
     from ebcli.bundled._compose.cli.main import main as compose_run
 
     compose_run(*args)
+
 
 def get_container_lowlvl_info(container_id):
     """

@@ -40,9 +40,8 @@ class TestAbstractContainer(TestCase):
         self.cnt._containerize = Mock(return_value=False)
         self.cnt._require_pull = Mock(return_value=False)
 
-
     @patch('ebcli.containers.abstractcontainer.commands')
-    def test_start_check_new_dockerfie_creation(self, commands):
+    def test_start_check_new_dockerfie_creation_when_required(self, commands):
         self.fs_handler.require_new_dockerfile.return_value = True
         self.cnt.start()
         self.cnt._containerize.assert_called_once()
@@ -52,7 +51,6 @@ class TestAbstractContainer(TestCase):
         self.fs_handler.require_new_dockerfile.return_value = False
         self.cnt.start()
         self.assertFalse(self.cnt._containerize.called)
-
 
     @patch('ebcli.containers.abstractcontainer.commands')
     def test_start_pull_required(self, commands):
@@ -64,7 +62,6 @@ class TestAbstractContainer(TestCase):
         # since we bypassed Dockerfile creation.
         commands.pull_img.assert_called_once_with(dummy.NEW_DOCKERFILE_PATH)
 
-
     @patch('ebcli.containers.abstractcontainer.commands')
     def test_start_pull_not_required(self, commands):
         self.cnt.start()
@@ -75,6 +72,7 @@ class TestAbstractContainer(TestCase):
         self.cnt.start()
         commands.rm_container.assert_called_once_with(self.cnt.get_name(),
                                                       force=True)
+
     @patch('ebcli.containers.abstractcontainer.commands')
     def test_start_check_all(self, commands):
         self.pathconfig.dockerfile_exists = lambda: False
@@ -103,6 +101,7 @@ class TestAbstractContainer(TestCase):
 
     def test_get_name(self):
         self.pathconfig.docker_proj_path = lambda: ''
+        # This is the result of sha1('')
         expected_hash = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
         self.assertEquals(expected_hash, self.cnt.get_name())
 

@@ -23,7 +23,6 @@ EXPECTED_ENVIRON_VARS_SET = {DOCKER_HOST_KEY: DOCKER_HOST_VAL,
 
 
 class TestCompat(TestCase):
-
     @patch('ebcli.containers.compat.commands.version')
     def test_supported_docker_installed_not_installed(self, version):
         version.side_effect = OSError
@@ -104,7 +103,7 @@ class TestCompat(TestCase):
     def test_boot2docker_init_and_start(self, is_boot2docker_installed, utils):
         is_boot2docker_installed.return_value = True
 
-        # init=None, status='running', start=None, ip=192.168.59.103
+        # init=None, status='poweroff', start=None, ip=192.168.59.103
         utils.exec_cmd_quiet.side_effect = [None, 'poweroff',
                                             None, '192.168.59.103']
 

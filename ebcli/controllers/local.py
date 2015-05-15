@@ -29,7 +29,6 @@ class LocalController(AbstractBaseController):
     def do_command(self):
         self.app.args.print_help()
 
-
     @classmethod
     def _add_to_handler(cls, handler):
         handler.register(cls)
@@ -47,7 +46,7 @@ class LocalController(AbstractBaseController):
         if len(commands) == 1:
             aliases = [c.Meta.aliases[0] for c in self._get_child_controllers()]
             io.echo(*aliases)
-        else: # Need to pass to next controller
+        else:  # Need to pass to next controller
             pass
 
 

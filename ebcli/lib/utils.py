@@ -176,7 +176,6 @@ def exec_cmd(args, live_output=True):
     process.stdout.close()
     process.wait()
 
-
     returncode = process.returncode
     error_msg = 'Exited with return code {}'.format(returncode)
     output_str = ''.join(output)

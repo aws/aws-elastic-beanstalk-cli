@@ -57,7 +57,7 @@ class TestUtils(TestCase):
         self.assertEquals([0], utils.flatten([[0]]))
 
     def test_flatten_nested_long_list(self):
-        self.assertEquals([0,1,2], utils.flatten([[0],[1],[2]]))
+        self.assertEquals([0, 1, 2], utils.flatten([[0], [1], [2]]))
 
     @patch('os.path.getmtime')
     def test_last_modified_file(self, getmtime):

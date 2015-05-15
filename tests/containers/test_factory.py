@@ -47,7 +47,6 @@ class TestFactory(TestCase):
         containerops.is_preconfigured.return_value = False
         self.assertRaises(NotSupportedError, factory.make_container, pathconfig=dummy.PATH_CONFIG)
 
-
     @patch('ebcli.containers.factory.make_multicontainer_fs_handler')
     @patch('ebcli.containers.factory._get_solution_stack')
     @patch('ebcli.containers.factory.containerops')
@@ -82,7 +81,6 @@ class TestFactory(TestCase):
                                                    pathconfig=dummy.PATH_CONFIG,
                                                    host_port=dummy.HOST_PORT)
 
-
         self.assertIsInstance(generic_container, GenericContainer)
         self.assertEqual(dummy.CONTAINER_FS_HANDLER, generic_container.fs_handler)
         self.assertEqual(dummy.SOLN_STK, generic_container.soln_stk)
@@ -93,7 +91,7 @@ class TestFactory(TestCase):
     @patch('ebcli.containers.factory._get_solution_stack')
     @patch('ebcli.containers.factory.containerops')
     def test_container_preconfigured(self, containerops, _get_solution_stack,
-                               make_container_fs_handler):
+                                     make_container_fs_handler):
         containerops.is_multi.return_value = False
         containerops.is_generic.return_value = False
         containerops.is_preconfigured.return_value = True
@@ -103,7 +101,6 @@ class TestFactory(TestCase):
         generic_container = factory.make_container(envvars_str='a=b,c=d',
                                                    pathconfig=dummy.PATH_CONFIG,
                                                    host_port=dummy.HOST_PORT)
-
 
         self.assertIsInstance(generic_container, PreconfiguredContainer)
         self.assertEqual(dummy.CONTAINER_FS_HANDLER, generic_container.fs_handler)

@@ -54,7 +54,6 @@ class TestCompose(TestCase):
 
         self.assertDictEqual(expected_compose, actual_compose)
 
-
     def test_compose_with_envvars(self):
         dockerrun = _get_mock_multicontainer_dockerrun_with_envvars()
         expected_compose = _get_expected_multicontainer_compose_dict_with_envvars()
@@ -64,7 +63,6 @@ class TestCompose(TestCase):
 
         self.assertDictEqual(expected_compose, actual_compose)
 
-
     def test_compose_with_local_definitions(self):
         dockerrun = _get_mock_multicontainer_dockerrun_with_local_definitions()
         expected_compose = _get_expected_multicontainer_compose_dict_with_local_definitions()
@@ -73,7 +71,6 @@ class TestCompose(TestCase):
                                               HOST_LOG, ENV_COLLECTOR)
 
         self.assertDictEqual(expected_compose, actual_compose)
-
 
 
 def _get_mock_multicontainer_dockerrun_simple():
@@ -220,6 +217,7 @@ def _get_expected_multicontainer_compose_dict_complex():
         }
     }
 
+
 def _get_mock_multicontainer_dockerrun_with_envvars():
     return {
         "containerDefinitions": [
@@ -239,7 +237,7 @@ def _get_mock_multicontainer_dockerrun_with_envvars():
                         "hostPort": 80
                     }
                 ],
-               "environment": [
+                "environment": [
                     {
                       "name": "a",
                       "value": 1000
@@ -277,7 +275,6 @@ def _get_expected_multicontainer_compose_dict_with_envvars():
     }
 
 
-
 def _get_mock_multicontainer_dockerrun_with_local_definitions():
     return {
         "containerDefinitions": [
@@ -299,7 +296,7 @@ def _get_mock_multicontainer_dockerrun_with_local_definitions():
                         "hostPort": 80
                     }
                 ],
-               "environment": [
+                "environment": [
                     {
                       "name": "a",
                       "value": 1000

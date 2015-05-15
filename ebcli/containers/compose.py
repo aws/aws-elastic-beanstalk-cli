@@ -153,6 +153,7 @@ def _fakename(realname):
     # docker-compose service names must be alphanumeric
     return ''.join(c for c in realname if c.isalnum())
 
+
 def _get_definition_envvars(definition):
     return {e[CONTAINER_DEF_ENV_NAME_KEY]: e[CONTAINER_DEF_ENV_VALUE_KEY] for e
             in definition.get(CONTAINER_DEF_ENV_KEY, [])}

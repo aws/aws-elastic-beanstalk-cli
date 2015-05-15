@@ -29,7 +29,6 @@ class ContainerFSHandler(object):
         self.pathconfig = pathconfig
         self.dockerrun = dockerrun
 
-
     def require_new_dockerfile(self):
         """
         Return whether we need to make a new Dockerfile since user didn't
@@ -145,6 +144,7 @@ class MultiContainerFSHandler(object):
         hostlog_path = log.new_host_log_path(root_log_dir)
         log.make_logdirs(root_log_dir, hostlog_path)
         return hostlog_path
+
 
 def _require_append_dockerignore(dockerignore_path):
     if not os.path.isfile(dockerignore_path):
