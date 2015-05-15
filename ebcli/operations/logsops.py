@@ -14,14 +14,20 @@
 from datetime import datetime, timedelta
 import os
 import sys
+import threading
+import time
 
-from botocore.compat import six
+from cement.utils.misc import minimal_logger
 from six import iteritems
 
 from ..core import fileoperations, io
-from ..lib import elasticbeanstalk, utils
+from ..lib import elasticbeanstalk, utils, cloudwatch
+from ..lib.aws import MaxRetriesError
 from ..resources.strings import strings, prompts
+from ..objects.exceptions import ServiceError
 from . import commonops
+
+LOG = minimal_logger(__name__)
 
 
 def logs(env_name, info_type, do_zip=False, instance_id=None):
@@ -103,3 +109,62 @@ def get_logs(env_name, info_type, do_zip=False, instance_id=None):
                 log_result = log_result.decode()
             data.append(log_result)
         io.echo_with_pager(os.linesep.join(data))
+
+
+def stream_logs(env_name, sleep_time=2):
+    log_group_name = 'awseb-' + env_name + '-activity'
+    stream_names = []
+
+    streamer = io.get_event_streamer()
+    streamer.prompt = ' -- eb-activity log -- (Ctrl+C to exit)'
+    jobs = []
+    while True:
+        new_names = cloudwatch.get_all_stream_names(log_group_name)
+        for name in new_names:
+            if name not in stream_names:
+                stream_names.append(name)
+
+                p = threading.Thread(
+                    target=_stream_single_stream,
+                    args=(log_group_name, name, streamer, sleep_time))
+                p.daemon = True
+                jobs.append(p)
+                p.start()
+            time.sleep(0.2)  # offset threads
+
+        time.sleep(10)
+
+
+def _stream_single_stream(log_group_name, stream_name, streamer, sleep_time=4):
+    next_token = None
+    while True:
+        try:
+            response = cloudwatch.get_log_events(log_group_name, stream_name,
+                                                 next_token=next_token)
+
+            if response and response.get('events'):
+                for event in response.get('events'):
+                    message = event.get('message')
+
+                    streamer.stream_event('[{}] {}'.format(stream_name, message))
+
+                # Set the next token
+                next_token = response.get('nextForwardToken')
+
+            else:
+                time.sleep(sleep_time)
+        except MaxRetriesError:
+            LOG.debug('Received max retries')
+            io.echo('Received Max retries. You are being heavily throttled.')
+        except ServiceError as e:
+            # Something went wrong getting the stream
+            # It probably doesnt exist anymore.
+            LOG.debug('Received service error {}'.format(e))
+            return
+        except Exception as e:
+            # We want to swallow all exceptions or else they will be
+            # printed as a stack trace to the Console
+            # Exceptions are typically connections reset and
+            # Various things
+            LOG.debug('Exception raised: ' + str(e))
+            # Loop will cause a retry

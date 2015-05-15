@@ -170,6 +170,18 @@ strings = {
     'download.info': 'Download Application Version.',
     'convert-dockkerrun.info': 'Converts Dockerrun.aws.json from version 1 to version 2.',
     'cleanup-versions.info': 'Cleans up old application versions.',
+    'cloudwatch-setup.info': 'Create .ebextensions files necessary for setting up CloudWatch used in logging instance deployment.',
+    'cloudwatch-setup.alreadysetup': 'CloudWatch file {filename} is already set up.',
+    'cloudwatch-stream.notsetup': 'eb-activity.log not setup with AWS Cloudwatch for this environment.\n'
+                                  'Try running "eb labs cloudwatch-setup".',
+    'cloudwatch-setup.text': '.ebextensions created. In order to complete setup you will need\n'
+                             'to check in any changes, (if applicable) and run "eb deploy".\n'
+                             'You will also need the cloudwatch log permissions for this IAM User\n'
+                             'as well as for the environments instance profile.\n'
+                             'For more information see: http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/AWSHowTo.cloudwatchlogs.html',
+    'cloudwatch-setup.removetext': 'Removed .ebextensions. In order to complete removal you\n'
+                                   'will need to check in any changes, (if applicable) an run\n'
+                                   '"eb deploy".',
 }
 
 prompts = {
@@ -297,6 +309,9 @@ flag_text = {
     'init.keyname': 'default EC2 key name',
     'init.interactive': 'force interactive mode',
 
+    # labs
+    'labs.cwl.remove': 'remove .ebextensions',
+
     # List
     'list.all': 'show environments for all applications',
 
@@ -310,6 +325,7 @@ flag_text = {
     'logs.all': 'retrieve all logs',
     'logs.zip': 'retrieve all logs as .zip',
     'logs.instance': 'instance id',
+    'logs.stream': 'stream deployment logs that were set up with cloudwatch',
 
     # Scale
     'scale.number': 'number of desired instances',
@@ -355,6 +371,7 @@ responses = {
                        'but with errors',
     'event.failedlaunch': 'Failed to launch environment.',
     'event.faileddeploy': 'Failed to deploy application.',
+    'event.failedupdate': 'Failed to deploy configuration.',
     'event.updatebad': 'Update environment operation is complete, but with errors.',
     'event.updatefailed': 'Failed to deploy configuration.',
     'git.norepository': 'Error: Not a git repository '

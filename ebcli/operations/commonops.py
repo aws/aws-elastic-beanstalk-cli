@@ -110,6 +110,8 @@ def _is_success_string(message):
         raise ServiceError(message)
     if message == responses['event.faileddeploy']:
         raise ServiceError(message)
+    if message == responses['event.failedupdate']:
+        raise ServiceError(message)
     if message == responses['logs.pulled']:
         return True
     if message.startswith(responses['logs.fail']):

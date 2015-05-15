@@ -11,10 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import argparse
+
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
 from ..operations import logsops
-from ..objects.exceptions import InvalidOptionsError
+from ..objects.exceptions import InvalidOptionsError, NotFoundError
 
 
 class LogsController(AbstractBaseController):
@@ -28,11 +30,21 @@ class LogsController(AbstractBaseController):
             (['-z', '--zip'], dict(
                 action='store_true', help=flag_text['logs.zip'])),
             (['-i', '--instance'], dict(help=flag_text['logs.instance'])),
+            (['--stream'], dict(action='store_true',
+                                help=argparse.SUPPRESS)),  # Labs command
+
         ]
         epilog = strings['logs.epilog']
 
     def do_command(self):
         env_name = self.get_env_name()
+        if self.app.pargs.stream:
+            try:
+                return logsops.stream_logs(env_name)
+            except NotFoundError:
+                raise NotFoundError(strings['cloudwatch-stream.notsetup'])
+
+
         all = self.app.pargs.all
         instance = self.app.pargs.instance
         zip = self.app.pargs.zip

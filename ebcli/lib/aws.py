@@ -273,8 +273,10 @@ def _get_400_error(response_data):
         return InvalidParameterValueError(message)
     elif code == 'InvalidQueryParameter':
         return InvalidQueryParameterError(message)
-    elif code == 'Throttling':
+    elif code.startswith('Throttling'):
         return ThrottlingError(message)
+    elif code.startswith('ResourceNotFound'):
+        return NotFoundError(message)
     else:
         # Not tracking this error
         return ServiceError(message, code=code)

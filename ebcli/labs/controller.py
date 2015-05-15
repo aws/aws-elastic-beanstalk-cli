@@ -18,6 +18,7 @@ from .quicklink import QuicklinkController
 from .download import DownloadController
 from .convertdockerrun import ConvertDockerrunController
 from .cleanupversions import CleanupVersionsController
+from .cloudwatchsetup import CloudWatchSetUp
 
 
 class LabsController(AbstractBaseController):
@@ -37,7 +38,7 @@ class LabsController(AbstractBaseController):
             # They only have the main command so far
             # lets complete for next level command
             io.echo(*['quicklink', 'download', 'convert-dockerrun',
-                      'cleanup-versions'])
+                      'cleanup-versions', 'cloudwatch-setup'])
         elif len(commands) > 1:
             # TODO pass to next level controller
             pass
@@ -50,3 +51,4 @@ class LabsController(AbstractBaseController):
         handler.register(DownloadController)
         handler.register(ConvertDockerrunController)
         handler.register(CleanupVersionsController)
+        handler.register(CloudWatchSetUp)
