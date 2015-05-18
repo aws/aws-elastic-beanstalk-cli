@@ -56,13 +56,17 @@ def create_application(app_name, descrip):
 
 def create_application_version(app_name, vers_label, descrip, s3_bucket,
                                s3_key):
+    kwargs = dict()
+    if descrip is not None:
+        kwargs['Description'] = descrip
+    if s3_bucket and s3_key:
+        kwargs['SourceBundle'] = {'S3Bucket': s3_bucket,
+                                  'S3Key': s3_key}
     LOG.debug('Inside create_application_version api wrapper')
     return _make_api_call('create_application_version',
                           ApplicationName=app_name,
                           VersionLabel=vers_label,
-                          Description=descrip,
-                          SourceBundle={'S3Bucket': s3_bucket,
-                                         'S3Key': s3_key})
+                          **kwargs)
 
 
 def create_environment(environment):

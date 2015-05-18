@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------------------
+3.4.4 (2015-05-18)
+------------------
+- Changed how Sample Application is handled internally
+
+------------------
 3.4.3 (2015-05-12)
 ------------------
 - Fix issue with "eb config" when adding new option settings
