@@ -397,6 +397,12 @@ def create_envvars_list(var_list):
     return options, options_to_remove
 
 
+def create_dummy_app_version(app_name):
+    version_label = 'Sample Application'
+    return _create_application_version(app_name, version_label, None,
+                                       None, None, warning=False)
+
+
 def create_app_version(app_name, label=None, message=None, staged=False):
     cwd = os.getcwd()
     fileoperations._traverse_to_project_root()
@@ -457,6 +463,18 @@ def create_app_version(app_name, label=None, message=None, staged=False):
 
     fileoperations.delete_app_versions()
     io.log_info('Creating AppVersion ' + version_label)
+    return _create_application_version(app_name, version_label, description,
+                                       bucket, key)
+
+
+def _create_application_version(app_name, version_label, description,
+                                bucket, key, warning=True):
+    """
+    A wrapper around elasticbeanstalk.create_application_version that
+    handles certain error cases:
+     * application doesnt exist
+     * version already exists
+    """
     while True:
         try:
             elasticbeanstalk.create_application_version(
@@ -465,12 +483,13 @@ def create_app_version(app_name, label=None, message=None, staged=False):
             return version_label
         except InvalidParameterValueError as e:
             if e.message.startswith('Application Version ') and \
-                    e.message.endswith(' already exists.'):
+                        e.message.endswith(' already exists.'):
                 # we must be deploying with an existing app version
-                io.log_warning('Deploying a previously deployed commit.')
+                if warning:
+                    io.log_warning('Deploying a previously deployed commit.')
                 return version_label
             elif e.message == responses['app.notexists'].replace(
-                    '{app-name}', '\'' + app_name + '\''):
+                        '{app-name}', '\'' + app_name + '\''):
                 # App doesnt exist, must be a new region.
                 ## Lets create the app in the region
                 create_app(app_name)
