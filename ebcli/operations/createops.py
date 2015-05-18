@@ -41,6 +41,10 @@ def make_new_env(env_request, branch_default=False,
         env_request.version_label = \
             commonops.create_app_version(env_request.app_name)
 
+    if env_request.version_label is None or env_request.sample_application:
+        env_request.version_label = \
+            commonops.create_dummy_app_version(env_request.app_name)
+
     # Create env
     if env_request.key_name:
         commonops.upload_keypair_if_needed(env_request.key_name)
