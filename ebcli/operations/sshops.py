@@ -60,7 +60,7 @@ def ssh_into_instance(instance_id, keep_open=False):
     finally:
         # Close port for ssh
         if keep_open:
-            return
+            pass
         else:
             for group in security_groups:
                 ec2.revoke_ssh(group['GroupId'])
