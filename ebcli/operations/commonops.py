@@ -19,6 +19,7 @@ import platform
 
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
+from botocore.compat import six
 
 from ..core import fileoperations, io
 from ..core.fileoperations import _marker
@@ -375,25 +376,42 @@ def print_env_details(env, health=True):
         io.echo('  Health:', env.health)
 
 
-def create_envvars_list(var_list):
+def create_envvars_list(var_list, as_option_settings=True):
     namespace = 'aws:elasticbeanstalk:application:environment'
 
-    options = []
-    options_to_remove = []
+    options = dict()
+    options_to_remove = set()
     for pair in var_list:
         ## validate
-        if not re.match('^[\w\\_.:/+@-][^=]*=([\w\\_.:/+@-][^=]*)?$', pair):
+        if not re.match('^[\w\\_.:/+@-][^=]*=([\w\\_.:/+@-].*)?$', pair):
             raise InvalidOptionsError(strings['setenv.invalidformat'])
-        else:
-            option_name, value = pair.split('=')
-            d = {'Namespace': namespace,
-                 'OptionName': option_name}
 
-            if not value:
-                options_to_remove.append(d)
-            else:
-                d['Value'] = value
-                options.append(d)
+        try:
+            option_name, value = pair.split('=', 1)
+        except ValueError:
+            raise InvalidOptionsError(strings['setenv.invalidformat'])
+
+        if value:
+            options[option_name] = value
+        else:
+            options_to_remove.add(option_name)
+
+    if as_option_settings:
+        option_dict = options
+        options = list()
+        remove_list = options_to_remove
+        options_to_remove = list()
+        for k, v in six.iteritems(option_dict):
+            options.append(
+                dict(Namespace=namespace,
+                     OptionName=k,
+                     Value=v))
+
+        for k in remove_list:
+            options_to_remove.append(
+                dict(Namespace=namespace,
+                     OptionName=k))
+
     return options, options_to_remove
 
 

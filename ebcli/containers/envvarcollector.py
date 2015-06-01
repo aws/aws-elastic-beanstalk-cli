@@ -13,13 +13,8 @@
 
 from botocore.compat import six
 
-from ..controllers.create import get_and_validate_envars
-from ..core import fileoperations
+from ..operations import commonops
 from ..lib import utils
-
-
-ENV_DELIM = ','
-ENV_KV_DELIM = '='
 
 
 class EnvvarCollector(object):
@@ -38,18 +33,12 @@ class EnvvarCollector(object):
         self.to_remove = envvars_to_remove or set()
 
     @classmethod
-    def from_str(cls, envvars_str, variable_delim=ENV_DELIM,
-                 kv_delim=ENV_KV_DELIM):
-        get_and_validate_envars(envvars_str)
+    def from_str(cls, envvars_str):
         if not envvars_str:
             return cls()
-
-        all_envvars = dict(e.split(kv_delim) for e in
-                           envvars_str.split(variable_delim))
-
-        # All envvars with empty strs are ones to remove
-        envvars_map = {k: v for k, v in six.iteritems(all_envvars) if v}
-        envvars_to_remove = {k for k, v in six.iteritems(all_envvars) if not v}
+        envvars = envvars_str.split(',')
+        envvars_map, envvars_to_remove = commonops.create_envvars_list(
+            envvars, as_option_settings=False)
 
         return cls(envvars_map, envvars_to_remove)
 

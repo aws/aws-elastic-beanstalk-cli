@@ -15,13 +15,22 @@ import os
 import shutil
 import mock
 import unittest
+from collections import Counter
 
+from botocore.compat import six
 from mock import Mock
 
+from ebcli.objects.exceptions import InvalidOptionsError
 from ebcli.core import fileoperations
 from ebcli.operations import commonops
 
+
 class TestCommonOperations(unittest.TestCase):
+    def assertListsOfDictsEquivalent(self, ls1, ls2):
+        return self.assertEqual(
+            Counter(frozenset(six.iteritems(d)) for d in ls1),
+            Counter(frozenset(six.iteritems(d)) for d in ls2))
+
     def setUp(self):
         # set up test directory
         if not os.path.exists('testDir'):
@@ -32,7 +41,7 @@ class TestCommonOperations(unittest.TestCase):
         if not os.path.exists(fileoperations.beanstalk_directory):
             os.makedirs(fileoperations.beanstalk_directory)
 
-        #set up mock home dir
+        # set up mock home dir
         if not os.path.exists('home'):
             os.makedirs('home')
 
@@ -75,7 +84,7 @@ class TestCommonOperations(unittest.TestCase):
         result = commonops.get_current_branch_environment()
         self.assertEqual(result, None)
 
-        #get defualt profile name
+        # get default profile name
         result = commonops.get_default_profile()
         self.assertEqual(result, 'monica')
 
@@ -95,19 +104,113 @@ class TestCommonOperations(unittest.TestCase):
         fileoperations.write_config_setting('branch-defaults', 'my-branch', {'profile': 'chandler',
             'environment': 'my-env', 'boop': 'beep'})
 
-        #get defualt region name
+        # get default region name
         result = commonops.get_default_region()
         self.assertEqual(result, 'brazil')
 
-        #get branch-specific default environment name
+        # get branch-specific default environment name
         result = commonops.get_current_branch_environment()
         self.assertEqual(result, 'my-env')
 
-        #get branch-specific default profile name
+        # get branch-specific default profile name
         result = commonops.get_default_profile()
         self.assertEqual(result, 'chandler')
 
-        #get branch-specific generic default
+        # get branch-specific generic default
         result = commonops.get_config_setting_from_branch_or_default('boop')
         self.assertEqual(result, 'beep')
 
+    def test_create_envvars_list_empty(self):
+        options, options_to_remove = commonops.create_envvars_list([])
+        self.assertEqual(options, list())
+        self.assertEqual(options_to_remove, list())
+
+        options, options_to_remove = commonops.create_envvars_list(
+            [], as_option_settings=False)
+        self.assertEqual(options, dict())
+        self.assertEqual(options_to_remove, set())
+
+    def test_create_envvars_list_simple(self):
+        namespace = 'aws:elasticbeanstalk:application:environment'
+
+        options, options_to_remove = commonops.create_envvars_list(
+            ['foo=bar'])
+        self.assertListsOfDictsEquivalent(options, [
+            dict(Namespace=namespace,
+                 OptionName='foo',
+                 Value='bar')])
+        self.assertListEqual(options_to_remove, list())
+
+        options, options_to_remove = commonops.create_envvars_list(
+            ['foo=bar', 'fish=good'])
+        self.assertListsOfDictsEquivalent(options, [
+            dict(Namespace=namespace,
+                 OptionName='foo',
+                 Value='bar'),
+            dict(Namespace=namespace,
+                 OptionName='fish',
+                 Value='good')])
+        self.assertEqual(options_to_remove, list())
+
+        options, options_to_remove = commonops.create_envvars_list(
+            ['foo=bar', 'fish=good', 'trout=', 'baz='])
+        self.assertListsOfDictsEquivalent(options, [
+            dict(Namespace=namespace,
+                 OptionName='foo',
+                 Value='bar'),
+            dict(Namespace=namespace,
+                 OptionName='fish',
+                 Value='good')])
+        self.assertListsOfDictsEquivalent(options_to_remove, [
+            dict(Namespace=namespace,
+                 OptionName='trout'),
+            dict(Namespace=namespace,
+                 OptionName='baz')])
+
+    def test_create_envvars_not_as_option_settings(self):
+        options, options_to_remove = commonops.create_envvars_list(
+            ['foo=bar'], as_option_settings=False)
+        self.assertEqual(options, dict(foo='bar'))
+        self.assertEqual(options_to_remove, set())
+
+        options, options_to_remove = commonops.create_envvars_list(
+            ['foo=bar', 'fish=good'], as_option_settings=False)
+        self.assertDictEqual(options, dict(foo='bar', fish='good'))
+        self.assertEqual(options_to_remove, set())
+
+        options, options_to_remove = commonops.create_envvars_list(
+            ['foo=bar', 'fish=good', 'trout=', 'baz='],
+            as_option_settings=False)
+        self.assertDictEqual(options, dict(foo='bar', fish='good'))
+        self.assertEqual(options_to_remove, {'trout', 'baz'})
+
+    def test_create_envvars_crazy_characters(self):
+        string1 = 'http://some.url.com/?quer=true&othersutff=1'
+        string2 = 'some other !@=:;#$%^&*() weird, key'
+
+        options, options_to_remove = commonops.create_envvars_list(
+            ['foo=' + string1,
+             'wierd er value='+ string2], as_option_settings=False)
+        self.assertEqual(options, {
+            'foo': string1,
+            'wierd er value': string2})
+        self.assertEqual(options_to_remove, set())
+
+    def test_create_envvars_bad_characters(self):
+        strings = [
+            '!hello',
+            ',hello',
+            '?hello',
+            ';hello',
+            '=hello',
+            '$hello',
+            '%hello',
+        ]
+        for s in strings:
+            try:
+                options, options_to_remove = commonops.create_envvars_list(
+                    ['foo=' + s])
+                raise Exception('Should have thrown InvalidOptionsError '
+                                'with string={s}'.format(s))
+            except InvalidOptionsError:
+                pass  # expected
