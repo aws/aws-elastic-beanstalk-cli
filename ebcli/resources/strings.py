@@ -137,6 +137,7 @@ strings = {
     'cname.unavailable': 'The CNAME prefix {cname} is already in use.',
     'ssh.openingport': 'INFO: Attempting to open port 22.',
     'ssh.portopen': 'INFO: SSH port 22 open.',
+    'ssh.notopening': 'Found source restriction on ssh port; not attempting to open. Use the --force flag to force opening of the port.',
     'ssh.closeport': 'INFO: Closed port 22 on ec2 instance security group.',
     'ssh.uploaded': 'Uploaded SSH public key for "{keyname}" into EC2 for region {region}.',
     'swap.unsupported': 'You must have at least 2 running environments to swap CNAMEs.',
@@ -322,6 +323,7 @@ flag_text = {
     'ssh.number': 'index of instance in list',
     'ssh.instance': 'instance id',
     'ssh.keepopen': 'keep port 22 open',
+    'ssh.force': 'force port 22 open to 0.0.0.0',
     'ssh.setup': 'setup SSH for the environment',
 
     # terminate
@@ -354,6 +356,7 @@ responses = {
     'event.failedlaunch': 'Failed to launch environment.',
     'event.faileddeploy': 'Failed to deploy application.',
     'event.updatebad': 'Update environment operation is complete, but with errors.',
+    'event.updatefailed': 'Failed to deploy configuration.',
     'git.norepository': 'Error: Not a git repository '
                         '(or any of the parent directories): .git',
     'env.updatesuccess': 'Environment update completed successfully.',

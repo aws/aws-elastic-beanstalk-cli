@@ -29,6 +29,8 @@ class SSHController(AbstractBaseController):
             (['-i', '--instance'], dict(help=flag_text['ssh.instance'])),
             (['-o', '--keep_open'], dict(
                 action='store_true', help=flag_text['ssh.keepopen'])),
+            (['--force'], dict(
+                action='store_true', help=flag_text['ssh.force'])),
             (['--setup'], dict(
                 action='store_true', help=flag_text['ssh.setup']))
         ]
@@ -39,6 +41,7 @@ class SSHController(AbstractBaseController):
         env_name = self.get_env_name()
         instance = self.app.pargs.instance
         keep_open = self.app.pargs.keep_open
+        force = self.app.pargs.force
         setup = self.app.pargs.setup
 
         if setup:
@@ -67,7 +70,8 @@ class SSHController(AbstractBaseController):
                 instance = utils.prompt_for_item_in_list(instances)
 
         try:
-            sshops.ssh_into_instance(instance, keep_open=keep_open)
+            sshops.ssh_into_instance(instance, keep_open=keep_open,
+                                     force_open=force)
         except NoKeypairError:
             io.log_error(prompts['ssh.nokey'])
 

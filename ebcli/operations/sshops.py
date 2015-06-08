@@ -26,7 +26,7 @@ from . import commonops
 LOG = minimal_logger(__name__)
 
 
-def ssh_into_instance(instance_id, keep_open=False):
+def ssh_into_instance(instance_id, keep_open=False, force_open=False):
     instance = ec2.describe_instance(instance_id)
     try:
         keypair_name = instance['KeyName']
@@ -38,14 +38,33 @@ def ssh_into_instance(instance_id, keep_open=False):
         raise NotFoundError(strings['ssh.noip'])
     security_groups = instance['SecurityGroups']
 
-
     user = 'ec2-user'
 
-    # Open up port for ssh
-    io.echo(strings['ssh.openingport'])
+    # Get security group to open
+    ssh_group = None
+    has_restriction = False
+    group_id = None
     for group in security_groups:
-        ec2.authorize_ssh(group['GroupId'])
-    io.echo(strings['ssh.portopen'])
+        group_id = group['GroupId']
+        # see if group has ssh rule
+        group = ec2.describe_security_group(group_id)
+        for permission in group.get('IpPermissions', []):
+            if permission.get('ToPort', None) == 22:
+                # SSH Port group
+                ssh_group = group_id
+                for rng in permission.get('IpRanges', []):
+                    ip_restriction = rng.get('CidrIp', None)
+                    if ip_restriction is not None \
+                            and ip_restriction != '0.0.0.0/0':
+                        has_restriction = True
+
+    if has_restriction and not force_open:
+        io.log_warning(strings['ssh.notopening'])
+    elif group_id:
+        # Open up port for ssh
+        io.echo(strings['ssh.openingport'])
+        ec2.authorize_ssh(ssh_group or group_id)
+        io.echo(strings['ssh.portopen'])
 
     # do ssh
     try:
@@ -61,9 +80,8 @@ def ssh_into_instance(instance_id, keep_open=False):
         # Close port for ssh
         if keep_open:
             pass
-        else:
-            for group in security_groups:
-                ec2.revoke_ssh(group['GroupId'])
+        elif (not has_restriction or force_open) and group_id:
+            ec2.revoke_ssh(ssh_group or group_id)
             io.echo(strings['ssh.closeport'])
 
 

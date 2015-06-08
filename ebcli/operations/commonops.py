@@ -130,6 +130,8 @@ def _is_success_string(message):
         return True
     if message.startswith(responses['create.ecsdockerrun1']):
         raise NotSupportedError(prompts['create.dockerrunupgrade'])
+    if message == responses['event.updatefailed']:
+        raise ServiceError(message)
 
     return False
 

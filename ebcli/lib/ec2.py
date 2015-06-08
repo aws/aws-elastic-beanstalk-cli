@@ -94,3 +94,11 @@ def authorize_ssh(security_group_id):
             pass
         else:
             raise
+
+def describe_security_group(security_group_id):
+    result = _make_api_call('describe_security_groups',
+                            GroupIds=[security_group_id])
+    if result and len(result['SecurityGroups']) < 1:
+        raise NotFoundError('Security Group {} not found.'
+                            .format(security_group_id))
+    return result['SecurityGroups'][0]
