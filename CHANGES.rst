@@ -3,6 +3,14 @@ Changelog
 =========
 
 ------------------
+3.4.5 (2015-06-08)
+------------------
+- SSH no longer attempts to open port 22 if a Source restriction is in place
+- Added --force flag to override above behavior
+- SSH errors now show properly with the -o option
+- Environment variables are less strict and can now contain the '=' sign
+
+------------------
 3.4.4 (2015-05-18)
 ------------------
 - Changed how Sample Application is handled internally
