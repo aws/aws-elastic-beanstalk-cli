@@ -15,6 +15,7 @@ import os
 import shutil
 from random import randint
 import pytest
+import time
 
 import mock
 from six import print_
@@ -76,6 +77,7 @@ class TestEnd2End(test.CementTestCase):
             self.do_list()
             self.do_terminate()
         finally:
+            time.sleep(30)
             self.do_terminate_all()
 
     def _run_app(self, list_of_args):
@@ -136,6 +138,7 @@ class TestEnd2End(test.CementTestCase):
     def do_logs(self):
         print_('starting logs')
         self._run_app(['logs'])
+        time.sleep(10)
         self._run_app(['logs', '--all'])
         #ToDo: check location for logs
 
