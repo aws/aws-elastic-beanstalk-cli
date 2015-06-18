@@ -26,15 +26,15 @@ CWFILES_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
 
 class CloudWatchSetUp(AbstractBaseController):
     class Meta:
-        label = 'cloudwatchlogs-setup'
-        aliases = ['cwl-setup']
+        label = 'setup-cloudwatchlogs'
+        aliases = ['setup-cwl']
         stacked_on = 'labs'
         stacked_type = 'nested'
         hide = True
-        description =  strings['cloudwatch-setup.info']
-        usage = 'eb labs cloudwatch-setup [options ...]'
+        description = strings['cloudwatch-setup.info']
+        usage = 'eb labs setup-cloudwatchlogs [options ...]'
         arguments = [
-            (['--remove'], dict(help=strings, action='store_true'))
+            (['--remove'], dict(help=flag_text['labs.cwl.remove'], action='store_true'))
         ]
 
     def do_command(self):
