@@ -13,7 +13,9 @@
 
 import re
 
-from ..core import globals as eb
+from cement.utils.misc import minimal_logger
+
+LOG = minimal_logger(__name__)
 
 
 class SolutionStack():
@@ -38,7 +40,7 @@ class SolutionStack():
         pattern = re.compile('.+running\s([^0-9]+).*')
         matcher = re.match(pattern, ss_string)
         if matcher is None:
-            eb.app.log.debug("Can not find a platform in string: " + ss_string)
+            LOG.debug("Can not find a platform in string: " + ss_string)
             return ss_string
         return matcher.group(1).strip()
 
@@ -47,7 +49,7 @@ class SolutionStack():
         pattern = re.compile('.+running\s(.*)')
         matcher = re.match(pattern, ss_string)
         if matcher is None:
-            eb.app.log.debug("Can not find a version in string: " + ss_string)
+            LOG.debug("Can not find a version in string: " + ss_string)
             return ss_string
         return matcher.group(1)
 
@@ -56,7 +58,7 @@ class SolutionStack():
         pattern = re.compile('(.*)\srunning\s.*')
         matcher = re.match(pattern, ss_string)
         if matcher is None:
-            eb.app.log.debug("Can not find a server in string: " + ss_string)
+            LOG.debug("Can not find a server in string: " + ss_string)
             return ss_string
         return matcher.group(1)
 

@@ -21,6 +21,7 @@ import logging
 import os
 import platform
 import shlex
+import warnings
 
 from botocore import __version__
 import botocore.config
@@ -28,6 +29,7 @@ import botocore.credentials
 import botocore.client
 from botocore.endpoint import EndpointCreator
 from botocore.exceptions import EventNotFound, ConfigNotFound, ProfileNotFound
+from botocore.exceptions import ImminentRemovalWarning
 from botocore import handlers
 from botocore.hooks import HierarchicalEmitter, first_non_none_response
 from botocore.loaders import Loader
@@ -35,6 +37,7 @@ from botocore.provider import get_provider
 from botocore.parsers import ResponseParserFactory
 from botocore import regions
 from botocore.model import ServiceModel
+from botocore import paginate
 import botocore.service
 from botocore import waiter
 from botocore import retryhandler, translate
@@ -69,9 +72,9 @@ class Session(object):
 
     SessionVariables = {
         # logical:  config_file, env_var,        default_value
-        'profile': (None, 'BOTO_DEFAULT_PROFILE', None),
-        'region': ('region', 'BOTO_DEFAULT_REGION', None),
-        'data_path': ('data_path', 'BOTO_DATA_PATH', None),
+        'profile': (None, ['AWS_DEFAULT_PROFILE', 'AWS_PROFILE'], None),
+        'region': ('region', 'AWS_DEFAULT_REGION', None),
+        'data_path': ('data_path', 'AWS_DATA_PATH', None),
         'config_file': (None, 'AWS_CONFIG_FILE', '~/.aws/config'),
         'provider': ('provider', 'BOTO_PROVIDER_NAME', 'aws'),
 
@@ -297,8 +300,9 @@ class Session(object):
                 config_name = None
             if logical_name == 'profile' and self._profile:
                 value = self._profile
-            elif 'env' in methods and envvar_name and envvar_name in os.environ:
-                value = os.environ[envvar_name]
+            elif 'env' in methods and envvar_name and self._handle_env_vars(
+                    envvar_name, os.environ) is not None:
+                value = self._handle_env_vars(envvar_name, os.environ)
             elif 'config' in methods:
                 if config_name:
                     config = self.get_scoped_config()
@@ -311,6 +315,16 @@ class Session(object):
         if value is None and config_default is not None:
             value = config_default
         return value
+
+    def _handle_env_vars(self, names, environ):
+        # We need to handle the case where names is either
+        # a single value or a list of variables.
+        if not isinstance(names, list):
+            names = [names]
+        for name in names:
+            if name in environ:
+                return environ[name]
+        return None
 
     def set_config_variable(self, logical_name, value):
         """Set a configuration variable to a specific value.
@@ -500,7 +514,7 @@ class Session(object):
 
         """
         service_description = self.get_service_data(service_name, api_version)
-        return ServiceModel(service_description)
+        return ServiceModel(service_description, service_name=service_name)
 
     def get_waiter_model(self, service_name, api_version=None):
         loader = self.get_component('data_loader')
@@ -509,6 +523,14 @@ class Session(object):
         waiter_path = latest.replace('.normal', '.waiters')
         waiter_config = loader.load_data(waiter_path)
         return waiter.WaiterModel(waiter_config)
+
+    def get_paginator_model(self, service_name, api_version=None):
+        loader = self.get_component('data_loader')
+        latest = loader.determine_latest('%s/%s' % (
+            self.provider.name, service_name), api_version)
+        paginator_path = latest.replace('.normal', '.paginators')
+        paginator_config = loader.load_data(paginator_path)
+        return paginate.PaginatorModel(paginator_config)
 
     def get_service_data(self, service_name, api_version=None):
         """
@@ -536,11 +558,17 @@ class Session(object):
         """
         Get information about a service.
 
+        .. warning::
+            This method is deprecated and will be removed in the
+            near future.  Use ``session.create_client`` instead.
+
         :type service_name: str
         :param service_name: The name of the service (e.g. 'ec2')
 
         :returns: :class:`botocore.service.Service`
         """
+        warnings.warn("get_service is deprecated and will be removed.  "
+                      "Use create_client instead.", ImminentRemovalWarning)
         service = botocore.service.get_service(self, service_name,
                                                self.provider,
                                                api_version=api_version)

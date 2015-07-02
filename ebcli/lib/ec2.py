@@ -43,13 +43,23 @@ def import_key_pair(keyname, key_material):
     return result
 
 
-def describe_instance(instance_id):
+def describe_instances(instance_ids):
     result = _make_api_call('describe_instances',
-                            InstanceIds=[instance_id])
+                            InstanceIds=instance_ids)
+
+    instances = []
+    for r in result.get('Reservations', {}):
+        for i in r.get('Instances', {}):
+            instances.append(i)
+    return instances
+
+
+def describe_instance(instance_id):
+    result = describe_instances([instance_id])
 
     try:
-        return result['Reservations'][0]['Instances'][0]
-    except IndexError:
+        return result[0]
+    except (IndexError, NotFoundError):
         raise NotFoundError('Instance {0} not found.'.format(instance_id))
 
 
@@ -95,6 +105,7 @@ def authorize_ssh(security_group_id):
         else:
             raise
 
+
 def describe_security_group(security_group_id):
     result = _make_api_call('describe_security_groups',
                             GroupIds=[security_group_id])
@@ -102,3 +113,13 @@ def describe_security_group(security_group_id):
         raise NotFoundError('Security Group {} not found.'
                             .format(security_group_id))
     return result['SecurityGroups'][0]
+
+
+def terminate_instance(instance_id):
+    return _make_api_call('terminate_instances',
+                          InstanceIds=[instance_id])
+
+
+def reboot_instance(instance_id):
+    return _make_api_call('reboot_instances',
+                          InstanceIds=[instance_id])

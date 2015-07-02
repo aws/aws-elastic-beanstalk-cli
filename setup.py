@@ -8,6 +8,8 @@ import ebcli
 requires = ['pyyaml>=3.11',
             'cement==2.4',
             'pathspec==0.3.3',
+            'colorama==0.3.3',
+            'blessed==1.9.5',
             ## For botocore we need the following
             'jmespath>=0.6.1',
             'python-dateutil>=2.1,<3.0.0',
@@ -59,7 +61,6 @@ setup_options = dict(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ),
     entry_points={

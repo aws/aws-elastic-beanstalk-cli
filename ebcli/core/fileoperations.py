@@ -558,7 +558,11 @@ def get_json_dict(fullpath):
 
 
 def write_json_dict(json_data, fullpath):
-    data = json.dumps(json_data, sort_keys=True, indent=4)
+    def date_handler(obj):
+        return obj.isoformat() if hasattr(obj, 'isoformat') else obj
+
+    data = json.dumps(json_data, sort_keys=True, indent=4,
+                      default=date_handler)
     write_to_text_file(data, fullpath)
 
 

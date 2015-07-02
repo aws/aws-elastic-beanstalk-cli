@@ -40,7 +40,7 @@ import botocore
 from botocore.compat import six
 iteritems = six.iteritems
 
-from . import globals, base, io, hooks
+from . import ebglobals, base, io, hooks
 from ..controllers.initialize import InitController
 from ..controllers.abort import AbortController
 from ..controllers.create import CreateController
@@ -61,6 +61,7 @@ from ..controllers.printenv import PrintEnvController
 from ..controllers.clone import CloneController
 from ..controllers.swap import SwapController
 from ..controllers.platform import PlatformController
+from ..controllers.health import HealthController
 from ..controllers.upgrade import UpgradeController
 from ..core.completer import CompleterController
 from ..controllers.local import LocalController, LocalRunController,\
@@ -79,6 +80,10 @@ class EB(foundation.CementApp):
         config_defaults = defaults
 
     def setup(self):
+        # Add hooks
+        hook.register('post_argument_parsing', hooks.pre_run_hook)
+
+        # Add controllers
         controllers = [
             InitController,
             CreateController,
@@ -103,6 +108,7 @@ class EB(foundation.CementApp):
             AbortController,
             LabsController,
             LocalController,
+            HealthController,
         ]
 
         # register all controllers
@@ -125,7 +131,7 @@ class EB(foundation.CementApp):
         self.add_arg('--debugboto',  # show debug info for botocore
                      action='store_true', help=SUPPRESS)
 
-        globals.app = self
+        ebglobals.app = self
 
 
 def main():
@@ -137,7 +143,6 @@ def main():
     #######
 
     app = EB()
-    hook.register('post_argument_parsing', hooks.pre_run_hook)
 
     try:
         app.setup()

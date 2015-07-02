@@ -36,6 +36,7 @@ strings = {
     'abort.info': 'Cancels an environment update or deployment.',
     'logs.info': 'Gets recent logs.',
     'use.info': 'Sets default environment.',
+    'health.info': 'Shows detailed environment health.',
     'logs.epilog': 'This command displays the last 100 lines of logs. To retrieve all logs, use the "--all" option.',
     'deploy.info': 'Deploys your source code to the environment.',
     'platform.info': 'Manages platforms.',

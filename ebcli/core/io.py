@@ -15,18 +15,76 @@ import re
 import warnings
 import getpass
 import sys
+import logging
 
+import colorama
 import pydoc
 from botocore.compat import six
 from six import print_
 from six.moves import input
-import logging
 
-from ..core import globals
+from ..core import ebglobals
 from ..objects.exceptions import ValidationError
 from ..resources.strings import prompts, strings
 
 LOG = logging.getLogger(__name__)
+
+color_on = False
+
+
+def start_color():
+    global color_on
+    if not color_on and term_is_colorable():
+        colorama.init()
+        color_on = True
+    return color_on
+
+
+def term_is_colorable():
+    return sys.stdout.isatty()  # Live terminal
+
+
+def bold(string):
+    s = _convert_to_string(string)
+    if start_color():
+        return colorama.Style.BRIGHT + s + colorama.Style.NORMAL
+    else:
+        return s
+
+
+def reset_all_color():
+    if start_color():
+        return colorama.Style.RESET_ALL
+    else:
+        return ''
+
+
+def _remap_color(color):
+    if color.upper() == 'ORANGE':
+        return 'YELLOW'
+    if color.upper() in {'GREY', 'GRAY'}:
+        return 'WHITE'
+    return color
+
+
+def color(color, string):
+    s = _convert_to_string(string)
+    if start_color():
+        color = _remap_color(color)
+        color_code = getattr(colorama.Fore, color.upper())
+        return color_code + s + colorama.Fore.RESET
+    else:
+        return s
+
+
+def on_color(color, string):
+    s = _convert_to_string(string)
+    if start_color():
+        color = _remap_color(color)
+        color_code = getattr(colorama.Back, color.upper())
+        return color_code + s + colorama.Back.RESET
+    else:
+        return s
 
 
 def echo_and_justify(justify, *args):
@@ -41,23 +99,27 @@ def echo(*args, **kwargs):
 
 
 def _convert_to_strings(list_of_things):
-    scalar_types = six.string_types + six.integer_types
     for data in list_of_things:
-        if isinstance(data, six.binary_type):
-            if sys.version_info[0] >= 3:
-                yield data.decode('utf8')
-            else:
-                yield data
-        elif isinstance(data, six.text_type):
-            if sys.version_info[0] >= 3:
-                yield data
-            else:
-                yield data.encode('utf8')
-        elif isinstance(data, scalar_types) or hasattr(data, '__str__'):
-            yield str(data)
+        yield _convert_to_string(data)
+
+
+def _convert_to_string(data):
+    scalar_types = six.string_types + six.integer_types
+    if isinstance(data, six.binary_type):
+        if sys.version_info[0] >= 3:
+            return data.decode('utf8')
         else:
-            LOG.error('echo called with an unsupported data type')
-            LOG.debug('data class = ' + data.__class__.__name__)
+            return data
+    elif isinstance(data, six.text_type):
+        if sys.version_info[0] >= 3:
+            return data
+        else:
+            return data.encode('utf8')
+    elif isinstance(data, scalar_types) or hasattr(data, '__str__'):
+        return str(data)
+    else:
+        LOG.error('echo called with an unsupported data type')
+        LOG.debug('data class = ' + data.__class__.__name__)
 
 
 def log_alert(message):
@@ -65,15 +127,18 @@ def log_alert(message):
 
 
 def log_info(message):
-    globals.app.log.info(message)
+    ebglobals.app.log.info(message)
 
 
 def log_warning(message):
-    globals.app.log.warn(message)
+    ebglobals.app.log.warn(message)
 
 
 def log_error(message):
-    globals.app.log.error(message)
+    if ebglobals.app.pargs.debug:  # Debug mode, use logger
+        ebglobals.app.log.error(message)
+    else:  # Otherwise, use color
+        echo(bold(color('red', 'ERROR: {}'.format(message))))
 
 
 def get_input(output, default=None):

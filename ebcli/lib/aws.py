@@ -164,6 +164,8 @@ def make_api_call(service_name, operation_name, **operation_options):
         LOG.debug('Credentials incomplete')
         raise CredentialsError('Your credentials are not complete. Error: {0}'
                                .format(e))
+    except botocore.exceptions.NoRegionError:
+        raise NoRegionError()
 
     if not _verify_ssl:
         warnings.filterwarnings("ignore")

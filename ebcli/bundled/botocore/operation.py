@@ -15,9 +15,12 @@
 import functools
 import logging
 import threading
+import warnings
+
 from botocore.exceptions import MissingParametersError
 from botocore.exceptions import UnknownParameterError
 from botocore.exceptions import NoRegionError
+from botocore.exceptions import ImminentRemovalWarning
 from botocore.paginate import DeprecatedPaginator
 from botocore.signers import RequestSigner
 from botocore import serialize
@@ -72,7 +75,7 @@ class Operation(BotoCoreObject):
         resolver = self.session.get_component('endpoint_resolver')
         scheme = endpoint.host.split(':')[0]
         if endpoint.region_name is None:
-            raise NoRegionError(env_var='region')
+            raise NoRegionError()
         endpoint_config = resolver.construct_endpoint(
                 service_model.endpoint_prefix,
                 endpoint.region_name, scheme=scheme)
@@ -98,6 +101,8 @@ class Operation(BotoCoreObject):
         return signature_version, endpoint.region_name
 
     def call(self, endpoint, **kwargs):
+        warnings.warn("call() is deprecated and will be removed.  "
+                      "Use clients instead.", ImminentRemovalWarning)
         logger.debug("%s called with kwargs: %s", self, kwargs)
         # It probably seems a little weird to be firing two different
         # events here.  The reason is that the first event is fired
@@ -184,6 +189,9 @@ class Operation(BotoCoreObject):
 
     @property
     def can_paginate(self):
+        warnings.warn("can_paginate is deprecated and will be removed.  "
+                      "Use client.can_paginate instead.",
+                      ImminentRemovalWarning)
         try:
             self._load_pagination_config()
         except Exception as e:
@@ -193,12 +201,19 @@ class Operation(BotoCoreObject):
     def paginate(self, endpoint, **kwargs):
         """Iterate over the responses of an operation.
 
+        .. warning::
+            This method is deprecated and will be removed in the
+            near future.  Use ``client.get_paginator`` instead.
+
         This will return an iterator with each element
         being a tuple of (``http_response``, ``parsed_response``).
         If the operation does not paginate, a ``TypeError`` will
         be raised.  You can check if an operation can be paginated
         by using the ``can_paginate`` arg.
         """
+        warnings.warn("paginate is deprecated and will be removed.  "
+                      "Use client.get_paginator instead.",
+                      ImminentRemovalWarning)
         if not self.can_paginate:
             raise TypeError("Operation cannot be paginated: %s" % self)
         config = self._load_pagination_config()

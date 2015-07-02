@@ -19,12 +19,16 @@ import threading
 
 from botocore.vendored.requests.sessions import Session
 from botocore.vendored.requests.utils import get_environ_proxies
+from botocore.vendored.requests.exceptions import ConnectionError
 from botocore.vendored import six
 
-from botocore.exceptions import UnknownEndpointError
+from botocore.exceptions import BaseEndpointResolverError
+from botocore.exceptions import EndpointConnectionError
 from botocore.awsrequest import AWSRequest
-from botocore.compat import urljoin, filter_ssl_san_warnings
+from botocore.compat import filter_ssl_warnings, urlsplit
+from botocore.compat import urlunsplit
 from botocore.utils import percent_encode_sequence
+from botocore.utils import is_valid_endpoint_url
 from botocore.hooks import first_non_none_response
 from botocore.response import StreamingBody
 from botocore import parsers
@@ -33,7 +37,7 @@ from botocore import parsers
 logger = logging.getLogger(__name__)
 DEFAULT_TIMEOUT = 60
 NOT_SET = object()
-filter_ssl_san_warnings()
+filter_ssl_warnings()
 
 
 def convert_to_response_dict(http_response, operation_model):
@@ -71,6 +75,64 @@ class PreserveAuthSession(Session):
         pass
 
 
+class RequestCreator(object):
+    """This object can convert a request dict to an AWSRequest class."""
+
+    def create_request_object(self, request_dict, user_agent, endpoint_url):
+        """
+
+        :type request_dict: dict
+        :param request_dict:  The request dict (created from the ``serialize``
+            module).
+
+        :type user_agent: string
+        :param user_agent: The user agent to use for this request.
+
+        :type endpoint_url: string
+        :param endpoint_url: The full endpoint url, which contains at least
+            the scheme, the hostname, and optionally any path components.
+
+        :rtype: ``botocore.awsrequest.AWSRequest``
+        :return: An AWSRequest object based on the request_dict.
+
+        """
+        r = request_dict
+        headers = r['headers']
+        headers['User-Agent'] = user_agent
+        url = self._urljoin(endpoint_url, r['url_path'])
+        if r['query_string']:
+            encoded_query_string = percent_encode_sequence(r['query_string'])
+            if '?' not in url:
+                url += '?%s' % encoded_query_string
+            else:
+                url += '&%s' % encoded_query_string
+        request = AWSRequest(method=r['method'], url=url,
+                             data=r['body'],
+                             headers=headers)
+        return request
+
+    def _urljoin(self, endpoint_url, url_path):
+        p = urlsplit(endpoint_url)
+        # <part>   - <index>
+        # scheme   - p[0]
+        # netloc   - p[1]
+        # path     - p[2]
+        # query    - p[3]
+        # fragment - p[4]
+        if not url_path or url_path == '/':
+            # If there's no path component, ensure the URL ends with
+            # a '/' for backwards compatibility.
+            if not p[2]:
+                return endpoint_url + '/'
+            return endpoint_url
+        if p[2].endswith('/') and url_path.startswith('/'):
+            new_path = p[2][:-1] + url_path
+        else:
+            new_path = p[2] + url_path
+        reconstructed = urlunsplit((p[0], p[1], new_path, p[3], p[4]))
+        return reconstructed
+
+
 class Endpoint(object):
     """
     Represents an endpoint for a particular service in a specific
@@ -100,6 +162,7 @@ class Endpoint(object):
         if response_parser_factory is None:
             response_parser_factory = parsers.ResponseParserFactory()
         self._response_parser_factory = response_parser_factory
+        self._request_creator = RequestCreator()
 
     def __repr__(self):
         return '%s(%s)' % (self._endpoint_prefix, self.host)
@@ -110,7 +173,8 @@ class Endpoint(object):
         return self._send_request(request_dict, operation_model)
 
     def create_request(self, params, operation_model=None):
-        request = self._create_request_object(params)
+        request = self._request_creator.create_request_object(
+            params, self._user_agent, self.host)
         if operation_model:
             event_name = 'request-created.{endpoint_prefix}.{op_name}'.format(
                 endpoint_prefix=self._endpoint_prefix,
@@ -119,23 +183,6 @@ class Endpoint(object):
                                      operation_name=operation_model.name)
         prepared_request = self.prepare_request(request)
         return prepared_request
-
-    def _create_request_object(self, request_dict):
-        r = request_dict
-        user_agent = self._user_agent
-        headers = r['headers']
-        headers['User-Agent'] = user_agent
-        url = urljoin(self.host, r['url_path'])
-        if r['query_string']:
-            encoded_query_string = percent_encode_sequence(r['query_string'])
-            if '?' not in url:
-                url += '?%s' % encoded_query_string
-            else:
-                url += '&%s' % encoded_query_string
-        request = AWSRequest(method=r['method'], url=url,
-                             data=r['body'],
-                             headers=headers)
-        return request
 
     def _encode_headers(self, headers):
         # In place encoding of headers to utf-8 if they are unicode.
@@ -182,6 +229,18 @@ class Endpoint(object):
                 request, verify=self.verify,
                 stream=operation_model.has_streaming_output,
                 proxies=self.proxies, timeout=self.timeout)
+        except ConnectionError as e:
+            # For a connection error, if it looks like it's a DNS
+            # lookup issue, 99% of the time this is due to a misconfigured
+            # region/endpoint so we'll raise a more specific error message
+            # to help users.
+            if self._looks_like_dns_error(e):
+                endpoint_url = e.request.url
+                better_exception = EndpointConnectionError(
+                    endpoint_url=endpoint_url, error=e)
+                return (None, better_exception)
+            else:
+                return (None, e)
         except Exception as e:
             logger.debug("Exception received when sending HTTP request.",
                          exc_info=True)
@@ -194,6 +253,9 @@ class Endpoint(object):
         return ((http_response, parser.parse(response_dict,
                                              operation_model.output_shape)),
                 None)
+
+    def _looks_like_dns_error(self, e):
+        return 'gaierror' in str(e) and e.request is not None
 
     def _needs_retry(self, attempts, operation_model, response=None,
                      caught_exception=None):
@@ -282,7 +344,7 @@ class EndpointCreator(object):
             endpoint = self._endpoint_resolver.construct_endpoint(
                 service_model.endpoint_prefix,
                 region_name, scheme=scheme)
-        except UnknownEndpointError:
+        except BaseEndpointResolverError:
             if endpoint_url is not None:
                 # If the user provides an endpoint_url, it's ok
                 # if the heuristics didn't find anything.  We use the
@@ -299,6 +361,8 @@ class EndpointCreator(object):
             final_endpoint_url = endpoint_url
         else:
             final_endpoint_url = endpoint['uri']
+        if not is_valid_endpoint_url(final_endpoint_url):
+            raise ValueError("Invalid endpoint: %s" % final_endpoint_url)
         return self._get_endpoint(service_model, region_name,
                                   final_endpoint_url, verify,
                                   response_parser_factory)
@@ -335,7 +399,6 @@ class EndpointCreator(object):
             region_name = region_name_override
 
         return region_name
-
 
     def _get_endpoint(self, service_model, region_name, endpoint_url,
                       verify, response_parser_factory):

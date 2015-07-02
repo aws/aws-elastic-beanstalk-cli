@@ -25,7 +25,6 @@ from ..objects.event import Event
 from ..objects.environment import Environment
 from ..objects.application import Application
 from ..resources.strings import strings, responses
-from ..core import globals
 
 LOG = minimal_logger(__name__)
 
@@ -517,3 +516,21 @@ def describe_template(app_name, template_name, platform=None):
                             ApplicationName=app_name,
                             TemplateName=template_name)
     return result['ConfigurationSettings'][0]
+
+
+def get_environment_health(env_name):
+    result = _make_api_call('describe_environment_health',
+                            EnvironmentName=env_name,
+                            AttributeNames=['All'])
+    return result
+
+
+def get_instance_health(env_name, next_token=None):
+    kwargs = {}
+    if next_token:
+        kwargs['NextToken'] = next_token
+    result = _make_api_call('describe_instances_health',
+                            EnvironmentName=env_name,
+                            AttributeNames=['All'],
+                            **kwargs)
+    return result

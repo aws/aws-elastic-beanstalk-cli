@@ -63,6 +63,7 @@ class TestEnd2End(test.CementTestCase):
         aws._flush()
         self.create_index_file()
         self.region = 'us-east-1'
+        aws.set_region(self.region)
         self.get_app_name()
 
         self.do_init()

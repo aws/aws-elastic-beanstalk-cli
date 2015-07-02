@@ -317,7 +317,7 @@ class JSONSerializer(Serializer):
             # of the passed in serialized dict.  We'll then add
             # all the structure members as key/vals in the new serialized
             # dictionary we just created.
-            new_serialized = {}
+            new_serialized = self.MAP_TYPE()
             serialized[key] = new_serialized
             serialized = new_serialized
         members = shape.members
@@ -445,7 +445,7 @@ class BaseRestSerializer(Serializer):
             # If there's a payload member, we serialized that
             # member to they body.
             body_params = parameters.get(payload_member)
-            if body_params:
+            if body_params is not None:
                 serialized['body'] = self._serialize_body_params(
                     body_params,
                     shape_members[payload_member])
@@ -501,10 +501,12 @@ class BaseRestSerializer(Serializer):
             return value
 
 
-class RestJSONSerializer(BaseRestSerializer):
+class RestJSONSerializer(BaseRestSerializer, JSONSerializer):
 
     def _serialize_body_params(self, params, shape):
-        return json.dumps(params)
+        serialized_body = self.MAP_TYPE()
+        self._serialize(serialized_body, params, shape)
+        return json.dumps(serialized_body)
 
 
 class RestXMLSerializer(BaseRestSerializer):

@@ -15,8 +15,10 @@ import os
 import re
 import sys
 from datetime import datetime
+import warnings
 
 from dateutil import tz
+
 from botocore.compat import six
 from cement.utils.misc import minimal_logger
 from subprocess import Popen, PIPE, STDOUT
@@ -133,8 +135,13 @@ def get_delta_from_now_and_datetime(date):
 def get_local_time(utctime):
     from_zone = tz.tzutc()
     to_zone = tz.tzlocal()
-    utctime.replace(tzinfo=from_zone)
+    utctime = utctime.replace(tzinfo=from_zone)
     return utctime.astimezone(to_zone)
+
+
+def get_local_time_as_string(utctime):
+    localtime = get_local_time(utctime)
+    return localtime.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def is_ssh():
