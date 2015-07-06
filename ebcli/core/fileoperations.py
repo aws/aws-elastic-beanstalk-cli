@@ -381,20 +381,21 @@ def _zipdir(path, zipf, ignore_list=None):
     zipped_roots = []
     for root, dirs, files in os.walk(path):
         if '.elasticbeanstalk' in root:
-            io.log_info('  -skipping: ' + str(root))
+            io.log_info('  -skipping: {}'.format(root))
             continue
         for f in files:
-            # Windows requires us to index the folders.
-            if root not in zipped_roots:
-                zipf.write(root)
-                zipped_roots.append(root)
             cur_file = os.path.join(root, f)
             if cur_file.endswith('~') or cur_file in ignore_list:
                 # Ignore editor backup files (like file.txt~)
                 # Ignore anything in the .ebignore file
-                io.log_info('  -skipping: ' + str(cur_file))
+                io.log_info('  -skipping: {}'.format(cur_file))
             else:
-                io.log_info('  +adding: ' + str(cur_file))
+                if root not in zipped_roots:
+                    # Windows requires us to index the folders.
+                    io.log_info(' +adding: {}/'.format(root))
+                    zipf.write(root)
+                    zipped_roots.append(root)
+                io.log_info('  +adding: {}'.format(cur_file))
                 zipf.write(cur_file)
 
 
@@ -589,7 +590,8 @@ def directory_empty(location):
 
 
 def get_ebignore_list():
-    location = get_project_file_full_location('.ebignore')
+    EB_IGNORE_FILE_NAME = '.ebignore'
+    location = get_project_file_full_location(EB_IGNORE_FILE_NAME)
 
     if not os.path.isfile(location):
         return None
@@ -637,11 +639,11 @@ def get_ebignore_list():
                 yield path
     util.iter_tree = iter_tree
 
-
     with open(location, 'r') as f:
         spec = pathspec.PathSpec.from_lines('gitignore', f)
 
     ignore_list = [f for f in spec.match_tree(get_project_root())]
+    ignore_list.append(EB_IGNORE_FILE_NAME)
     return ignore_list
 
 
