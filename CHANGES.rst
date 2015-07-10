@@ -3,6 +3,12 @@ Changelog
 =========
 
 ------------------
+3.4.6 (2015-07-10)
+------------------
+- Fix issue with "eb labs download"
+- Fix issue where folders in .ebignore were incorrectly being uploaded.
+
+------------------
 3.4.5 (2015-06-08)
 ------------------
 - SSH no longer attempts to open port 22 if a Source restriction is in place
