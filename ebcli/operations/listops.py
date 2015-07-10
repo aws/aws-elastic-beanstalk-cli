@@ -17,7 +17,7 @@ from . import commonops
 
 
 def list_env_names(app_name, verbose, all_apps):
-    region = aws.get_default_region()
+    region = aws.get_region_name()
 
     if verbose:
         io.echo('Region:', region)

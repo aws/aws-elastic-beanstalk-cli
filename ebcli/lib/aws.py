@@ -14,10 +14,12 @@
 import time
 import random
 import warnings
+import os
 
 import botocore
 import botocore.session
 import botocore.exceptions
+from botocore.loaders import Loader
 from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
@@ -29,9 +31,12 @@ from .botopatch import apply_patches
 
 LOG = minimal_logger(__name__)
 
+BOTOCORE_DATA_FOLDER_NAME = 'botocoredata'
+
 _api_clients = {}
 _profile = None
 _profile_env_var = 'AWS_EB_PROFILE'
+_region_env_var = 'AWS_EB_REGION'
 _id = None
 _key = None
 _region_name = None
@@ -102,6 +107,14 @@ def _set_user_agent_for_session(session):
     session.user_agent_name = 'eb-cli'
     session.user_agent_version = __version__
 
+def _get_data_loader():
+    # Creates a botocore data loader that loads custom data files
+    # FIRST, creating a precedence for custom files.
+    data_folder = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                               BOTOCORE_DATA_FOLDER_NAME)
+
+    return Loader(extra_search_paths=[data_folder, Loader.BUILTIN_DATA_PATH],
+                  include_default_search_paths=False)
 
 def _get_client(service_name):
     aws_access_key_id = _id
@@ -118,7 +131,7 @@ def _get_client(service_name):
         LOG.debug('Creating new Botocore Client for ' + str(service_name))
         client = session.create_client(service_name,
                                        endpoint_url=endpoint_url,
-                                       region_name=_region_name,
+                                       # region_name=_region_name,
                                        aws_access_key_id=aws_access_key_id,
                                        aws_secret_access_key=aws_secret_key,
                                        verify=_verify_ssl)
@@ -136,8 +149,11 @@ def _get_botocore_session():
     if _get_botocore_session.botocore_session is None:
         LOG.debug('Creating new Botocore Session')
         LOG.debug('Botocore version: {0}'.format(botocore.__version__))
-        session = botocore.session.Session(session_vars={
-            'profile': (None, _profile_env_var, _profile)})
+        session = botocore.session.get_session({
+            'profile': (None, _profile_env_var, _profile, None),
+            'region': ('region', _region_env_var, _region_name, None)
+        })
+        session.register_component('data_loader', _get_data_loader())
         _set_user_agent_for_session(session)
         _get_botocore_session.botocore_session = session
         if _debug:
@@ -146,13 +162,8 @@ def _get_botocore_session():
     return _get_botocore_session.botocore_session
 
 
-def get_default_region():
-    client = _get_client('elasticbeanstalk')
-    try:
-        endpoint = client._endpoint
-        return endpoint.region_name
-    except botocore.exceptions.UnknownEndpointError as e:
-        raise NoRegionError(e)
+def get_region_name():
+    return _region_name
 
 
 def make_api_call(service_name, operation_name, **operation_options):

@@ -363,7 +363,7 @@ def get_application_names():
 
 
 def print_env_details(env, health=True):
-    region = aws.get_default_region()
+    region = aws.get_region_name()
 
     io.echo('Environment details for:', env.name)
     io.echo('  Application name:', env.app_name)
@@ -699,7 +699,7 @@ def upload_keypair_if_needed(keyname):
         ec2.import_key_pair(keyname, key_material)
     except AlreadyExistsError:
         return
-    region = aws.get_default_region()
+    region = aws.get_region_name()
     io.log_warning(strings['ssh.uploaded'].replace('{keyname}', keyname)
                    .replace('{region}', region))
 

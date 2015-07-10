@@ -16,7 +16,7 @@ import os
 import sys
 
 # Add vendor directory to module search path
-# Need this for botocore
+# Need this for docker-compose
 def fix_path():
     parent_folder = os.path.dirname(__file__)
     parent_dir = os.path.abspath(parent_folder)

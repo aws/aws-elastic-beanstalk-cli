@@ -6,13 +6,11 @@ from setuptools import setup, find_packages
 import ebcli
 
 requires = ['pyyaml>=3.11',
-            'cement==2.4',
-            'pathspec==0.3.3',
-            'colorama==0.3.3',
             'blessed==1.9.5',
-            ## For botocore we need the following
-            'jmespath>=0.6.1',
-            'python-dateutil>=2.1,<3.0.0',
+            'botocore<=1.0.1',
+            'cement==2.4',
+            'colorama==0.3.3',
+            'pathspec==0.3.3',
             ## For docker-compose
             'docopt >= 0.6.1, < 0.7',
             'requests >= 2.6.1, < 2.7',
@@ -45,9 +43,7 @@ setup_options = dict(
     packages=find_packages('.', exclude=['tests*', 'docs*', 'sampleApps*']),
     package_dir={'ebcli': 'ebcli'},
     package_data={
-        'ebcli.bundled.botocore': ['data/aws/*.json',
-                                   'data/aws/*/*.json'],
-        'ebcli.bundled.botocore.vendored.requests': ['*.pem'],
+        'ebcli.lib.botocoredata': ['*/*/*.json'],
         'ebcli.containers': ['containerfiles/*'],
         'ebcli.labs': ['cloudwatchfiles/*.config']},
     install_requires=requires,

@@ -78,7 +78,7 @@ def create_environment(environment):
 
     if environment.database:
         # need to know region for database string
-        region = aws.get_default_region()
+        region = aws.get_region_name()
 
         # Database is a dictionary
         kwargs['TemplateSpecification'] = {

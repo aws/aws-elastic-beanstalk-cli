@@ -13,7 +13,7 @@
 
 import datetime
 from dateutil.tz import tzutc
-from ebcli.bundled.botocore.compat import six
+from botocore.compat import six
 from collections import defaultdict
 """
 Mock responses for Integration tests.

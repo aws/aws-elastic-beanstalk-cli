@@ -49,7 +49,7 @@ def get_quick_link(app_name, env_name):
 
     link = 'https://console.aws.amazon.com/elasticbeanstalk/home?'
     # add region
-    region = aws.get_default_region()
+    region = aws.get_region_name()
     link += 'region=' + urllib.parse.quote(region)
     # add quicklaunch flag
     link += '#/newApplication'

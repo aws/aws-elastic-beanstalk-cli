@@ -26,7 +26,7 @@ def open_console(app_name, env_name):
     if env_name is not None:
         env = elasticbeanstalk.get_environment(app_name, env_name)
 
-    region = aws.get_default_region()
+    region = aws.get_region_name()
     if env is not None:
         page = 'environment/dashboard'
     else:

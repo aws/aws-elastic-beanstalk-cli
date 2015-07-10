@@ -16,6 +16,8 @@ import os
 import shutil
 
 from cement.utils import test
+from botocore.endpoint import Endpoint
+
 from ebcli.core import ebcore, fileoperations
 from ebcli.lib import aws
 from . import mockservice
@@ -39,10 +41,14 @@ class BaseIntegrationTest(test.CementTestCase):
         self.mock_warning = self.patcher_warning.start()
 
         # Set up mock endpoints
+        endpoint_original = Endpoint
         self.patcher_endpoint = mock.patch('botocore.endpoint.Endpoint')
         self.mock_endpoint = self.patcher_endpoint.start()
         instance = self.mock_endpoint.return_value
         instance.make_request = mockservice.handle_response
+        # Mocking our host should force botocore to never call actual service
+        # Also required for python3 tests
+        instance.host = 'http://someurl.test/something'
 
         # set up test directory
         if not os.path.exists('testDir/'):

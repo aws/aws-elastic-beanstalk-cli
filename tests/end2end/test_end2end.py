@@ -124,17 +124,14 @@ class TestEnd2End(test.CementTestCase):
         print_('starting events')
         self._run_app(['events'])
 
-
     def do_status(self):
         print_('starting status')
         self._run_app(['status', '-v'])
-
 
     def do_setenv(self):
         print_('starting setenv')
         self._run_app(['setenv', 'foo=bar'])
         #ToDo: check to make sure env was set
-
 
     def do_logs(self):
         print_('starting logs')

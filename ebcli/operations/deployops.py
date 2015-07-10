@@ -18,7 +18,7 @@ from . import commonops
 
 def deploy(app_name, env_name, version, label, message, staged=False,
            timeout=5):
-    region_name = aws.get_default_region()
+    region_name = aws.get_region_name()
 
     io.log_info('Deploying code to ' + env_name + " in region " + region_name)
 
