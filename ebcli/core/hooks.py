@@ -14,6 +14,7 @@
 import sys
 
 from cement.ext.ext_logging import LoggingLogHandler
+from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
 from ..core import fileoperations, io
@@ -21,13 +22,16 @@ from ..lib import aws
 from ..operations import commonops
 
 
-def pre_run_hook(app):
-    if app.pargs.debug:
-        io.echo('-- EBCLI Version:', __version__)
-        io.echo('-- Python Version:', sys.version)
+LOG = minimal_logger(__name__)
 
+
+def pre_run_hook(app):
     if app.pargs.verbose:
         LoggingLogHandler.set_level(app.log, 'INFO')
+
+    LOG.debug('-- EBCLI Version: {}'.format(__version__))
+    LOG.debug('-- Python Version: {}'.format(sys.version))
+
     set_profile(app.pargs.profile)
     set_region(app.pargs.region)
     set_endpoint(app.pargs.endpoint_url)
