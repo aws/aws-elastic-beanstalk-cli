@@ -17,7 +17,7 @@ from cement.ext.ext_logging import LoggingLogHandler
 from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
-from ..core import fileoperations, io
+from ..core import fileoperations
 from ..lib import aws
 from ..operations import commonops
 

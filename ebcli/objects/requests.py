@@ -11,8 +11,11 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..resources.strings import strings
+import pkg_resources
+
 from ..lib import ec2
+from ..resources.strings import strings
+from ..resources.statics import namespaces, option_names
 
 class CreateEnvironmentRequest(object):
 
@@ -111,12 +114,12 @@ class CreateEnvironmentRequest(object):
 
         if self.scale:
             self.add_option_setting(
-                'aws:autoscaling:asg',
-                'MaxSize',
+                namespaces.AUTOSCALING,
+                option_names.MAX_SIZE,
                 self.scale)
             self.add_option_setting(
-                'aws:autoscaling:asg',
-                'MinSize',
+                namespaces.AUTOSCALING,
+                option_names.MIN_SIZE,
                 self.scale)
 
         return kwargs
@@ -124,32 +127,32 @@ class CreateEnvironmentRequest(object):
     def compile_common_options(self):
         if self.instance_profile:
             self.add_option_setting(
-                'aws:autoscaling:launchconfiguration',
-                'IamInstanceProfile',
+                namespaces.LAUNCH_CONFIGURATION,
+                option_names.IAM_INSTANCE_PROFILE,
                 self.instance_profile)
         if self.instance_type:
             self.add_option_setting(
-                'aws:autoscaling:launchconfiguration',
-                'InstanceType',
+                namespaces.LAUNCH_CONFIGURATION,
+                option_names.INSTANCE_TYPE,
                 self.instance_type)
         if self.single_instance:
             self.add_option_setting(
-                'aws:elasticbeanstalk:environment',
-                'EnvironmentType',
+                namespaces.ENVIRONMENT_TYPE,
+                option_names.ENVIRONMENT_TYPE,
                 'SingleInstance')
         if self.key_name:
             self.add_option_setting(
-                'aws:autoscaling:launchconfiguration',
-                'EC2KeyName',
+                namespaces.LAUNCH_CONFIGURATION,
+                option_names.EC2_KEY_NAME,
                 self.key_name)
         if self.scale:
             self.add_option_setting(
-                'aws:autoscaling:asg',
-                'MaxSize',
+                namespaces.AUTOSCALING,
+                option_names.MAX_SIZE,
                 self.scale)
             self.add_option_setting(
-                'aws:autoscaling:asg',
-                'MinSize',
+                namespaces.AUTOSCALING,
+                option_names.MIN_SIZE,
                 self.scale)
 
     def add_client_defaults(self):
@@ -161,85 +164,96 @@ class CreateEnvironmentRequest(object):
             if ec2.has_default_vpc():
                 # Launch with t2 micro if not a classic account
                 self.add_option_setting(
-                    'aws:autoscaling:launchconfiguration',
-                    'InstanceType',
+                    namespaces.LAUNCH_CONFIGURATION,
+                    option_names.INSTANCE_TYPE,
                     't2.micro'
                 )
+        version = pkg_resources.parse_version(self.platform.stack_version)
+        if version >= pkg_resources.parse_version('2.0'):
+            # Enhanced Health only supported on 2.0+ solution stacks
+            self.add_option_setting(
+                namespaces.HEALTH_SYSTEM,
+                option_names.SYSTEM_TYPE,
+                'enhanced')
 
         self.add_option_setting(
-            'aws:elasticbeanstalk:command',
-            'BatchSize',
+            namespaces.COMMAND,
+            option_names.BATCH_SIZE,
             '30')
         self.add_option_setting(
-            'aws:elasticbeanstalk:command',
-            'BatchSizeType',
+            namespaces.COMMAND,
+            option_names.BATCH_SIZE_TYPE,
             'Percentage')
         if not self.tier or self.tier.name.lower() == 'webserver':
             self.add_option_setting(
-                'aws:elb:policies',
-                'ConnectionDrainingEnabled',
+                namespaces.ELB_POLICIES,
+                option_names.CONNECTION_DRAINING,
                 'true')
             self.add_option_setting(
-                'aws:elb:healthcheck',
-                'Interval',
+                namespaces.HEALTH_CHECK,
+                option_names.INTERVAL,
                 '30')
             self.add_option_setting(
-                'aws:elb:loadbalancer',
-                'CrossZone',
+                namespaces.LOAD_BALANCER,
+                option_names.CROSS_ZONE,
                 'true')
             if not self.single_instance:
                 self.add_option_setting(
-                    'aws:autoscaling:updatepolicy:rollingupdate',
-                    'RollingUpdateEnabled',
+                    namespaces.ROLLING_UPDATES,
+                    option_names.ROLLING_UPDATE_ENABLED,
                     'true')
                 self.add_option_setting(
-                    'aws:autoscaling:updatepolicy:rollingupdate',
-                    'RollingUpdateType',
+                    namespaces.ROLLING_UPDATES,
+                    option_names.ROLLING_UPDATE_TYPE,
                     'Health')
 
     def compile_database_options(self):
         if not self.database:
             return
 
-        namespace = 'aws:rds:dbinstance'
-        self.add_option_setting(namespace, 'DBPassword',
+        namespace = namespaces.RDS
+        self.add_option_setting(namespace, option_names.DB_PASSWORD,
                                 self.database['password'])
-        self.add_option_setting(namespace, 'DBUser', self.database['username'])
+        self.add_option_setting(namespace, option_names.DB_USER,
+                                self.database['username'])
         if self.database['instance']:
-            self.add_option_setting(namespace, 'DBInstanceClass',
+            self.add_option_setting(namespace, option_names.DB_INSTANCE,
                                     self.database['instance'])
         if self.database['size']:
-            self.add_option_setting(namespace, 'DBAllocatedStorage',
+            self.add_option_setting(namespace, option_names.DB_STORAGE_SIZE,
                                     self.database['size'])
         if self.database['engine']:
-            self.add_option_setting(namespace, 'DBEngine',
+            self.add_option_setting(namespace, option_names.DB_ENGINE,
                                     self.database['engine'])
         if self.database['version']:
-            self.add_option_setting(namespace, 'DBEngineVersion',
+            self.add_option_setting(namespace, option_names.DB_ENGINE_VERSION,
                                     self.database['version'])
-        self.add_option_setting(namespace, 'DBDeletionPolicy', 'Snapshot')
+        self.add_option_setting(namespace, option_names.DB_DELETION_POLICY,
+                                'Snapshot')
 
     def compile_vpc_options(self):
         if not self.vpc:
             return
 
-        namespace = 'aws:ec2:vpc'
-        self.add_option_setting(namespace, 'VPCId', self.vpc['id'])
-        self.add_option_setting(namespace, 'AssociatePublicIpAddress',
+        namespace = namespaces.VPC
+        self.add_option_setting(namespace, option_names.VPC_ID,
+                                self.vpc['id'])
+        self.add_option_setting(namespace, option_names.PUBLIC_IP,
                                 self.vpc['publicip'])
-        self.add_option_setting(namespace, 'ELBScheme', self.vpc['elbscheme'])
+        self.add_option_setting(namespace, option_names.ELB_SCHEME,
+                                self.vpc['elbscheme'])
         if self.vpc['elbsubnets']:
-            self.add_option_setting(namespace, 'ELBSubnets',
+            self.add_option_setting(namespace, option_names.ELB_SUBNETS,
                                     self.vpc['elbsubnets'])
         if self.vpc['ec2subnets']:
-            self.add_option_setting(namespace, 'Subnets',
+            self.add_option_setting(namespace, option_names.SUBNETS,
                                     self.vpc['ec2subnets'])
         if self.vpc['securitygroups']:
-            self.add_option_setting('aws:autoscaling:launchconfiguration',
-                                    'SecurityGroups',
+            self.add_option_setting(namespaces.LAUNCH_CONFIGURATION,
+                                    option_names.SECURITY_GROUPS,
                                     self.vpc['securitygroups'])
         if self.vpc['dbsubnets']:
-            self.add_option_setting(namespace, 'DBSubnets',
+            self.add_option_setting(namespace, option_names.DB_SUBNETS,
                                     self.vpc['dbsubnets'])
 
 

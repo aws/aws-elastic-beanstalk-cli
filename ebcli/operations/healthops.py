@@ -14,30 +14,29 @@
 from cement.utils.misc import minimal_logger
 
 from ..lib import elasticbeanstalk, elb, ec2
-from ..health.data_poller import DataPoller, TraditionalHealthDataPoller, DummyDataPoller
+from ..health.data_poller import DataPoller, TraditionalHealthDataPoller
 from ..health.screen import Screen, TraditionalHealthScreen
 from ..health.help import HelpTable, ViewlessHelpTable
 from ..health import term
 from ..health.table import Column, Table
 from ..health.specialtables import RequestTable, StatusTable
 from ..objects.exceptions import NotSupportedError
+from ..resources.statics import namespaces, option_names
 
 LOG = minimal_logger(__name__)
 
 
-def display_interactive_health(app_name, env_name, refresh, mono, default_view, dummy):
+def display_interactive_health(app_name, env_name, refresh,
+                               mono, default_view):
     env = elasticbeanstalk.describe_configuration_settings(app_name, env_name)
     option_settings = env.get('OptionSettings')
     health_type = elasticbeanstalk.get_option_setting(
         option_settings,
-        'aws:elasticbeanstalk:healthreporting:system',
-        'SystemType')
+        namespaces.HEALTH_SYSTEM,
+        option_names.SYSTEM_TYPE)
 
     if health_type == 'enhanced':
-        if dummy:
-            poller = DummyDataPoller
-        else:
-            poller = DataPoller
+        poller = DataPoller
         # Create dynamic screen
         screen = Screen()
         create_health_tables(screen)

@@ -27,7 +27,6 @@ class HealthController(AbstractBaseController):
         arguments = AbstractBaseController.Meta.arguments + [
             (['--refresh'], dict(action='store_true', help='refresh')),
             (['--mono'], dict(action='store_true', help='no color')),
-            (['--dummy'], dict(action='store_true', help='use dummy data')),
             (['--view'], dict(default='split', choices=['split', 'status', 'request', 'cpu']))
         ]
 
@@ -37,7 +36,7 @@ class HealthController(AbstractBaseController):
         verbose = self.app.pargs.verbose
         refresh = self.app.pargs.refresh
         mono = self.app.pargs.mono
-        dummy = self.app.pargs.dummy
         view = self.app.pargs.view
 
-        healthops.display_interactive_health(app_name, env_name, refresh, mono, view, dummy)
+        healthops.display_interactive_health(app_name, env_name, refresh,
+                                             mono, view)
