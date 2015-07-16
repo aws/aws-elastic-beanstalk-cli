@@ -162,7 +162,7 @@ def _is_single_instance(app_name, env_name):
     option_settings = env['OptionSettings']
     env_type = elasticbeanstalk.get_option_setting(
         option_settings,
-        namespaces.ENVIRONMENT_TYPE,
+        namespaces.ENVIRONMENT,
         option_names.ENVIRONMENT_TYPE)
 
     if env_type == 'SingleInstance':

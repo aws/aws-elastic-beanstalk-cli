@@ -7,7 +7,7 @@ import ebcli
 
 requires = ['pyyaml>=3.11',
             'blessed==1.9.5',
-            'botocore<=1.0.1',
+            'botocore>=1.0.1',
             'cement==2.4',
             'colorama==0.3.3',
             'pathspec==0.3.3',

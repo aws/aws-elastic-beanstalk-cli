@@ -246,6 +246,13 @@ prompts = {
     'create.dockerrunupgrade': 'Multicontainer Docker environments do not support the version number of the Dockerrun.aws.json file that you provided. Type "eb labs convert-dockerrun" to convert it to a newer format.',
     'ecs.permissions': 'The Multi-container Docker platform requires additional ECS permissions. Add the permissions to the aws-elasticbeanstalk-ec2-role or use your own instance profile by typing "-ip {profile-name}".\n'
                        'For more information see: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker_ecstutorial.html#create_deploy_docker_ecstutorial_role',
+    'create.servicerole.info': '2.0+ Platforms require a service role. We will attempt to create one for you. You can specify your own role using the --service-role option.',
+    'create.servicerole.view': 'Type "view" to see the policy, or just press ENTER to continue',
+    'create.servicerole.required': '2.0+ Platforms require a service role. You can provide one with --service-role option',
+    'create.servicerole.nopermissions': 'No permissions to create a role. '
+                                        'Create an IAM role called "{}" with appropriate permissions to continue, or specify a role with --service-role.\n'
+                                        'See http://aws.amazon.com/somesite for more info. \nActual error: {}',
+    'general.pressenter': 'Press enter to continue',
 }
 
 alerts = {
@@ -284,6 +291,7 @@ flag_text = {
     'create.sample': 'use Sample Application',
     'create.default': 'set as branches default environment',
     'create.iprofile': 'EC2 Instance profile',
+    'create.servicerole': 'Service Role',
     'create.version': 'version label to deploy',
     'create.keyname': 'EC2 SSH KeyPair name',
     'create.scale': 'number of desired instances',

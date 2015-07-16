@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 
 import re
+import time
 
 from cement.utils.misc import minimal_logger
 
@@ -19,21 +20,18 @@ from ..lib import elasticbeanstalk, iam, utils
 from ..lib.aws import InvalidParameterValueError
 from ..core import io
 from ..objects.exceptions import TimeoutError, AlreadyExistsError, \
-    NotAuthorizedError
+    NotAuthorizedError, NotSupportedError
 from ..resources.strings import strings, responses, prompts
 from . import commonops
 
 LOG = minimal_logger(__name__)
 DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
+DEFAULT_SERVICE_ROLE_NAME = 'aws-elasticbeanstalk-service-role'
 
 
 def make_new_env(env_request, branch_default=False,
                  nohang=False, interactive=True, timeout=None):
-    if env_request.instance_profile is None and \
-                            env_request.template_name is None:
-        # Service supports no profile, however it is not good/recommended
-        # Get the eb default profile
-        env_request.instance_profile = get_default_profile()
+    resolve_roles(env_request, interactive)
 
     # deploy code
     if not env_request.sample_application and not env_request.version_label:
@@ -120,7 +118,7 @@ def create_env(env_request, interactive=True):
             else:
                 raise
 
-                # Try again with new values
+        # Try again with new values
 
 
 def get_default_profile():
@@ -132,12 +130,15 @@ def get_default_profile():
         profile = DEFAULT_ROLE_NAME
         try:
             iam.create_instance_profile(profile)
+            io.log_info('Created default instance profile.')
             role = get_default_role()
             iam.add_role_to_profile(profile, role)
         except AlreadyExistsError:
             pass
     except NotAuthorizedError:
         # Not a root account. Just assume role exists
+        io.log_info('No IAM privileges: assuming default '
+                    'instance profile exists.')
         return DEFAULT_ROLE_NAME
 
     return profile
@@ -153,3 +154,129 @@ def get_default_role():
     except AlreadyExistsError:
         pass
     return role
+
+
+def get_service_role():
+    try:
+        roles = iam.get_role_names()
+        if DEFAULT_SERVICE_ROLE_NAME not in roles:
+            return None
+    except NotAuthorizedError:
+        # No permissions to list roles
+        # Assume role exists, we will handle error at a deeper level
+        pass
+
+    return DEFAULT_SERVICE_ROLE_NAME
+
+
+def create_default_service_role():
+    """
+    Create the default service role
+    """
+    io.log_info('Creating service role {} with default permissions.'
+                .format(DEFAULT_SERVICE_ROLE_NAME))
+    trust_document = _get_default_service_trust_document()
+    json_policy = _get_default_service_role_policy()
+    role_name = DEFAULT_SERVICE_ROLE_NAME
+    policy_name = 'awsebcli_aws-elasticbeanstalk-service-role_{}'\
+        .format(int(time.time()))
+    try:
+        iam.create_role_with_policy(role_name, trust_document,
+                                    policy_name, json_policy)
+    except NotAuthorizedError as e:
+        # NO permissions to create or do something
+        raise NotAuthorizedError(prompts['create.servicerole.nopermissions']
+                                 .format(DEFAULT_SERVICE_ROLE_NAME, e))
+
+    return DEFAULT_SERVICE_ROLE_NAME
+
+
+def resolve_roles(env_request, interactive):
+    """
+    Resolves instance-profile and service-role
+    :param env_request: environment request
+    :param interactive: boolean
+    """
+    LOG.debug('Resolving roles')
+
+    if env_request.instance_profile is None and \
+            env_request.template_name is None:
+        # Service supports no profile, however it is not good/recommended
+        # Get the eb default profile
+        env_request.instance_profile = get_default_profile()
+
+
+    if (env_request.platform.has_healthd_support() and  # HealthD enabled
+            (env_request.service_role is None) and
+            (env_request.template_name is None)):
+        role = get_service_role()
+        if role is None:
+            if interactive:
+                io.echo()
+                io.echo(prompts['create.servicerole.info'])
+                input = io.get_input(prompts['create.servicerole.view'],
+                                     default='')
+
+                if input.strip('"').lower() == 'view':
+                    io.echo(_get_default_service_role_policy())
+                    io.get_input(prompts['general.pressenter'])
+
+                role = create_default_service_role()
+            else:
+                raise NotSupportedError(prompts['create.servicerole.required'])
+
+        env_request.service_role = role
+
+
+def _get_default_service_trust_document():
+    """
+    Just a string representing the service role policy.
+    Includes newlines for pretty printing :)
+    """
+    return \
+'''{
+    "Version": "2012-10-17",
+    "Statement": [{
+        "Sid": "",
+        "Effect": "Allow",
+        "Principal": {
+            "Service": "elasticbeanstalk.amazonaws.com"
+        },
+        "Action": "sts:AssumeRole",
+        "Condition": {
+            "StringEquals": {
+                "sts:ExternalId": "elasticbeanstalk"
+            }
+        }
+    }]
+}'''
+
+
+def _get_default_service_role_policy():
+    """
+    Just a string representing the service role policy.
+    Includes newlines for pretty printing :)
+    """
+    return \
+'''{
+    "Version": "2012-10-17",
+    "Statement": [{
+        "Effect": "Allow",
+        "Action": [
+            "elasticloadbalancing:DescribeInstanceHealth",
+            "ec2:DescribeInstances",
+            "ec2:DescribeInstanceStatus",
+            "ec2:GetConsoleOutput",
+            "ec2:AssociateAddress",
+            "ec2:DescribeAddresses",
+            "ec2:DescribeSecurityGroups",
+            "sqs:GetQueueAttributes",
+            "sqs:GetQueueUrl",
+            "autoscaling:DescribeAutoScalingGroups",
+            "autoscaling:DescribeAutoScalingInstances",
+            "autoscaling:DescribeScalingActivities",
+            "autoscaling:DescribeNotificationConfigurations"
+        ],
+        "Resource": ["*"]
+    }]
+}'''

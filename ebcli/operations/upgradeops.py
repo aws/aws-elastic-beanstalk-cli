@@ -54,7 +54,7 @@ def upgrade_env(app_name, env_name, timeout, confirm, noroll):
         return
     else:
         single = elasticbeanstalk.get_option_setting(
-            env.option_settings, namespaces.ENVIRONMENT_TYPE,
+            env.option_settings, namespaces.ENVIRONMENT,
             'EnvironmentType') == 'SingleInstance'
         rolling_enabled = elasticbeanstalk.get_option_setting(
             env.option_settings, namespaces.ROLLING_UPDATES,

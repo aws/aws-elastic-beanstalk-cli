@@ -47,6 +47,8 @@ class CreateController(AbstractBaseController):
                 action='store_true', help=flag_text['create.default'])),
             (['-ip', '--instance_profile'], dict(
                 help=flag_text['create.iprofile'])),
+            (['-sr', '--service-role'], dict(
+                help=flag_text['create.servicerole'])),
             (['--version'], dict(help=flag_text['create.version'])),
             (['-k', '--keyname'], dict(help=flag_text['create.keyname'])),
             (['--scale'], dict(type=int, help=flag_text['create.scale'])),
@@ -100,6 +102,7 @@ class CreateController(AbstractBaseController):
         solution_string = self.app.pargs.platform
         single = self.app.pargs.single
         iprofile = self.app.pargs.instance_profile
+        service_role = self.app.pargs.service_role
         label = self.app.pargs.version
         branch_default = self.app.pargs.branch_default
         key_name = self.app.pargs.keyname
@@ -201,6 +204,7 @@ class CreateController(AbstractBaseController):
             instance_type=itype,
             version_label=label,
             instance_profile=iprofile,
+            service_role=service_role,
             single_instance=single,
             key_name=key_name,
             sample_application=sample,

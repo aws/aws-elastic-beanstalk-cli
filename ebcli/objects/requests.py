@@ -11,9 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import pkg_resources
-
-from ..lib import ec2
+from ..lib import ec2, utils
 from ..resources.strings import strings
 from ..resources.statics import namespaces, option_names
 
@@ -21,21 +19,23 @@ class CreateEnvironmentRequest(object):
 
     def __init__(self, app_name=None, env_name=None, cname=None, platform=None,
                  tier=None, instance_type=None, version_label=None,
-                 instance_profile=None, single_instance=False, key_name=None,
+                 instance_profile=None, service_role=None,
+                 single_instance=False, key_name=None,
                  sample_application=False, tags=None, scale=None,
                  database=None, vpc=None, template_name=None):
         self.app_name = app_name
-        self.env_name = env_name
         self.cname = cname
-        self.template_name = template_name
-        self.platform = platform
-        self.tier = tier
-        self.instance_type = instance_type
-        self.version_label = version_label
+        self.env_name = env_name
         self.instance_profile = instance_profile
-        self.single_instance = single_instance
+        self.instance_type = instance_type
         self.key_name = key_name
+        self.platform = platform
         self.sample_application = sample_application
+        self.service_role = service_role
+        self.single_instance = single_instance
+        self.template_name = template_name
+        self.tier = tier
+        self.version_label = version_label
         if tags is None:
             self.tags = []
         else:
@@ -48,10 +48,11 @@ class CreateEnvironmentRequest(object):
             self.vpc = {}
         else:
             self.vpc = dict(vpc)
-        self.description = strings['env.description']
+
         self.scale = None
         self.option_settings = []
         self.compiled = False
+        self.description = strings['env.description']
 
         if not self.app_name:
             raise TypeError(self.__class__.__name__ + ' requires key-word argument app_name')
@@ -130,6 +131,12 @@ class CreateEnvironmentRequest(object):
                 namespaces.LAUNCH_CONFIGURATION,
                 option_names.IAM_INSTANCE_PROFILE,
                 self.instance_profile)
+        if self.service_role:
+            self.add_option_setting(
+                namespaces.ENVIRONMENT,
+                option_names.SERVICE_ROLE,
+                self.service_role
+            )
         if self.instance_type:
             self.add_option_setting(
                 namespaces.LAUNCH_CONFIGURATION,
@@ -137,7 +144,7 @@ class CreateEnvironmentRequest(object):
                 self.instance_type)
         if self.single_instance:
             self.add_option_setting(
-                namespaces.ENVIRONMENT_TYPE,
+                namespaces.ENVIRONMENT,
                 option_names.ENVIRONMENT_TYPE,
                 'SingleInstance')
         if self.key_name:
@@ -168,9 +175,7 @@ class CreateEnvironmentRequest(object):
                     option_names.INSTANCE_TYPE,
                     't2.micro'
                 )
-        version = pkg_resources.parse_version(self.platform.stack_version)
-        if version >= pkg_resources.parse_version('2.0'):
-            # Enhanced Health only supported on 2.0+ solution stacks
+        if self.platform.has_healthd_support():
             self.add_option_setting(
                 namespaces.HEALTH_SYSTEM,
                 option_names.SYSTEM_TYPE,

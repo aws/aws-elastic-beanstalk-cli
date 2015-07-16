@@ -15,6 +15,8 @@ import re
 
 from cement.utils.misc import minimal_logger
 
+from ..lib import utils
+
 LOG = minimal_logger(__name__)
 
 
@@ -35,6 +37,11 @@ class SolutionStack():
 
     def __ne__(self, other):
         return self.__dict__ != other.__dict__
+
+    def has_healthd_support(self):
+        # ToDo: Currently stacks are at 1.9, before release change this to 2.0
+        return utils.parse_version(self.stack_version) \
+               >= utils.parse_version('1.9')
 
     @staticmethod
     def get_platform(ss_string):

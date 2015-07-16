@@ -13,6 +13,7 @@
 
 import os
 import re
+import pkg_resources
 import sys
 from datetime import datetime
 import warnings
@@ -235,6 +236,15 @@ def get_data_from_url(url, timeout=20):
 def print_from_url(url):
     result = get_data_from_url(url)
     io.echo(result)
+
+
+def parse_version(version_string):
+    """
+    Parse string as a verison object for comparison
+    Example: parse_version('1.9.2') > parse_version('1.9.alpha')
+    See docs for pkg_resource.parse_version as this is just a wrapper
+    """
+    return pkg_resources.parse_version(version_string)
 
 
 def save_file_from_url(url, location, filename):
