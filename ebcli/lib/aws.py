@@ -81,6 +81,10 @@ def set_region(region_name):
     global _region_name
     _region_name = region_name
 
+    # Invalidate session and old clients
+    _get_botocore_session.botocore_session = None
+    _api_clients = {}
+
 
 def set_endpoint_url(endpoint_url):
     global _endpoint_url
