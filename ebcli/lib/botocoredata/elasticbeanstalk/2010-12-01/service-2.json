@@ -981,7 +981,7 @@
         "Nice":{"shape":"Double"},
         "System":{"shape":"Double"},
         "Idle":{"shape":"Double"},
-        "Iowait":{"shape":"Double"},
+        "IOWait":{"shape":"Double"},
         "Irq":{"shape":"Double"},
         "Softirq":{"shape":"Double"}
       }
@@ -1791,7 +1791,6 @@
       "enum":[
         "Green",
         "Yellow",
-        "Orange",
         "Red",
         "Grey"
       ]
@@ -1805,6 +1804,7 @@
         "Causes",
         "ApplicationMetrics",
         "InstancesHealth",
+        "RefreshedAt",
         "All"
       ]
     },
@@ -2044,14 +2044,14 @@
     "InstanceHealthSummary":{
       "type":"structure",
       "members":{
-        "NoData":{"shape":"Integer"},
-        "Unknown":{"shape":"Integer"},
-        "Pending":{"shape":"Integer"},
-        "Ok":{"shape":"Integer"},
-        "Info":{"shape":"Integer"},
-        "Warning":{"shape":"Integer"},
-        "Degraded":{"shape":"Integer"},
-        "Severe":{"shape":"Integer"}
+        "NoData":{"shape":"NullableInteger"},
+        "Unknown":{"shape":"NullableInteger"},
+        "Pending":{"shape":"NullableInteger"},
+        "Ok":{"shape":"NullableInteger"},
+        "Info":{"shape":"NullableInteger"},
+        "Warning":{"shape":"NullableInteger"},
+        "Degraded":{"shape":"NullableInteger"},
+        "Severe":{"shape":"NullableInteger"}
       }
     },
     "InstanceId":{
@@ -2074,7 +2074,7 @@
         "Color",
         "Causes",
         "ApplicationMetrics",
-        "InstanceId",
+        "RefreshedAt",
         "LaunchedAt",
         "System",
         "All"
@@ -2100,14 +2100,14 @@
     "Latency":{
       "type":"structure",
       "members":{
-        "P999":{"shape":"Double"},
-        "P99":{"shape":"Double"},
-        "P95":{"shape":"Double"},
-        "P90":{"shape":"Double"},
-        "P85":{"shape":"Double"},
-        "P75":{"shape":"Double"},
-        "P50":{"shape":"Double"},
-        "P10":{"shape":"Double"}
+        "P999":{"shape":"NullableDouble"},
+        "P95":{"shape":"NullableDouble"},
+        "P99":{"shape":"NullableDouble"},
+        "P90":{"shape":"NullableDouble"},
+        "P85":{"shape":"NullableDouble"},
+        "P75":{"shape":"NullableDouble"},
+        "P50":{"shape":"NullableDouble"},
+        "P10":{"shape":"NullableDouble"}
       }
     },
     "LaunchConfiguration":{
@@ -2189,11 +2189,11 @@
       "type":"list",
       "member":{"shape":"Listener"}
     },
-    "Loadavg":{
+    "LoadAverage":{
       "type":"list",
-      "member":{"shape":"LoadavgValue"}
+      "member":{"shape":"LoadAverageValue"}
     },
-    "LoadavgValue":{"type":"double"},
+    "LoadAverageValue":{"type":"double"},
     "MaxRecords":{
       "type":"integer",
       "min":1,
@@ -2210,6 +2210,8 @@
       "min":1,
       "max":100
     },
+    "NullableDouble":{"type":"double"},
+    "NullableInteger":{"type":"integer"},
     "OperationInProgressException":{
       "type":"structure",
       "members":{
@@ -2519,10 +2521,10 @@
     "StatusCodes":{
       "type":"structure",
       "members":{
-        "Status_2xx":{"shape":"Integer"},
-        "Status_3xx":{"shape":"Integer"},
-        "Status_4xx":{"shape":"Integer"},
-        "Status_5xx":{"shape":"Integer"}
+        "Status2xx":{"shape":"Integer"},
+        "Status3xx":{"shape":"Integer"},
+        "Status4xx":{"shape":"Integer"},
+        "Status5xx":{"shape":"Integer"}
       }
     },
     "String":{"type":"string"},
@@ -2544,9 +2546,9 @@
             "Nice":{"shape":"Double"},
             "System":{"shape":"Double"},
             "Idle":{"shape":"Double"},
-            "Iowait":{"shape":"Double"},
-            "Irq":{"shape":"Double"},
-            "Softirq":{"shape":"Double"}
+            "IOWait":{"shape":"Double"},
+            "IRQ":{"shape":"Double"},
+            "SoftIRQ":{"shape":"Double"}
           }
         },
         "DestinationEnvironmentId":{
@@ -2564,7 +2566,7 @@
       "type":"structure",
       "members":{
         "CPUUtilization":{"shape":"CPUUtilization"},
-        "Loadavg":{"shape":"Loadavg"}
+        "LoadAverage":{"shape":"LoadAverage"}
       }
     },
     "Tag":{

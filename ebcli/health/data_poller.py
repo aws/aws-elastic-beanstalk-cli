@@ -222,10 +222,10 @@ def collapse_instance_health_data(instances_health):
         cause = causes[0] if causes else ''
         instance['Cause'] = cause
 
-        instance['load1'] = instance['Loadavg'][0] \
-            if 'Loadavg' in instance else '-'
-        instance['load5'] = instance['Loadavg'][1] \
-            if 'Loadavg' in instance else '-'
+        instance['load1'] = instance['LoadAverage'][0] \
+            if 'LoadAverage' in instance else '-'
+        instance['load5'] = instance['LoadAverage'][1] \
+            if 'LoadAverage' in instance else '-'
 
         try:
             delta = datetime.now(tz.tzlocal()) - utils.get_local_time(instance['LaunchedAt'])

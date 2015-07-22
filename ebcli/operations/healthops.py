@@ -68,10 +68,10 @@ def create_health_tables(screen):
     screen.add_table(RequestTable('request', columns=[
         Column('id', 14, 'InstanceId', 'left'),
         Column('r/sec', 6, 'requests', 'left'),
-        Column('%2xx', 6, 'Status_2xx', 'right', 'Status_2xx_sort'),
-        Column('%3xx', 6, 'Status_3xx', 'right', 'Status_3xx_sort'),
-        Column('%4xx', 6, 'Status_4xx', 'right', 'Status_4xx_sort'),
-        Column('%5xx', 6, 'Status_5xx', 'right', 'Status_5xx_sort'),
+        Column('%2xx', 6, 'Status2xx', 'right', 'Status2xx_sort'),
+        Column('%3xx', 6, 'Status3xx', 'right', 'Status3xx_sort'),
+        Column('%4xx', 6, 'Status4xx', 'right', 'Status4xx_sort'),
+        Column('%5xx', 6, 'Status5xx', 'right', 'Status5xx_sort'),
         Column('p99 ', 9, 'P99', 'right', 'P99_sort'),
         Column('p90 ', 8, 'P90', 'right', 'P90_sort'),
         Column('p75', 7, 'P75', 'right', 'P75_sort'),
@@ -88,7 +88,7 @@ def create_health_tables(screen):
         Column('nice%', 6, 'Nice', 'right'),
         Column('system%', 8, 'System', 'right'),
         Column('idle%', 6, 'Idle', 'right'),
-        Column('iowait%', 9, 'Iowait', 'right'),
+        Column('iowait%', 9, 'IOWait', 'right'),
     ]))
     screen.add_help_table(HelpTable())
 

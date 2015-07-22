@@ -518,19 +518,39 @@ def describe_template(app_name, template_name, platform=None):
     return result['ConfigurationSettings'][0]
 
 
-def get_environment_health(env_name):
+def get_environment_health(env_name, attributes=None):
+    if attributes is None:
+        attributes = [
+            "HealthStatus",
+            "Status",
+            "Color",
+            "Causes",
+            "ApplicationMetrics",
+            "InstancesHealth",
+            "RefreshedAt",
+        ]
     result = _make_api_call('describe_environment_health',
                             EnvironmentName=env_name,
-                            AttributeNames=['All'])
+                            AttributeNames=attributes)
     return result
 
 
-def get_instance_health(env_name, next_token=None):
+def get_instance_health(env_name, next_token=None, attributes=None):
+    if attributes is None:
+        attributes = [
+            "HealthStatus",
+            "Color",
+            "Causes",
+            "ApplicationMetrics",
+            "RefreshedAt",
+            "LaunchedAt",
+            "System"
+        ]
     kwargs = {}
     if next_token:
         kwargs['NextToken'] = next_token
     result = _make_api_call('describe_instances_health',
                             EnvironmentName=env_name,
-                            AttributeNames=['All'],
+                            AttributeNames=attributes,
                             **kwargs)
     return result
