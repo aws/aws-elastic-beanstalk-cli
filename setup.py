@@ -43,7 +43,7 @@ setup_options = dict(
     packages=find_packages('.', exclude=['tests*', 'docs*', 'sampleApps*']),
     package_dir={'ebcli': 'ebcli'},
     package_data={
-        'ebcli.lib.botocoredata': ['*/*/*.json'],
+        'ebcli.lib': ['botocoredata/*/*/*.json'],
         'ebcli.containers': ['containerfiles/*'],
         'ebcli.labs': ['cloudwatchfiles/*.config']},
     install_requires=requires,
