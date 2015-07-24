@@ -185,7 +185,7 @@ class InitController(AbstractBaseController):
         region = self.get_region_from_inputs()
 
         # Ask for region
-        if self.flag:
+        if (not region) and self.flag:
             # Choose defaults
             region_list = regions.get_all_regions()
             region = region_list[2].name
