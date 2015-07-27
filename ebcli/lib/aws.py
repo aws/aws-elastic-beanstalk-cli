@@ -216,9 +216,13 @@ def make_api_call(service_name, operation_name, **operation_options):
             LOG.debug('Response: ' + str(response_data))
             status = response_data['ResponseMetadata']['HTTPStatusCode']
             LOG.debug('API call finished, status = ' + str(status))
+            try:
+                message = str(response_data['Error']['Message'])
+            except KeyError:
+                message = ""
             if status == 400:
                 # Convert to correct 400 error
-                error = _get_400_error(response_data)
+                error = _get_400_error(response_data, message)
                 if isinstance(error, ThrottlingError):
                     LOG.debug('Received throttling error')
                     if attempt > MAX_ATTEMPTS:
@@ -228,17 +232,15 @@ def make_api_call(service_name, operation_name, **operation_options):
                     raise error
             elif status == 403:
                 LOG.debug('Received a 403')
-                try:
-                    message = str(response_data['Error']['Message'])
-                except KeyError:
+                if not message:
                     message = 'Are your permissions correct?'
                 raise NotAuthorizedError('Operation Denied. ' + message)
             elif status == 404:
                 LOG.debug('Received a 404')
-                raise NotFoundError(response_data['Error']['Message'])
+                raise NotFoundError(message)
             elif status == 409:
                 LOG.debug('Received a 409')
-                raise AlreadyExistsError(response_data['Error']['Message'])
+                raise AlreadyExistsError(message)
             elif status in (500, 503, 504):
                 LOG.debug('Received 5XX error')
                 if attempt > MAX_ATTEMPTS:
@@ -283,9 +285,9 @@ def _get_delay(attempt_number):
     return delay
 
 
-def _get_400_error(response_data):
+def _get_400_error(response_data, message):
     code = response_data['Error']['Code']
-    message = response_data['Error']['Message']
+    LOG.debug('Received a 400 Error')
     if code == 'InvalidParameterValue':
         return InvalidParameterValueError(message)
     elif code == 'InvalidQueryParameter':
