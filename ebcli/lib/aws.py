@@ -36,7 +36,6 @@ BOTOCORE_DATA_FOLDER_NAME = 'botocoredata'
 _api_clients = {}
 _profile = None
 _profile_env_var = 'AWS_EB_PROFILE'
-_region_env_var = 'AWS_EB_REGION'
 _id = None
 _key = None
 _region_name = None
@@ -155,8 +154,8 @@ def _get_botocore_session():
         LOG.debug('Botocore version: {0}'.format(botocore.__version__))
         session = botocore.session.get_session({
             'profile': (None, _profile_env_var, _profile, None),
-            'region': ('region', _region_env_var, _region_name, None)
         })
+        session.set_config_variable('region', _region_name)
         session.register_component('data_loader', _get_data_loader())
         _set_user_agent_for_session(session)
         _get_botocore_session.botocore_session = session
