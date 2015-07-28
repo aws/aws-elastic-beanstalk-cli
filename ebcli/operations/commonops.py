@@ -50,9 +50,9 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
     if can_abort:
         streamer.prompt += strings['events.abortmessage']
 
-    #Get first events
     events = []
     try:
+        # Get first event in order to get start time
         while not events:
             events = elasticbeanstalk.get_new_events(
                 None, None, request_id, last_event_time=None
@@ -72,6 +72,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
             else:
                 time.sleep(sleep_time)
 
+        # Get remaining events without request id
         while (datetime.now() - start) < timediff:
             time.sleep(sleep_time)
 
@@ -141,12 +142,12 @@ def get_event_string(event, long_format=False):
     severity = event.severity
     date = event.event_date
     if long_format:
-        return '{0} {1} {2}'.format(
+        return u'{0} {1} {2}'.format(
             date.strftime("%Y-%m-%d %H:%M:%S").ljust(22),
             severity.ljust(7),
             message)
     else:
-        return '{0}: {1}'.format(severity, message)
+        return u'{0}: {1}'.format(severity, message)
 
 
 def get_all_env_names():
