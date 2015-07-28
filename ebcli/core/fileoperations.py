@@ -376,7 +376,7 @@ def zip_up_project(location, ignore_list=None):
 
 def _zipdir(path, zipf, ignore_list=None):
     if ignore_list is None:
-        ignore_list = list()
+        ignore_list = ['.gitignore']
     ignore_list = ['./' + i for i in ignore_list]
     zipped_roots = []
     for root, dirs, files in os.walk(path):

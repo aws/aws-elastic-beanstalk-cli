@@ -3,6 +3,12 @@ Changelog
 =========
 
 ------------------
+3.4.7 (2015-07-28)
+------------------
+- Fix issue with .gitignore being included on deploy
+- Fix issue with streaming unicode events
+
+------------------
 3.4.6 (2015-07-10)
 ------------------
 - Fix issue with "eb labs download"
