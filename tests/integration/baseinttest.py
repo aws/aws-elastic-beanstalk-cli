@@ -31,6 +31,7 @@ class BaseIntegrationTest(test.CementTestCase):
     def setUp(self):
         super(BaseIntegrationTest, self).setUp()
         aws._flush()
+        aws.set_region('us-east-1')
         self.reset_backend()
         # Set up mock input and output
         self.patcher_input = mock.patch('ebcli.core.io.get_input')
