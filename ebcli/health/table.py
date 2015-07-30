@@ -14,6 +14,10 @@
 from .. core import io
 from . import term
 
+from cement.utils.misc import minimal_logger
+
+LOG = minimal_logger(__name__)
+
 
 class Table(object):
     def __init__(self, name, columns=None, screen=None):
@@ -58,7 +62,8 @@ class Table(object):
             header = justify_and_trim(column.name, column.size, column.justify)
             if (self.screen.sort_index and  # We are sorting
                     self.screen.sort_index[1] == c and  # Sort column
-                    self.name == self.screen.sort_index[0]):  # sort table
+                    self.name == self.screen.sort_index[0] and # sort table
+                    len(' '.join(labels)) < width):  # Column is on screen
                 format_string = '{n}{b}{u}{data}{n}{r}'
                 header = format_string.replace('{data}', header)
                 width += len(format_string) - 6
@@ -68,7 +73,7 @@ class Table(object):
         term.echo_line(term.reverse_colors(
                        justify_and_trim(' '.join(labels), width, 'left') +
                        t.normal).format(
-            n=t.normal, b=t.bold, u=t.underline, r=t.reverse
+            n=t.normal, b=t.bold, u=term.underline(), r=term.reverse_()
         ))
 
     def draw_rows(self):

@@ -6,7 +6,6 @@ from setuptools import setup, find_packages
 import ebcli
 
 requires = ['pyyaml>=3.11',
-            'blessed==1.9.5',
             'botocore>=1.0.1',
             'cement==2.4',
             'colorama==0.3.3',
@@ -19,6 +18,9 @@ requires = ['pyyaml>=3.11',
             'docker-py >= 1.1.0, < 1.2',
             'dockerpty >= 0.3.2, < 0.4',
            ]
+
+if not sys.platform.startswith('win'):
+    requires.append('blessed==1.9.5')
 
 try:
     with open('/etc/bash_completion.d/eb_completion.extra', 'w') as eo:

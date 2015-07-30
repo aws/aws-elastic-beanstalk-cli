@@ -15,22 +15,26 @@
 Dynamic IO / Interactive terminal
 """
 
-import signal
 import sys
+import time
 
-from blessed import Terminal
+import colorama
+from cement.core.exc import CaughtSignal
+from cement.utils.misc import minimal_logger
 
 from ..core import io, ebglobals
+
+LOG = minimal_logger(__name__)
 
 terminal = None
 counter = 0
 total = 1
 
 # Special characters
-UP_ARROW = u'\u25b2'
-DOWN_ARROW = u'\u25bc'
-LEFT_ARROW = u'\u25c0'
-RIGHT_ARROW = u'\u25b6'
+UP_ARROW = 'Up' if sys.platform.startswith('win') else u'\u25b2'
+DOWN_ARROW = 'Dn' if sys.platform.startswith('win') else u'\u25bc'
+LEFT_ARROW = 'Left' if sys.platform.startswith('win') else u'\u25c0'
+RIGHT_ARROW = 'Right' if sys.platform.startswith('win') else u'\u25b6'
 
 
 def get_terminal():
@@ -44,12 +48,17 @@ def init_terminal():
     if terminal:
         return
     else:
-        terminal = Terminal()
-        io.echo(terminal.clear())
+        if sys.platform.startswith('win'):
+            terminal = WindowsTerminal()
 
+        else:
+            from blessed import Terminal
+            terminal = Terminal()
+
+        io.echo(terminal.clear())
         def on_resize(sig, action):
             pass
-        signal.signal(signal.SIGWINCH, on_resize)
+        # signal.signal(signal.SIGWINCH, on_resize)
 
 
 def reset_terminal():
@@ -68,6 +77,22 @@ def width():
     return terminal.width
 
 
+def underline():
+    init_terminal()
+    if isinstance(terminal, WindowsTerminal):
+        return ''
+    else:
+        return terminal.underline
+
+
+def reverse_():
+    init_terminal()
+    if isinstance(terminal, WindowsTerminal):
+        return colorama.Back.WHITE + colorama.Fore.BLACK
+    else:
+        return terminal.reverse
+
+
 def underlined(string):
     init_terminal()
     return terminal.underline(string)
@@ -80,7 +105,6 @@ def reverse_colors(string):
 
 def echo_line(*strings):
     global counter
-    init_terminal()
     # if total and counter < total:
     echo_on_line(counter, *strings)
     counter += 1
@@ -127,6 +151,193 @@ def echo_on_line(line_num, *strings):
     else:
         io.echo(*strings)
 
+def get_key(timeout=None):
+    init_terminal()
+    with terminal.cbreak():
+        return terminal.inkey(timeout=timeout)
+
 
 def move_cursor(line_num, column_num):
     io.echo(terminal.move(line_num, column_num), end='')
+
+
+class WindowsTerminal(object):
+    def __init__(self):
+        io.start_color()
+        self.win32 = colorama.win32
+        self.normal = colorama.Style.RESET_ALL
+        self.bold = colorama.Style.BRIGHT
+
+    @property
+    def height(self):
+        return self.get_terminal_size()[0]-1
+
+    @property
+    def width(self):
+        return self.get_terminal_size()[1]-1
+
+    def clear(self):
+        return '\033[2J\033[1;1f'
+
+    def get_terminal_size(self):
+        import shutil
+        try:
+            size = shutil.get_terminal_size()
+            return size.columns, size.lines
+        except AttributeError:
+            # shutil doesn't have the method. Probably on an older version of python
+            # We will attempt to get the size ourselves
+            # We can use colorama's win32 wrapper
+            screen = self._get_screen_info()
+            window = screen.srWindow
+            x = window.Bottom - window.Top
+            y = window.Right - window.Left
+
+            return x or 80, y or 25
+
+    def _get_screen_info(self):
+        return self.win32.GetConsoleScreenBufferInfo()
+
+    def _get_cursor_pos(self):
+        position = self._get_screen_info().dwCursorPosition
+        return position.X, position.Y
+
+    def underline(self, string):
+        LOG.debug('Windows does not support underline. Doing nothing')
+        return string
+
+    def reverse(self, string):
+        """
+        Windows doesn't support reverse. But since you cant change
+        terminal colors on windows, we can safely assume that
+        white background and black text will be a reverse
+        Its not quite reverse on powershell, but it works
+        """
+        return io.on_color('white', io.color('black', string))
+
+    def clear_eos(self):
+        # print spaces till the end of the screen
+        pos = self._get_cursor_pos()
+        size = self.get_terminal_size()
+
+        string = ''
+        current_line = pos[1]
+        while current_line < size[1]:
+            string += self.clear_eol() + '\n'
+            current_line += 1
+
+        return string
+
+    def clear_eol(self):
+        # print spaces till the end of the line
+        size = self.get_terminal_size()
+        return ' ' * (size[1] +1)
+
+    def hide_cursor(self):
+        # toDo research, is this possible on windows?
+        return ''
+
+    def normal_cursor(self):
+        # todo linked to above
+        return ''
+
+    def location(self, x=0, y=0):
+        """
+        In order to use 'with' you need an object
+         with an __enter__ and __exit__ method
+        """
+        xy_tuple = self._get_cursor_pos()
+
+        class TermLocation(object):
+            def __init__(self, term):
+                self.term = term
+                self.saved_position = None
+
+            def __enter__(self):
+                self.saved_position = self.term._get_cursor_pos()
+                print(self.term.move(y, x))
+
+            def __exit__(self, exc_type, exc_val, exc_tb):
+                # Return cursor state
+                print(self.term.move(self.saved_position[1], self.saved_position[0]))
+
+        return TermLocation(self)
+
+    def move(self, y, x):
+        return '\x1b[{y};{x}H'.format(y=y+1, x=x+1)
+
+    def cbreak(self):
+
+        class CBreak(object):
+            def __enter__(self):
+                pass
+
+            def __exit__(self, exc_type, exc_val, exc_tb):
+                pass
+
+        return CBreak()
+
+    def inkey(self, timeout=None):
+        # Since get_key is a single method, we will just do the cbreak
+        # and input stuff in a single method.
+        # We should ever need inkey without cbreak
+
+        import msvcrt
+
+        def readInput():
+            start_time = time.time()
+            while True:
+                if msvcrt.kbhit():
+                    return msvcrt.getch()
+                if (time.time() - start_time) > timeout:
+                    return None
+
+        key = readInput()
+        if not key:
+            return None
+
+        if key == '\x03': # Ctrl C
+            raise CaughtSignal(2, None)
+
+        elif key == '\x1c': # Ctrl \
+            sys.exit(1)
+
+        elif key == '\xe0':
+            # Its an arrow key, get next symbol
+            next_key = msvcrt.getch()
+            if next_key == 'H':
+                return Val(name='KEY_UP', code=259)
+            elif next_key == 'K':
+                return Val(name='KEY_LEFT', code=260)
+            elif next_key == 'P':
+                return Val(name='KEY_DOWN', code=258)
+            elif next_key == 'M':
+                return Val(name='KEY_RIGHT', code=261)
+
+        elif key == '\x1b': # Esc
+            return Val(name='KEY_ESC', code=361)
+
+        else:
+            return Val(key=key)
+
+
+class Val(object):
+    # mimics terminals inkey val object
+    def __init__(self, key=None, name=None, code=None):
+        self.key = key
+        self.name = name
+        self.code = code
+
+    def __eq__(self, other):
+        if isinstance(other, Val):
+            if other.name == self.name and \
+                    other.code == self.code and \
+                    str(other) == str(self):
+                return True
+        elif isinstance(other, str):
+            return str(self) == other
+        else:
+            return False
+
+    def __str__(self):
+        return self.key or ''
