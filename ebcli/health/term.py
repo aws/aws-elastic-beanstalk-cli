@@ -282,13 +282,16 @@ class WindowsTerminal(object):
         # and input stuff in a single method.
         # We should ever need inkey without cbreak
 
-        import msvcrt
+        if sys.version_info[0] >= 3:
+            from msvcrt import kbhit, getwch as _getch
+        else:
+            from msvcrt import kbhit, getch as _getch
 
         def readInput():
             start_time = time.time()
             while True:
-                if msvcrt.kbhit():
-                    return msvcrt.getch()
+                if kbhit():
+                    return _getch()
                 if (time.time() - start_time) > timeout:
                     return None
 
@@ -304,7 +307,7 @@ class WindowsTerminal(object):
 
         elif key == '\xe0':
             # Its an arrow key, get next symbol
-            next_key = msvcrt.getch()
+            next_key = _getch()
             if next_key == 'H':
                 return Val(name='KEY_UP', code=259)
             elif next_key == 'K':
