@@ -183,17 +183,17 @@ class WindowsTerminal(object):
         import shutil
         try:
             size = shutil.get_terminal_size()
-            return size.columns, size.lines
+            return size.lines, size.columns
         except AttributeError:
             # shutil doesn't have the method. Probably on an older version of python
             # We will attempt to get the size ourselves
             # We can use colorama's win32 wrapper
             screen = self._get_screen_info()
             window = screen.srWindow
-            x = window.Bottom - window.Top
-            y = window.Right - window.Left
+            h = window.Bottom - window.Top
+            w = window.Right - window.Left
 
-            return x or 80, y or 25
+            return h or 80, w or 25
 
     def _get_screen_info(self):
         return self.win32.GetConsoleScreenBufferInfo()
