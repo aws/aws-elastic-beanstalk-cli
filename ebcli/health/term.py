@@ -326,7 +326,9 @@ class WindowsTerminal(object):
                 return Val(name='KEY_RIGHT', code=261)
 
         elif key == '\x1b': # Esc
-            return Val(name='KEY_ESC', code=361)
+            return Val(name='KEY_ESCAPE', code=361)
+        elif key == '\x0d': # Enter
+            return Val(name='KEY_ENTER', code=362)
 
         else:
             return Val(key=key)
@@ -352,3 +354,6 @@ class Val(object):
 
     def __str__(self):
         return self.key or ''
+    @property
+    def is_sequence(self):
+        return self.key is None

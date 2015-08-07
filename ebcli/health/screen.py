@@ -223,8 +223,10 @@ class Screen(object):
             sys.stdout.flush()
             val = None
             while not val or val.name not in {'KEY_ESCAPE', 'KEY_ENTER'}:
-                val = t.inkey()
-                if not val.is_sequence:
+                val = t.inkey(timeout=.5)
+                if val is None:
+                    continue
+                elif val.is_sequence is False:
                     id += str(val)
                     sys.stdout.write(str(val))
                     sys.stdout.flush()
@@ -400,7 +402,8 @@ class Screen(object):
                         left=term.LEFT_ARROW, right=term.RIGHT_ARROW)
         else:
             text = u''
-        term.echo_line(text, term.clear_eos())
+        term.echo_line(text)
+        term.echo_line(term.clear_eos())
 
     def sort_data(self, data):
         new_data = copy(data)
