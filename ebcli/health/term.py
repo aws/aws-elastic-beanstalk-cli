@@ -199,8 +199,14 @@ class WindowsTerminal(object):
         return self.win32.GetConsoleScreenBufferInfo()
 
     def _get_cursor_pos(self):
-        position = self._get_screen_info().dwCursorPosition
+        csbi = self._get_screen_info()
+        position = csbi.dwCursorPosition
         return position.X, position.Y
+
+    def _get_view_borders(self):
+        csbi = self._get_screen_info()
+        window = csbi.srWindow
+        return window.Top, window.Left, window.Bottom, window.Right
 
     def underline(self, string):
         LOG.debug('Windows does not support underline. Doing nothing')
@@ -218,11 +224,13 @@ class WindowsTerminal(object):
     def clear_eos(self):
         # print spaces till the end of the screen
         pos = self._get_cursor_pos()
-        size = self.get_terminal_size()
+        borders = self._get_view_borders()
 
         string = ''
         current_line = pos[1]
-        while current_line < size[1]:
+        height = borders[2] - 1
+
+        while current_line < height:
             string += self.clear_eol() + '\n'
             current_line += 1
 
@@ -231,7 +239,7 @@ class WindowsTerminal(object):
     def clear_eol(self):
         # print spaces till the end of the line
         size = self.get_terminal_size()
-        return ' ' * (size[1] +1)
+        return ' ' * (size[1] - 1)
 
     def hide_cursor(self):
         # toDo research, is this possible on windows?
