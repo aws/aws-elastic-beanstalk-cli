@@ -40,7 +40,7 @@ class HelpTable(Table):
     def set_up_standard_rows(self):
         self.add_help_text(['up', 'down', 'home', 'end'], 'Scroll vertically')
         self.add_help_text(['left', 'right'], 'Scroll horizontally')
-        self.add_help_text(['F'], 'Freeze/Unfreeze data')
+        self.add_help_text(['F'], 'Freeze/unfreeze data')
         self.add_help_text(['X'], 'Replace instance')
         self.add_help_text(['B'], 'Reboot instance')
         self.add_help_text(['<', '>'], 'Move sort column left/right')
@@ -51,9 +51,9 @@ class HelpTable(Table):
     def set_up_views(self):
         self.add_section('')
         self.add_section('Views')
-        self.add_help_text(['1'], 'All tables / split view')
-        self.add_help_text(['2'], 'Status Table')
-        self.add_help_text(['3'], 'Request Summary Table')
+        self.add_help_text(['1'], 'All tables/split view')
+        self.add_help_text(['2'], 'Status table')
+        self.add_help_text(['3'], 'Request summary table')
         self.add_help_text(['4'], 'CPU%/Load Table')
 
     def add_section(self, section_name):
