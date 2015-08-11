@@ -93,14 +93,20 @@ When you are ready to launch your new application version, type the following:
 
    eb deploy
 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+7. View the health of your environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    eb health
+
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-7. View the updated environment.
+8. View the updated environment.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     eb open
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-8. Shut down your running environment.
+9. Shut down your running environment.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     eb terminate
@@ -108,7 +114,7 @@ When you are ready to launch your new application version, type the following:
 Confirm that this is the environment that you want to terminate by typing the environment name.
 
 ^^^^^^^^^^^^
-9. Clean up.
+10. Clean up.
 ^^^^^^^^^^^^
 
 To completely remove your application and clean up the local project directory, type the following:

@@ -3,6 +3,15 @@ Changelog
 =========
 
 ------------------
+3.5 (2015-08-11)
+------------------
+- Add command "eb labs setup-ssl"
+- Add command "eb labs cloudwatchlogs-setup"
+- Change `eb open` to now open https if load balancer http port is OFF
+- Add support for enhanced health with `eb health`
+- Other minor changes
+
+------------------
 3.4.7 (2015-07-28)
 ------------------
 - Fix issue with .gitignore being included on deploy
