@@ -386,6 +386,7 @@ responses = {
     'event.updatefailed': 'Failed to deploy configuration.',
     'git.norepository': 'Error: Not a git repository '
                         '(or any of the parent directories): .git',
+    'health.nodescribehealth': 'DescribeEnvironmentHealth is not supported.',
     'env.updatesuccess': 'Environment update completed successfully.',
     'env.configsuccess': 'Successfully deployed new configuration to environment.',
     'env.cnamenotavailable': 'DNS name \([^ ]+\) is not available.',

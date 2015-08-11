@@ -26,8 +26,9 @@ from cement.utils.misc import minimal_logger
 from botocore.compat import six
 from datetime import datetime
 
-from ..lib.aws import InvalidParameterValueError
 from ..lib import elasticbeanstalk, utils, elb, ec2
+from ..lib.aws import InvalidParameterValueError
+from ..resources.strings import responses
 Queue = six.moves.queue.Queue
 
 LOG = minimal_logger(__name__)
@@ -66,14 +67,23 @@ class DataPoller(object):
     def _poll_for_health_data(self):
         LOG.debug('Starting data poller child thread')
         try:
+            LOG.debug('Polling for data')
             while True:
                 # Grab data
-                data = self._get_health_data()
-                # Put it in queue
-                self.data_queue.put(data)
+                try:
+                    data = self._get_health_data()
 
-                if not data:
-                    break
+                    # Put it in queue
+                    self.data_queue.put(data)
+                except Exception as e:
+                    if e.message == responses['health.nodescribehealth']:
+                        # Environment probably switching between health monitoring types
+                        LOG.debug('Swallowing \'DescribeEnvironmentHealth is not supported\' exception')
+                        LOG.debug('Nothing to do as environment should be transitioning')
+                    else:
+                        # Not a recoverable error, raise it
+                        raise e
+
                 # Now sleep while we wait for more data
                 refresh_time = data['environment'].get('RefreshedAt', None)
                 time.sleep(self._get_sleep_time(refresh_time))
@@ -83,7 +93,7 @@ class DataPoller(object):
         except InvalidParameterValueError as e:
             # Environment no longer exists, exit
             LOG.debug(e)
-        except Exception:
+        except Exception as e:
             traceback.print_exc()
         finally:
             self.data_queue.put({})
