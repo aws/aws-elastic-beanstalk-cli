@@ -113,9 +113,9 @@ When you are ready to launch your new application version, type the following:
 
 Confirm that this is the environment that you want to terminate by typing the environment name.
 
-^^^^^^^^^^^^
+^^^^^^^^^^^^^
 10. Clean up.
-^^^^^^^^^^^^
+^^^^^^^^^^^^^
 
 To completely remove your application and clean up the local project directory, type the following:
 
