@@ -80,7 +80,7 @@ def create_health_tables(screen):
     ]))
     screen.add_table(Table('cpu', columns=[
         Column('id', 14, 'InstanceId', 'left'),
-        Column('az', 13, 'az', 'left'),
+        Column('az', 18, 'az', 'left'),
         Column('running', 10, 'running', 'left', 'LaunchedAt'),
         Column('load 1', 7, 'load1', 'right'),
         Column('load 5', 7, 'load5', 'right'),
