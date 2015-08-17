@@ -30,7 +30,6 @@ class CloudWatchSetUp(AbstractBaseController):
         aliases = ['setup-cwl']
         stacked_on = 'labs'
         stacked_type = 'nested'
-        hide = True
         description = strings['cloudwatch-setup.info']
         usage = 'eb labs setup-cloudwatchlogs [options ...]'
         arguments = [

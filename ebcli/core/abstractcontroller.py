@@ -136,33 +136,32 @@ class AbstractBaseController(controller.CementBaseController):
         for label in self._visible_commands:
             cmd = self._dispatch_map[label]
             cmd_txt = '  '
-            if len(cmd['aliases']) > 0 and cmd['aliases_only']:
-                if len(cmd['aliases']) > 1:
-                    first = cmd['aliases'].pop(0)
-                    cmd_txt += "%s (alias: %s)\n" % \
-                               (first, ', '.join(cmd['aliases']))
-                else:
-                    cmd_txt += "%s" % cmd['aliases'][0]
-            elif len(cmd['aliases']) > 0:
-                cmd_txt += "%s (alias: %s)\n" % (label, ', '.join(cmd['aliases']))
-            else:
-                cmd_txt += label
+
+            cmd_name = label
+            cmd_aliases = cmd['aliases']
+
+            if len(cmd_aliases) > 0 and cmd['aliases_only']:
+                cmd_name = cmd_aliases.pop(0)
+
+            cmd_txt += '{}'.format(cmd_name)
 
             if cmd['help']:
-                cmd_txt += pad(cmd_txt) + "%s\n" % cmd['help']
-            else:
-                cmd_txt += "\n"
+                cmd_txt += '{}{}'.format(pad(cmd_txt), cmd['help'])
 
+            if len(cmd_aliases) > 0:
+                cmd_txt += '\n{}(alias: {})'.format(pad(''), ', '.join(cmd_aliases))
+
+            cmd_txt += '\n'
             help_txt += cmd_txt
 
         if len(help_txt) > 0:
-            txt = '''%s
+            txt = '''{}
 
 commands:
-%s
+{}
 
 
-''' % (self._meta.description, help_txt)
+'''.format(self._meta.description, help_txt)
         else:
             txt = self._meta.description
 
