@@ -14,11 +14,14 @@
 strings = {
     # Version message got 'eb --version'
     'app.version_message': 'EB CLI',
+    # When an update is available on PyPi
+    'base.update_available': 'An update to the EB CLI is available. '
+                             'Run "pip install --upgrade awsebcli" to get the latest version.',
     # Initial text that you see on a 'eb --help'
-    'base.info': "Welcome to the Elastic Beanstalk Command Line Interface (EB CLI). \n"
-                 "For more information on a specific command, type 'eb {cmd} --help'.",
+    'base.info': 'Welcome to the Elastic Beanstalk Command Line Interface (EB CLI). \n'
+                 'For more information on a specific command, type "eb {cmd} --help".',
     # Initial epilog (last line) that you see on 'eb --help'
-    'base.epilog': "To get started type 'eb init'. Then type 'eb create' and 'eb open'",
+    'base.epilog': 'To get started type "eb init". Then type "eb create" and "eb open"',
 
     # All .infos are for --help text. All .epilogs are the epilogs shown on the given command
     'init.info': 'Initializes your directory with the EB CLI. Creates the application.',

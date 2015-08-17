@@ -61,7 +61,7 @@ class AbstractBaseController(controller.CementBaseController):
         label = self.Meta.label
         if label in ('create', 'deploy', 'status', 'clone', 'config'):
             if cli_update_exists(version):
-                io.log_alert('An update to this CLI is available.')
+                io.log_alert(strings['base.update_available'])
 
     def get_app_name(self):
         app_name = fileoperations.get_application_name()
