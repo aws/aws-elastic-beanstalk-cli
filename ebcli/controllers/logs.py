@@ -31,7 +31,7 @@ class LogsController(AbstractBaseController):
                 action='store_true', help=flag_text['logs.zip'])),
             (['-i', '--instance'], dict(help=flag_text['logs.instance'])),
             (['--stream'], dict(action='store_true',
-                                help=argparse.SUPPRESS)),  # Labs command
+                                help=flag_text['logs.stream'])),
 
         ]
         epilog = strings['logs.epilog']
