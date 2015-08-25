@@ -3,6 +3,13 @@ Changelog
 =========
 
 ------------------
+3.5.1 (2015-08-25)
+------------------
+- Fix az column clipping.
+- Unhide labs setup-cwl feature as well as logs --stream.
+- Add pip install command when a new version is available.
+
+------------------
 3.5 (2015-08-11)
 ------------------
 - Add command "eb labs setup-ssl"
