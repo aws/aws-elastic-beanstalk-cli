@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------------------
+3.5.2 (2015-08-26)
+------------------
+- Fix bug in "eb health" command preventing it from running.
+
+------------------
 3.5.1 (2015-08-25)
 ------------------
 - Fix az column clipping.
