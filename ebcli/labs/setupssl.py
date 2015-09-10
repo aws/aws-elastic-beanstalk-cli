@@ -77,10 +77,10 @@ class SetupSSLController(AbstractBaseController):
         if not certfile:
             privatekey, certfile = generate_self_signed_cert(cert_name)
 
-        certfile = fileoperations.read_from_data_file(certfile)
-        privatekey = fileoperations.read_from_data_file(privatekey)
+        certfile = fileoperations.read_from_text_file(certfile)
+        privatekey = fileoperations.read_from_text_file(privatekey)
         if certchain:
-            certchain = fileoperations.read_from_data_file(certchain)
+            certchain = fileoperations.read_from_text_file(certchain)
 
         result = iam.upload_server_certificate(cert_name + '.crt', certfile,
                                                privatekey, chain=certchain)
