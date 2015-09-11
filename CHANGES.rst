@@ -3,6 +3,12 @@ Changelog
 =========
 
 ------------------
+3.5.3 (2015-09-14)
+------------------
+- Change contact details
+- Fix bug in "eb labs setup-ssl" which occurred on some versions of Python
+
+------------------
 3.5.2 (2015-08-26)
 ------------------
 - Fix bug in "eb health" command preventing it from running.
