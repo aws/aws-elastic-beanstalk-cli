@@ -25,9 +25,11 @@ from cement.utils.misc import minimal_logger
 from ebcli import __version__
 from ..objects.exceptions import ServiceError, NotAuthorizedError, \
     CredentialsError, NoRegionError,  ValidationError, \
-    InvalidProfileError, ConnectionError, AlreadyExistsError, NotFoundError
+    InvalidProfileError, ConnectionError, AlreadyExistsError, NotFoundError, \
+    NotAuthorizedInRegionError
 from .utils import static_var
 from .botopatch import apply_patches
+from ..resources.strings import strings
 
 LOG = minimal_logger(__name__)
 
@@ -233,7 +235,12 @@ def make_api_call(service_name, operation_name, **operation_options):
                 LOG.debug('Received a 403')
                 if not message:
                     message = 'Are your permissions correct?'
-                raise NotAuthorizedError('Operation Denied. ' + message)
+                if _region_name == 'cn-north-1':
+                    raise NotAuthorizedInRegionError('Operation Denied. ' + message +
+                                                     '\n' +
+                                                     strings['region.china.credentials'])
+                else:
+                    raise NotAuthorizedError('Operation Denied. ' + message)
             elif status == 404:
                 LOG.debug('Received a 404')
                 raise NotFoundError(message)

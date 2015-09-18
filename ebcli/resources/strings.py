@@ -187,6 +187,7 @@ strings = {
                                    'will need to check in any changes, (if applicable) an run\n'
                                    '"eb deploy".',
     'setup-ssl.info': 'Sets up ssl on your environment.',
+    'region.china.credentials': 'To use the China (Beijing) region, account credentials unique to the China (Beijing) region must be used.'
 }
 
 prompts = {

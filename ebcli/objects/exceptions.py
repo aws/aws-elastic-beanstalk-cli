@@ -57,6 +57,10 @@ class NotAuthorizedError(EBCLIException):
     pass
 
 
+class NotAuthorizedInRegionError(EBCLIException):
+    pass
+
+
 class NotInitializedError(EBCLIException):
     """  The eb directory can not be found.  """
     pass
