@@ -195,10 +195,6 @@ class CreateEnvironmentRequest(object):
                 option_names.CONNECTION_DRAINING,
                 'true')
             self.add_option_setting(
-                namespaces.HEALTH_CHECK,
-                option_names.INTERVAL,
-                '30')
-            self.add_option_setting(
                 namespaces.LOAD_BALANCER,
                 option_names.CROSS_ZONE,
                 'true')
