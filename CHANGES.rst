@@ -3,6 +3,12 @@ Changelog
 =========
 
 ------------------
+3.5.4 (2015-09-22)
+------------------
+- Add "cn-north-1" to region list
+- Adjust client default ELB Healthcheck Interval to use service default
+
+------------------
 3.5.3 (2015-09-14)
 ------------------
 - Change contact details
