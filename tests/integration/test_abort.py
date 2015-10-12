@@ -51,7 +51,7 @@ class TestAbort(BaseIntegrationTest):
             {'Action': u'AbortEnvironmentUpdate',
              'EnvironmentName': 'single-env',
              'Version': u'2010-12-01'}))
-        self.mock_input.assert_called()  # Test we prompted for env
+        self.mock_input.assert_called_with('(default is 1)', 1)  # Test we prompted for env
 
     def test_abort_single(self):
         mockservice.enqueue('elasticbeanstalk',

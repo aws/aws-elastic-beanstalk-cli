@@ -123,9 +123,10 @@ class TestCreate(BaseControllerTest):
         except InvalidOptionsError:
             #Expected
             pass
+        else:
+            # Make sure error happened
+            self.fail("Expected call to throw an InvalidOptionsError")
 
-        # Make sure error happened
-        mock_error.assert_called()
         self.assertEqual(self.mock_operations.make_new_env.call_count, 0)
 
     def test_create_script_mode(self):

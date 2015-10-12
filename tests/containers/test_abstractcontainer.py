@@ -44,7 +44,7 @@ class TestAbstractContainer(TestCase):
     def test_start_check_new_dockerfie_creation_when_required(self, commands):
         self.fs_handler.require_new_dockerfile.return_value = True
         self.cnt.start()
-        self.cnt._containerize.assert_called_once()
+        self.cnt._containerize.assert_called_once_with()
 
     @patch('ebcli.containers.abstractcontainer.commands')
     def test_start_check_new_dockerfie_no_creation(self, commands):
@@ -88,7 +88,7 @@ class TestAbstractContainer(TestCase):
         # remove existing container, build, and run
 
         self.fs_handler.append_dockerignore.assert_called_once_with()
-        self.cnt._containerize.assert_called_once()
+        self.cnt._containerize.assert_called_once_with()
 
         commands.pull_img.assert_called_once_with(dummy.NEW_DOCKERFILE_PATH)
         commands.build_img.expect_called_once_with(dummy.DOCKER_PROJ_PATH,

@@ -110,7 +110,8 @@ class TestUpgrade(BaseIntegrationTest):
 
         self.run_command('upgrade')
         self.mock_warning.assert_called_with(prompts['upgrade.applyrolling'].format('Health'))
-        self.mock_input.assert_not_called()
+        self.mock_input.assert_called_with('To continue, type the environment name')
+        self.assertEqual(self.mock_input.call_count, 1)
 
     def test_upgrade_force_worker(self):
         mockservice.enqueue('elasticbeanstalk',
@@ -120,7 +121,8 @@ class TestUpgrade(BaseIntegrationTest):
 
         self.run_command('upgrade')
         self.mock_warning.assert_called_with(prompts['upgrade.applyrolling'].format('Time'))
-        self.mock_input.assert_not_called()
+        self.mock_input.assert_called_with('To continue, type the environment name')
+        self.assertEqual(self.mock_input.call_count, 1)
 
     def test_upgrade_force_dont_apply(self):
         mockservice.enqueue('elasticbeanstalk',
@@ -129,8 +131,11 @@ class TestUpgrade(BaseIntegrationTest):
         self.mock_input.return_value = 'my-env'
 
         self.run_command('upgrade')
-        self.mock_warning.assert_not_called()
-        self.mock_input.assert_not_called()
+        self.mock_warning.assert_called_with('This operation replaces your instances with minimal or zero downtime. ' +
+                                             'You may cancel the upgrade after it has started by typing "eb abort".')
+        self.assertEqual(self.mock_warning.call_count, 1)
+        self.mock_input.assert_called_with('To continue, type the environment name')
+        self.assertEqual(self.mock_input.call_count, 1)
 
 
 def describe_worker():

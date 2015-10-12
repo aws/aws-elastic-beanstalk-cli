@@ -144,7 +144,7 @@ class TestInit(BaseControllerTest):
         self.app.close()
 
         # make sure we setup credentials
-        self.mock_operations.setup_credentials.assert_called()
+        self.mock_operations.setup_credentials.assert_called_with()
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
                                                       'PHP 5.5')

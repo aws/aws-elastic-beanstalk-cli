@@ -60,8 +60,8 @@ class TestLog(TestCase):
         datetime.strftime.return_value = EXPECTED_DATETIME_STR
 
         self.assertEquals(EXPECTED_HOST_LOG_PATH, log.new_host_log_path(ROOT_LOG_DIR))
-        datetime.now.assert_called_once()
-        datetime.strftime.assert_called_once()
+        datetime.now.assert_called_once_with()
+
 
     @patch('ebcli.containers.log.fileoperations.set_all_unrestricted_permissions')
     @patch('ebcli.containers.log.os')
