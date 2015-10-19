@@ -125,7 +125,7 @@ strings = {
     'local.logs.symlink': 'Updated symlink at {symlink}',
     'local.logs.nologs': 'There are currently no local logs.',
     'setenv.invalidformat': 'You must use the format VAR_NAME=KEY to set an environment variable. '
-                            'Varables may not contain the = symbol. '
+                            'Variables may not contain the = symbol. '
                             'Variables and keys must start with a letter, '
                             'number or one of the following symbols: \\ _ . : / + - @',
     'tags.invalidformat': 'You must provide a comma-separated list using the format name=value to set tags. '
