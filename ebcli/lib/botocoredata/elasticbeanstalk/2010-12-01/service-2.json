@@ -1,15 +1,45 @@
 {
+  "version":"2.0",
   "metadata":{
     "apiVersion":"2010-12-01",
     "endpointPrefix":"elasticbeanstalk",
-    "serviceAbbreviation":"Elastic Beanstalk",
     "serviceFullName":"AWS Elastic Beanstalk",
     "signatureVersion":"v4",
     "xmlNamespace":"http://elasticbeanstalk.amazonaws.com/docs/2010-12-01/",
     "protocol":"query"
   },
-  "documentation":"<fullname>AWS Elastic Beanstalk</fullname> <p> This is the AWS Elastic Beanstalk API Reference. This guide provides detailed information about AWS Elastic Beanstalk actions, data types, parameters, and errors. </p> <p>AWS Elastic Beanstalk is a tool that makes it easy for you to create, deploy, and manage scalable, fault-tolerant applications running on Amazon Web Services cloud resources. </p> <p> For more information about this product, go to the <a href=\"http://aws.amazon.com/elasticbeanstalk/\">AWS Elastic Beanstalk</a> details page. The location of the latest AWS Elastic Beanstalk WSDL is <a href=\"http://elasticbeanstalk.s3.amazonaws.com/doc/2010-12-01/AWSElasticBeanstalk.wsdl\">http://elasticbeanstalk.s3.amazonaws.com/doc/2010-12-01/AWSElasticBeanstalk.wsdl</a>. </p> <p><b>Endpoints</b></p> <p>For a list of region-specific endpoints that AWS Elastic Beanstalk supports, go to <a href=\"http://docs.aws.amazon.com/general/latest/gr/rande.html#elasticbeanstalk_region\">Regions and Endpoints</a> in the <i>Amazon Web Services Glossary</i>.</p>",
+  "documentation":"<fullname>AWS Elastic Beanstalk</fullname> <p> This is the AWS Elastic Beanstalk API Reference. This guide provides detailed information about AWS Elastic Beanstalk actions, data types, parameters, and errors. </p> <p>AWS Elastic Beanstalk is a tool that makes it easy for you to create, deploy, and manage scalable, fault-tolerant applications running on Amazon Web Services cloud resources. </p> <p> For more information about this product, go to the <a href=\"http://aws.amazon.com/elasticbeanstalk/\">AWS Elastic Beanstalk</a> details page. The location of the lastest AWS Elastic Beanstalk WSDL is <a href=\"http://elasticbeanstalk.s3.amazonaws.com/doc/2010-12-01/AWSElasticBeanstalk.wsdl\">http://elasticbeanstalk.s3.amazonaws.com/doc/2010-12-01/AWSElasticBeanstalk.wsdl</a>. </p> <p><b>Endpoints</b></p> <p>For a list of region-specific endpoints that AWS Elastic Beanstalk supports, go to <a href=\"http://docs.amazonwebservices.com/general/latest/gr/rande.html#elasticbeanstalk_region\">Regions and Endpoints</a> in the <i>Amazon Web Services Glossary</i>.</p>",
   "operations":{
+    "AbortEnvironmentUpdate":{
+      "name":"AbortEnvironmentUpdate",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"AbortEnvironmentUpdateMessage"},
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        }
+      ]
+    },
     "CheckDNSAvailability":{
       "name":"CheckDNSAvailability",
       "http":{
@@ -25,6 +55,28 @@
         "documentation":"<p>Indicates if the specified CNAME is available.</p>",
         "resultWrapper":"CheckDNSAvailabilityResult"
       },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        }
+      ],
       "documentation":"<p> Checks if the specified CNAME is available. </p>"
     },
     "CreateApplication":{
@@ -52,9 +104,39 @@
           },
           "exception":true,
           "documentation":"<p>The caller has exceeded the limit on the number of applications associated with their account.</p>"
+        },
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        },
+        {
+          "shape":"TooManyBucketsException",
+          "error":{
+            "code":"TooManyBucketsException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
         }
       ],
-      "documentation":"<p> Creates an application that has one configuration template named <code>default</code> and no application versions. </p> <?oxy_delete author=\"brussard\" timestamp=\"20131024T142047-0700\" content=\"&lt;note&gt; The &lt;code&gt;default&lt;/code&gt; configuration template is for a 32-bit version of the Amazon Linux operating system running the Tomcat 6 application container. &lt;/note&gt;\">"
+      "documentation":"<p> Creates an application that has one configuration template named <code>default</code> and no application versions. </p> <note> The <code>default</code> configuration template is for a 32-bit version of the Amazon Linux operating system running the Tomcat 6 application container. </note>"
     },
     "CreateApplicationVersion":{
       "name":"CreateApplicationVersion",
@@ -98,6 +180,16 @@
           "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
         },
         {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        },
+        {
           "shape":"S3LocationNotInServiceRegionException",
           "error":{
             "code":"S3LocationNotInServiceRegionException",
@@ -106,9 +198,19 @@
           },
           "exception":true,
           "documentation":"<p>The specified S3 bucket does not belong to the S3 region in which the service is running.</p>"
+        },
+        {
+          "shape":"TooManyBucketsException",
+          "error":{
+            "code":"TooManyBucketsException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
         }
       ],
-      "documentation":"<p>Creates an application version for the specified application.</p>"
+      "documentation":"<p>Creates an application version for the specified application.</p> <note>Once you create an application version with a specified Amazon S3 bucket and key location, you cannot change that Amazon S3 location. If you change the Amazon S3 location, you receive an exception when you attempt to launch an environment from the application version. </note>"
     },
     "CreateConfigurationTemplate":{
       "name":"CreateConfigurationTemplate",
@@ -121,8 +223,7 @@
         "documentation":"<p>This documentation target is not reported in the API reference.</p>"
       },
       "output":{
-        "shape":"ConfigurationSettingsDescription",
-        "documentation":"<p> Describes the settings for a configuration set. </p>",
+        "shape":"ConfigurationTemplateDescription",
         "resultWrapper":"CreateConfigurationTemplateResult"
       },
       "errors":[
@@ -135,6 +236,26 @@
           },
           "exception":true,
           "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        },
+        {
+          "shape":"ConfigurationValidationException",
+          "error":{
+            "code":"ConfigurationValidationException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The request results in an invalid environment configuration.</p>"
         },
         {
           "shape":"TooManyConfigurationTemplatesException",
@@ -184,6 +305,36 @@
           },
           "exception":true,
           "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        },
+        {
+          "shape":"ConfigurationValidationException",
+          "error":{
+            "code":"ConfigurationValidationException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The request results in an invalid environment configuration.</p>"
+        },
+        {
+          "shape":"TooManyBucketsException",
+          "error":{
+            "code":"TooManyBucketsException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
         }
       ],
       "documentation":"<p> Launches an environment for the specified application using the specified configuration. </p>"
@@ -229,6 +380,16 @@
           },
           "exception":true,
           "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
         }
       ],
       "documentation":"<p> Creates the Amazon S3 storage location for the account. </p> <p> This location is used to store user log files. </p>"
@@ -252,10 +413,30 @@
             "senderFault":true
           },
           "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because another operation is already in progress affecting an an element in this activity.</p>"
+          "documentation":"<p>Unable to perform the specified operation because another operation is already in progress affecting an element in this activity.</p>"
+        },
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
         }
       ],
-      "documentation":"<p> Deletes the specified application along with all associated versions and configurations. The application versions will not be deleted from your Amazon S3 bucket. </p>"
+      "documentation":"<p> Deletes the specified application along with all associated versions and configurations. The application versions will not be deleted from your Amazon S3 bucket. </p> <note>You cannot delete an application that has a running environment. </note>"
     },
     "DeleteApplicationVersion":{
       "name":"DeleteApplicationVersion",
@@ -289,6 +470,16 @@
           "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
         },
         {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        },
+        {
           "shape":"OperationInProgressException",
           "error":{
             "code":"OperationInProgressFailure",
@@ -296,7 +487,7 @@
             "senderFault":true
           },
           "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because another operation is already in progress affecting an an element in this activity.</p>"
+          "documentation":"<p>Unable to perform the specified operation because another operation is already in progress affecting an element in this activity.</p>"
         },
         {
           "shape":"S3LocationNotInServiceRegionException",
@@ -309,7 +500,7 @@
           "documentation":"<p>The specified S3 bucket does not belong to the S3 region in which the service is running.</p>"
         }
       ],
-      "documentation":"<p> Deletes the specified version from the specified application. </p>"
+      "documentation":"<p> Deletes the specified version from the specified application. </p> <note>You cannot delete an application version that is associated with a running environment.</note>"
     },
     "DeleteConfigurationTemplate":{
       "name":"DeleteConfigurationTemplate",
@@ -330,10 +521,30 @@
             "senderFault":true
           },
           "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because another operation is already in progress affecting an an element in this activity.</p>"
+          "documentation":"<p>Unable to perform the specified operation because another operation is already in progress affecting an element in this activity.</p>"
+        },
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
         }
       ],
-      "documentation":"<p>Deletes the specified configuration template.</p>"
+      "documentation":"<p>Deletes the specified configuration template.</p> <note>When you launch an environment using a configuration template, the environment gets a copy of the template. You can delete or modify the environment's copy of the template without affecting the running environment.</note>"
     },
     "DeleteEnvironmentConfiguration":{
       "name":"DeleteEnvironmentConfiguration",
@@ -362,6 +573,28 @@
         "documentation":"<p>Result message wrapping a list of application version descriptions.</p>",
         "resultWrapper":"DescribeApplicationVersionsResult"
       },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        }
+      ],
       "documentation":"<p>Returns descriptions for existing application versions.</p>"
     },
     "DescribeApplications":{
@@ -379,6 +612,28 @@
         "documentation":"<p>Result message containing a list of application descriptions.</p>",
         "resultWrapper":"DescribeApplicationsResult"
       },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        }
+      ],
       "documentation":"<p>Returns the descriptions of existing applications.</p>"
     },
     "DescribeConfigurationOptions":{
@@ -396,6 +651,38 @@
         "documentation":"<p>Describes the settings for a specified configuration set.</p>",
         "resultWrapper":"DescribeConfigurationOptionsResult"
       },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        },
+        {
+          "shape":"ConfigurationValidationException",
+          "error":{
+            "code":"ConfigurationValidationException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The request results in an invalid environment configuration.</p>"
+        }
+      ],
       "documentation":"<p> Describes the configuration options that are used in a particular configuration template or environment, or that a specified solution stack defines. The description includes the values the options, their default values, and an indication of the required action on a running environment if an option value is changed. </p>"
     },
     "DescribeConfigurationSettings":{
@@ -413,23 +700,6 @@
         "documentation":"<p>The results from a request to change the configuration settings of an environment.</p>",
         "resultWrapper":"DescribeConfigurationSettingsResult"
       },
-      "documentation":"<p> Returns a description of the settings for the specified configuration set, that is, either a configuration template or the configuration set associated with a running environment. </p> <p> When describing the settings for the configuration set associated with a running environment, it is possible to receive two sets of setting descriptions. One is the deployed configuration set, and the other is a draft configuration of an environment that is either in the process of deployment or that failed to deploy. </p> <p>Related Topics</p> <ul> <li> <a>DeleteEnvironmentConfiguration</a> </li> </ul>"
-    },
-    "DescribeEnvironmentResources":{
-      "name":"DescribeEnvironmentResources",
-      "http":{
-        "method":"POST",
-        "requestUri":"/"
-      },
-      "input":{
-        "shape":"DescribeEnvironmentResourcesMessage",
-        "documentation":"<p>This documentation target is not reported in the API reference.</p>"
-      },
-      "output":{
-        "shape":"EnvironmentResourceDescriptionsMessage",
-        "documentation":"<p>Result message containing a list of environment resource descriptions. </p>",
-        "resultWrapper":"DescribeEnvironmentResourcesResult"
-      },
       "errors":[
         {
           "shape":"InsufficientPrivilegesException",
@@ -440,43 +710,29 @@
           },
           "exception":true,
           "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        },
+        {
+          "shape":"ConfigurationValidationException",
+          "error":{
+            "code":"ConfigurationValidationException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The request results in an invalid environment configuration.</p>"
         }
       ],
-      "documentation":"<p>Returns AWS resources for this environment.</p>"
-    },
-    "DescribeEnvironments":{
-      "name":"DescribeEnvironments",
-      "http":{
-        "method":"POST",
-        "requestUri":"/"
-      },
-      "input":{
-        "shape":"DescribeEnvironmentsMessage",
-        "documentation":"<p>This documentation target is not reported in the API reference.</p>"
-      },
-      "output":{
-        "shape":"EnvironmentDescriptionsMessage",
-        "documentation":"<p>Result message containing a list of environment descriptions.</p>",
-        "resultWrapper":"DescribeEnvironmentsResult"
-      },
-      "documentation":"<p>Returns descriptions for existing environments.</p>"
-    },
-    "DescribeEvents":{
-      "name":"DescribeEvents",
-      "http":{
-        "method":"POST",
-        "requestUri":"/"
-      },
-      "input":{
-        "shape":"DescribeEventsMessage",
-        "documentation":"<p>This documentation target is not reported in the API reference.</p>"
-      },
-      "output":{
-        "shape":"EventDescriptionsMessage",
-        "documentation":"<p>Result message wrapping a list of event descriptions.</p>",
-        "resultWrapper":"DescribeEventsResult"
-      },
-      "documentation":"<p>Returns list of event descriptions matching criteria up to the last 6 weeks.</p>"
+      "documentation":"<p> Returns a description of the settings for the specified configuration set, that is, either a configuration template or the configuration set associated with a running environment. </p> <p> When describing the settings for the configuration set associated with a running environment, it is possible to receive two sets of setting descriptions. One is the deployed configuration set, and the other is a draft configuration of an environment that is either in the process of deployment or that failed to deploy. </p> <p>Related Topics</p> <ul> <li> <a>DeleteEnvironmentConfiguration</a> </li> </ul>"
     },
     "DescribeEnvironmentHealth":{
       "name":"DescribeEnvironmentHealth",
@@ -505,6 +761,123 @@
           "exception":true
         }
       ]
+    },
+    "DescribeEnvironmentResources":{
+      "name":"DescribeEnvironmentResources",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DescribeEnvironmentResourcesMessage",
+        "documentation":"<p>This documentation target is not reported in the API reference.</p>"
+      },
+      "output":{
+        "shape":"EnvironmentResourceDescriptionsMessage",
+        "documentation":"<p>Result message containing a list of environment resource descriptions. </p>",
+        "resultWrapper":"DescribeEnvironmentResourcesResult"
+      },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        }
+      ],
+      "documentation":"<p>Returns AWS resources for this environment.</p>"
+    },
+    "DescribeEnvironments":{
+      "name":"DescribeEnvironments",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DescribeEnvironmentsMessage",
+        "documentation":"<p>This documentation target is not reported in the API reference.</p>"
+      },
+      "output":{
+        "shape":"EnvironmentDescriptionsMessage",
+        "documentation":"<p>Result message containing a list of environment descriptions.</p>",
+        "resultWrapper":"DescribeEnvironmentsResult"
+      },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        }
+      ],
+      "documentation":"<p>Returns descriptions for existing environments.</p>"
+    },
+    "DescribeEvents":{
+      "name":"DescribeEvents",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DescribeEventsMessage",
+        "documentation":"<p>This documentation target is not reported in the API reference.</p>"
+      },
+      "output":{
+        "shape":"EventDescriptionsMessage",
+        "documentation":"<p>Result message wrapping a list of event descriptions.</p>",
+        "resultWrapper":"DescribeEventsResult"
+      },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        }
+      ],
+      "documentation":"<p>Returns list of event descriptions matching criteria up to the last 6 weeks.</p> <note> This action returns the most recent 1,000 events from the specified <code>NextToken</code>. </note>"
     },
     "DescribeInstancesHealth":{
       "name":"DescribeInstancesHealth",
@@ -545,6 +918,28 @@
         "documentation":"<p>A list of available AWS Elastic Beanstalk solution stacks. </p>",
         "resultWrapper":"ListAvailableSolutionStacksResult"
       },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        }
+      ],
       "documentation":"<p> Returns a list of the available solution stack names. </p>"
     },
     "RebuildEnvironment":{
@@ -567,6 +962,16 @@
           },
           "exception":true,
           "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
         }
       ],
       "documentation":"<p> Deletes and recreates all of the AWS resources (for example: the Auto Scaling group, load balancer, etc.) for a specified environment and forces a restart. </p>"
@@ -581,7 +986,49 @@
         "shape":"RequestEnvironmentInfoMessage",
         "documentation":"<p>This documentation target is not reported in the API reference.</p>"
       },
-      "documentation":"<p> Initiates a request to compile the specified type of information of the deployed environment. </p> <p> Setting the <code>InfoType</code> to <code>tail</code> compiles the last lines from the application server log files of every Amazon EC2 instance in your environment. Use <a>RetrieveEnvironmentInfo</a> to access the compiled information. </p> <p>Related Topics</p> <ul> <li> <a>RetrieveEnvironmentInfo</a> </li> </ul>"
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        },
+        {
+          "shape":"ConfigurationValidationException",
+          "error":{
+            "code":"ConfigurationValidationException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The request results in an invalid environment configuration.</p>"
+        },
+        {
+          "shape":"MissingRequiredResourceException",
+          "error":{
+            "code":"MissingRequiredResourceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Required resources associated with specified parameters are missing.</p>"
+        }
+      ],
+      "documentation":"<p> Initiates a request to compile the specified type of information of the deployed environment. </p> <p> Setting the <code>InfoType</code> to <code>tail</code> compiles the last lines from the application server log files of every Amazon EC2 instance in your environment. </p> <p> Setting the <code>InfoType</code> to <code>bundle</code> compresses the application server log files into a zip file for every Amazon EC2 instance. Currently, legacy and IIS environments do not have this ability. </p> <p> Use <a>RetrieveEnvironmentInfo</a> to obtain the set of logs. </p> <p>Related Topics</p> <ul> <li> <a>RetrieveEnvironmentInfo</a> </li> </ul>"
     },
     "RestartAppServer":{
       "name":"RestartAppServer",
@@ -593,6 +1040,28 @@
         "shape":"RestartAppServerMessage",
         "documentation":"<p></p>"
       },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        }
+      ],
       "documentation":"<p> Causes the environment to restart the application container server running on each Amazon EC2 instance. </p>"
     },
     "RetrieveEnvironmentInfo":{
@@ -610,6 +1079,28 @@
         "documentation":"<p>Result message containing a description of the requested environment info.</p>",
         "resultWrapper":"RetrieveEnvironmentInfoResult"
       },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        }
+      ],
       "documentation":"<p> Retrieves the compiled information from a <a>RequestEnvironmentInfo</a> request. </p> <p>Related Topics</p> <ul> <li> <a>RequestEnvironmentInfo</a> </li> </ul>"
     },
     "SwapEnvironmentCNAMEs":{
@@ -622,6 +1113,28 @@
         "shape":"SwapEnvironmentCNAMEsMessage",
         "documentation":"<p></p>"
       },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        }
+      ],
       "documentation":"<p> Swaps the CNAMEs of two environments. </p>"
     },
     "TerminateEnvironment":{
@@ -649,6 +1162,16 @@
           },
           "exception":true,
           "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
         }
       ],
       "documentation":"<p> Terminates the specified environment. </p>"
@@ -668,7 +1191,29 @@
         "documentation":"<p>Result message containing a single description of an application.</p>",
         "resultWrapper":"UpdateApplicationResult"
       },
-      "documentation":"<p>Updates the specified application to have the specified properties. </p>"
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        }
+      ],
+      "documentation":"<p>Updates the specified application to have the specified properties. </p> <note> If a property (for example, <code>description</code>) is not provided, the value remains unchanged. To clear these properties, specify an empty string. </note>"
     },
     "UpdateApplicationVersion":{
       "name":"UpdateApplicationVersion",
@@ -685,7 +1230,29 @@
         "documentation":"<p> Result message wrapping a single description of an application version. </p>",
         "resultWrapper":"UpdateApplicationVersionResult"
       },
-      "documentation":"<p> Updates the specified application version to have the specified properties. </p>"
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        }
+      ],
+      "documentation":"<p> Updates the specified application version to have the specified properties. </p> <note> If a property (for example, <code>description</code>) is not provided, the value remains unchanged. To clear properties, specify an empty string. </note>"
     },
     "UpdateConfigurationTemplate":{
       "name":"UpdateConfigurationTemplate",
@@ -698,8 +1265,7 @@
         "documentation":"<p>The result message containing the options for the specified solution stack.</p>"
       },
       "output":{
-        "shape":"ConfigurationSettingsDescription",
-        "documentation":"<p> Describes the settings for a configuration set. </p>",
+        "shape":"ConfigurationTemplateDescription",
         "resultWrapper":"UpdateConfigurationTemplateResult"
       },
       "errors":[
@@ -712,9 +1278,29 @@
           },
           "exception":true,
           "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        },
+        {
+          "shape":"ConfigurationValidationException",
+          "error":{
+            "code":"ConfigurationValidationException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The request results in an invalid environment configuration.</p>"
         }
       ],
-      "documentation":"<p> Updates the specified configuration template to have the specified properties or configuration option values. </p> <p>Related Topics</p> <ul> <li> <a>DescribeConfigurationOptions</a> </li> </ul>"
+      "documentation":"<p> Updates the specified configuration template to have the specified properties or configuration option values. </p> <note> If a property (for example, <code>ApplicationName</code>) is not provided, its value remains unchanged. To clear such properties, specify an empty string. </note> <p>Related Topics</p> <ul> <li> <a>DescribeConfigurationOptions</a> </li> </ul>"
     },
     "UpdateEnvironment":{
       "name":"UpdateEnvironment",
@@ -741,37 +1327,29 @@
           },
           "exception":true,
           "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
-        }
-      ],
-      "documentation":"<p> Updates the environment description, deploys a new application version, updates the configuration settings to an entirely new configuration template, or updates select configuration option values in the running environment. </p> <p> Attempting to update both the release and configuration is not allowed and AWS Elastic Beanstalk returns an <code>InvalidParameterCombination</code> error. </p> <p> When updating the configuration settings to a new template or individual settings, a draft configuration is created and <a>DescribeConfigurationSettings</a> for this environment returns two setting descriptions with different <code>DeploymentStatus</code> values. </p>"
-    },
-    "AbortEnvironmentUpdate":{
-      "name":"AbortEnvironmentUpdate",
-      "http":{
-        "method":"POST",
-        "requestUri":"/"
-      },
-      "input":{
-        "shape":"AbortEnvironmentUpdateMessage",
-        "documentation":"<p>This documentation target is not reported in the API reference.</p>"
-      },
-      "output":{
-        "shape":"AbortEnvironmentUpdateDescription",
-        "documentation":"<p>Describes the properties of an environment.</p>"
-      },
-      "errors":[
+        },
         {
-          "shape":"InsufficientPrivilegesException",
+          "shape":"TemporaryMaintainanceException",
           "error":{
-            "code":"InsufficientPrivilegesException",
-            "httpStatusCode":403,
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
             "senderFault":true
           },
           "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        },
+        {
+          "shape":"ConfigurationValidationException",
+          "error":{
+            "code":"ConfigurationValidationException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The request results in an invalid environment configuration.</p>"
         }
       ],
-      "documentation":"<p> Aborts and Environment Update </p>"
+      "documentation":"<p> Updates the environment description, deploys a new application version, updates the configuration settings to an entirely new configuration template, or updates select configuration option values in the running environment. </p> <p> Attempting to update both the release and configuration is not allowed and AWS Elastic Beanstalk returns an <code>InvalidParameterCombination</code> error. </p> <p> When updating the configuration settings to a new template or individual settings, a draft configuration is created and <a>DescribeConfigurationSettings</a> for this environment returns two setting descriptions with different <code>DeploymentStatus</code> values. </p>"
     },
     "ValidateConfigurationSettings":{
       "name":"ValidateConfigurationSettings",
@@ -798,6 +1376,26 @@
           },
           "exception":true,
           "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        },
+        {
+          "shape":"ConfigurationValidationException",
+          "error":{
+            "code":"ConfigurationValidationException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The request results in an invalid environment configuration.</p>"
         }
       ],
       "documentation":"<p> Takes a set of configuration settings and either a configuration template or environment, and determines whether those values are valid. </p> <p> This action returns a list of messages indicating any errors or warnings associated with the selection of option values. </p>"
@@ -805,21 +1403,13 @@
   },
   "shapes":{
     "AbortEnvironmentUpdateMessage":{
-      "type": "structure",
+      "type":"structure",
       "members":{
-        "EnvironmentName":{
-          "shape":"EnvironmentName"
-        },
-        "EnvironmentId":{
-          "shape":"EnvironmentId"
-        }
+        "EnvironmentId":{"shape":"EnvironmentId"},
+        "EnvironmentName":{"shape":"EnvironmentName"}
       }
     },
-    "AbortEnvironmentUpdateDescription":{
-      "type": "structure",
-      "members":{
-      }
-    },
+    "AbortableOperationInProgress":{"type":"boolean"},
     "ApplicationDescription":{
       "type":"structure",
       "members":{
@@ -874,23 +1464,24 @@
       },
       "documentation":"<p>Result message containing a list of application descriptions.</p>"
     },
-    "ApplicationName":{
-      "type":"string",
-      "min":1,
-      "max":100
-    },
-    "ApplicationNamesList":{
-      "type":"list",
-      "member":{"shape":"ApplicationName"}
-    },
     "ApplicationMetrics":{
       "type":"structure",
       "members":{
-        "Duration":{"shape":"Integer"},
+        "Duration":{"shape":"NullableInteger"},
         "RequestCount":{"shape":"RequestCount"},
         "StatusCodes":{"shape":"StatusCodes"},
         "Latency":{"shape":"Latency"}
       }
+    },
+    "ApplicationName":{
+      "type":"string",
+      "min":1,
+      "max":100,
+      "pattern":"[^/]+"
+    },
+    "ApplicationNamesList":{
+      "type":"list",
+      "member":{"shape":"ApplicationName"}
     },
     "ApplicationVersionDescription":{
       "type":"structure",
@@ -969,22 +1560,22 @@
       "type":"list",
       "member":{"shape":"SolutionStackName"}
     },
+    "CPUUtilization":{
+      "type":"structure",
+      "members":{
+        "User":{"shape":"NullableDouble"},
+        "Nice":{"shape":"NullableDouble"},
+        "System":{"shape":"NullableDouble"},
+        "Idle":{"shape":"NullableDouble"},
+        "IOWait":{"shape":"NullableDouble"},
+        "IRQ":{"shape":"NullableDouble"},
+        "SoftIRQ":{"shape":"NullableDouble"}
+      }
+    },
     "Cause":{
       "type":"string",
       "min":1,
       "max":255
-    },
-    "CPUUtilization":{
-      "type":"structure",
-      "members":{
-        "User":{"shape":"Double"},
-        "Nice":{"shape":"Double"},
-        "System":{"shape":"Double"},
-        "Idle":{"shape":"Double"},
-        "IOWait":{"shape":"Double"},
-        "Irq":{"shape":"Double"},
-        "Softirq":{"shape":"Double"}
-      }
     },
     "Causes":{
       "type":"list",
@@ -1071,7 +1662,8 @@
         "Regex":{
           "shape":"OptionRestrictionRegex",
           "documentation":"<p> If specified, the configuration option must be a string value that satisfies this regular expression. </p>"
-        }
+        },
+        "Description":{"shape":"String"}
       },
       "documentation":"<p> Describes the possible values for a configuration option. </p>"
     },
@@ -1080,7 +1672,6 @@
       "member":{"shape":"ConfigurationOptionDescription"}
     },
     "ConfigurationOptionName":{"type":"string"},
-    "ConfigurationResourceName":{"type":"string"},
     "ConfigurationOptionPossibleValue":{"type":"string"},
     "ConfigurationOptionPossibleValues":{
       "type":"list",
@@ -1089,6 +1680,7 @@
     "ConfigurationOptionSetting":{
       "type":"structure",
       "members":{
+        "ResourceName":{"shape":"ResourceName"},
         "Namespace":{
           "shape":"OptionNamespace",
           "documentation":"<p> A unique namespace identifying the option's associated AWS resource. </p>"
@@ -1100,13 +1692,9 @@
         "Value":{
           "shape":"ConfigurationOptionValue",
           "documentation":"<p> The current value for the configuration option. </p>"
-        },
-        "ResourceName":{
-          "shape":"ConfigurationResourceName",
-          "documentation":"<p> The name of the configuration resource. </p>"
         }
       },
-      "documentation":"<p> A specification identifying an individual configuration option along with its current value. For a list of possible option values, go to <a href=\"http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options.html\">Option Values</a> in the <i>AWS Elastic Beanstalk Developer Guide</i>. </p>"
+      "documentation":"<p> A specification identifying an individual configuration option along with its current value. For a list of possible option values, go to <a href=\"http://docs.amazonwebservices.com/elasticbeanstalk/latest/dg/command-options.html\">Option Values</a> in the <i>AWS Elastic Beanstalk Developer Guide</i>. </p>"
     },
     "ConfigurationOptionSettingsList":{
       "type":"list",
@@ -1128,6 +1716,7 @@
           "shape":"SolutionStackName",
           "documentation":"<p> The name of the solution stack these configuration options belong to. </p>"
         },
+        "Tier":{"shape":"EnvironmentTier"},
         "Options":{
           "shape":"ConfigurationOptionDescriptionsList",
           "documentation":"<p> A list of <a>ConfigurationOptionDescription</a>. </p>"
@@ -1154,6 +1743,7 @@
           "shape":"Description",
           "documentation":"<p> Describes this configuration set. </p>"
         },
+        "Tier":{"shape":"EnvironmentTier"},
         "EnvironmentName":{
           "shape":"EnvironmentName",
           "documentation":"<p> If not <code>null</code>, the name of the environment for this configuration set. </p>"
@@ -1161,10 +1751,6 @@
         "DeploymentStatus":{
           "shape":"ConfigurationDeploymentStatus",
           "documentation":"<p> If this configuration set is associated with an environment, the <code>DeploymentStatus</code> parameter indicates the deployment status of this configuration set: </p> <enumValues> <value name=\"null\"> <p> <code>null</code>: This configuration is not associated with a running environment. </p> </value> <value name=\"pending\"> <p> <code>pending</code>: This is a draft configuration that is not deployed to the associated environment but is in the process of deploying. </p> </value> <value name=\"deployed\"> <p> <code>deployed</code>: This is the configuration that is currently deployed to the associated running environment. </p> </value> <value name=\"failed\"> <p> <code>failed</code>: This is a draft configuration, that failed to successfully deploy. </p> </value> </enumValues> <ul> <li> <code>null</code>: This configuration is not associated with a running environment. </li> <li> <code>pending</code>: This is a draft configuration that is not deployed to the associated environment but is in the process of deploying. </li> <li> <code>deployed</code>: This is the configuration that is currently deployed to the associated running environment. </li> <li> <code>failed</code>: This is a draft configuration that failed to successfully deploy. </li> </ul>"
-        },
-        "Tier":{
-          "shape":"EnvironmentTier",
-          "documentation":"<p> This specifies the tier to use for creating this environment. </p>"
         },
         "DateCreated":{
           "shape":"CreationDate",
@@ -1205,14 +1791,41 @@
       },
       "documentation":"<p>Provides a list of validation messages.</p>"
     },
+    "ConfigurationTemplateDescription":{
+      "type":"structure",
+      "members":{
+        "SolutionStackName":{"shape":"SolutionStackName"},
+        "ApplicationName":{"shape":"ApplicationName"},
+        "TemplateName":{"shape":"ConfigurationTemplateName"},
+        "Description":{"shape":"Description"},
+        "EnvironmentName":{"shape":"EnvironmentName"},
+        "DeploymentStatus":{"shape":"ConfigurationDeploymentStatus"},
+        "DateCreated":{"shape":"CreationDate"},
+        "DateUpdated":{"shape":"UpdateDate"},
+        "OptionSettings":{"shape":"ConfigurationOptionSettingsList"}
+      }
+    },
     "ConfigurationTemplateName":{
       "type":"string",
       "min":1,
-      "max":100
+      "max":100,
+      "pattern":"[^/]+"
     },
     "ConfigurationTemplateNamesList":{
       "type":"list",
       "member":{"shape":"ConfigurationTemplateName"}
+    },
+    "ConfigurationValidationException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"ConfigurationValidationException",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The request results in an invalid environment configuration.</p>"
     },
     "CreateApplicationMessage":{
       "type":"structure",
@@ -1250,7 +1863,7 @@
         },
         "SourceBundle":{
           "shape":"S3Location",
-          "documentation":"<p> The Amazon S3 bucket and key that identify the location of the source bundle for this version. </p> <p> If data found at the Amazon S3 location exceeds the maximum allowed source bundle size, AWS Elastic Beanstalk returns an <code>InvalidParameterValue</code> error. The maximum size allowed is 512 MB. </p> <p>Default: If not specified, AWS Elastic Beanstalk uses a sample application. If only partially specified (for example, a bucket is provided but not the key) or if no data is found at the Amazon S3 location, AWS Elastic Beanstalk returns an <code>InvalidParameterCombination</code> error. </p>"
+          "documentation":"<p> The Amazon S3 bucket and key that identify the location of the source bundle for this version. </p> <p> If data found at the Amazon S3 location exceeds the maximum allowed source bundle size, AWS Elastic Beanstalk returns an <code>InvalidParameterValue</code> error. </p> <p>Default: If not specified, AWS Elastic Beanstalk uses a sample application. If only partially specified (for example, a bucket is provided but not the key) or if no data is found at the Amazon S3 location, AWS Elastic Beanstalk returns an <code>InvalidParameterCombination</code> error. </p>"
         },
         "AutoCreateApplication":{
           "shape":"AutoCreateApplication",
@@ -1274,6 +1887,10 @@
           "shape":"ConfigurationTemplateName",
           "documentation":"<p>The name of the configuration template.</p> <p>Constraint: This name must be unique per application. </p> <p>Default: If a configuration template already exists with this name, AWS Elastic Beanstalk returns an <code>InvalidParameterValue</code> error. </p>"
         },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>Describes this configuration.</p>"
+        },
         "SolutionStackName":{
           "shape":"SolutionStackName",
           "documentation":"<p>The name of the solution stack used by this configuration. The solution stack specifies the operating system, architecture, and application server for a configuration template. It determines the set of configuration options as well as the possible and default values. </p> <p> Use <a>ListAvailableSolutionStacks</a> to obtain a list of available solution stacks. </p> <p> A solution stack name or a source configuration parameter must be specified, otherwise AWS Elastic Beanstalk returns an <code>InvalidParameterValue</code> error. </p> <p> If a solution stack name is not specified and the source configuration parameter is specified, AWS Elastic Beanstalk uses the same solution stack as the source configuration template. </p>"
@@ -1286,18 +1903,11 @@
           "shape":"EnvironmentId",
           "documentation":"<p> The ID of the environment used with this configuration template. </p>"
         },
-        "Description":{
-          "shape":"Description",
-          "documentation":"<p>Describes this configuration.</p>"
-        },
         "OptionSettings":{
           "shape":"ConfigurationOptionSettingsList",
           "documentation":"<p> If specified, AWS Elastic Beanstalk sets the specified configuration option to the requested value. The new value overrides the value obtained from the solution stack or the source configuration template. </p>"
         },
-        "TemplateSpecification":{
-          "shape":"EnvironmentTemplateSpecification",
-          "documentation":""
-        }
+        "TemplateSpecification":{"shape":"EnvironmentTemplateSpecification"}
       },
       "documentation":"<p>This documentation target is not reported in the API reference.</p>"
     },
@@ -1322,19 +1932,16 @@
         },
         "CNAMEPrefix":{
           "shape":"DNSCnamePrefix",
-          "documentation":"<p> If specified, the environment attempts to use this value as the prefix for the CNAME. If not specified, the CNAME is generated automatically by appending a random alphanumeric string to the environment name. </p>"
+          "documentation":"<p> If specified, the environment attempts to use this value as the prefix for the CNAME. If not specified, the environment uses the environment name. </p>"
         },
         "Tier":{
           "shape":"EnvironmentTier",
           "documentation":"<p> This specifies the tier to use for creating this environment. </p>"
         },
-        "Tags":{
-          "shape":"Tags",
-          "documentation":"<p> This specifies the tags applied to resources in the environment. </p>"
-        },
+        "Tags":{"shape":"Tags"},
         "VersionLabel":{
           "shape":"VersionLabel",
-          "documentation":"<p>The name of the application version to deploy.</p> <p> If the specified application has no associated application versions, AWS Elastic Beanstalk <code>UpdateEnvironment</code> returns an <code>InvalidParameterValue</code> error. </p> <p> Default: If not specified, AWS Elastic Beanstalk attempts to launch the <?oxy_delete author=\"brussard\" timestamp=\"20131030T145730-0700\" content=\"most recently created application version\"><?oxy_insert_start author=\"brussard\" timestamp=\"20131030T145730-0700\">sample application in the container<?oxy_insert_end>. </p>"
+          "documentation":"<p>The name of the application version to deploy.</p> <p> If the specified application has no associated application versions, AWS Elastic Beanstalk <code>UpdateEnvironment</code> returns an <code>InvalidParameterValue</code> error. </p> <p> Default: If not specified, AWS Elastic Beanstalk attempts to launch the most recently created application version. </p>"
         },
         "TemplateName":{
           "shape":"ConfigurationTemplateName",
@@ -1352,10 +1959,7 @@
           "shape":"OptionsSpecifierList",
           "documentation":"<p> A list of custom user-defined configuration options to remove from the configuration set for this new environment. </p>"
         },
-        "TemplateSpecification":{
-          "shape":"EnvironmentTemplateSpecification",
-          "documentation":""
-        }
+        "TemplateSpecification":{"shape":"EnvironmentTemplateSpecification"}
       },
       "documentation":"<p></p>"
     },
@@ -1429,11 +2033,16 @@
           "documentation":"<p> The name of the application to delete the configuration template from. </p>"
         },
         "TemplateName":{
-          "shape":"ConfigurationTemplateName",
+          "shape":"DeleteConfigurationTemplateName",
           "documentation":"<p>The name of the configuration template to delete.</p>"
         }
       },
       "documentation":"<p>This documentation target is not reported in the API reference.</p>"
+    },
+    "DeleteConfigurationTemplateName":{
+      "type":"string",
+      "min":1,
+      "max":100
     },
     "DeleteEnvironmentConfigurationMessage":{
       "type":"structure",
@@ -1481,6 +2090,10 @@
     "DescribeConfigurationOptionsMessage":{
       "type":"structure",
       "members":{
+        "Options":{
+          "shape":"OptionsSpecifierList",
+          "documentation":"<p> If specified, restricts the descriptions to only the specified options. </p>"
+        },
         "ApplicationName":{
           "shape":"ApplicationName",
           "documentation":"<p> The name of the application associated with the configuration template or environment. Only needed if you want to describe the configuration options associated with either the configuration template or environment. </p>"
@@ -1493,14 +2106,15 @@
           "shape":"EnvironmentName",
           "documentation":"<p> The name of the environment whose configuration options you want to describe. </p>"
         },
+        "Tier":{"shape":"EnvironmentTier"},
         "SolutionStackName":{
           "shape":"SolutionStackName",
           "documentation":"<p> The name of the solution stack whose configuration options you want to describe. </p>"
         },
-        "Options":{
-          "shape":"OptionsSpecifierList",
-          "documentation":"<p> If specified, restricts the descriptions to only the specified options. </p>"
-        }
+        "OptionSettings":{"shape":"ConfigurationOptionSettingsList"},
+        "OptionsToRemove":{"shape":"OptionsSpecifierList"},
+        "VersionLabel":{"shape":"VersionLabel"},
+        "TemplateSpecification":{"shape":"EnvironmentTemplateSpecification"}
       },
       "documentation":"<p>Result message containig a list of application version descriptions. </p>"
     },
@@ -1508,6 +2122,7 @@
       "type":"structure",
       "required":["ApplicationName"],
       "members":{
+        "Options":{"shape":"OptionsSpecifierList"},
         "ApplicationName":{
           "shape":"ApplicationName",
           "documentation":"<p> The application for the environment or configuration template. </p>"
@@ -1519,7 +2134,13 @@
         "EnvironmentName":{
           "shape":"EnvironmentName",
           "documentation":"<p> The name of the environment to describe. </p> <p> Condition: You must specify either this or a TemplateName, but not both. If you specify both, AWS Elastic Beanstalk returns an <code>InvalidParameterCombination</code> error. If you do not specify either, AWS Elastic Beanstalk returns <code>MissingRequiredParameter</code> error. </p>"
-        }
+        },
+        "Tier":{"shape":"EnvironmentTier"},
+        "SolutionStackName":{"shape":"SolutionStackName"},
+        "OptionSettings":{"shape":"ConfigurationOptionSettingsList"},
+        "OptionsToRemove":{"shape":"OptionsSpecifierList"},
+        "VersionLabel":{"shape":"VersionLabel"},
+        "TemplateSpecification":{"shape":"EnvironmentTemplateSpecification"}
       },
       "documentation":"<p>Result message containing all of the configuration settings for a specified solution stack or configuration template.</p>"
     },
@@ -1535,8 +2156,8 @@
       "type":"structure",
       "members":{
         "EnvironmentName":{"shape":"EnvironmentName"},
-        "Status":{"shape":"String"},
         "HealthStatus":{"shape":"String"},
+        "Status":{"shape":"EnvironmentHealth"},
         "Color":{"shape":"String"},
         "Causes":{"shape":"Causes"},
         "ApplicationMetrics":{"shape":"ApplicationMetrics"},
@@ -1655,49 +2276,18 @@
         "NextToken":{"shape":"NextToken"}
       }
     },
-    "DescribeSolutionStacksInputMessage":{
-      "type":"structure",
-      "members":{
-        "SolutionStackNames":{"shape":"SolutionStackNamesList"},
-        "Filters":{"shape":"SolutionStackFilterList"},
-        "StackStatus":{"shape":"SolutionStackStatusList"},
-        "ProgrammingLanguageDefaultsOnly":{"shape":"ProgrammingLanguageDefaultFlag"},
-        "NextToken":{"shape":"SolutionStackNextToken"},
-        "MaxResults":{"shape":"SolutionStackMaxResults"}
-      }
-    },
-    "DescribeSolutionStacksResultMessage":{
-      "type":"structure",
-      "members":{
-        "SolutionStackDetails":{"shape":"SolutionStackDetailsList"},
-        "NextToken":{"shape":"SolutionStackNextToken"},
-        "AvailableProgrammingLanguages":{"shape":"AvailableProgrammingLanguages"},
-        "AvailableOperatingSystems":{"shape":"AvailableOperatingSystems"},
-        "AvailableFrameworks":{"shape":"AvailableFrameworks"},
-        "AvailableWebServers":{"shape":"AvailableWebServers"},
-        "AvailableSoftwareComponents":{"shape":"AvailableSoftwareComponents"},
-        "AvailableArchitectures":{"shape":"AvailableArchitectures"}
-      }
-    },
-    "DescribeTagsForResourcesInputMessage":{
-      "type":"structure",
-      "members":{
-        "ResourceType":{"shape":"ReourceTypeForTagging"},
-        "ResourcePaths":{"shape":"ResourcePathsList"}
-      }
-    },
-    "DescribeTagsForResourcesResultMessage":{
-      "type":"structure",
-      "members":{
-        "ResourceTagsDescriptions":{"shape":"ResourceTagsDescriptionList"}
-      }
-    },
     "Description":{
       "type":"string",
       "max":200
     },
-    "Double":{"type":"double"},
     "Ec2InstanceId":{"type":"string"},
+    "ElasticBeanstalkServiceException":{
+      "type":"structure",
+      "members":{
+        "message":{"shape":"ExceptionMessage"}
+      },
+      "exception":true
+    },
     "EndpointURL":{"type":"string"},
     "EnvironmentDescription":{
       "type":"structure",
@@ -1732,7 +2322,7 @@
         },
         "EndpointURL":{
           "shape":"EndpointURL",
-          "documentation":"<p>For load-balanced, autoscaling environments, the URL to the LoadBalancer. For single-instance environments, the IP address of the instance.</p>"
+          "documentation":"<p>The URL to the LoadBalancer for this environment.</p>"
         },
         "CNAME":{
           "shape":"DNSCname",
@@ -1750,6 +2340,7 @@
           "shape":"EnvironmentStatus",
           "documentation":"<p> The current operational status of the environment: </p> <ul> <li> <code>Launching</code>: Environment is in the process of initial deployment. </li> <li> <code>Updating</code>: Environment is in the process of updating its configuration settings or application version. </li> <li> <code>Ready</code>: Environment is available to have an action performed on it, such as update or terminate. </li> <li> <code>Terminating</code>: Environment is in the shut-down process. </li> <li> <code>Terminated</code>: Environment is not running. </li> </ul>"
         },
+        "AbortableOperationInProgress":{"shape":"AbortableOperationInProgress"},
         "Health":{
           "shape":"EnvironmentHealth",
           "documentation":"<p> Describes the health status of the environment. AWS Elastic Beanstalk indicates the failure levels for a running environment: </p> <enumValues> <value name=\"Red\"> <p> <code>Red</code> : Indicates the environment is not working. </p> </value> <value name=\"Yellow\"> <p> <code>Yellow</code>: Indicates that something is wrong, the application might not be available, but the instances appear running. </p> </value> <value name=\"Green\"> <p> <code>Green</code>: Indicates the environment is healthy and fully functional. </p> </value> </enumValues> <ul> <li> <code>Red</code>: Indicates the environment is not responsive. Occurs when three or more consecutive failures occur for an environment. </li> <li> <code>Yellow</code>: Indicates that something is wrong. Occurs when two consecutive failures occur for an environment. </li> <li> <code>Green</code>: Indicates the environment is healthy and fully functional. </li> <li> <code>Grey</code>: Default health for a new environment. The environment is not fully launched and health checks have not started or health checks are suspended during an <code>UpdateEnvironment</code> or <code>RestartEnvironement</code> request. </li> </ul> <p> Default: <code>Grey</code> </p>"
@@ -1762,9 +2353,6 @@
         "Tier":{
           "shape":"EnvironmentTier",
           "documentation":"<p>Describes the current tier of this environment.</p>"
-        },
-        "AbortableOperationInProgress":{
-          "shape": "EnvironmentAbortableOperationInProgress"
         }
       },
       "documentation":"<p>Describes the properties of an environment.</p>"
@@ -1772,9 +2360,6 @@
     "EnvironmentDescriptionsList":{
       "type":"list",
       "member":{"shape":"EnvironmentDescription"}
-    },
-    "EnvironmentAbortableOperationInProgress":{
-      "type":"boolean"
     },
     "EnvironmentDescriptionsMessage":{
       "type":"structure",
@@ -1798,14 +2383,14 @@
     "EnvironmentHealthAttribute":{
       "type":"string",
       "enum":[
-        "HealthStatus",
         "Status",
         "Color",
         "Causes",
         "ApplicationMetrics",
         "InstancesHealth",
-        "RefreshedAt",
-        "All"
+        "All",
+        "HealthStatus",
+        "RefreshedAt"
       ]
     },
     "EnvironmentHealthAttributes":{
@@ -1856,10 +2441,7 @@
       "type":"list",
       "member":{"shape":"EnvironmentInfoDescription"}
     },
-    "EnvironmentInfoType":{
-      "type":"string",
-      "enum":["tail"]
-    },
+    "EnvironmentInfoType":{"type":"string"},
     "EnvironmentName":{
       "type":"string",
       "min":4,
@@ -1932,6 +2514,13 @@
         "Terminating",
         "Terminated"
       ]
+    },
+    "EnvironmentTemplateSpecification":{
+      "type":"structure",
+      "members":{
+        "TemplateSource":{"shape":"TemplateSource"},
+        "TemplateSnippets":{"shape":"TemplateSnippetList"}
+      }
     },
     "EnvironmentTier":{
       "type":"structure",
@@ -2020,6 +2609,7 @@
         "FATAL"
       ]
     },
+    "ExceptionMessage":{"type":"string"},
     "FileTypeExtension":{
       "type":"string",
       "min":1,
@@ -2097,12 +2687,24 @@
       "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
     },
     "Integer":{"type":"integer"},
+    "InvalidRequestException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"InvalidRequestException",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The request is invalid, please check parameters and their values</p>"
+    },
     "Latency":{
       "type":"structure",
       "members":{
         "P999":{"shape":"NullableDouble"},
-        "P95":{"shape":"NullableDouble"},
         "P99":{"shape":"NullableDouble"},
+        "P95":{"shape":"NullableDouble"},
         "P90":{"shape":"NullableDouble"},
         "P85":{"shape":"NullableDouble"},
         "P75":{"shape":"NullableDouble"},
@@ -2139,6 +2741,13 @@
       },
       "documentation":"<p>A list of available AWS Elastic Beanstalk solution stacks. </p>"
     },
+    "ListAvailableTiersResultMessage":{
+      "type":"structure",
+      "members":{
+        "Tiers":{"shape":"AvailableTiersList"}
+      },
+      "documentation":"<p>Message returned from a ListAvailableTier call.</p>"
+    },
     "Listener":{
       "type":"structure",
       "members":{
@@ -2153,6 +2762,11 @@
       },
       "documentation":"<p>Describes the properties of a Listener for the LoadBalancer.</p>"
     },
+    "LoadAverage":{
+      "type":"list",
+      "member":{"shape":"LoadAverageValue"}
+    },
+    "LoadAverageValue":{"type":"double"},
     "LoadBalancer":{
       "type":"structure",
       "members":{
@@ -2189,22 +2803,25 @@
       "type":"list",
       "member":{"shape":"Listener"}
     },
-    "LoadAverage":{
-      "type":"list",
-      "member":{"shape":"LoadAverageValue"}
-    },
-    "LoadAverageValue":{"type":"double"},
-    "MaxRecords":{
-      "type":"integer",
-      "min":1,
-      "max":1000
-    },
     "MaxRecords":{
       "type":"integer",
       "min":1,
       "max":1000
     },
     "Message":{"type":"string"},
+    "MissingRequiredResourceException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"MissingRequiredResourceException",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>Required resources associated with specified parameters are missing.</p>"
+    },
+    "Name":{"type":"string"},
     "NextToken":{
       "type":"string",
       "min":1,
@@ -2222,7 +2839,7 @@
         "senderFault":true
       },
       "exception":true,
-      "documentation":"<p>Unable to perform the specified operation because another operation is already in progress affecting an an element in this activity.</p>"
+      "documentation":"<p>Unable to perform the specified operation because another operation is already in progress affecting an element in this activity.</p>"
     },
     "OptionNamespace":{"type":"string"},
     "OptionRestrictionMaxLength":{"type":"integer"},
@@ -2245,6 +2862,7 @@
     "OptionSpecification":{
       "type":"structure",
       "members":{
+        "ResourceName":{"shape":"ResourceName"},
         "Namespace":{
           "shape":"OptionNamespace",
           "documentation":"<p> A unique namespace identifying the option's associated AWS resource. </p>"
@@ -2252,10 +2870,6 @@
         "OptionName":{
           "shape":"ConfigurationOptionName",
           "documentation":"<p> The name of the configuration option. </p>"
-        },
-        "ResourceName":{
-          "shape": "ConfigurationResourceName",
-          "documentation": "<p> The Name of the resource. </p>"
         }
       },
       "documentation":"<p> A specification identifying an individual configuration option. </p>"
@@ -2263,53 +2877,6 @@
     "OptionsSpecifierList":{
       "type":"list",
       "member":{"shape":"OptionSpecification"}
-    },
-    "S3LocationUrl":{"type":"string"},
-    "SnippetOrder":{"type":"integer"},
-    "TemplateSnippet":{
-      "type":"structure",
-      "members":{
-        "SnippetName":{
-          "shape":"String"
-        },
-        "SourceUrl":{
-          "shape":"S3LocationUrl"
-        },
-        "Order":{
-          "shape":"SnippetOrder"
-        }
-      }
-    },
-    "TemplateSnippetList":{
-      "type":"list",
-      "member":{"shape":"TemplateSnippet"}
-    },
-    "TemplateSource":{
-      "type":"structure",
-      "members":{
-        "EnvironmentName":{
-          "shape":"EnvironmentName"
-        },
-        "SourceContents": {
-          "shape": "String"
-        },
-        "SolutionStackName": {
-          "shape": "SolutionStackName"
-        }
-      }
-    },
-    "EnvironmentTemplateSpecification":{
-      "type": "structure",
-      "members": {
-        "TemplateSource":{
-          "shape":"TemplateSource",
-          "documentation": ""
-        },
-        "TemplateSnippets":{
-          "shape": "TemplateSnippetList",
-          "documentation":""
-        }
-      }
     },
     "Queue":{
       "type":"structure",
@@ -2368,6 +2935,11 @@
     },
     "RequestId":{"type":"string"},
     "ResourceId":{"type":"string"},
+    "ResourceName":{
+      "type":"string",
+      "min":1,
+      "max":256
+    },
     "RestartAppServerMessage":{
       "type":"structure",
       "members":{
@@ -2445,6 +3017,10 @@
       "exception":true,
       "documentation":"<p>The specified S3 bucket does not belong to the S3 region in which the service is running.</p>"
     },
+    "S3LocationUrl":{
+      "type":"string",
+      "pattern":"(s3|https?)://(.+\\.)?s3((-|\\.).+)?\\.amazonaws\\.com(.cn)?/.+$"
+    },
     "S3SubscriptionRequiredException":{
       "type":"structure",
       "members":{
@@ -2470,6 +3046,7 @@
         "System":{"shape":"SystemStatus"}
       }
     },
+    "SnippetOrder":{"type":"long"},
     "SolutionStackDescription":{
       "type":"structure",
       "members":{
@@ -2521,10 +3098,10 @@
     "StatusCodes":{
       "type":"structure",
       "members":{
-        "Status2xx":{"shape":"Integer"},
-        "Status3xx":{"shape":"Integer"},
-        "Status4xx":{"shape":"Integer"},
-        "Status5xx":{"shape":"Integer"}
+        "Status2xx":{"shape":"NullableInteger"},
+        "Status3xx":{"shape":"NullableInteger"},
+        "Status4xx":{"shape":"NullableInteger"},
+        "Status5xx":{"shape":"NullableInteger"}
       }
     },
     "String":{"type":"string"},
@@ -2538,18 +3115,6 @@
         "SourceEnvironmentName":{
           "shape":"EnvironmentName",
           "documentation":"<p> The name of the source environment. </p> <p> Condition: You must specify at least the <code>SourceEnvironmentID</code> or the <code>SourceEnvironmentName</code>. You may also specify both. If you specify the <code>SourceEnvironmentName</code>, you must specify the <code>DestinationEnvironmentName</code>. </p>"
-        },
-        "CPUUtilization":{
-          "type":"structure",
-          "members":{
-            "User":{"shape":"Double"},
-            "Nice":{"shape":"Double"},
-            "System":{"shape":"Double"},
-            "Idle":{"shape":"Double"},
-            "IOWait":{"shape":"Double"},
-            "IRQ":{"shape":"Double"},
-            "SoftIRQ":{"shape":"Double"}
-          }
         },
         "DestinationEnvironmentId":{
           "shape":"EnvironmentId",
@@ -2572,16 +3137,9 @@
     "Tag":{
       "type":"structure",
       "members":{
-        "Key":{
-          "shape":"TagKey",
-          "documentation":"<p>The key of the tag.</p>"
-        },
-        "Value":{
-          "shape":"TagValue",
-          "documentation":"<p>The value of the tag.</p>"
-        }
-      },
-      "documentation":"<p>Describes a tag applied to a resource in an environment.</p>"
+        "Key":{"shape":"TagKey"},
+        "Value":{"shape":"TagValue"}
+      }
     },
     "TagKey":{
       "type":"string",
@@ -2597,6 +3155,38 @@
       "type":"list",
       "member":{"shape":"Tag"}
     },
+    "TemplateSnippet":{
+      "type":"structure",
+      "members":{
+        "SnippetName":{"shape":"String"},
+        "SourceUrl":{"shape":"S3LocationUrl"},
+        "Order":{"shape":"SnippetOrder"}
+      }
+    },
+    "TemplateSnippetList":{
+      "type":"list",
+      "member":{"shape":"TemplateSnippet"}
+    },
+    "TemplateSource":{
+      "type":"structure",
+      "members":{
+        "SolutionStackName":{"shape":"SolutionStackName"},
+        "EnvironmentName":{"shape":"EnvironmentName"},
+        "SourceContents":{"shape":"String"}
+      }
+    },
+    "TemporaryMaintainanceException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"TemporaryMaintainanceException",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+    },
     "TerminateEnvForce":{"type":"boolean"},
     "TerminateEnvironmentMessage":{
       "type":"structure",
@@ -2611,7 +3201,7 @@
         },
         "TerminateResources":{
           "shape":"TerminateEnvironmentResources",
-          "documentation":"<p> Indicates whether the associated AWS resources should shut down when the environment is terminated: </p> <enumValues> <value name=\"true\"> <p> <code>true</code>: (default) The user AWS resources (for example, the Auto Scaling group, LoadBalancer, etc.) are terminated along with the environment. </p> </value> <value name=\"false\"> <p> <code>false</code>: The environment is removed from the AWS Elastic Beanstalk but the AWS resources continue to operate. </p> </value> </enumValues> <ul> <li> <code>true</code>: The specified environment as well as the associated AWS resources, such as Auto Scaling group and LoadBalancer, are terminated. </li> <li> <code>false</code>: AWS Elastic Beanstalk resource management is removed from the environment, but the AWS resources continue to operate. </li> </ul> <p> For more information, see the <a href=\"http://docs.aws.amazon.com/elasticbeanstalk/latest/ug/\"> AWS Elastic Beanstalk User Guide. </a> </p> <p> Default: <code>true</code> </p> <p> Valid Values: <code>true</code> | <code>false</code> </p>"
+          "documentation":"<p> Indicates whether the associated AWS resources should shut down when the environment is terminated: </p> <enumValues> <value name=\"true\"> <p> <code>true</code>: (default) The user AWS resources (for example, the Auto Scaling group, LoadBalancer, etc.) are terminated along with the environment. </p> </value> <value name=\"false\"> <p> <code>false</code>: The environment is removed from the AWS Elastic Beanstalk but the AWS resources continue to operate. </p> </value> </enumValues> <ul> <li> <code>true</code>: The specified environment as well as the associated AWS resources, such as Auto Scaling group and LoadBalancer, are terminated. </li> <li> <code>false</code>: AWS Elastic Beanstalk resource management is removed from the environment, but the AWS resources continue to operate. </li> </ul> <p> For more information, see the <a href=\"http://docs.amazonwebservices.com/elasticbeanstalk/latest/ug/\"> AWS Elastic Beanstalk User Guide. </a> </p> <p> Default: <code>true</code> </p> <p> Valid Values: <code>true</code> | <code>false</code> </p>"
         }
       },
       "documentation":"<p>This documentation target is not reported in the API reference.</p>"
@@ -2784,6 +3374,7 @@
           "shape":"ConfigurationTemplateName",
           "documentation":"<p> If this parameter is specified, AWS Elastic Beanstalk deploys this configuration template to the environment. If no such configuration template is found, AWS Elastic Beanstalk returns an <code>InvalidParameterValue</code> error. </p>"
         },
+        "SolutionStackName":{"shape":"SolutionStackName"},
         "OptionSettings":{
           "shape":"ConfigurationOptionSettingsList",
           "documentation":"<p> If specified, AWS Elastic Beanstalk updates the configuration set associated with the running environment and sets the specified configuration options to the requested value. </p>"
@@ -2792,24 +3383,16 @@
           "shape":"OptionsSpecifierList",
           "documentation":"<p> A list of custom user-defined configuration options to remove from the configuration set for this environment. </p>"
         },
-        "TemplateSpecification":{
-          "shape":"EnvironmentTemplateSpecification",
-          "documentation":""
-        },
-        "SolutionStackName": {
-          "shape": "SolutionStackName",
-          "documentation": ""
-        }
+        "TemplateSpecification":{"shape":"EnvironmentTemplateSpecification"}
       },
       "documentation":"<p>This documentation target is not reported in the API reference.</p>"
     },
     "UserDefinedOption":{"type":"boolean"},
     "ValidateConfigurationSettingsMessage":{
       "type":"structure",
-      "required":[
-        "ApplicationName"
-      ],
+      "required":["ApplicationName"],
       "members":{
+        "Options":{"shape":"OptionsSpecifierList"},
         "ApplicationName":{
           "shape":"ApplicationName",
           "documentation":"<p> The name of the application that the configuration template or environment belongs to. </p>"
@@ -2822,14 +3405,15 @@
           "shape":"EnvironmentName",
           "documentation":"<p> The name of the environment to validate the settings against. </p> <p> Condition: You cannot specify both this and a configuration template name. </p>"
         },
+        "Tier":{"shape":"EnvironmentTier"},
+        "SolutionStackName":{"shape":"SolutionStackName"},
         "OptionSettings":{
           "shape":"ConfigurationOptionSettingsList",
           "documentation":"<p> A list of the options and desired values to evaluate. </p>"
         },
-        "TemplateSpecification":{
-          "shape":"EnvironmentTemplateSpecification",
-          "documentation":""
-        }
+        "OptionsToRemove":{"shape":"OptionsSpecifierList"},
+        "VersionLabel":{"shape":"VersionLabel"},
+        "TemplateSpecification":{"shape":"EnvironmentTemplateSpecification"}
       },
       "documentation":"<p>A list of validation messages for a specified configuration template. </p>"
     },
@@ -2870,7 +3454,8 @@
     "VersionLabel":{
       "type":"string",
       "min":1,
-      "max":100
+      "max":100,
+      "pattern":"[^/]+"
     },
     "VersionLabelsList":{
       "type":"list",
