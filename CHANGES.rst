@@ -3,6 +3,12 @@ Changelog
 =========
 
 ------------------
+3.5.5 (2015-10-27)
+------------------
+- Fix bug in "eb swap"
+- Fix typo in string resource
+
+------------------
 3.5.4 (2015-09-22)
 ------------------
 - Add "cn-north-1" to region list
