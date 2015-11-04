@@ -23,8 +23,9 @@ from ..objects.exceptions import NotAuthorizedError
 from . import commonops
 
 
-def terminate(env_name, nohang=False, timeout=5):
-    request_id = elasticbeanstalk.terminate_environment(env_name)
+def terminate(env_name, force_terminate=False, nohang=False, timeout=5):
+    request_id = elasticbeanstalk.terminate_environment(env_name,
+                                                        force_terminate=force_terminate)
 
     # disassociate with branch if branch default
     default_env = commonops.get_current_branch_environment()

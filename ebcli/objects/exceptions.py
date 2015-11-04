@@ -140,3 +140,5 @@ class UploadError(EBCLIException):
     """ An error occured while uploading app version
     """
 
+class WorkerQueueNotFound(EBCLIException):
+    """ A worker queue could not be found for a worker environment """

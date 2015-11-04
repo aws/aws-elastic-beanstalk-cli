@@ -22,7 +22,7 @@ class CreateEnvironmentRequest(object):
                  instance_profile=None, service_role=None,
                  single_instance=False, key_name=None,
                  sample_application=False, tags=None, scale=None,
-                 database=None, vpc=None, template_name=None):
+                 database=None, vpc=None, template_name=None, group_name=None):
         self.app_name = app_name
         self.cname = cname
         self.env_name = env_name
@@ -36,6 +36,7 @@ class CreateEnvironmentRequest(object):
         self.template_name = template_name
         self.tier = tier
         self.version_label = version_label
+        self.group_name = group_name
         if tags is None:
             self.tags = []
         else:

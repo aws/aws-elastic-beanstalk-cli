@@ -96,6 +96,157 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
     raise TimeoutError('Timed out while waiting for command to Complete. The timeout can be set using the --timeout option.')
 
 
+def wait_for_multiple_success_events(request_ids, timeout_in_minutes=None,
+                                     sleep_time=5, stream_events=True,
+                                     can_abort=False):
+    if timeout_in_minutes == 0:
+        return
+    if timeout_in_minutes is None:
+        timeout_in_minutes = 10
+
+    start = datetime.now()
+    timediff = timedelta(seconds=timeout_in_minutes * 60)
+
+    last_times = []
+    events_matrix = []
+    app_names = []
+    env_names = []
+    successes = []
+    for i in range(len(request_ids)):
+        # Like indices of last_times and events_matrix correspond
+        # to the same environment
+        last_times.append(None)
+        app_names.append(None)
+        env_names.append(None)
+        events_matrix.append([])
+        successes.append(False)
+
+    streamer = io.get_event_streamer()
+    if can_abort:
+        streamer.prompt += strings['events.abortmessage']
+
+    try:
+        # Get first events from all requests for start times
+        for index in range(len(request_ids)):
+            while not events_matrix[index]:
+                events_matrix[index] = elasticbeanstalk.get_new_events(
+                    None, None, request_ids[index], last_event_time=None
+                )
+
+                if len(events_matrix[index]) > 0:
+                    event = events_matrix[index][-1]
+                    app_name = event.app_name
+                    env_name = event.environment_name
+
+                    app_names[index] = app_name
+                    env_names[index] = env_name
+
+                    if stream_events:
+                        streamer.stream_event(get_env_event_string(event))
+                    if _is_success_string(event.message):
+                        successes[index] = True
+                    last_times[index] = event.event_date
+                else:
+                    time.sleep(sleep_time)
+
+        # Poll for events from all environments
+        while (datetime.now() - start) < timediff:
+            # Check for success from all environments
+            if all(successes):
+                return
+
+            for index in range(len(env_names)):
+                if successes[index]:
+                    continue
+
+                time.sleep(sleep_time)
+
+                events_matrix[index] = elasticbeanstalk.get_new_events(
+                    app_names[index], env_names[index], None,
+                    last_event_time=last_times[index]
+                )
+
+                for event in reversed(events_matrix[index]):
+                    if stream_events:
+                        streamer.stream_event(get_env_event_string(event))
+                        last_times[index] = event.event_date
+
+                    if _is_success_string(event.message):
+                        successes[index] = True
+    finally:
+        streamer.end_stream()
+    raise TimeoutError('Timed out while waiting for commands to Complete')
+
+
+def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minutes=None,
+                            sleep_time=5, stream_events=True,
+                            can_abort=False):
+    if timeout_in_minutes == 0:
+        return
+    if timeout_in_minutes is None:
+        timeout_in_minutes = 15
+
+    start = datetime.now()
+    timediff = timedelta(seconds=timeout_in_minutes * 60)
+
+    last_times = []
+    events_matrix = []
+    successes = []
+
+    last_time_compose = datetime.utcnow()
+    compose_events = []
+
+    for i in range(len(grouped_envs)):
+        # Like indices of last_times and events_matrix correspond
+        # to the same environment
+        last_times.append(datetime.utcnow())
+        events_matrix.append([])
+        successes.append(False)
+
+    streamer = io.get_event_streamer()
+    if can_abort:
+        streamer.prompt += strings['events.abortmessage']
+
+    try:
+        # Poll for events from all environments
+        while (datetime.now() - start) < timediff:
+            # Check for success from all environments
+            if all(successes):
+                return
+
+            # Poll for ComposeEnvironments events
+            compose_events = elasticbeanstalk.get_new_events(app_name=app_name,
+                                                             env_name=None,
+                                                             request_id=request_id,
+                                                             last_event_time=last_time_compose)
+            for event in reversed(compose_events):
+                if stream_events:
+                    streamer.stream_event(get_compose_event_string(event))
+                    last_time_compose = event.event_date
+
+            for index in range(len(grouped_envs)):
+                if successes[index]:
+                    continue
+
+                time.sleep(sleep_time)
+
+                events_matrix[index] = elasticbeanstalk.get_new_events(
+                    app_name, grouped_envs[index], None,
+                    last_event_time=last_times[index]
+                )
+
+                for event in reversed(events_matrix[index]):
+                    if stream_events:
+                        streamer.stream_event(get_env_event_string(event))
+                        last_times[index] = event.event_date
+
+                    if _is_success_string(event.message):
+                        successes[index] = True
+    finally:
+        streamer.end_stream()
+    raise TimeoutError('Timed out while waiting for commands to Complete')
+
+
 def _is_success_string(message):
     if message == responses['event.greenmessage']:
         return True
@@ -152,6 +303,38 @@ def get_event_string(event, long_format=False):
         return u'{0}: {1}'.format(severity, message)
 
 
+def get_compose_event_string(event, long_format=False):
+    app_name = event.application_name
+    message = event.message
+    severity = event.severity
+    date = event.event_date
+    if long_format:
+        return u'{0} - {1} {2} {3}'.format(
+            app_name,
+            date.strftime("%Y-%m-%d %H:%M:%S").ljust(22),
+            severity.ljust(7),
+            message
+        )
+    else:
+        return u'{0} - {1}: {2}'.format(app_name, severity, message)
+
+
+def get_env_event_string(event, long_format=False):
+    environment = event.environment_name
+    message = event.message
+    severity = event.severity
+    date = event.event_date
+    if long_format:
+        return u'{0} - {1} {2} {3}'.format(
+            environment.rjust(23),
+
+            date.strftime("%Y-%m-%d %H:%M:%S").ljust(22),
+            severity.ljust(7),
+            message)
+    else:
+        return u'{0} - {1}: {2}'.format(environment.rjust(23), severity, message)
+
+
 def get_all_env_names():
     envs = elasticbeanstalk.get_all_environments()
     return [e.name for e in envs]
@@ -167,7 +350,7 @@ def get_app_version_labels(app_name):
     return [v['VersionLabel'] for v in app_versions]
 
 
-def prompt_for_solution_stack():
+def prompt_for_solution_stack(module_name=None):
 
     solution_stacks = elasticbeanstalk.get_available_solution_stacks()
 
@@ -203,7 +386,10 @@ def prompt_for_solution_stack():
     if not platform or not correct:
         # ask for platform
         io.echo()
-        io.echo(prompts['platform.prompt'])
+        io.echo(prompts['platform.prompt']
+                if not module_name
+                else prompts['platform.prompt.withmodule'].replace('{module_name}',
+                                                                   module_name))
         platform = utils.prompt_for_item_in_list(platforms)
 
     # filter
@@ -269,6 +455,8 @@ def create_app(app_name, default_env=None):
         )
 
         set_environment_for_current_branch(None)
+        set_group_suffix_for_current_branch(None)
+
         io.echo('Application', app_name,
                 'has been created.')
         return None, None
@@ -375,10 +563,54 @@ def print_env_details(env, health=True):
     io.echo('  Tier:', env.tier)
     io.echo('  CNAME:', env.cname)
     io.echo('  Updated:', env.date_updated)
+    print_env_links(env)
 
     if health:
         io.echo('  Status:', env.status)
         io.echo('  Health:', env.health)
+
+
+def print_env_links(env):
+    if env.environment_links is not None and len(env.environment_links) > 0:
+        links = {}
+        linked_envs = []
+
+        # Process information returned in EnvironmentLinks
+        for link in env.environment_links:
+            link_data = dict(link_name=link['LinkName'], env_name=link['EnvironmentName'])
+            links[link_data['env_name']] = link_data
+            linked_envs.append(link_data['env_name'])
+
+        # Call DescribeEnvironments for linked environments
+        linked_env_descriptions = elasticbeanstalk.get_environments(linked_envs)
+
+        for linked_env in linked_env_descriptions:
+            if linked_env.tier.name == 'WebServer':
+                links[linked_env.name]['value'] = linked_env.cname
+            elif linked_env.tier.name == 'Worker':
+                links[linked_env.name]['value'] = get_worker_sqs_url(linked_env.name)
+                time.sleep(.5)
+
+        io.echo('  Environment Links:')
+
+        for link in links.values():
+            io.echo('    {}:'.format(link['env_name']))
+            io.echo('      {}: {}'.format(link['link_name'],
+                                          link['value']))
+
+
+def get_worker_sqs_url(env_name):
+    resources = elasticbeanstalk.get_environment_resources(env_name)['EnvironmentResources']
+    queues = resources['Queues']
+    worker_queue = None
+    for queue in queues:
+        if queue['Name'] == 'WorkerQueue':
+            worker_queue = queue
+
+    if worker_queue is None:
+        raise WorkerQueueNotFound
+
+    return worker_queue['URL']
 
 
 def create_envvars_list(var_list, as_option_settings=True):
@@ -426,7 +658,7 @@ def create_dummy_app_version(app_name):
                                        None, None, warning=False)
 
 
-def create_app_version(app_name, label=None, message=None, staged=False):
+def create_app_version(app_name, process=False, label=None, message=None, staged=False):
     cwd = os.getcwd()
     fileoperations._traverse_to_project_root()
     try:
@@ -487,11 +719,11 @@ def create_app_version(app_name, label=None, message=None, staged=False):
     fileoperations.delete_app_versions()
     io.log_info('Creating AppVersion ' + version_label)
     return _create_application_version(app_name, version_label, description,
-                                       bucket, key)
+                                       bucket, key, process)
 
 
 def _create_application_version(app_name, version_label, description,
-                                bucket, key, warning=True):
+                                bucket, key, process=False, warning=True):
     """
     A wrapper around elasticbeanstalk.create_application_version that
     handles certain error cases:
@@ -501,7 +733,7 @@ def _create_application_version(app_name, version_label, description,
     while True:
         try:
             elasticbeanstalk.create_application_version(
-                app_name, version_label, description, bucket, key
+                app_name, version_label, description, bucket, key, process
             )
             return version_label
         except InvalidParameterValueError as e:
@@ -583,8 +815,16 @@ def set_environment_for_current_branch(value):
     write_setting_to_current_branch('environment', value)
 
 
+def set_group_suffix_for_current_branch(value):
+    write_setting_to_current_branch('group_suffix', value)
+
+
 def get_current_branch_environment():
     return get_setting_from_current_branch('environment')
+
+
+def get_current_branch_group_suffix():
+    return get_setting_from_current_branch('group_suffix')
 
 
 def get_default_keyname():

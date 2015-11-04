@@ -12,11 +12,12 @@
 # language governing permissions and limitations under the License.
 
 import sys
+import os.path
 
 from ..core import fileoperations, io
 from ..core.abstractcontroller import AbstractBaseController
 from ..lib import utils, elasticbeanstalk, aws
-from ..objects import region as regions
+from ..objects import solutionstack, region as regions
 from ..objects.exceptions import NotInitializedError, NoRegionError, \
     InvalidProfileError
 from ..operations import commonops, initializeops, sshops
@@ -30,6 +31,7 @@ class InitController(AbstractBaseController):
         arguments = [
             (['application_name'], dict(
                 help=flag_text['init.name'], nargs='?', default=[])),
+            (['-m', '--modules'], dict(help=flag_text['init.module'], nargs='*')),
             (['-p', '--platform'], dict(help=flag_text['init.platform'])),
             (['-k', '--keyname'], dict(help=flag_text['init.keyname'])),
             (['-i', '--interactive'], dict(
@@ -46,6 +48,12 @@ class InitController(AbstractBaseController):
         self.flag = False
         if self.app.pargs.platform:
             self.flag = True
+        self.modules = self.app.pargs.modules
+
+        # The user specifies directories to initialize
+        if self.modules and len(self.modules) > 0:
+            self.initialize_multiple_directories()
+            return
 
         default_env = self.get_old_values()
         fileoperations.touch_config_folder()
@@ -83,10 +91,19 @@ class InitController(AbstractBaseController):
         if not self.solution:
             self.solution = sstack
 
+        platform_set = False
         if not self.solution or \
                 (self.interactive and not self.app.pargs.platform):
-            result = commonops.prompt_for_solution_stack()
-            self.solution = result.version
+            if fileoperations.env_yaml_exists():
+                env_yaml_platform = fileoperations.get_platform_from_env_yaml()
+                if env_yaml_platform:
+                    platform = solutionstack.SolutionStack(env_yaml_platform).version
+                    self.solution = platform
+                    platform_set = True
+
+            if not platform_set:
+                result = commonops.prompt_for_solution_stack()
+                self.solution = result.version
 
         initializeops.setup(self.app_name, self.region, self.solution)
 
@@ -273,6 +290,85 @@ class InitController(AbstractBaseController):
             return default_env
 
         return None
+
+    def initialize_multiple_directories(self):
+        application_created = False
+        self.app_name = None
+        cwd = os.getcwd()
+        for module in self.modules:
+            if os.path.exists(module) and os.path.isdir(module):
+                os.chdir(module)
+                fileoperations.touch_config_folder()
+
+                # Region should be set once for all modules
+                if not self.region:
+                    if self.interactive:
+                        self.region = self.get_region()
+                    else:
+                        self.region = self.get_region_from_inputs()
+                    aws.set_region(self.region)
+
+                self.set_up_credentials()
+
+                solution = self.get_solution_stack()
+
+                # App name should be set once for all modules
+                if not self.app_name:
+                    # Switching back to the root dir will suggest the root dir name
+                    # as the application name
+                    os.chdir(cwd)
+                    self.app_name = self.get_app_name()
+                    os.chdir(module)
+
+                if self.noverify:
+                    fileoperations.write_config_setting('global',
+                                                        'no-verify-ssl', True)
+
+                default_env = None
+
+                if self.flag:
+                    default_env = '/ni'
+
+                if not application_created:
+                    sstack, key = commonops.create_app(self.app_name,
+                                                       default_env=default_env)
+                    application_created = True
+                else:
+                    sstack, key = commonops.pull_down_app_info(self.app_name,
+                                                               default_env=default_env)
+
+                io.echo('\n--- Configuring module: {0} ---'.format(module))
+
+                if not solution:
+                    solution = sstack
+
+                platform_set = False
+                if not solution or \
+                        (self.interactive and not self.app.pargs.platform):
+                    if fileoperations.env_yaml_exists():
+                        env_yaml_platform = fileoperations.get_platform_from_env_yaml()
+                        if env_yaml_platform:
+                            platform = solutionstack.SolutionStack(env_yaml_platform).version
+                            solution = platform
+                            io.echo(strings['init.usingenvyamlplatform'].replace('{platform}', platform))
+                            platform_set = True
+
+                    if not platform_set:
+                        result = commonops.prompt_for_solution_stack()
+                        solution = result.version
+
+                initializeops.setup(self.app_name, self.region,
+                                    solution)
+
+                if 'IIS' not in solution:
+                    keyname = self.get_keyname(default=key)
+
+                    if keyname == -1:
+                        self.keyname = None
+
+                    fileoperations.write_config_setting('global', 'default_ec2_keyname',
+                                                        keyname)
+                os.chdir(cwd)
 
 
 def _get_application_name_interactive():

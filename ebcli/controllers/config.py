@@ -77,6 +77,8 @@ class ConfigController(AbstractBaseController):
             cfg_name = self._choose_cfg_name(app_name, env_name)
 
         saved_configs.create_config(app_name, env_name, cfg_name)
+        if fileoperations.env_yaml_exists():
+            io.echo(strings['config.envyamlexists'])
 
     @expose(help='Upload a configuration to S3.')
     def put(self):

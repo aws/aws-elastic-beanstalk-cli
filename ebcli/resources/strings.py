@@ -28,8 +28,11 @@ strings = {
     'init.epilog': 'This command is safe when run in a previously initialized'
                    ' directory. To re-initialize with different options, '
                    'use the -i option.',
+    'init.dir.notexists': 'The specified directory {dir} does not exist. Please ensure that you are specifying the proper directory.',
+    'init.usingenvyamlplatform': 'Using platform specified in env.yaml: {platform}',
     'create.info': 'Creates a new environment.',
     'create.epilog': 'Type "--vpc." or "--database." for more VPC and database options.',
+    'create.missinggroup': 'A group name is required when creating multiple environments. Please use the --group option.',
     'events.info': 'Gets recent events.',
     'open.info': 'Opens the application URL in a browser.',
     'console.info': 'Opens the environment in the AWS Elastic Beanstalk Management Console.',
@@ -65,6 +68,7 @@ strings = {
                      'To update your environment directly in an interactive editor, type:\n'
                      '  eb config\n',
     'config.notfound': 'Elastic Beanstalk could not find any saved configuration with the name "{config-name}".',
+    'config.envyamlexists': 'It appears your environment is using an env.yaml file. Be aware that a saved configuration will take precedence over the contents of your env.yaml file when both are present.',
     'list.info': 'Lists all environments.',
     'terminate.info': 'Terminates the environment.',
     'terminate.epilog': 'This command terminates the environment. To terminate the application and everything in it, use the "--all" option.',
@@ -82,6 +86,8 @@ strings = {
     # Error when --sample and --label flag are both used on create
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" options together.',
     'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
+    'create.appdoesntexist': 'The specified app {app_name} does not exist. Skipping.',
+    'create.missinggroupsuffix': 'The environment name specified in env.yaml ends with a \'+\', but no group suffix was provided. Please pass the --env-group-suffix argument.',
     'appversion.create': 'Creating application version archive "{version}".',
     'logs.allandzip': 'You cannot use the "--all" and "--all_zip" options together.',
     'logs.allandinstance': 'You cannot use the "--all" and "--instance" options together.',
@@ -187,13 +193,20 @@ strings = {
                                    'will need to check in any changes, (if applicable) an run\n'
                                    '"eb deploy".',
     'setup-ssl.info': 'Sets up ssl on your environment.',
-    'region.china.credentials': 'To use the China (Beijing) region, account credentials unique to the China (Beijing) region must be used.'
+    'region.china.credentials': 'To use the China (Beijing) region, account credentials unique to the China (Beijing) region must be used.',
+    'deploy.notadirectory': 'The directory {module} does not exist.',
+    'deploy.modulemissingenvyaml': 'All specified modules require an env.yaml file.\n'
+                                   'The following modules are missing this file: {modules}',
+    'deploy.noenvname': 'No environment name was specified in env.yaml for module {module}. Unable to deploy.',
+    'compose.noenvyaml': 'The module {module} does not contain an env.yaml file. This module will be skipped.',
+    'compose.novalidmodules': 'No valid modules were found. No environments will be created.'
 }
 
 prompts = {
     'events.hanging': 'Streaming new events. Use CTRL+C to exit.',
     'platform.validate': 'It appears you are using {platform}. Is this correct?',
     'platform.prompt': 'Select a platform.',
+    'platform.prompt.withmodule': 'Select a platform for module: {module_name}.',
     'sstack.version': 'Select a platform version.',
     'init.selectdefaultenv': 'Select the default environment. \n'
                              'You can change this later by typing "eb use [environment_name]".',
@@ -257,6 +270,7 @@ prompts = {
                                         'Create an IAM role called "{}" with appropriate permissions to continue, or specify a role with --service-role.\n'
                                         'See http://aws.amazon.com/somesite for more info. \nActual error: {}',
     'general.pressenter': 'Press enter to continue',
+    'compose.groupname': 'Please enter the group name to be used'
 }
 
 alerts = {
@@ -305,14 +319,18 @@ flag_text = {
     'create.database': 'create a database',
     'create.vpc': 'create environment inside a VPC',
     'create.config': 'saved configuration name',
+    'create.group': 'group suffix',
+    'create.modules': 'a list of modules',
 
     # Deploy
     'deploy.env': 'environment name',
+    'deploy.modules': 'modules to deploy',
     'deploy.version': 'existing version label to deploy',
     'deploy.label': 'label name which version will be given',
     'deploy.message': 'description for version',
     'deploy.nohang': 'return immediately, do not wait for deploy to be completed',
     'deploy.staged': 'deploy files staged in git rather than the HEAD commit',
+    'deploy.group_suffix': 'group suffix',
 
     # Events
     'events.follow': 'wait and continue to print events as they come',
@@ -322,6 +340,7 @@ flag_text = {
     'init.platform': 'default Platform',
     'init.keyname': 'default EC2 key name',
     'init.interactive': 'force interactive mode',
+    'init.module': 'module directory',
 
     # labs
     'labs.cwl.remove': 'remove .ebextensions',
@@ -360,6 +379,7 @@ flag_text = {
     'terminate.force': 'skip confirmation prompt',
     'terminate.all': 'terminate everything',
     'terminate.nohang': 'return immediately, do not wait for terminate to be completed',
+    'terminate.ignorelinks': 'terminate even if environment is linked',
 
     # Upgrade
     'upgrade.noroll': 'do not enable rolling updates before upgrade',

@@ -19,6 +19,7 @@ import shutil
 import stat
 import sys
 import zipfile
+import yaml
 
 from botocore.compat import six
 from cement.utils.misc import minimal_logger
@@ -66,6 +67,7 @@ default_section = 'default'
 ebcli_section = 'profile eb-cli'
 app_version_folder = beanstalk_directory + 'app_versions'
 logs_folder = beanstalk_directory + 'logs' + os.path.sep
+env_yaml = 'env.yaml'
 
 _marker = object()
 
@@ -238,12 +240,16 @@ def get_application_name(default=_marker):
     return default
 
 
-def touch_config_folder():
-    if not os.path.isdir(beanstalk_directory):
-        os.makedirs(beanstalk_directory)
+def touch_config_folder(dir_path=None):
+    if not os.path.isdir(os.path.join(dir_path, beanstalk_directory)
+                         if dir_path
+                         else beanstalk_directory):
+        os.makedirs(os.path.join(dir_path, beanstalk_directory)
+                    if dir_path
+                    else beanstalk_directory)
 
 
-def create_config_file(app_name, region, solution_stack):
+def create_config_file(app_name, region, solution_stack, dir_path=None):
     """
         We want to make sure we do not override the file if it already exists,
          but we do want to fill in all missing pieces
@@ -252,13 +258,17 @@ def create_config_file(app_name, region, solution_stack):
     """
     LOG.debug('Creating config file at ' + os.getcwd())
 
-    if not os.path.isdir(beanstalk_directory):
-        os.makedirs(beanstalk_directory)
+    if not os.path.isdir(os.path.join(dir_path, beanstalk_directory)
+                         if dir_path
+                         else beanstalk_directory):
+        os.makedirs(os.path.join(dir_path, beanstalk_directory)
+                    if dir_path
+                    else beanstalk_directory)
 
     # add to global without writing over any settings if they exist
-    write_config_setting('global', 'application_name', app_name)
-    write_config_setting('global', 'default_region', region)
-    write_config_setting('global', 'default_platform', solution_stack)
+    write_config_setting('global', 'application_name', app_name, dir_path=dir_path)
+    write_config_setting('global', 'default_region', region, dir_path=dir_path)
+    write_config_setting('global', 'default_platform', solution_stack, dir_path=dir_path)
 
 
 def _traverse_to_project_root():
@@ -496,15 +506,22 @@ def get_environment_from_file(env_name):
     return env
 
 
-def write_config_setting(section, key_name, value):
+def write_config_setting(section, key_name, value, dir_path=None):
     cwd = os.getcwd()  # save working directory
+    if dir_path:
+        os.chdir(dir_path)
     try:
         _traverse_to_project_root()
 
         config = _get_yaml_dict(local_config_file)
         if not config:
             config = {}
-        config.setdefault(section, {})[key_name] = value
+        # Value will be a dict when we are passing in branch config settings
+        if type(value) is dict:
+            for key in value.keys():
+                config.setdefault(section, {}).setdefault(key_name, {})[key] = value[key]
+        else:
+            config.setdefault(section, {})[key_name] = value
 
         with codecs.open(local_config_file, 'w', encoding='utf8') as f:
             f.write(safe_dump(config, default_flow_style=False,
@@ -737,3 +754,27 @@ def get_filename_without_extension(file_location):
         # Split multiple extensions
         filename, extension = os.path.splitext(filename)
     return filename
+
+
+def env_yaml_exists():
+    return os.path.isfile(os.path.join(os.getcwd(), env_yaml))
+
+
+def get_env_name_from_env_yaml():
+    with open(os.path.join(os.getcwd(), env_yaml), 'r') as f:
+        data = yaml.load(f)
+        try:
+            env_name = data['EnvironmentName']
+            return env_name
+        except KeyError:
+            return None
+
+
+def get_platform_from_env_yaml():
+    with open(os.path.join(os.getcwd(), env_yaml), 'r') as f:
+        data = yaml.load(f)
+        try:
+            env_name = data['SolutionStack']
+            return env_name
+        except KeyError:
+            return None

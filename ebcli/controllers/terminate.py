@@ -25,6 +25,8 @@ class TerminateController(AbstractBaseController):
         arguments = AbstractBaseController.Meta.arguments + [
             (['--force'], dict(action='store_true',
                                help=flag_text['terminate.force'])),
+            (['--ignore-links'], dict(action='store_true',
+                                      help=flag_text['terminate.ignorelinks'])),
             (['--all'], dict(action='store_true',
                              help=flag_text['terminate.all'])),
             (['-nh', '--nohang'], dict(action='store_true',
@@ -38,6 +40,7 @@ class TerminateController(AbstractBaseController):
         app_name = self.get_app_name()
         force = self.app.pargs.force
         all = self.app.pargs.all
+        ignore_links = self.app.pargs.ignore_links
         timeout = self.app.pargs.timeout
         nohang = self.app.pargs.nohang
 
@@ -63,6 +66,9 @@ class TerminateController(AbstractBaseController):
                                                              env_name))
                 io.validate_action(prompts['terminate.validate'], env_name)
 
-
-            terminateops.terminate(env_name, nohang=nohang,
-                                   timeout=timeout)
+            if ignore_links:
+                terminateops.terminate(env_name, ignore_links, nohang=nohang,
+                                       timeout=timeout)
+            else:
+                terminateops.terminate(env_name, nohang=nohang,
+                                       timeout=timeout)

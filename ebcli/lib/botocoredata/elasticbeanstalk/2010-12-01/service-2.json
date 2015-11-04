@@ -16,7 +16,10 @@
         "method":"POST",
         "requestUri":"/"
       },
-      "input":{"shape":"AbortEnvironmentUpdateMessage"},
+      "input":{
+        "shape":"AbortEnvironmentUpdateMessage",
+        "documentation":"<p></p>"
+      },
       "errors":[
         {
           "shape":"InsufficientPrivilegesException",
@@ -38,7 +41,8 @@
           "exception":true,
           "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
         }
-      ]
+      ],
+      "documentation":"<p>Cancels in-progress environment configuration update or application version deployment.</p>"
     },
     "CheckDNSAvailability":{
       "name":"CheckDNSAvailability",
@@ -78,6 +82,71 @@
         }
       ],
       "documentation":"<p> Checks if the specified CNAME is available. </p>"
+    },
+    "ComposeEnvironments":{
+      "name":"ComposeEnvironments",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ComposeEnvironmentsMessage"},
+      "output":{
+        "shape":"EnvironmentDescriptionsMessage",
+        "documentation":"<p>Result message containing a list of environment descriptions.</p>",
+        "resultWrapper":"ComposeEnvironmentsResult"
+      },
+      "errors":[
+        {
+          "shape":"TooManyEnvironmentsException",
+          "error":{
+            "code":"TooManyEnvironmentsException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The caller has exceeded the limit of allowed environments associated with the account.</p>"
+        },
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        },
+        {
+          "shape":"TemporaryMaintainanceException",
+          "error":{
+            "code":"TemporaryMaintainanceException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+        },
+        {
+          "shape":"ConfigurationValidationException",
+          "error":{
+            "code":"ConfigurationValidationException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The request results in an invalid environment configuration.</p>"
+        },
+        {
+          "shape":"TooManyBucketsException",
+          "error":{
+            "code":"TooManyBucketsException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
+        }
+      ]
     },
     "CreateApplication":{
       "name":"CreateApplication",
@@ -740,9 +809,13 @@
         "method":"POST",
         "requestUri":"/"
       },
-      "input":{"shape":"DescribeEnvironmentHealthRequest"},
+      "input":{
+        "shape":"DescribeEnvironmentHealthRequest",
+        "documentation":"<p>See the example below to learn how to create a request body.</p>"
+      },
       "output":{
         "shape":"DescribeEnvironmentHealthResult",
+        "documentation":"<p>See the example below for a sample response.</p>",
         "resultWrapper":"DescribeEnvironmentHealthResult"
       },
       "errors":[
@@ -760,7 +833,8 @@
           "shape":"ElasticBeanstalkServiceException",
           "exception":true
         }
-      ]
+      ],
+      "documentation":"<p>Returns information about the overall health of the specified environment. The <b>DescribeEnvironmentHealth</b> operation is only available with AWS Elastic Beanstalk Enhanced Health.</p>"
     },
     "DescribeEnvironmentResources":{
       "name":"DescribeEnvironmentResources",
@@ -885,9 +959,13 @@
         "method":"POST",
         "requestUri":"/"
       },
-      "input":{"shape":"DescribeInstancesHealthRequest"},
+      "input":{
+        "shape":"DescribeInstancesHealthRequest",
+        "documentation":"<p>See the example below to learn how to create a request body.</p>"
+      },
       "output":{
         "shape":"DescribeInstancesHealthResult",
+        "documentation":"<p>See the example below for a sample response.</p>",
         "resultWrapper":"DescribeInstancesHealthResult"
       },
       "errors":[
@@ -905,7 +983,8 @@
           "shape":"ElasticBeanstalkServiceException",
           "exception":true
         }
-      ]
+      ],
+      "documentation":"<p>Returns more detailed information about the health of the specified instances (for example, CPU utilization, load average, and causes). The <b>DescribeInstancesHealth</b> operation is only available with AWS Elastic Beanstalk Enhanced Health.</p>"
     },
     "ListAvailableSolutionStacks":{
       "name":"ListAvailableSolutionStacks",
@@ -1402,14 +1481,21 @@
     }
   },
   "shapes":{
+    "AbortableOperationInProgress":{"type":"boolean"},
     "AbortEnvironmentUpdateMessage":{
       "type":"structure",
       "members":{
-        "EnvironmentId":{"shape":"EnvironmentId"},
-        "EnvironmentName":{"shape":"EnvironmentName"}
-      }
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>This specifies the ID of the environment with the in-progress update that you want to cancel.</p>"
+        },
+        "EnvironmentName":{
+          "shape":"EnvironmentName",
+          "documentation":"<p>This specifies the name of the environment with the in-progress update that you want to cancel.</p>"
+        }
+      },
+      "documentation":"<p></p>"
     },
-    "AbortableOperationInProgress":{"type":"boolean"},
     "ApplicationDescription":{
       "type":"structure",
       "members":{
@@ -1467,11 +1553,24 @@
     "ApplicationMetrics":{
       "type":"structure",
       "members":{
-        "Duration":{"shape":"NullableInteger"},
-        "RequestCount":{"shape":"RequestCount"},
-        "StatusCodes":{"shape":"StatusCodes"},
-        "Latency":{"shape":"Latency"}
-      }
+        "Duration":{
+          "shape":"NullableInteger",
+          "documentation":"<p>The amount of time that the metrics cover (usually 10 seconds). For example, you might have 5 requests (<code>request_count</code>) within the most recent time slice of 10 seconds (<code>duration</code>).</p>"
+        },
+        "RequestCount":{
+          "shape":"RequestCount",
+          "documentation":"<p>Average number of requests handled by the web server per second over the last 10 seconds.</p>"
+        },
+        "StatusCodes":{
+          "shape":"StatusCodes",
+          "documentation":"<p>Represents the percentage of requests over the last 10 seconds that resulted in each type of status code response.</p>"
+        },
+        "Latency":{
+          "shape":"Latency",
+          "documentation":"<p>Represents the average latency for the slowest X percent of requests over the last 10 seconds. Latencies are in seconds with one milisecond resolution.</p>"
+        }
+      },
+      "documentation":"<p>Represents the application metrics for a specified environment.</p>"
     },
     "ApplicationName":{
       "type":"string",
@@ -1509,7 +1608,8 @@
         "DateUpdated":{
           "shape":"UpdateDate",
           "documentation":"<p>The last modified date of the application version.</p>"
-        }
+        },
+        "Status":{"shape":"ApplicationVersionStatus"}
       },
       "documentation":"<p> Describes the properties of an application version. </p>"
     },
@@ -1537,6 +1637,16 @@
       },
       "documentation":"<p>Result message wrapping a list of application version descriptions.</p>"
     },
+    "ApplicationVersionProccess":{"type":"boolean"},
+    "ApplicationVersionStatus":{
+      "type":"string",
+      "enum":[
+        "Processed",
+        "Unprocessed",
+        "Failed",
+        "Processing"
+      ]
+    },
     "AutoCreateApplication":{"type":"boolean"},
     "AutoScalingGroup":{
       "type":"structure",
@@ -1563,14 +1673,36 @@
     "CPUUtilization":{
       "type":"structure",
       "members":{
-        "User":{"shape":"NullableDouble"},
-        "Nice":{"shape":"NullableDouble"},
-        "System":{"shape":"NullableDouble"},
-        "Idle":{"shape":"NullableDouble"},
-        "IOWait":{"shape":"NullableDouble"},
-        "IRQ":{"shape":"NullableDouble"},
-        "SoftIRQ":{"shape":"NullableDouble"}
-      }
+        "User":{
+          "shape":"NullableDouble",
+          "documentation":"<p>Percentage of time that the CPU has spent in the <code>User</code> state over the last 10 seconds.</p>"
+        },
+        "Nice":{
+          "shape":"NullableDouble",
+          "documentation":"<p>Percentage of time that the CPU has spent in the <code>Nice</code> state over the last 10 seconds.</p>"
+        },
+        "System":{
+          "shape":"NullableDouble",
+          "documentation":"<p>Percentage of time that the CPU has spent in the <code>System</code> state over the last 10 seconds.</p>"
+        },
+        "Idle":{
+          "shape":"NullableDouble",
+          "documentation":"<p>Percentage of time that the CPU has spent in the <code>Idle</code> state over the last 10 seconds.</p>"
+        },
+        "IOWait":{
+          "shape":"NullableDouble",
+          "documentation":"<p>Percentage of time that the CPU has spent in the <code>I/O Wait</code> state over the last 10 seconds.</p>"
+        },
+        "IRQ":{
+          "shape":"NullableDouble",
+          "documentation":"<p>Percentage of time that the CPU has spent in the <code>IRQ</code> state over the last 10 seconds.</p>"
+        },
+        "SoftIRQ":{
+          "shape":"NullableDouble",
+          "documentation":"<p>Percentage of time that the CPU has spent in the <code>SoftIRQ</code> state over the last 10 seconds.</p>"
+        }
+      },
+      "documentation":"<p>Represents CPU utilization information from the specified instance that belongs to the AWS Elastic Beanstalk environment. Use the <code>instanceId</code> property to specify the application instance for which you'd like to return data.</p>"
     },
     "Cause":{
       "type":"string",
@@ -1607,6 +1739,14 @@
       "documentation":"<p>Indicates if the specified CNAME is available.</p>"
     },
     "CnameAvailability":{"type":"boolean"},
+    "ComposeEnvironmentsMessage":{
+      "type":"structure",
+      "members":{
+        "ApplicationName":{"shape":"ApplicationName"},
+        "GroupName":{"shape":"GroupName"},
+        "VersionLabels":{"shape":"VersionLabels"}
+      }
+    },
     "ConfigurationDeploymentStatus":{
       "type":"string",
       "enum":[
@@ -1680,7 +1820,10 @@
     "ConfigurationOptionSetting":{
       "type":"structure",
       "members":{
-        "ResourceName":{"shape":"ResourceName"},
+        "ResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p> A unique resource name for a time-based scaling configuration option. </p>"
+        },
         "Namespace":{
           "shape":"OptionNamespace",
           "documentation":"<p> A unique namespace identifying the option's associated AWS resource. </p>"
@@ -1815,18 +1958,6 @@
       "type":"list",
       "member":{"shape":"ConfigurationTemplateName"}
     },
-    "ConfigurationValidationException":{
-      "type":"structure",
-      "members":{
-      },
-      "error":{
-        "code":"ConfigurationValidationException",
-        "httpStatusCode":400,
-        "senderFault":true
-      },
-      "exception":true,
-      "documentation":"<p>The request results in an invalid environment configuration.</p>"
-    },
     "CreateApplicationMessage":{
       "type":"structure",
       "required":["ApplicationName"],
@@ -1865,10 +1996,12 @@
           "shape":"S3Location",
           "documentation":"<p> The Amazon S3 bucket and key that identify the location of the source bundle for this version. </p> <p> If data found at the Amazon S3 location exceeds the maximum allowed source bundle size, AWS Elastic Beanstalk returns an <code>InvalidParameterValue</code> error. </p> <p>Default: If not specified, AWS Elastic Beanstalk uses a sample application. If only partially specified (for example, a bucket is provided but not the key) or if no data is found at the Amazon S3 location, AWS Elastic Beanstalk returns an <code>InvalidParameterCombination</code> error. </p>"
         },
+        "SourceBundleUrl":{"shape":"S3LocationUrl"},
         "AutoCreateApplication":{
           "shape":"AutoCreateApplication",
           "documentation":"<p> Determines how the system behaves if the specified application for this version does not already exist: </p> <enumValues> <value name=\"true\"> <p> <code>true</code>: Automatically creates the specified application for this version if it does not already exist. </p> </value> <value name=\"false\"> <p> <code>false</code>: Returns an <code>InvalidParameterValue</code> if the specified application for this version does not already exist. </p> </value> </enumValues> <ul> <li> <code>true</code> : Automatically creates the specified application for this release if it does not already exist. </li> <li> <code>false</code> : Throws an <code>InvalidParameterValue</code> if the specified application for this release does not already exist. </li> </ul> <p> Default: <code>false</code> </p> <p> Valid Values: <code>true</code> | <code>false</code> </p>"
-        }
+        },
+        "Process":{"shape":"ApplicationVersionProccess"}
       },
       "documentation":"<p></p>"
     },
@@ -1891,6 +2024,7 @@
           "shape":"Description",
           "documentation":"<p>Describes this configuration.</p>"
         },
+        "Tier":{"shape":"EnvironmentTier"},
         "SolutionStackName":{
           "shape":"SolutionStackName",
           "documentation":"<p>The name of the solution stack used by this configuration. The solution stack specifies the operating system, architecture, and application server for a configuration template. It determines the set of configuration options as well as the possible and default values. </p> <p> Use <a>ListAvailableSolutionStacks</a> to obtain a list of available solution stacks. </p> <p> A solution stack name or a source configuration parameter must be specified, otherwise AWS Elastic Beanstalk returns an <code>InvalidParameterValue</code> error. </p> <p> If a solution stack name is not specified and the source configuration parameter is specified, AWS Elastic Beanstalk uses the same solution stack as the source configuration template. </p>"
@@ -1907,16 +2041,15 @@
           "shape":"ConfigurationOptionSettingsList",
           "documentation":"<p> If specified, AWS Elastic Beanstalk sets the specified configuration option to the requested value. The new value overrides the value obtained from the solution stack or the source configuration template. </p>"
         },
+        "OptionsToRemove":{"shape":"OptionsSpecifierList"},
+        "VersionLabel":{"shape":"VersionLabel"},
         "TemplateSpecification":{"shape":"EnvironmentTemplateSpecification"}
       },
       "documentation":"<p>This documentation target is not reported in the API reference.</p>"
     },
     "CreateEnvironmentMessage":{
       "type":"structure",
-      "required":[
-        "ApplicationName",
-        "EnvironmentName"
-      ],
+      "required":["ApplicationName"],
       "members":{
         "ApplicationName":{
           "shape":"ApplicationName",
@@ -1926,6 +2059,7 @@
           "shape":"EnvironmentName",
           "documentation":"<p> A unique name for the deployment environment. Used in the application URL. </p> <p>Constraint: Must be from 4 to 23 characters in length. The name can contain only letters, numbers, and hyphens. It cannot start or end with a hyphen. This name must be unique in your account. If the specified name already exists, AWS Elastic Beanstalk returns an <code>InvalidParameterValue</code> error. </p> <p>Default: If the CNAME parameter is not specified, the environment name becomes part of the CNAME, and therefore part of the visible URL for your application.</p>"
         },
+        "GroupName":{"shape":"GroupName"},
         "Description":{
           "shape":"Description",
           "documentation":"<p>Describes this environment.</p>"
@@ -1938,7 +2072,10 @@
           "shape":"EnvironmentTier",
           "documentation":"<p> This specifies the tier to use for creating this environment. </p>"
         },
-        "Tags":{"shape":"Tags"},
+        "Tags":{
+          "shape":"Tags",
+          "documentation":"<p> This specifies the tags applied to resources in the environment. </p>"
+        },
         "VersionLabel":{
           "shape":"VersionLabel",
           "documentation":"<p>The name of the application version to deploy.</p> <p> If the specified application has no associated application versions, AWS Elastic Beanstalk <code>UpdateEnvironment</code> returns an <code>InvalidParameterValue</code> error. </p> <p> Default: If not specified, AWS Elastic Beanstalk attempts to launch the most recently created application version. </p>"
@@ -2038,11 +2175,6 @@
         }
       },
       "documentation":"<p>This documentation target is not reported in the API reference.</p>"
-    },
-    "DeleteConfigurationTemplateName":{
-      "type":"string",
-      "min":1,
-      "max":100
     },
     "DeleteEnvironmentConfigurationMessage":{
       "type":"structure",
@@ -2147,23 +2279,52 @@
     "DescribeEnvironmentHealthRequest":{
       "type":"structure",
       "members":{
-        "EnvironmentName":{"shape":"EnvironmentName"},
-        "EnvironmentId":{"shape":"EnvironmentId"},
-        "AttributeNames":{"shape":"EnvironmentHealthAttributes"}
-      }
+        "EnvironmentName":{
+          "shape":"EnvironmentName",
+          "documentation":"<p>Specifies the AWS Elastic Beanstalk environment name.</p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>Specifies the AWS Elastic Beanstalk environment ID.</p>"
+        },
+        "AttributeNames":{
+          "shape":"EnvironmentHealthAttributes",
+          "documentation":"<p>Specifies the response elements you wish to receive. If no attribute names are specified, AWS Elastic Beanstalk returns all response elements.</p>"
+        }
+      },
+      "documentation":"<p>See the example below to learn how to create a request body.</p>"
     },
     "DescribeEnvironmentHealthResult":{
       "type":"structure",
       "members":{
-        "EnvironmentName":{"shape":"EnvironmentName"},
-        "HealthStatus":{"shape":"String"},
-        "Status":{"shape":"EnvironmentHealth"},
-        "Color":{"shape":"String"},
-        "Causes":{"shape":"Causes"},
+        "EnvironmentName":{
+          "shape":"EnvironmentName",
+          "documentation":"<p>The AWS Elastic Beanstalk environment name.</p>"
+        },
+        "HealthStatus":{
+          "shape":"String",
+          "documentation":"<p>Contains the response body with information about the health of the environment.</p>"
+        },
+        "Status":{
+          "shape":"EnvironmentHealth",
+          "documentation":"<p>Returns the health status value of the environment. For more information, see <a href=\"http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-status.html\">Health Colors and Statuses</a>.</p>"
+        },
+        "Color":{
+          "shape":"String",
+          "documentation":"<p>Returns the color indicator that tells you information about the health of the environment. For more information, see <a href=\"http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-status.html\">Health Colors and Statuses</a>.</p>"
+        },
+        "Causes":{
+          "shape":"Causes",
+          "documentation":"<p>Returns potential causes for the reported status.</p>"
+        },
         "ApplicationMetrics":{"shape":"ApplicationMetrics"},
         "InstancesHealth":{"shape":"InstanceHealthSummary"},
-        "RefreshedAt":{"shape":"RefreshedAt"}
-      }
+        "RefreshedAt":{
+          "shape":"RefreshedAt",
+          "documentation":"<p>The date and time the information was last refreshed.</p>"
+        }
+      },
+      "documentation":"<p>See the example below for a sample response.</p>"
     },
     "DescribeEnvironmentResourcesMessage":{
       "type":"structure",
@@ -2262,33 +2423,59 @@
     "DescribeInstancesHealthRequest":{
       "type":"structure",
       "members":{
-        "EnvironmentName":{"shape":"EnvironmentName"},
-        "EnvironmentId":{"shape":"EnvironmentId"},
-        "AttributeNames":{"shape":"InstancesHealthAttributes"},
-        "NextToken":{"shape":"NextToken"}
-      }
+        "EnvironmentName":{
+          "shape":"EnvironmentName",
+          "documentation":"<p>Specifies the AWS Elastic Beanstalk environment name.</p>"
+        },
+        "EnvironmentId":{
+          "shape":"EnvironmentId",
+          "documentation":"<p>Specifies the AWS Elastic Beanstalk environment ID.</p>"
+        },
+        "AttributeNames":{
+          "shape":"InstancesHealthAttributes",
+          "documentation":"<p>Specifies the response elements you wish to receive. If no attribute names are specified, AWS Elastic Beanstalk returns all response elements.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>Specifies the next token of the request.</p>"
+        }
+      },
+      "documentation":"<p>See the example below to learn how to create a request body.</p>"
     },
     "DescribeInstancesHealthResult":{
       "type":"structure",
       "members":{
-        "InstanceHealthList":{"shape":"InstanceHealthList"},
-        "RefreshedAt":{"shape":"RefreshedAt"},
-        "NextToken":{"shape":"NextToken"}
-      }
+        "InstanceHealthList":{
+          "shape":"InstanceHealthList",
+          "documentation":"<p>Contains the response body with information about the health of the instance.</p>"
+        },
+        "RefreshedAt":{
+          "shape":"RefreshedAt",
+          "documentation":"<p>The date and time the information was last refreshed.</p>"
+        },
+        "NextToken":{
+          "shape":"NextToken",
+          "documentation":"<p>The next token.</p>"
+        }
+      },
+      "documentation":"<p>See the example below for a sample response.</p>"
     },
     "Description":{
       "type":"string",
       "max":200
     },
     "Ec2InstanceId":{"type":"string"},
-    "ElasticBeanstalkServiceException":{
+    "EndpointURL":{"type":"string"},
+    "EnvironmentAlert":{
       "type":"structure",
       "members":{
-        "message":{"shape":"ExceptionMessage"}
-      },
-      "exception":true
+        "AlertId":{"shape":"String"}
+      }
     },
-    "EndpointURL":{"type":"string"},
+    "EnvironmentAlertsList":{
+      "type":"list",
+      "member":{"shape":"EnvironmentAlert"}
+    },
     "EnvironmentDescription":{
       "type":"structure",
       "members":{
@@ -2340,20 +2527,28 @@
           "shape":"EnvironmentStatus",
           "documentation":"<p> The current operational status of the environment: </p> <ul> <li> <code>Launching</code>: Environment is in the process of initial deployment. </li> <li> <code>Updating</code>: Environment is in the process of updating its configuration settings or application version. </li> <li> <code>Ready</code>: Environment is available to have an action performed on it, such as update or terminate. </li> <li> <code>Terminating</code>: Environment is in the shut-down process. </li> <li> <code>Terminated</code>: Environment is not running. </li> </ul>"
         },
-        "AbortableOperationInProgress":{"shape":"AbortableOperationInProgress"},
+        "AbortableOperationInProgress":{
+          "shape":"AbortableOperationInProgress",
+          "documentation":"<p>Indicates if there is an in-progress environment configuration update or application version deployment that you can cancel.</p> <p> <code>true:</code> There is an update in progress. </p> <p> <code>false:</code> There are no updates currently in progress. </p>"
+        },
         "Health":{
           "shape":"EnvironmentHealth",
           "documentation":"<p> Describes the health status of the environment. AWS Elastic Beanstalk indicates the failure levels for a running environment: </p> <enumValues> <value name=\"Red\"> <p> <code>Red</code> : Indicates the environment is not working. </p> </value> <value name=\"Yellow\"> <p> <code>Yellow</code>: Indicates that something is wrong, the application might not be available, but the instances appear running. </p> </value> <value name=\"Green\"> <p> <code>Green</code>: Indicates the environment is healthy and fully functional. </p> </value> </enumValues> <ul> <li> <code>Red</code>: Indicates the environment is not responsive. Occurs when three or more consecutive failures occur for an environment. </li> <li> <code>Yellow</code>: Indicates that something is wrong. Occurs when two consecutive failures occur for an environment. </li> <li> <code>Green</code>: Indicates the environment is healthy and fully functional. </li> <li> <code>Grey</code>: Default health for a new environment. The environment is not fully launched and health checks have not started or health checks are suspended during an <code>UpdateEnvironment</code> or <code>RestartEnvironement</code> request. </li> </ul> <p> Default: <code>Grey</code> </p>"
         },
-        "HealthStatus":{"shape":"EnvironmentHealthStatus"},
+        "HealthStatus":{
+          "shape":"EnvironmentHealthStatus",
+          "documentation":"<p>Returns the health status of the application running in your environment. For more information, see <a href=\"http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-status.html\">Health Colors and Statuses</a>.</p>"
+        },
         "Resources":{
           "shape":"EnvironmentResourcesDescription",
           "documentation":"<p>The description of the AWS resources used by this environment.</p>"
         },
+        "Alerts":{"shape":"EnvironmentAlertsList"},
         "Tier":{
           "shape":"EnvironmentTier",
           "documentation":"<p>Describes the current tier of this environment.</p>"
-        }
+        },
+        "EnvironmentLinks":{"shape":"EnvironmentLinks"}
       },
       "documentation":"<p>Describes the properties of an environment.</p>"
     },
@@ -2430,6 +2625,8 @@
           "shape":"SampleTimestamp",
           "documentation":"<p>The time stamp when this information was retrieved.</p>"
         },
+        "Name":{"shape":"Name"},
+        "BatchId":{"shape":"BatchId"},
         "Message":{
           "shape":"Message",
           "documentation":"<p>The retrieved information.</p>"
@@ -2442,6 +2639,17 @@
       "member":{"shape":"EnvironmentInfoDescription"}
     },
     "EnvironmentInfoType":{"type":"string"},
+    "EnvironmentLink":{
+      "type":"structure",
+      "members":{
+        "LinkName":{"shape":"String"},
+        "EnvironmentName":{"shape":"String"}
+      }
+    },
+    "EnvironmentLinks":{
+      "type":"list",
+      "member":{"shape":"EnvironmentLink"}
+    },
     "EnvironmentName":{
       "type":"string",
       "min":4,
@@ -2501,7 +2709,8 @@
         "LoadBalancer":{
           "shape":"LoadBalancerDescription",
           "documentation":"<p>Describes the LoadBalancer.</p>"
-        }
+        },
+        "RegisteredVersions":{"shape":"TemplateVersionsList"}
       },
       "documentation":"<p>Describes the AWS resources in use by this environment. This data is not live data.</p>"
     },
@@ -2519,7 +2728,8 @@
       "type":"structure",
       "members":{
         "TemplateSource":{"shape":"TemplateSource"},
-        "TemplateSnippets":{"shape":"TemplateSnippetList"}
+        "TemplateSnippets":{"shape":"TemplateSnippetList"},
+        "Parameters":{"shape":"TemplateParameterList"}
       }
     },
     "EnvironmentTier":{
@@ -2609,11 +2819,16 @@
         "FATAL"
       ]
     },
-    "ExceptionMessage":{"type":"string"},
     "FileTypeExtension":{
       "type":"string",
       "min":1,
       "max":100
+    },
+    "ForceTerminate":{"type":"boolean"},
+    "GroupName":{
+      "type":"string",
+      "min":1,
+      "max":19
     },
     "IncludeDeleted":{"type":"boolean"},
     "IncludeDeletedBackTo":{"type":"timestamp"},
@@ -2634,15 +2849,40 @@
     "InstanceHealthSummary":{
       "type":"structure",
       "members":{
-        "NoData":{"shape":"NullableInteger"},
-        "Unknown":{"shape":"NullableInteger"},
-        "Pending":{"shape":"NullableInteger"},
-        "Ok":{"shape":"NullableInteger"},
-        "Info":{"shape":"NullableInteger"},
-        "Warning":{"shape":"NullableInteger"},
-        "Degraded":{"shape":"NullableInteger"},
-        "Severe":{"shape":"NullableInteger"}
-      }
+        "NoData":{
+          "shape":"NullableInteger",
+          "documentation":"<p><b>Grey.</b> AWS Elastic Beanstalk and the health agent are reporting no data on an instance.</p>"
+        },
+        "Unknown":{
+          "shape":"NullableInteger",
+          "documentation":"<p><b>Grey.</b> AWS Elastic Beanstalk and the health agent are reporting an insufficient amount of data on an instance.</p>"
+        },
+        "Pending":{
+          "shape":"NullableInteger",
+          "documentation":"<p><b>Grey.</b> An operation is in progress on an instance within the command timeout.</p>"
+        },
+        "Ok":{
+          "shape":"NullableInteger",
+          "documentation":"<p><b>Green.</b> An instance is passing health checks and the health agent is not reporting any problems.</p>"
+        },
+        "Info":{
+          "shape":"NullableInteger",
+          "documentation":"<p><b>Green.</b> An operation is in progress on an instance.</p>"
+        },
+        "Warning":{
+          "shape":"NullableInteger",
+          "documentation":"<p><b>Yellow.</b> The health agent is reporting a moderate number of request failures or other issues for an instance or environment.</p>"
+        },
+        "Degraded":{
+          "shape":"NullableInteger",
+          "documentation":"<p><b>Red.</b> The health agent is reporting a high number of request failures or other issues for an instance or environment.</p>"
+        },
+        "Severe":{
+          "shape":"NullableInteger",
+          "documentation":"<p><b>Red.</b> The health agent is reporting a very high number of request failures or other issues for an instance or environment.</p>"
+        }
+      },
+      "documentation":"<p>Represents summary information about the health of an instance. For more information, see <a href=\"http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-status.html\">Health Colors and Statuses</a>.</p>"
     },
     "InstanceId":{
       "type":"string",
@@ -2687,30 +2927,43 @@
       "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
     },
     "Integer":{"type":"integer"},
-    "InvalidRequestException":{
-      "type":"structure",
-      "members":{
-      },
-      "error":{
-        "code":"InvalidRequestException",
-        "httpStatusCode":400,
-        "senderFault":true
-      },
-      "exception":true,
-      "documentation":"<p>The request is invalid, please check parameters and their values</p>"
-    },
     "Latency":{
       "type":"structure",
       "members":{
-        "P999":{"shape":"NullableDouble"},
-        "P99":{"shape":"NullableDouble"},
-        "P95":{"shape":"NullableDouble"},
-        "P90":{"shape":"NullableDouble"},
-        "P85":{"shape":"NullableDouble"},
-        "P75":{"shape":"NullableDouble"},
-        "P50":{"shape":"NullableDouble"},
-        "P10":{"shape":"NullableDouble"}
-      }
+        "P999":{
+          "shape":"NullableDouble",
+          "documentation":"<p>The average latency for the slowest 0.1 percent of requests over the last 10 seconds.</p>"
+        },
+        "P99":{
+          "shape":"NullableDouble",
+          "documentation":"<p>The average latency for the slowest 1 percent of requests over the last 10 seconds.</p>"
+        },
+        "P95":{
+          "shape":"NullableDouble",
+          "documentation":"<p>The average latency for the slowest 5 percent of requests over the last 10 seconds.</p>"
+        },
+        "P90":{
+          "shape":"NullableDouble",
+          "documentation":"<p>The average latency for the slowest 10 percent of requests over the last 10 seconds.</p>"
+        },
+        "P85":{
+          "shape":"NullableDouble",
+          "documentation":"<p>The average latency for the slowest 15 percent of requests over the last 10 seconds.</p>"
+        },
+        "P75":{
+          "shape":"NullableDouble",
+          "documentation":"<p>The average latency for the slowest 25 percent of requests over the last 10 seconds.</p>"
+        },
+        "P50":{
+          "shape":"NullableDouble",
+          "documentation":"<p>The average latency for the slowest 50 percent of requests over the last 10 seconds.</p>"
+        },
+        "P10":{
+          "shape":"NullableDouble",
+          "documentation":"<p>The average latency for the slowest 90 percent of requests over the last 10 seconds.</p>"
+        }
+      },
+      "documentation":"<p>Represents the average latency for the slowest X percent of requests over the last 10 seconds.</p>"
     },
     "LaunchConfiguration":{
       "type":"structure",
@@ -2740,13 +2993,6 @@
         }
       },
       "documentation":"<p>A list of available AWS Elastic Beanstalk solution stacks. </p>"
-    },
-    "ListAvailableTiersResultMessage":{
-      "type":"structure",
-      "members":{
-        "Tiers":{"shape":"AvailableTiersList"}
-      },
-      "documentation":"<p>Message returned from a ListAvailableTier call.</p>"
     },
     "Listener":{
       "type":"structure",
@@ -2862,7 +3108,10 @@
     "OptionSpecification":{
       "type":"structure",
       "members":{
-        "ResourceName":{"shape":"ResourceName"},
+        "ResourceName":{
+          "shape":"ResourceName",
+          "documentation":"<p> A unique resource name for a time-based scaling configuration option. </p>"
+        },
         "Namespace":{
           "shape":"OptionNamespace",
           "documentation":"<p> A unique namespace identifying the option's associated AWS resource. </p>"
@@ -3037,15 +3286,32 @@
     "SingleInstanceHealth":{
       "type":"structure",
       "members":{
-        "InstanceId":{"shape":"InstanceId"},
-        "HealthStatus":{"shape":"String"},
-        "Color":{"shape":"String"},
-        "Causes":{"shape":"Causes"},
-        "LaunchedAt":{"shape":"LaunchedAt"},
+        "InstanceId":{
+          "shape":"InstanceId",
+          "documentation":"<p>The ID of the Amazon EC2 instance.</p>"
+        },
+        "HealthStatus":{
+          "shape":"String",
+          "documentation":"<p>Returns the health status of the specified instance. For more information, see <a href=\"http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-status.html\">Health Colors and Statuses</a>.</p>"
+        },
+        "Color":{
+          "shape":"String",
+          "documentation":"<p>Represents the color indicator that gives you information about the health of the EC2 instance. For more information, see <a href=\"http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-status.html\">Health Colors and Statuses</a>.</p>"
+        },
+        "Causes":{
+          "shape":"Causes",
+          "documentation":"<p>Represents the causes, which provide more information about the current health status.</p>"
+        },
+        "LaunchedAt":{
+          "shape":"LaunchedAt",
+          "documentation":"<p>The time at which the EC2 instance was launched.</p>"
+        },
         "ApplicationMetrics":{"shape":"ApplicationMetrics"},
         "System":{"shape":"SystemStatus"}
-      }
+      },
+      "documentation":"<p>Represents health information from the specified instance that belongs to the AWS Elastic Beanstalk environment. Use the <code>InstanceId</code> property to specify the application instance for which you'd like to return data.</p>"
     },
+    "SnippetContents":{"type":"string"},
     "SnippetOrder":{"type":"long"},
     "SolutionStackDescription":{
       "type":"structure",
@@ -3098,11 +3364,24 @@
     "StatusCodes":{
       "type":"structure",
       "members":{
-        "Status2xx":{"shape":"NullableInteger"},
-        "Status3xx":{"shape":"NullableInteger"},
-        "Status4xx":{"shape":"NullableInteger"},
-        "Status5xx":{"shape":"NullableInteger"}
-      }
+        "Status2xx":{
+          "shape":"NullableInteger",
+          "documentation":"<p>The percentage of requests over the last 10 seconds that resulted in a 2xx (200, 201, etc.) status code.</p>"
+        },
+        "Status3xx":{
+          "shape":"NullableInteger",
+          "documentation":"<p>The percentage of requests over the last 10 seconds that resulted in a 3xx (300, 301, etc.) status code.</p>"
+        },
+        "Status4xx":{
+          "shape":"NullableInteger",
+          "documentation":"<p>The percentage of requests over the last 10 seconds that resulted in a 4xx (400, 401, etc.) status code.</p>"
+        },
+        "Status5xx":{
+          "shape":"NullableInteger",
+          "documentation":"<p>The percentage of requests over the last 10 seconds that resulted in a 5xx (500, 501, etc.) status code.</p>"
+        }
+      },
+      "documentation":"<p>Represents the percentage of requests over the last 10 seconds that resulted in each type of status code response. For more information, see <a href=\"http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html\">Status Code Definitions</a>.</p>"
     },
     "String":{"type":"string"},
     "SwapEnvironmentCNAMEsMessage":{
@@ -3131,15 +3410,26 @@
       "type":"structure",
       "members":{
         "CPUUtilization":{"shape":"CPUUtilization"},
-        "LoadAverage":{"shape":"LoadAverage"}
-      }
+        "LoadAverage":{
+          "shape":"LoadAverage",
+          "documentation":"<p>Load average in the last 1-minute and 5-minute periods. For more information, see <a href=\"http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/health-enhanced-metrics.html#health-enhanced-metrics-os\">Operating System Metrics</a>.</p>"
+        }
+      },
+      "documentation":"<p>Represents CPU utilization and load average information for applications running in the specified environment.</p>"
     },
     "Tag":{
       "type":"structure",
       "members":{
-        "Key":{"shape":"TagKey"},
-        "Value":{"shape":"TagValue"}
-      }
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key of the tag.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value of the tag.</p>"
+        }
+      },
+      "documentation":"<p>Describes a tag applied to a resource in an environment.</p>"
     },
     "TagKey":{
       "type":"string",
@@ -3155,12 +3445,26 @@
       "type":"list",
       "member":{"shape":"Tag"}
     },
+    "TemplateParameter":{
+      "type":"structure",
+      "members":{
+        "Parameter":{"shape":"String"},
+        "Value":{"shape":"String"}
+      }
+    },
+    "TemplateParameterList":{
+      "type":"list",
+      "member":{"shape":"TemplateParameter"}
+    },
     "TemplateSnippet":{
       "type":"structure",
       "members":{
         "SnippetName":{"shape":"String"},
         "SourceUrl":{"shape":"S3LocationUrl"},
-        "Order":{"shape":"SnippetOrder"}
+        "SnippetContents":{"shape":"SnippetContents"},
+        "Order":{"shape":"SnippetOrder"},
+        "MappingsSourceUrl":{"shape":"S3LocationUrl"},
+        "Mappings":{"shape":"ElementMappingsList"}
       }
     },
     "TemplateSnippetList":{
@@ -3174,6 +3478,18 @@
         "EnvironmentName":{"shape":"EnvironmentName"},
         "SourceContents":{"shape":"String"}
       }
+    },
+    "TemplateVersion":{
+      "type":"structure",
+      "members":{
+        "VersionLabel":{"shape":"VersionLabel"},
+        "ModuleName":{"shape":"String"},
+        "SourceIdentifier":{"shape":"String"}
+      }
+    },
+    "TemplateVersionsList":{
+      "type":"list",
+      "member":{"shape":"TemplateVersion"}
     },
     "TemporaryMaintainanceException":{
       "type":"structure",
@@ -3202,7 +3518,8 @@
         "TerminateResources":{
           "shape":"TerminateEnvironmentResources",
           "documentation":"<p> Indicates whether the associated AWS resources should shut down when the environment is terminated: </p> <enumValues> <value name=\"true\"> <p> <code>true</code>: (default) The user AWS resources (for example, the Auto Scaling group, LoadBalancer, etc.) are terminated along with the environment. </p> </value> <value name=\"false\"> <p> <code>false</code>: The environment is removed from the AWS Elastic Beanstalk but the AWS resources continue to operate. </p> </value> </enumValues> <ul> <li> <code>true</code>: The specified environment as well as the associated AWS resources, such as Auto Scaling group and LoadBalancer, are terminated. </li> <li> <code>false</code>: AWS Elastic Beanstalk resource management is removed from the environment, but the AWS resources continue to operate. </li> </ul> <p> For more information, see the <a href=\"http://docs.amazonwebservices.com/elasticbeanstalk/latest/ug/\"> AWS Elastic Beanstalk User Guide. </a> </p> <p> Default: <code>true</code> </p> <p> Valid Values: <code>true</code> | <code>false</code> </p>"
-        }
+        },
+        "ForceTerminate":{"shape":"ForceTerminate"}
       },
       "documentation":"<p>This documentation target is not reported in the API reference.</p>"
     },
@@ -3335,6 +3652,9 @@
           "shape":"Description",
           "documentation":"<p>A new description for the configuration.</p>"
         },
+        "SolutionStackName":{"shape":"SolutionStackName"},
+        "SourceConfiguration":{"shape":"SourceConfiguration"},
+        "EnvironmentId":{"shape":"EnvironmentId"},
         "OptionSettings":{
           "shape":"ConfigurationOptionSettingsList",
           "documentation":"<p> A list of configuration option settings to update with the new specified option value. </p>"
@@ -3342,7 +3662,10 @@
         "OptionsToRemove":{
           "shape":"OptionsSpecifierList",
           "documentation":"<p> A list of configuration options to remove from the configuration set. </p> <p> Constraint: You can remove only <code>UserDefined</code> configuration options. </p>"
-        }
+        },
+        "VersionLabel":{"shape":"VersionLabel"},
+        "TemplateSpecification":{"shape":"EnvironmentTemplateSpecification"},
+        "Tier":{"shape":"EnvironmentTier"}
       },
       "documentation":"<p>The result message containing the options for the specified solution stack.</p>"
     },
@@ -3350,6 +3673,7 @@
     "UpdateEnvironmentMessage":{
       "type":"structure",
       "members":{
+        "ApplicationName":{"shape":"ApplicationName"},
         "EnvironmentId":{
           "shape":"EnvironmentId",
           "documentation":"<p>The ID of the environment to update.</p> <p> If no environment with this ID exists, AWS Elastic Beanstalk returns an <code>InvalidParameterValue</code> error. </p> <p> Condition: You must specify either this or an EnvironmentName, or both. If you do not specify either, AWS Elastic Beanstalk returns <code>MissingRequiredParameter</code> error. </p>"
@@ -3358,6 +3682,7 @@
           "shape":"EnvironmentName",
           "documentation":"<p>The name of the environment to update. If no environment with this name exists, AWS Elastic Beanstalk returns an <code>InvalidParameterValue</code> error. </p> <p> Condition: You must specify either this or an EnvironmentId, or both. If you do not specify either, AWS Elastic Beanstalk returns <code>MissingRequiredParameter</code> error. </p>"
         },
+        "GroupName":{"shape":"GroupName"},
         "Description":{
           "shape":"Description",
           "documentation":"<p> If this parameter is specified, AWS Elastic Beanstalk updates the description of this environment. </p>"
@@ -3374,7 +3699,10 @@
           "shape":"ConfigurationTemplateName",
           "documentation":"<p> If this parameter is specified, AWS Elastic Beanstalk deploys this configuration template to the environment. If no such configuration template is found, AWS Elastic Beanstalk returns an <code>InvalidParameterValue</code> error. </p>"
         },
-        "SolutionStackName":{"shape":"SolutionStackName"},
+        "SolutionStackName":{
+          "shape":"SolutionStackName",
+          "documentation":"<p> This specifies the platform version that the environment will run after the environment is updated. </p>"
+        },
         "OptionSettings":{
           "shape":"ConfigurationOptionSettingsList",
           "documentation":"<p> If specified, AWS Elastic Beanstalk updates the configuration set associated with the running environment and sets the specified configuration options to the requested value. </p>"
@@ -3456,6 +3784,10 @@
       "min":1,
       "max":100,
       "pattern":"[^/]+"
+    },
+    "VersionLabels":{
+      "type":"list",
+      "member":{"shape":"VersionLabel"}
     },
     "VersionLabelsList":{
       "type":"list",

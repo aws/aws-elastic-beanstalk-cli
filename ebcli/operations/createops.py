@@ -29,7 +29,7 @@ DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
 DEFAULT_SERVICE_ROLE_NAME = 'aws-elasticbeanstalk-service-role'
 
 
-def make_new_env(env_request, branch_default=False,
+def make_new_env(env_request, branch_default=False, process_app_version=True,
                  nohang=False, interactive=True, timeout=None):
     resolve_roles(env_request, interactive)
 
@@ -37,7 +37,7 @@ def make_new_env(env_request, branch_default=False,
     if not env_request.sample_application and not env_request.version_label:
         io.log_info('Creating new application version using project code')
         env_request.version_label = \
-            commonops.create_app_version(env_request.app_name)
+            commonops.create_app_version(env_request.app_name, process=process_app_version)
 
     if env_request.version_label is None or env_request.sample_application:
         env_request.version_label = \

@@ -13,15 +13,16 @@
 
 import re
 import argparse
+import os
 
-from ..core import io, fileoperations
+from ..core import io, fileoperations, hooks
 from ..core.abstractcontroller import AbstractBaseController
 from ..lib import elasticbeanstalk, utils
 from ..objects.exceptions import NotFoundError, AlreadyExistsError, \
     InvalidOptionsError
 from ..objects.requests import CreateEnvironmentRequest
 from ..objects.tier import Tier
-from ..operations import saved_configs, commonops, createops
+from ..operations import saved_configs, commonops, createops, composeops
 from ..resources.strings import strings, prompts, flag_text
 
 
@@ -34,6 +35,8 @@ class CreateController(AbstractBaseController):
             (['environment_name'], dict(
                 action='store', nargs='?', default=None,
                 help=flag_text['create.name'])),
+            (['-m', '--modules'], dict(nargs='*', help=flag_text['create.modules'])),
+            (['-g', '--env-group-suffix'], dict(help=flag_text['create.group'])),
             (['-c', '--cname'], dict(help=flag_text['create.cname'])),
             (['-t', '--tier'], dict(help=flag_text['create.tier'])),
             (['-i', '--instance_type'], dict(
@@ -96,6 +99,11 @@ class CreateController(AbstractBaseController):
     def do_command(self):
         # save command line args
         env_name = self.app.pargs.environment_name
+        modules = self.app.pargs.modules
+        if modules and len(modules) > 0:
+            self.compose_multiple_apps()
+            return
+        group = self.app.pargs.env_group_suffix
         cname = self.app.pargs.cname
         tier = self.app.pargs.tier
         itype = self.app.pargs.instance_type
@@ -167,8 +175,16 @@ class CreateController(AbstractBaseController):
             current_environments = commonops.get_all_env_names()
             unique_name = utils.get_unique_name(default_name,
                                                 current_environments)
-            env_name = io.prompt_for_environment_name(unique_name)
 
+            if fileoperations.env_yaml_exists():
+                env_name = fileoperations.get_env_name_from_env_yaml()
+                if env_name.endswith('+') and group is None:
+                    io.echo(strings['create.missinggroupsuffix'])
+                    return
+                else:
+                    env_name = env_name[:-1] + '-' + group
+            else:
+                env_name = io.prompt_for_environment_name(unique_name)
 
         # Get template if applicable
         template_name = get_template_name(app_name, cfg)
@@ -197,6 +213,7 @@ class CreateController(AbstractBaseController):
         env_request = CreateEnvironmentRequest(
             app_name=app_name,
             env_name=env_name,
+            group_name=group,
             cname=cname,
             template_name=template_name,
             platform=solution,
@@ -215,9 +232,11 @@ class CreateController(AbstractBaseController):
 
         env_request.option_settings += envvars
         createops.make_new_env(env_request,
-                                branch_default=branch_default, nohang=nohang,
-                                interactive=flag,
-                                timeout=timeout)
+                               branch_default=branch_default,
+                               process_app_version=True,
+                               nohang=nohang,
+                               interactive=flag,
+                               timeout=timeout)
 
     def complete_command(self, commands):
         app_name = fileoperations.get_application_name()
@@ -307,6 +326,62 @@ class CreateController(AbstractBaseController):
 
         else:
             return {}
+
+    def compose_multiple_apps(self):
+        module_names = self.app.pargs.modules
+        group = self.app.pargs.env_group_suffix or 'dev'
+        nohang = self.app.pargs.nohang
+        timeout = self.app.pargs.timeout
+
+        root_dir = os.getcwd()
+
+        version_labels = []
+        grouped_env_names = []
+        app_name = None
+        for module in module_names:
+            if not os.path.isdir(os.path.join(root_dir, module)):
+                io.log_warning(strings['create.appdoesntexist'].replace('{app_name}',
+                                                                        module))
+                continue
+
+            os.chdir(os.path.join(root_dir, module))
+
+            if not fileoperations.env_yaml_exists():
+                io.log_warning(strings['compose.noenvyaml'].replace('{module}',
+                                                                    module))
+                continue
+
+            io.echo('--- Creating application version for module: {0} ---'.format(module))
+
+            # Re-run hooks to get values from .elasticbeanstalk folders of modules
+            hooks.set_region(None)
+            hooks.set_ssl(None)
+            hooks.set_profile(None)
+
+            commonops.set_group_suffix_for_current_branch(group)
+
+            if not app_name:
+                app_name = self.get_app_name()
+            version_label = commonops.create_app_version(app_name, process=True)
+
+            version_labels.append(version_label)
+
+            environment_name = fileoperations.get_env_name_from_env_yaml()
+            if environment_name is not None:
+                commonops.set_environment_for_current_branch(environment_name.
+                                                             replace('+', '-{0}'.
+                                                                     format(group)))
+
+                grouped_env_names.append(environment_name.replace('+', '-{0}'.
+                                                                  format(group)))
+
+            os.chdir(root_dir)
+
+        if len(version_labels) > 0:
+            composeops.compose(app_name, version_labels, grouped_env_names, group,
+                               nohang, timeout)
+        else:
+            io.log_warning(strings['compose.novalidmodules'])
 
 
 def get_cname(env_name):

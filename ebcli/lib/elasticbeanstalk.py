@@ -54,8 +54,9 @@ def create_application(app_name, descrip):
 
 
 def create_application_version(app_name, vers_label, descrip, s3_bucket,
-                               s3_key):
+                               s3_key, process=False):
     kwargs = dict()
+    kwargs['Process'] = process
     if descrip is not None:
         kwargs['Description'] = descrip
     if s3_bucket and s3_key:
@@ -136,7 +137,8 @@ def _api_to_environment(api_dict):
         tier=tier,
         cname=api_dict.get('CNAME', 'UNKNOWN'),
         option_settings=api_dict.get('OptionSettings'),
-        is_abortable=api_dict.get('AbortableOperationInProgress', False)
+        is_abortable=api_dict.get('AbortableOperationInProgress', False),
+        environment_links=api_dict.get('EnvironmentLinks')
     )
     return env
 
@@ -321,6 +323,19 @@ def get_environment(app_name, env_name):
         return _api_to_environment(envs[0])
 
 
+def get_environments(env_names):
+    LOG.debug('Inside get_environments api wrapper')
+    result = _make_api_call('describe_environments',
+                            EnvironmentNames=env_names,
+                            IncludeDeleted=False)
+
+    envs = result['Environments']
+    if len(envs) < 1:
+        raise NotFoundError('Could not find any environments '
+                            'from the list: [' + env_names + ']')
+    return [_api_to_environment(env) for env in envs]
+
+
 def get_environment_settings(app_name, env_name):
     LOG.debug('Inside get_environment_settings api wrapper')
     result = _make_api_call('describe_configuration_settings',
@@ -435,11 +450,18 @@ def abort_environment_update(env_name):
 
 
 def update_env_application_version(env_name,
-                                   version_label):
+                                   version_label,
+                                   group_name):
     LOG.debug('Inside update_env_application_version api wrapper')
-    response = _make_api_call('update_environment',
-                              EnvironmentName=env_name,
-                              VersionLabel=version_label)
+    if group_name:
+        response = _make_api_call('update_environment',
+                                  EnvironmentName=env_name,
+                                  VersionLabel=version_label,
+                                  GroupName=group_name)
+    else:
+        response = _make_api_call('update_environment',
+                                  EnvironmentName=env_name,
+                                  VersionLabel=version_label)
     return response['ResponseMetadata']['RequestId']
 
 
@@ -457,9 +479,10 @@ def retrieve_environment_info(env_name, info_type):
     return result
 
 
-def terminate_environment(env_name):
+def terminate_environment(env_name, force_terminate=False):
     result = _make_api_call('terminate_environment',
-                            EnvironmentName=env_name)
+                            EnvironmentName=env_name,
+                            ForceTerminate=force_terminate)
     return result['ResponseMetadata']['RequestId']
 
 
@@ -554,3 +577,16 @@ def get_instance_health(env_name, next_token=None, attributes=None):
                             AttributeNames=attributes,
                             **kwargs)
     return result
+
+
+def compose_environments(application_name, version_labels_list, group_name=None):
+    kwargs = {}
+    if group_name is not None:
+        kwargs['GroupName'] = group_name
+    result = _make_api_call('compose_environments',
+                            ApplicationName=application_name,
+                            VersionLabels=version_labels_list,
+                            **kwargs)
+    request_id = result['ResponseMetadata']['RequestId']
+
+    return request_id

@@ -17,7 +17,7 @@ from ..lib import elasticbeanstalk
 from ..core import io, fileoperations
 from ..objects import configuration
 from ..objects.exceptions import InvalidSyntaxError
-from ..resources.strings import prompts
+from ..resources.strings import prompts, strings
 from . import commonops
 
 
@@ -49,6 +49,9 @@ def update_environment_configuration(app_name, env_name, nohang,
         # no changes made, exit
         io.log_warning('No changes made. Exiting.')
         return
+
+    if fileoperations.env_yaml_exists():
+        io.echo(strings['config.envyamlexists'])
 
     commonops.update_environment(env_name, changes, nohang,
                                  remove=remove, timeout=timeout,

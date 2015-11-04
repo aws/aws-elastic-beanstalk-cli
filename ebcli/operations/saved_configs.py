@@ -39,6 +39,8 @@ def create_config(app_name, env_name, cfg_name):
 def update_environment_with_config_file(env_name, cfg_name,
                                         nohang, timeout=None):
 
+    if fileoperations.env_yaml_exists():
+        io.echo(strings['config.envyamlexists'])
     commonops.update_environment(env_name, None, nohang,
                                   template=cfg_name, timeout=timeout)
 
@@ -46,6 +48,8 @@ def update_environment_with_config_file(env_name, cfg_name,
 def update_environment_with_config_data(env_name, data,
                                         nohang, timeout=None):
 
+    if fileoperations.env_yaml_exists():
+        io.echo(strings['config.envyamlexists'])
     commonops.update_environment(env_name, None, nohang,
                                   timeout=timeout, template_body=data)
 
