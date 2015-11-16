@@ -11,20 +11,20 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import random
+import locale
+locale.setlocale(locale.LC_ALL, 'C')
+
 import time
 import threading
 from collections import defaultdict
 from datetime import timedelta
+from datetime import datetime
 from dateutil import tz
-from dateutil.tz import tzutc
-import string
 import traceback
 from copy import copy
 
 from cement.utils.misc import minimal_logger
 from botocore.compat import six
-from datetime import datetime
 
 from ..lib import elasticbeanstalk, utils, elb, ec2
 from ..lib.aws import InvalidParameterValueError
