@@ -129,8 +129,9 @@ class Git(SourceControl):
         stdout, stderr, exitcode = \
             self._run_cmd(['git', 'describe', '--always', '--abbrev=4'])
 
+        version_label = 'app-{}-{:%y%m%d_%H%M%S}'.format(stdout, datetime.datetime.now())
         #Replace dots with underscores
-        return stdout.replace('.', '_')
+        return version_label.replace('.', '_')
 
     def untracked_changes_exist(self):
         stdout, stderr, exitcode = self._run_cmd(['git', 'diff', '--numstat'])

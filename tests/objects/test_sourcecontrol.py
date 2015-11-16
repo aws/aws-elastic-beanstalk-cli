@@ -118,7 +118,7 @@ class TestGitSourceControl(unittest.TestCase):
         self.assertEqual(sourcecontrol.Git().get_message(), 'Hello')
 
     def test_get_version_label(self):
-        self.assertEquals(sourcecontrol.Git().get_version_label(), 'v1')
+        self.assertTrue(sourcecontrol.Git().get_version_label().startswith('app-v1-'))
 
     def test_set_up_ignore_no_file(self):
         self.assertFalse(os.path.isfile('.gitignore'))
