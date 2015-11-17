@@ -93,7 +93,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
     finally:
         streamer.end_stream()
     # We have timed out
-    raise TimeoutError('Timed out while waiting for command to Complete')
+    raise TimeoutError('Timed out while waiting for command to Complete. The timeout can be set using the --timeout option.')
 
 
 def _is_success_string(message):
