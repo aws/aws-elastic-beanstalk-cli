@@ -3,6 +3,13 @@ Changelog
 =========
 
 ------------------
+3.5.6 (2015-10-27)
+------------------
+- Fix bug in 'eb health' causing errors in some locales
+- Change the naming scheme of app versions when using Git
+- Change strings related to timeout errors to indicate the presence of the timeout option
+
+------------------
 3.5.5 (2015-10-27)
 ------------------
 - Fix bug in "eb swap"
