@@ -3,7 +3,12 @@ Changelog
 =========
 
 ------------------
-3.5.6 (2015-10-27)
+3.6 (2015-11-23)
+------------------
+- Support for Composable Applications
+
+------------------
+3.5.6 (2015-11-20)
 ------------------
 - Fix bug in 'eb health' causing errors in some locales
 - Change the naming scheme of app versions when using Git
