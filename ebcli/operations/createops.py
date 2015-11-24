@@ -29,7 +29,7 @@ DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
 DEFAULT_SERVICE_ROLE_NAME = 'aws-elasticbeanstalk-service-role'
 
 
-def make_new_env(env_request, branch_default=False, process_app_version=True,
+def make_new_env(env_request, branch_default=False, process_app_version=False,
                  nohang=False, interactive=True, timeout=None):
     resolve_roles(env_request, interactive)
 

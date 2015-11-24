@@ -231,9 +231,10 @@ class CreateController(AbstractBaseController):
             vpc=vpc)
 
         env_request.option_settings += envvars
+        process_app_version = fileoperations.env_yaml_exists()
         createops.make_new_env(env_request,
                                branch_default=branch_default,
-                               process_app_version=True,
+                               process_app_version=process_app_version,
                                nohang=nohang,
                                interactive=flag,
                                timeout=timeout)
@@ -362,7 +363,8 @@ class CreateController(AbstractBaseController):
 
             if not app_name:
                 app_name = self.get_app_name()
-            version_label = commonops.create_app_version(app_name, process=True)
+            process_app_version = fileoperations.env_yaml_exists()
+            version_label = commonops.create_app_version(app_name, process=process_app_version)
 
             version_labels.append(version_label)
 

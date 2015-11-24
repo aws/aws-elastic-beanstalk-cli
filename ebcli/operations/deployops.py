@@ -16,8 +16,8 @@ from ..core import io
 from . import commonops
 
 
-def deploy(app_name, env_name, version, label, message, group_name=None, staged=False,
-           timeout=5):
+def deploy(app_name, env_name, version, label, message, group_name=None,
+           process_app_versions=False, staged=False, timeout=5):
     region_name = aws.get_region_name()
 
     io.log_info('Deploying code to ' + env_name + " in region " + region_name)
@@ -27,7 +27,7 @@ def deploy(app_name, env_name, version, label, message, group_name=None, staged=
     else:
         # Create app version
         app_version_label = commonops.create_app_version(
-            app_name, label=label, message=message, staged=staged)
+            app_name, process=process_app_versions, label=label, message=message, staged=staged)
 
     # swap env to new app version
     request_id = elasticbeanstalk.update_env_application_version(
@@ -38,7 +38,7 @@ def deploy(app_name, env_name, version, label, message, group_name=None, staged=
                                       can_abort=True)
 
 
-def deploy_no_events(app_name, env_name, version, label, message, staged=False):
+def deploy_no_events(app_name, env_name, version, label, message, process=False, staged=False):
     region_name = aws.get_region_name()
 
     io.log_info('Deploying code to ' + env_name + ' in region ' + region_name)
@@ -48,7 +48,7 @@ def deploy_no_events(app_name, env_name, version, label, message, staged=False):
     else:
         # Create app version
         app_version_label = commonops.create_app_version(
-            app_name, label=label, message=message, staged=staged)
+            app_name, process=process, label=label, message=message, staged=staged)
 
     # swap env to new app version
     request_id = elasticbeanstalk.update_env_application_version(

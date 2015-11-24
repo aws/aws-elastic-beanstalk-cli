@@ -76,9 +76,11 @@ class DeployController(AbstractBaseController):
         #     # deploy to every environment listed
         #     ## Right now you can only list one
 
+        process_app_versions = fileoperations.env_yaml_exists()
+
         deployops.deploy(self.app_name, self.env_name, self.version, self.label,
-                         self.message, group_name=group_name, staged=self.staged,
-                         timeout=self.timeout)
+                         self.message, group_name=group_name, process_app_versions=process_app_versions,
+                         staged=self.staged, timeout=self.timeout)
 
     def complete_command(self, commands):
         #ToDo, edit this if we ever support multiple env deploys
@@ -154,7 +156,8 @@ class DeployController(AbstractBaseController):
 
             if not app_name:
                 app_name = self.get_app_name()
-            version_label = commonops.create_app_version(app_name, process=True)
+            process_app_version = fileoperations.env_yaml_exists()
+            version_label = commonops.create_app_version(app_name, process=process_app_version)
 
             stages_version_labels[group_name].append(version_label)
 
