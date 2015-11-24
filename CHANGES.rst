@@ -3,6 +3,12 @@ Changelog
 =========
 
 ------------------
+3.6.1 (2015-11-23)
+------------------
+- Remove pre-processing of application versions when no env.yaml file is present
+- Fix bug with 'eb logs'
+
+------------------
 3.6 (2015-11-23)
 ------------------
 - Support for Composable Applications
