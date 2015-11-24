@@ -2625,8 +2625,6 @@
           "shape":"SampleTimestamp",
           "documentation":"<p>The time stamp when this information was retrieved.</p>"
         },
-        "Name":{"shape":"Name"},
-        "BatchId":{"shape":"BatchId"},
         "Message":{
           "shape":"Message",
           "documentation":"<p>The retrieved information.</p>"
@@ -3461,10 +3459,7 @@
       "members":{
         "SnippetName":{"shape":"String"},
         "SourceUrl":{"shape":"S3LocationUrl"},
-        "SnippetContents":{"shape":"SnippetContents"},
-        "Order":{"shape":"SnippetOrder"},
-        "MappingsSourceUrl":{"shape":"S3LocationUrl"},
-        "Mappings":{"shape":"ElementMappingsList"}
+        "Order":{"shape":"SnippetOrder"}
       }
     },
     "TemplateSnippetList":{
