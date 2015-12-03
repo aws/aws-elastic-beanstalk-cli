@@ -23,7 +23,9 @@ from . import commonops
 def compose(app_name, version_labels, grouped_env_names, group_name=None,
             nohang=False, timeout=None):
 
-    wait_for_processed_app_versions(app_name, version_labels)
+    success = commonops.wait_for_processed_app_versions(app_name, version_labels)
+    if not success:
+        return
 
     request_id = compose_apps(app_name, version_labels, group_name)
 
@@ -44,27 +46,9 @@ def compose_apps(app_name, version_labels, group_name=None):
 
 
 def compose_no_events(app_name, version_labels, group_name=None):
-    wait_for_processed_app_versions(app_name, version_labels)
+    success = commonops.wait_for_processed_app_versions(app_name, version_labels)
+    if not success:
+        return
 
     compose_apps(app_name, version_labels, group_name)
 
-
-def wait_for_processed_app_versions(app_name, version_labels):
-    processed = {}
-    io.echo('--- Waiting for application versions to be pre-processed ---')
-    for version in version_labels:
-        processed[version] = False
-    while not all(processed.values()):
-        time.sleep(4)
-
-        io.LOG.debug('Retrieving app versions.')
-        app_versions = elasticbeanstalk.get_application_versions(app_name, version_labels)
-
-        for v in app_versions:
-            if v['Status'] == 'PROCESSED':
-                processed[v['VersionLabel']] = True
-                io.echo('Finished processing application version {}'
-                        .format(v['VersionLabel']))
-
-        if all(processed.values()):
-            return

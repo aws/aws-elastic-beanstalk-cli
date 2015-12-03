@@ -199,7 +199,10 @@ strings = {
                                    'The following modules are missing this file: {modules}',
     'deploy.noenvname': 'No environment name was specified in env.yaml for module {module}. Unable to deploy.',
     'compose.noenvyaml': 'The module {module} does not contain an env.yaml file. This module will be skipped.',
-    'compose.novalidmodules': 'No valid modules were found. No environments will be created.'
+    'compose.novalidmodules': 'No valid modules were found. No environments will be created.',
+    'appversion.processfailed': 'Pre-processing of application version {app_version} has failed.',
+    'appversion.cannotdeploy': 'Some application versions failed to process. Unable to continue deployment.',
+    'appversion.processtimeout': 'All application versions have not reached a "Processed" state. Unable to continue with deployment.'
 }
 
 prompts = {
