@@ -40,7 +40,7 @@ def make_new_env(env_request, branch_default=False, process_app_version=False,
             commonops.create_app_version(env_request.app_name, process=process_app_version)
         if process_app_version is True:
             success = commonops.wait_for_processed_app_versions(env_request.app_name,
-                                                                env_request.version_label)
+                                                                [env_request.version_label])
             if not success:
                 return
 
