@@ -3,6 +3,13 @@ Changelog
 =========
 
 ------------------
+3.6.2 (2015-12-14)
+------------------
+- Improved logic related to waiting for application version processing
+- Change tag behavior to allow for '=' in tag values
+- Prompt for EnvironmentName when not present in env.yaml
+
+------------------
 3.6.1 (2015-11-23)
 ------------------
 - Remove pre-processing of application versions when no env.yaml file is present
