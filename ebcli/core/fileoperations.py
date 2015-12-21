@@ -393,6 +393,14 @@ def _zipdir(path, zipf, ignore_list=None):
         if '.elasticbeanstalk' in root:
             io.log_info('  -skipping: {}'.format(root))
             continue
+        for d in dirs:
+            cur_dir = os.path.join(root, d)
+            if os.path.islink(cur_dir):
+                zipInfo = zipfile.ZipInfo()
+                zipInfo.filename = d
+                # 2716663808L is the "magic code" for symlinks
+                zipInfo.external_attr = 2716663808L
+                zipf.writestr(zipInfo, os.readlink(cur_dir))
         for f in files:
             cur_file = os.path.join(root, f)
             if cur_file.endswith('~') or cur_file in ignore_list:
@@ -406,7 +414,14 @@ def _zipdir(path, zipf, ignore_list=None):
                     zipf.write(root)
                     zipped_roots.append(root)
                 io.log_info('  +adding: {}'.format(cur_file))
-                zipf.write(cur_file)
+                if os.path.islink(cur_file):
+                    zipInfo = zipfile.ZipInfo()
+                    zipInfo.filename = f
+                    # 2716663808L is the "magic code" for symlinks
+                    zipInfo.external_attr = 2716663808L
+                    zipf.writestr(zipInfo, os.readlink(cur_file))
+                else:
+                    zipf.write(cur_file)
 
 
 def unzip_folder(file_location, directory):
