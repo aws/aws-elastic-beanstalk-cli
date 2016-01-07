@@ -2,8 +2,13 @@
 Changelog
 =========
 
+------------------
+3.7.1 (2016-01-07)
+------------------
+- Fix long type incompatibility bug with Python 3
+
 ----------------
-3.7 (2015-01-06)
+3.7 (2016-01-06)
 ----------------
 - Add "ap-northeast-2" to region list
 - Fix bug with symlinks on Unix systems
