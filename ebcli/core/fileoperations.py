@@ -398,8 +398,15 @@ def _zipdir(path, zipf, ignore_list=None):
             if os.path.islink(cur_dir):
                 zipInfo = zipfile.ZipInfo()
                 zipInfo.filename = d
+
                 # 2716663808L is the "magic code" for symlinks
-                zipInfo.external_attr = 2716663808L
+
+                # Python 3 merged "int" and "long" into int, so we must check the version
+                # to determine what type to use
+                if sys.version_info > (3,):
+                    zipInfo.external_attr = 2716663808
+                else:
+                    zipInfo.external_attr = long(2716663808)
                 zipf.writestr(zipInfo, os.readlink(cur_dir))
         for f in files:
             cur_file = os.path.join(root, f)
@@ -417,8 +424,15 @@ def _zipdir(path, zipf, ignore_list=None):
                 if os.path.islink(cur_file):
                     zipInfo = zipfile.ZipInfo()
                     zipInfo.filename = f
+                    
                     # 2716663808L is the "magic code" for symlinks
-                    zipInfo.external_attr = 2716663808L
+
+                    # Python 3 merged "int" and "long" into int, so we must check the
+                    # version to determine what type to use
+                    if sys.version_info > (3,):
+                        zipInfo.external_attr = 2716663808
+                    else:
+                        zipInfo.external_attr = long(2716663808)
                     zipf.writestr(zipInfo, os.readlink(cur_file))
                 else:
                     zipf.write(cur_file)
