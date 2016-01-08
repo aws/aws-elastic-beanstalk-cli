@@ -397,7 +397,7 @@ def _zipdir(path, zipf, ignore_list=None):
             cur_dir = os.path.join(root, d)
             if os.path.islink(cur_dir):
                 zipInfo = zipfile.ZipInfo()
-                zipInfo.filename = d
+                zipInfo.filename = os.path.join(root, d)
 
                 # 2716663808L is the "magic code" for symlinks
 
@@ -423,7 +423,7 @@ def _zipdir(path, zipf, ignore_list=None):
                 io.log_info('  +adding: {}'.format(cur_file))
                 if os.path.islink(cur_file):
                     zipInfo = zipfile.ZipInfo()
-                    zipInfo.filename = f
+                    zipInfo.filename = os.path.join(root, f)
                     
                     # 2716663808L is the "magic code" for symlinks
 
