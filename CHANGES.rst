@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------------------
+3.7.2 (2016-01-08)
+------------------
+- Fix bug where symlinks in application versions were not in their original locations
+
+------------------
 3.7.1 (2016-01-07)
 ------------------
 - Fix long type incompatibility bug with Python 3
