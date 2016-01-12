@@ -968,6 +968,7 @@ def _get_public_ssh_key(keypair_name):
 
 
 def wait_for_processed_app_versions(app_name, version_labels, timeout=5):
+    versions_to_check = list(version_labels)
     processed = {}
     failed = {}
     io.echo('--- Waiting for application versions to be pre-processed ---')
@@ -975,25 +976,25 @@ def wait_for_processed_app_versions(app_name, version_labels, timeout=5):
         processed[version] = False
         failed[version] = False
     start_time = datetime.utcnow()
-    while not all([(processed[version] or failed[version]) for version in version_labels]):
+    while not all([(processed[version] or failed[version]) for version in versions_to_check]):
         if datetime.utcnow() - start_time >= timedelta(minutes=timeout):
             io.log_error(strings['appversion.processtimeout'])
             return False
         io.LOG.debug('Retrieving app versions.')
-        app_versions = elasticbeanstalk.get_application_versions(app_name, version_labels)
+        app_versions = elasticbeanstalk.get_application_versions(app_name, versions_to_check)
 
         for v in app_versions:
             if v['Status'] == 'PROCESSED':
                 processed[v['VersionLabel']] = True
                 io.echo('Finished processing application version {}'
                         .format(v['VersionLabel']))
-                version_labels.remove(v['VersionLabel'])
+                versions_to_check.remove(v['VersionLabel'])
 
             elif v['Status'] == 'FAILED':
                 failed[version] = True
                 io.log_error(strings['appversion.processfailed'].replace('{app_version}',
                                                                          v['VersionLabel']))
-                version_labels.remove(v['VersionLabel'])
+                versions_to_check.remove(v['VersionLabel'])
 
         if all(processed.values()):
             return True
