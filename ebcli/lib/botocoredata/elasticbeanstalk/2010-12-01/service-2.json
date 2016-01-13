@@ -2170,7 +2170,7 @@
           "documentation":"<p> The name of the application to delete the configuration template from. </p>"
         },
         "TemplateName":{
-          "shape":"DeleteConfigurationTemplateName",
+          "shape":"ConfigurationTemplateName",
           "documentation":"<p>The name of the configuration template to delete.</p>"
         }
       },
