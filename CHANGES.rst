@@ -3,6 +3,12 @@ Changelog
 =========
 
 ------------------
+3.7.3 (2016-01-28)
+------------------
+- Fix bug with application version processing
+- Fix bug in "eb config delete"
+
+------------------
 3.7.2 (2016-01-08)
 ------------------
 - Fix bug where symlinks in application versions were not in their original locations
