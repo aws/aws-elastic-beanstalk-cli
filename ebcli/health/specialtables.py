@@ -57,7 +57,7 @@ class StatusTable(RequestTable):
 
         c_data = justify_and_trim(
             d,
-            column.size,
+            column.size or column.fit_size,
             column.justify)
         if 'Overall' in data.get('InstanceId'):
             c_data = io.bold(c_data)

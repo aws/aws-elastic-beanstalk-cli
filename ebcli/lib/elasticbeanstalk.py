@@ -567,7 +567,10 @@ def get_instance_health(env_name, next_token=None, attributes=None):
             "ApplicationMetrics",
             "RefreshedAt",
             "LaunchedAt",
-            "System"
+            "System",
+            "Deployment",
+            "AvailabilityZone",
+            "InstanceType",
         ]
     kwargs = {}
     if next_token:

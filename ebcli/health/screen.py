@@ -103,12 +103,13 @@ class Screen(object):
             if table.visible:
                 visible_count += 1
                 n -= table.header_size
-        visible_rows = n // visible_count
-        if visible_rows > 0:  # Dont show tables if no visible rows.
-            self.max_columns = max([len(t.columns)
-                                    for t in self.tables if t.visible]) - 1
-            for table in self.tables:
-                table.draw(visible_rows, self.data['instances'])
+        if visible_count != 0:
+            visible_rows = n // visible_count
+            if visible_rows > 0:  # Dont show tables if no visible rows.
+                self.max_columns = max([len(t.columns)
+                                        for t in self.tables if t.visible]) - 1
+                for table in self.tables:
+                    table.draw(visible_rows, self.data['instances'])
 
         self.show_help_line()
 
@@ -137,9 +138,11 @@ class Screen(object):
                 elif char == '2':
                     self.turn_on_table('status')
                 elif char == '3':
-                    self.turn_on_table('request')
+                    self.turn_on_table('requests')
                 elif char == '4':
                     self.turn_on_table('cpu')
+                elif char == '5':
+                    self.turn_on_table('deployments')
                 elif char == 'H':
                     self.show_help()
                 elif char == 'F':
