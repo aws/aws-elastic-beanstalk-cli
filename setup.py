@@ -17,6 +17,7 @@ requires = ['pyyaml>=3.11',
             'websocket-client >= 0.11.0, < 1.0',
             'docker-py >= 1.1.0, < 1.2',
             'dockerpty >= 0.3.2, < 0.4',
+            'semantic_version == 2.5.0'
            ]
 
 if not sys.platform.startswith('win'):

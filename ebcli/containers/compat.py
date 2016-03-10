@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+from semantic_version import Version
 
 from cement.utils.misc import minimal_logger
 
@@ -29,7 +30,7 @@ def supported_docker_installed():
     """
 
     try:
-        return commands.version() >= SUPPORTED_DOCKER_V
+        return Version(commands.version()) >= Version(SUPPORTED_DOCKER_V)
     # OSError = Not installed
     # CommandError = docker versions less than 1.5 give exit code 1
     # with 'docker --version'.

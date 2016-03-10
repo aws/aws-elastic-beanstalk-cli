@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------------------
+3.7.4 (2016-03-10)
+------------------
+- Fix supported docker versions assertion
+
+------------------
 3.7.3 (2016-01-28)
 ------------------
 - Fix bug with application version processing
