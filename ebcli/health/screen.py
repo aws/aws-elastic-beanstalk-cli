@@ -136,7 +136,7 @@ class Screen(object):
                 elif char == '1':
                     self.turn_on_table('split')
                 elif char == '2':
-                    self.turn_on_table('status')
+                    self.turn_on_table('health')
                 elif char == '3':
                     self.turn_on_table('requests')
                 elif char == '4':
@@ -188,7 +188,7 @@ class Screen(object):
                 table.visible = False
 
         # Activate Help table
-        if key in {'health'}:
+        if key in {'health_help'}:
             self.help_table.visible = True
         else:
             self.help_table.visible = False
@@ -393,7 +393,7 @@ class Screen(object):
             self.horizontal_offset += 1
 
     def show_help(self):
-        self.turn_on_table('health')
+        self.turn_on_table('health_help')
 
     def show_help_line(self):
         if self.help_table.visible:

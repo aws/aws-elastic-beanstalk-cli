@@ -74,8 +74,8 @@ class Table(object):
             labels.append(header)
 
         header_text = justify_and_trim(' '.join(labels), width, 'left')
-        if header_text[-(len(self.name)+6):].isspace():
-            header_text = header_text[:-(len(self.name)+6)] + '  {n}{b} ' + self.name + ' {r} '
+        if header_text[-16:].isspace():
+            header_text = header_text[:-16] + '{n}{b} ' + justify_and_trim(self.name, 11, 'right') + ' {r} '
         header_text = header_text.format(n=t.normal, b=t.bold, u=term.underline(), r=term.reverse_())
         header_text += t.normal
 
@@ -133,7 +133,7 @@ class Table(object):
     def get_widest_data_length_in_column(self, column):
         max_size = len(str(column.name))
         for r in range(self.first_row_index(), self.last_row_index()):
-            len_row_data = len(str(self.data[r][column.key]))
+            len_row_data = len(str(self.data[r].get(column.key)))
             if len_row_data > max_size:
                 max_size = len_row_data
         return max_size

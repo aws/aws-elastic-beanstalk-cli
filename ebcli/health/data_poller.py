@@ -212,7 +212,8 @@ def collapse_instance_health_data(instances_health):
         instance['Cause'] = cause
 
         instance['InstanceType'] = i.get('InstanceType')
-        instance['AvailabilityZone'] = i.get('AvailabilityZone')
+        if i.get('AvailabilityZone'): #us-east-1a -> 1a
+            instance['AvailabilityZone'] = i.get('AvailabilityZone').rsplit('-', 1)[-1]
         if i.get('Deployment'):
             instance['TimeSinceDeployment'] = _format_time_since(i.get('Deployment').get('DeploymentTime'))
             instance['DeploymentId'] = i.get('Deployment').get('DeploymentId')
@@ -226,7 +227,6 @@ def collapse_instance_health_data(instances_health):
 
         instance['launched'] = utils.get_local_time_as_string(instance['LaunchedAt'])
         instance['running'] = _format_time_since(instance['LaunchedAt'])
-
 
         # Calculate requests per second
         duration = instance.get('Duration', 10)
