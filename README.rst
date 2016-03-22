@@ -221,7 +221,7 @@ If you have already deployed this version, EB CLI will deploy that version to yo
 
 5. Use branches.
 
-EB CLI enables you to associate different branches with different branches of your code.
+EB CLI enables you to associate different environments with different branches of your code.
 For example:
 
     git checkout master
