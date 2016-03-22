@@ -213,7 +213,10 @@ def collapse_instance_health_data(instances_health):
 
         instance['InstanceType'] = i.get('InstanceType')
         if i.get('AvailabilityZone'): #us-east-1a -> 1a
-            instance['AvailabilityZone'] = i.get('AvailabilityZone').rsplit('-', 1)[-1]
+            try:
+                instance['AvailabilityZone'] = i.get('AvailabilityZone').rsplit('-', 1)[-1]
+            except:
+                instance['AvailabilityZone'] = i.get('AvailabilityZone')
         if i.get('Deployment'):
             instance['TimeSinceDeployment'] = _format_time_since(i.get('Deployment').get('DeploymentTime'))
             instance['DeploymentId'] = i.get('Deployment').get('DeploymentId')

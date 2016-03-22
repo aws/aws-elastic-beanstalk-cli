@@ -52,6 +52,8 @@ class Table(object):
     def set_data(self, table_data):
         self.data = table_data
 
+    HEADER_SPACE_NEEDED = 16
+    HEADER_WIDTH = 11
     def draw_header_row(self):
         # Print headers
         t = term.get_terminal()
@@ -74,9 +76,13 @@ class Table(object):
             labels.append(header)
 
         header_text = justify_and_trim(' '.join(labels), width, 'left')
-        if header_text[-16:].isspace():
-            header_text = header_text[:-16] + '{n}{b} ' + justify_and_trim(self.name, 11, 'right') + ' {r} '
-        header_text = header_text.format(n=t.normal, b=t.bold, u=term.underline(), r=term.reverse_())
+
+        # header title
+        if header_text[-Table.HEADER_SPACE_NEEDED:].isspace():
+            header_text = (header_text[:-Table.HEADER_SPACE_NEEDED] + '{n}{b} ' +
+                           justify_and_trim(self.name, Table.HEADER_WIDTH, 'right') + ' {r} ')
+        header_text = header_text.format(n=t.normal, b=t.bold, u=term.underline(),
+                                         r=term.reverse_())
         header_text += t.normal
 
         term.echo_line(term.reverse_colors(header_text))
