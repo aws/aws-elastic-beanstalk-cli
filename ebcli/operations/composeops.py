@@ -48,7 +48,7 @@ def compose_apps(app_name, version_labels, group_name=None):
 def compose_no_events(app_name, version_labels, group_name=None):
     success = commonops.wait_for_processed_app_versions(app_name, version_labels)
     if not success:
-        return
+        return None
 
-    compose_apps(app_name, version_labels, group_name)
+    return compose_apps(app_name, version_labels, group_name)
 

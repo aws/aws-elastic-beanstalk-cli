@@ -92,7 +92,6 @@ class DeployController(AbstractBaseController):
             app_name = fileoperations.get_application_name()
             io.echo(*commonops.get_app_version_labels(app_name))
 
-
     def multiple_app_deploy(self):
         missing_env_yaml = []
         top_dir = getcwd()
@@ -116,6 +115,7 @@ class DeployController(AbstractBaseController):
                 module_list = module_list + module_name + ', '
             io.echo(strings['deploy.modulemissingenvyaml'].replace('{modules}',
                                                                    module_list[:-2]))
+
             return
 
         self.compose_deploy()
@@ -156,12 +156,14 @@ class DeployController(AbstractBaseController):
 
             if not app_name:
                 app_name = self.get_app_name()
+
             process_app_version = fileoperations.env_yaml_exists()
             version_label = commonops.create_app_version(app_name, process=process_app_version)
 
             stages_version_labels[group_name].append(version_label)
 
             environment_name = fileoperations.get_env_name_from_env_yaml()
+
             if environment_name is not None:
                 commonops.set_environment_for_current_branch(environment_name.
                                                              replace('+', '-{0}'.
@@ -178,8 +180,12 @@ class DeployController(AbstractBaseController):
 
         if len(stages_version_labels) > 0:
             for stage in stages_version_labels.keys():
-                composeops.compose_no_events(app_name, stages_version_labels[stage],
+                request_id = composeops.compose_no_events(app_name, stages_version_labels[stage],
                                              group_name=stage)
-            commonops.wait_for_compose_events(app_name, env_names, self.timeout)
+                if request_id is None:
+                    io.error("Unable to compose modules.")
+                    return
+
+                commonops.wait_for_compose_events(request_id, app_name, env_names, self.timeout)
         else:
             io.log_warning(strings['compose.novalidmodules'])
