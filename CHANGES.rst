@@ -3,6 +3,17 @@ Changelog
 =========
 
 ------------------
+3.7.5 (2016-03-22)
+------------------
+- Support new Enhanced Health features
+- Fix bug in "eb health" for basic health environments
+
+------------------
+3.7.4 (2016-03-10)
+------------------
+- Fix supported docker versions assertion
+
+------------------
 3.7.3 (2016-01-28)
 ------------------
 - Fix bug with application version processing
