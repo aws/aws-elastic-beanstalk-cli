@@ -79,7 +79,7 @@ class Table(object):
 
         # header title
         if header_text[-Table.HEADER_SPACE_NEEDED:].isspace():
-            header_text = (header_text[:-Table.HEADER_SPACE_NEEDED] + '{n}{b} ' +
+            header_text = (header_text[:-Table.HEADER_SPACE_NEEDED] + '  {n}{b} ' +
                            justify_and_trim(self.name, Table.HEADER_WIDTH, 'right') + ' {r} ')
         header_text = header_text.format(n=t.normal, b=t.bold, u=term.underline(),
                                          r=term.reverse_())
