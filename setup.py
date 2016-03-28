@@ -10,6 +10,7 @@ requires = ['pyyaml>=3.11',
             'cement==2.4',
             'colorama==0.3.3',
             'pathspec==0.3.3',
+            'setuptools >= 20.0',
             ## For docker-compose
             'docopt >= 0.6.1, < 0.7',
             'requests >= 2.6.1, < 2.7',

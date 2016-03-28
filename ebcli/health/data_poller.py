@@ -155,32 +155,11 @@ class DataPoller(object):
         else:
             self.no_instances_time = None
 
-        # Get AZ info for each instance
-        self._get_instance_azs(instance_health)
-
         # Return all the data as a single object
         data = {'environment': environment_health,
                 'instances': instance_health}
         LOG.debug('collapsed-data:{}'.format(data))
         return data
-
-    def _get_instance_azs(self, data_dict):
-        instance_ids = [i.get('InstanceId') for i in data_dict]
-        ids_with_no_az_info = []
-        for id in instance_ids:
-            if 'az' not in self.instance_info[id]:
-                ids_with_no_az_info.append(id)
-
-        instances = ec2.describe_instances(ids_with_no_az_info)
-        for i in instances:
-            id = i.get('InstanceId', None)
-            az = i.get('Placement', {}).get('AvailabilityZone', None)
-            if az:
-                self.instance_info[id]['az'] = az
-
-        for instance_data in data_dict:
-            id = instance_data.get('InstanceId')
-            instance_data['az'] = self.instance_info.get(id, {}).get('az', 'no-data')
 
 
 def collapse_environment_health_data(environment_health):
@@ -232,32 +211,25 @@ def collapse_instance_health_data(instances_health):
         cause = causes[0] if causes else ''
         instance['Cause'] = cause
 
+        instance['InstanceType'] = i.get('InstanceType')
+        if i.get('AvailabilityZone'): #us-east-1a -> 1a
+            try:
+                instance['AvailabilityZone'] = i.get('AvailabilityZone').rsplit('-', 1)[-1]
+            except:
+                instance['AvailabilityZone'] = i.get('AvailabilityZone')
+        if i.get('Deployment'):
+            instance['TimeSinceDeployment'] = _format_time_since(i.get('Deployment').get('DeploymentTime'))
+            instance['DeploymentId'] = i.get('Deployment').get('DeploymentId')
+            instance['DeploymentStatus'] = i.get('Deployment').get('Status')
+            instance['DeploymentVersion'] = i.get('Deployment').get('VersionLabel')
+
         instance['load1'] = instance['LoadAverage'][0] \
             if 'LoadAverage' in instance else '-'
         instance['load5'] = instance['LoadAverage'][1] \
             if 'LoadAverage' in instance else '-'
 
-        try:
-            delta = datetime.now(tz.tzlocal()) - utils.get_local_time(instance['LaunchedAt'])
-            instance['launched'] = utils.get_local_time_as_string(instance['LaunchedAt'])
-
-            days = delta.days
-            minutes = delta.seconds // 60
-            hours = minutes // 60
-
-            if days > 0:
-                instance['running'] = '{0} day{s}'\
-                    .format(days, s=_get_s(days))
-            elif hours > 0:
-                instance['running'] = '{0} hour{s}'\
-                    .format(hours, s=_get_s(hours))
-            elif minutes > 0:
-                instance['running'] = '{0} min{s}'\
-                    .format(minutes, s=_get_s(minutes))
-            else:
-                instance['running'] = '{0} secs'.format(delta.seconds)
-        except KeyError as e:
-            instance['running'] = '-'
+        instance['launched'] = utils.get_local_time_as_string(instance['LaunchedAt'])
+        instance['running'] = _format_time_since(instance['LaunchedAt'])
 
         # Calculate requests per second
         duration = instance.get('Duration', 10)
@@ -274,6 +246,32 @@ def collapse_instance_health_data(instances_health):
         result.append(instance)
 
     return result
+
+
+def _format_time_since(timestamp):
+    ret = ''
+    try:
+        delta = datetime.now(tz.tzlocal()) - utils.get_local_time(timestamp)
+
+        days = delta.days
+        minutes = delta.seconds // 60
+        hours = minutes // 60
+
+        if days > 0:
+            ret = '{0} day{s}'\
+                .format(days, s=_get_s(days))
+        elif hours > 0:
+            ret = '{0} hour{s}'\
+                .format(hours, s=_get_s(hours))
+        elif minutes > 0:
+           ret = '{0} min{s}'\
+                .format(minutes, s=_get_s(minutes))
+        else:
+            ret = '{0} secs'.format(delta.seconds)
+    except KeyError as e:
+        ret = '-'
+    finally:
+        return ret
 
 
 def _format_latency_dict(latency_dict, request_count):

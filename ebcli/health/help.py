@@ -52,9 +52,10 @@ class HelpTable(Table):
         self.add_section('')
         self.add_section('Views')
         self.add_help_text(['1'], 'All tables/split view')
-        self.add_help_text(['2'], 'Status table')
+        self.add_help_text(['2'], 'Health status table')
         self.add_help_text(['3'], 'Request summary table')
-        self.add_help_text(['4'], 'CPU%/Load Table')
+        self.add_help_text(['4'], 'CPU%/Load table')
+        self.add_help_text(['5'], 'Deployment summary table')
 
     def add_section(self, section_name):
         self.add_help_line(term.underlined(section_name), ' ')

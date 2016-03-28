@@ -103,12 +103,13 @@ class Screen(object):
             if table.visible:
                 visible_count += 1
                 n -= table.header_size
-        visible_rows = n // visible_count
-        if visible_rows > 0:  # Dont show tables if no visible rows.
-            self.max_columns = max([len(t.columns)
-                                    for t in self.tables if t.visible]) - 1
-            for table in self.tables:
-                table.draw(visible_rows, self.data['instances'])
+        if visible_count != 0:
+            visible_rows = n // visible_count
+            if visible_rows > 0:  # Dont show tables if no visible rows.
+                self.max_columns = max([len(t.columns)
+                                        for t in self.tables if t.visible]) - 1
+                for table in self.tables:
+                    table.draw(visible_rows, self.data['instances'])
 
         self.show_help_line()
 
@@ -135,11 +136,13 @@ class Screen(object):
                 elif char == '1':
                     self.turn_on_table('split')
                 elif char == '2':
-                    self.turn_on_table('status')
+                    self.turn_on_table('health')
                 elif char == '3':
-                    self.turn_on_table('request')
+                    self.turn_on_table('requests')
                 elif char == '4':
                     self.turn_on_table('cpu')
+                elif char == '5':
+                    self.turn_on_table('deployments')
                 elif char == 'H':
                     self.show_help()
                 elif char == 'F':
@@ -185,7 +188,7 @@ class Screen(object):
                 table.visible = False
 
         # Activate Help table
-        if key in {'health'}:
+        if key in {'health_help'}:
             self.help_table.visible = True
         else:
             self.help_table.visible = False
@@ -390,7 +393,7 @@ class Screen(object):
             self.horizontal_offset += 1
 
     def show_help(self):
-        self.turn_on_table('health')
+        self.turn_on_table('health_help')
 
     def show_help_line(self):
         if self.help_table.visible:

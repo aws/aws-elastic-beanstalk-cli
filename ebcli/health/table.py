@@ -52,6 +52,8 @@ class Table(object):
     def set_data(self, table_data):
         self.data = table_data
 
+    HEADER_SPACE_NEEDED = 16
+    HEADER_WIDTH = 11
     def draw_header_row(self):
         # Print headers
         t = term.get_terminal()
@@ -59,7 +61,11 @@ class Table(object):
         width = self.width
         for c in [0] + list(range(self.first_column, len(self.columns))):
             column = self.columns[c]
-            header = justify_and_trim(column.name, column.size, column.justify)
+            column_size = column.size
+            if None == column_size:
+                column_size = self.get_widest_data_length_in_column(self.columns[c]) + 2
+                column.fit_size = column_size
+            header = justify_and_trim(column.name, column_size, column.justify)
             if (self.screen.sort_index and  # We are sorting
                     self.screen.sort_index[1] == c and  # Sort column
                     self.name == self.screen.sort_index[0] and # sort table
@@ -69,12 +75,17 @@ class Table(object):
                 width += len(format_string) - 6
             labels.append(header)
 
+        header_text = justify_and_trim(' '.join(labels), width, 'left')
 
-        term.echo_line(term.reverse_colors(
-                       justify_and_trim(' '.join(labels), width, 'left') +
-                       t.normal).format(
-            n=t.normal, b=t.bold, u=term.underline(), r=term.reverse_()
-        ))
+        # header title
+        if header_text[-Table.HEADER_SPACE_NEEDED:].isspace():
+            header_text = (header_text[:-Table.HEADER_SPACE_NEEDED] + '  {n}{b} ' +
+                           justify_and_trim(self.name, Table.HEADER_WIDTH, 'right') + ' {r} ')
+        header_text = header_text.format(n=t.normal, b=t.bold, u=term.underline(),
+                                         r=term.reverse_())
+        header_text += t.normal
+
+        term.echo_line(term.reverse_colors(header_text))
 
     def draw_rows(self):
         first_row_index = self.first_row_index()
@@ -121,9 +132,17 @@ class Table(object):
     def get_column_data(self, data, column):
         c_data = justify_and_trim(
             str(data.get(column.key, '-')),
-            column.size,
+            column.size or column.fit_size,
             column.justify)
         return c_data
+
+    def get_widest_data_length_in_column(self, column):
+        max_size = len(str(column.name))
+        for r in range(self.first_row_index(), self.last_row_index()):
+            len_row_data = len(str(self.data[r].get(column.key)))
+            if len_row_data > max_size:
+                max_size = len_row_data
+        return max_size
 
     def get_color_data(self, data):
         if self.screen.mono:
@@ -195,6 +214,7 @@ class Column(object):
                  justify=None, sort_key=None):
         self.name = name
         self.size = size
+        self.fit_size = size
         self.key = key
         self.justify = justify
         if sort_key:

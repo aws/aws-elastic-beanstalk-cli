@@ -45,13 +45,13 @@ class TestCompat(TestCase):
                                                        version):
         version.return_value = '1.9.0'
         self.assertTrue(compat.supported_docker_installed())
-    
+
     @patch('ebcli.containers.compat.commands.version')
     def test_supported_docker_installed_v1_10(self,
                                                        version):
         version.return_value = '1.10.0'
         self.assertTrue(compat.supported_docker_installed())
-    
+
     @patch('ebcli.containers.compat.commands.version')
     def test_supported_docker_installed_v10_0(self,
                                                        version):

@@ -21,6 +21,7 @@ from ..health import term
 from ..health.table import Column, Table
 from ..health.specialtables import RequestTable, StatusTable
 from ..objects.exceptions import NotSupportedError
+from ..objects.solutionstack import SolutionStack
 from ..resources.statics import namespaces, option_names
 
 LOG = minimal_logger(__name__)
@@ -39,7 +40,7 @@ def display_interactive_health(app_name, env_name, refresh,
         poller = DataPoller
         # Create dynamic screen
         screen = Screen()
-        create_health_tables(screen)
+        create_health_tables(screen, env)
     elif env['Tier']['Name'] == 'WebServer':
         poller = TraditionalHealthDataPoller
         screen = TraditionalHealthScreen()
@@ -59,14 +60,14 @@ def display_interactive_health(app_name, env_name, refresh,
         term.return_cursor_to_normal()
 
 
-def create_health_tables(screen):
-    screen.add_table(StatusTable('status', columns=[
-        Column('id', 14, 'InstanceId', 'left'),
+def create_health_tables(screen, env):
+    screen.add_table(StatusTable('health', columns=[
+        Column('instance-id', None, 'InstanceId', 'left'),
         Column('status', 10, 'HealthStatus', 'left', 'status_sort'),
         Column('cause', 60, 'Cause', 'none'),
     ]))
-    screen.add_table(RequestTable('request', columns=[
-        Column('id', 14, 'InstanceId', 'left'),
+    screen.add_table(RequestTable('requests', columns=[
+        Column('instance-id', None, 'InstanceId', 'left'),
         Column('r/sec', 6, 'requests', 'left'),
         Column('%2xx', 6, 'Status2xx', 'right', 'Status2xx_sort'),
         Column('%3xx', 6, 'Status3xx', 'right', 'Status3xx_sort'),
@@ -79,8 +80,9 @@ def create_health_tables(screen):
         Column('p10', 7, 'P10', 'right', 'P10_sort'),
     ]))
     screen.add_table(Table('cpu', columns=[
-        Column('id', 14, 'InstanceId', 'left'),
-        Column('az', 18, 'az', 'left'),
+        Column('instance-id', None, 'InstanceId', 'left'),
+        Column('type', None, 'InstanceType', 'left'),
+        Column('az', None, 'AvailabilityZone', 'left'),
         Column('running', 10, 'running', 'left', 'LaunchedAt'),
         Column('load 1', 7, 'load1', 'right'),
         Column('load 5', 7, 'load5', 'right'),
@@ -90,12 +92,20 @@ def create_health_tables(screen):
         Column('idle%', 6, 'Idle', 'right'),
         Column('iowait%', 9, 'IOWait', 'right'),
     ]))
+    if SolutionStack(env['SolutionStackName']).has_healthd_group_version_2_support():
+        screen.add_table(Table('deployments', columns=[
+            Column('instance-id', None, 'InstanceId', 'left'),
+            Column('status', None, 'DeploymentStatus', 'left'),
+            Column('id', None, 'DeploymentId', 'left'),
+            Column('version', None, 'DeploymentVersion', 'left'),
+            Column('ago', None, 'TimeSinceDeployment', 'left'),
+        ]))
     screen.add_help_table(HelpTable())
 
 
 def create_traditional_health_tables(screen):
     screen.add_table(Table('health', columns=[
-        Column('id', 16, 'id', 'left'),
+        Column('instance-id', 19, 'id', 'left'),
         Column('EC2 Health', 15, 'health', 'left'),
         Column('ELB State', 15, 'state', 'left'),
         Column('ELB description', 40, 'description', 'none'),
