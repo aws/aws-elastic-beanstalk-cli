@@ -271,7 +271,7 @@ prompts = {
     'create.servicerole.required': '2.0+ Platforms require a service role. You can provide one with --service-role option',
     'create.servicerole.nopermissions': 'No permissions to create a role. '
                                         'Create an IAM role called "{}" with appropriate permissions to continue, or specify a role with --service-role.\n'
-                                        'See http://aws.amazon.com/somesite for more info. \nActual error: {}',
+                                        'See http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/concepts-roles.html for more info. \nActual error: {}',
     'general.pressenter': 'Press enter to continue',
     'compose.groupname': 'Please enter the group name to be used'
 }
