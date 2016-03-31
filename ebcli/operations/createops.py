@@ -23,11 +23,20 @@ from ..objects.exceptions import TimeoutError, AlreadyExistsError, \
     NotAuthorizedError, NotSupportedError
 from ..resources.strings import strings, responses, prompts
 from . import commonops
+import json
 
 LOG = minimal_logger(__name__)
 DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
 DEFAULT_SERVICE_ROLE_NAME = 'aws-elasticbeanstalk-service-role'
 
+DEFAULT_ROLE_POLICIES = [
+    'arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier',
+    'arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker',
+    'arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier'
+]
+DEFAULT_SERVICE_ROLE_POLICIES = [
+    'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth'
+]
 
 def make_new_env(env_request, branch_default=False, process_app_version=False,
                  nohang=False, interactive=True, timeout=None):
@@ -155,7 +164,7 @@ def get_default_role():
                ' "sts:AssumeRole","Principal": {"Service": ' \
                '"ec2.amazonaws.com"},"Effect": "Allow","Sid": ""}]}'
     try:
-        iam.create_role(role, document)
+        iam.create_role_with_policy(role, document, DEFAULT_ROLE_POLICIES)
     except AlreadyExistsError:
         pass
     return role
@@ -181,13 +190,11 @@ def create_default_service_role():
     io.log_info('Creating service role {} with default permissions.'
                 .format(DEFAULT_SERVICE_ROLE_NAME))
     trust_document = _get_default_service_trust_document()
-    json_policy = _get_default_service_role_policy()
     role_name = DEFAULT_SERVICE_ROLE_NAME
-    policy_name = 'awsebcli_aws-elasticbeanstalk-service-role_{}'\
-        .format(int(time.time()))
+
     try:
         iam.create_role_with_policy(role_name, trust_document,
-                                    policy_name, json_policy)
+                                    DEFAULT_SERVICE_ROLE_POLICIES)
     except NotAuthorizedError as e:
         # NO permissions to create or do something
         raise NotAuthorizedError(prompts['create.servicerole.nopermissions']
@@ -223,7 +230,9 @@ def resolve_roles(env_request, interactive):
                                      default='')
 
                 if input.strip('"').lower() == 'view':
-                    io.echo(_get_default_service_role_policy())
+                    for policy_arn in DEFAULT_SERVICE_ROLE_POLICIES:
+                        document = iam.get_managed_policy_document(policy_arn)
+                        io.echo(json.dumps(document, indent=4))
                     io.get_input(prompts['general.pressenter'])
 
                 role = create_default_service_role()
@@ -253,35 +262,5 @@ def _get_default_service_trust_document():
                 "sts:ExternalId": "elasticbeanstalk"
             }
         }
-    }]
-}'''
-
-
-def _get_default_service_role_policy():
-    """
-    Just a string representing the service role policy.
-    Includes newlines for pretty printing :)
-    """
-    return \
-'''{
-    "Version": "2012-10-17",
-    "Statement": [{
-        "Effect": "Allow",
-        "Action": [
-            "elasticloadbalancing:DescribeInstanceHealth",
-            "ec2:DescribeInstances",
-            "ec2:DescribeInstanceStatus",
-            "ec2:GetConsoleOutput",
-            "ec2:AssociateAddress",
-            "ec2:DescribeAddresses",
-            "ec2:DescribeSecurityGroups",
-            "sqs:GetQueueAttributes",
-            "sqs:GetQueueUrl",
-            "autoscaling:DescribeAutoScalingGroups",
-            "autoscaling:DescribeAutoScalingInstances",
-            "autoscaling:DescribeScalingActivities",
-            "autoscaling:DescribeNotificationConfigurations"
-        ],
-        "Resource": ["*"]
     }]
 }'''

@@ -62,7 +62,7 @@ def add_role_to_profile(profile, role):
                    RoleName=role)
 
 
-def create_role_with_policy(role_name, trust_document, policy_name, policy):
+def create_role_with_policy(role_name, trust_document, policy_arns):
     """
     This is a higher level function that creates a role, a policy, and attaches
     everything together
@@ -70,9 +70,9 @@ def create_role_with_policy(role_name, trust_document, policy_name, policy):
     :param trust_document: Policy for trusted entities assuming role
     :param policy: User policy that defines allowable actions
     """
-    create_role(role_name, trust_document)
-    arn = create_policy(policy_name, policy)
-    attach_role_policy(role_name, arn)
+    _create_role(role_name, trust_document)
+    for arn in policy_arns:
+        attach_role_policy(role_name, arn)
 
 
 def create_policy(policy_name, policy):
@@ -88,7 +88,7 @@ def attach_role_policy(role_name, policy_arn):
                             PolicyArn=policy_arn)
 
 
-def create_role(role, document):
+def _create_role(role, document):
     _make_api_call('create_role',
                    RoleName=role,
                    AssumeRolePolicyDocument=document)
@@ -106,3 +106,13 @@ def upload_server_certificate(cert_name, cert, private_key, chain=None):
     result = _make_api_call('upload_server_certificate',
                             **kwargs)
     return result['ServerCertificateMetadata']
+
+
+def get_managed_policy_document(arn):
+    policy = _make_api_call('get_policy',
+                            PolicyArn=arn)
+    policy_version = policy['Policy']['DefaultVersionId']
+    details = _make_api_call('get_policy_version',
+                             PolicyArn=arn,
+                             VersionId=policy_version)
+    return details['PolicyVersion']['Document']
