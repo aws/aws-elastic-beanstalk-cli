@@ -1,0 +1,66 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "volumes": [
+    {
+      "name": "php-app",
+      "host": {
+        "sourcePath": "/var/app/current/php-app"
+      }
+    },
+    {
+      "name": "apache",
+      "host": {
+        "sourcePath": "/var/app/current/config"
+      }
+    }
+  ],
+  "localContainerDefinitions": [
+  {
+    "name": "mysql",
+    "image": "mysql:5.6",
+    "essential": true,
+    "portMappings": [
+      {
+        "hostPort": 3306,
+        "containerPort": 3306
+      }
+    ],
+    "environment": [
+      {
+        "name": "MYSQL_ROOT_PASSWORD",
+        "value": "password"
+      },
+      {
+        "name": "MYSQL_DATABASE",
+        "value": "my_db"
+      }
+    ]
+  }
+  ],
+  "containerDefinitions": [
+    {
+      "name": "php-apache",
+      "image": "maestrooo/eb-docker-php7",
+      "essential": true,
+      "memory": 128,
+      "mountPoints": [
+        {
+          "sourceVolume": "php-app",
+          "containerPath": "/var/www/html",
+          "readOnly": true
+        },
+        {
+          "sourceVolume": "apache",
+          "containerPath": "/etc/apache2/sites-enabled",
+          "readOnly": true
+        }
+      ],
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 80
+        }
+      ]
+    }
+  ]
+}

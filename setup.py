@@ -7,17 +7,17 @@ import ebcli
 
 requires = ['pyyaml>=3.11',
             'botocore>=1.0.1',
-            'cement==2.4',
-            'colorama==0.3.3',
-            'pathspec==0.3.3',
+            'cement==2.8.2',
+            'colorama==0.3.7',
+            'pathspec==0.3.4',
             'setuptools >= 20.0',
             ## For docker-compose
             'docopt >= 0.6.1, < 0.7',
-            'requests >= 2.6.1, < 2.7',
+            'requests >= 2.6.1, <= 2.9.1',
             'texttable >= 0.8.1, < 0.9',
             'websocket-client >= 0.11.0, < 1.0',
-            'docker-py >= 1.1.0, < 1.2',
-            'dockerpty >= 0.3.2, < 0.4',
+            'docker-py >= 1.1.0, <= 1.7.2',
+            'dockerpty >= 0.3.2, <= 0.4.1',
             'semantic_version == 2.5.0'
            ]
 
