@@ -7,6 +7,8 @@ Changelog
 ------------------
 - Support new Enhanced Health features
 - Fix bug in "eb health" for basic health environments
+- Fix bug in "eb health" that causes a date parsing error for some locale settings
+- Roles created by the CLI now make use of AWS Managed Policies
 
 ------------------
 3.7.4 (2016-03-10)
