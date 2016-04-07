@@ -13,8 +13,8 @@ Changelog
 ------------------
 3.7.4 (2016-03-10)
 ------------------
-- Fix an issue that prevents "`eb local <http://www.python.org/>`_" subcommands from working with Docker 1.10
-- Fix an issue that causes the EB CLI to crash when deploying multiple modules with `compose environments <http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/ebcli-compose.html/>`_
+- Fix an issue that prevents "`eb local <http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-local.html>`_" subcommands from working with Docker 1.10
+- Fix an issue that causes the EB CLI to crash when deploying multiple modules with `compose environments <http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/ebcli-compose.html>`_
 
 ------------------
 3.7.3 (2016-01-28)
