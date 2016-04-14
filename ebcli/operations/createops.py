@@ -35,7 +35,8 @@ DEFAULT_ROLE_POLICIES = [
     'arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier'
 ]
 DEFAULT_SERVICE_ROLE_POLICIES = [
-    'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth'
+    'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth',
+    'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService'
 ]
 
 def make_new_env(env_request, branch_default=False, process_app_version=False,
@@ -235,9 +236,8 @@ def resolve_roles(env_request, interactive):
                         io.echo(json.dumps(document, indent=4))
                     io.get_input(prompts['general.pressenter'])
 
-                role = create_default_service_role()
-            else:
-                raise NotSupportedError(prompts['create.servicerole.required'])
+            # Create the service role if it does not exist
+            role = create_default_service_role()
 
         env_request.service_role = role
 

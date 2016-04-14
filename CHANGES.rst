@@ -3,6 +3,12 @@ Changelog
 =========
 
 ------------------
+3.7.6 (2016-04-14)
+------------------
+- The Elastic Beanstalk Service role will now also be created during non-interactive environment creates
+- Added the AWSElasticBeanstalkService managed policy to the Elastic Beanstalk Service role
+
+------------------
 3.7.5 (2016-04-01)
 ------------------
 - Support new Enhanced Health features
