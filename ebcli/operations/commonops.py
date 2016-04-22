@@ -639,7 +639,7 @@ def create_envvars_list(var_list, as_option_settings=True):
     options_to_remove = set()
     for pair in var_list:
         ## validate
-        if not re.match('^[\w\\_.:/+@-][^=]*=([\w\\_.:/+@-].*)?$', pair):
+        if not re.match('^[\w\\_.:/+@-][^=]*=.*$', pair):
             raise InvalidOptionsError(strings['setenv.invalidformat'])
 
         try:

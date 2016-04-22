@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You
@@ -196,7 +198,7 @@ class TestCommonOperations(unittest.TestCase):
             'wierd er value': string2})
         self.assertEqual(options_to_remove, set())
 
-    def test_create_envvars_bad_characters(self):
+    def test_create_envvars_not_bad_characters(self):
         strings = [
             '!hello',
             ',hello',
@@ -205,12 +207,9 @@ class TestCommonOperations(unittest.TestCase):
             '=hello',
             '$hello',
             '%hello',
+            '😊'
         ]
         for s in strings:
-            try:
-                options, options_to_remove = commonops.create_envvars_list(
-                    ['foo=' + s])
-                raise Exception('Should have thrown InvalidOptionsError '
-                                'with string={s}'.format(s))
-            except InvalidOptionsError:
-                pass  # expected
+            options, options_to_remove = commonops.create_envvars_list(
+                ['foo=' + s], as_option_settings=False)
+            self.assertEqual(options, {'foo': s})
