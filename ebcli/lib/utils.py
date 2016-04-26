@@ -100,7 +100,7 @@ def print_list_in_columns(lst):
                 except IndexError:
                     pass
 
-            io.echo_and_justify(25, *line)
+            io.echo_and_justify(42, *line)
     else:
         # Dont print in columns if using pipe
         for i in lst:

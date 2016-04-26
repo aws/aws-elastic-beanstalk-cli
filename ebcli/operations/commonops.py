@@ -326,13 +326,13 @@ def get_env_event_string(event, long_format=False):
     date = event.event_date
     if long_format:
         return u'{0} - {1} {2} {3}'.format(
-            environment.rjust(23),
+            environment.rjust(40),
 
             date.strftime("%Y-%m-%d %H:%M:%S").ljust(22),
             severity.ljust(7),
             message)
     else:
-        return u'{0} - {1}: {2}'.format(environment.rjust(23), severity, message)
+        return u'{0} - {1}: {2}'.format(environment.rjust(40), severity, message)
 
 
 def get_all_env_names():

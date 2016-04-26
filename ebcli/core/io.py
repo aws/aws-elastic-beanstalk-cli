@@ -187,11 +187,11 @@ def prompt_for_unique_name(default, unique_list):
 def prompt_for_environment_name(default_name='myEnv',
                                 prompt_text='Enter Environment Name'):
     """ Validate env_name: Spec says:
-     Constraint: Must be from 4 to 23 characters in length.
+     Constraint: Must be from 4 to 40 characters in length.
        The name can contain only letters, numbers, and hyphens.
       It cannot start or end with a hyphen.
     """
-    constraint_pattern = '^[a-z0-9][a-z0-9-]{2,21}[a-z0-9]$'
+    constraint_pattern = '^[a-z0-9][a-z0-9-]{2,38}[a-z0-9]$'
     #  Edit default name to fit standards.
 
     if not re.match(constraint_pattern, default_name):
@@ -199,8 +199,8 @@ def prompt_for_environment_name(default_name='myEnv',
             default_name = 'eb-' + default_name
         default_name = default_name.replace('_', '-')
         default_name = re.sub('[^a-z0-9A-Z-]', '', default_name)
-        if len(default_name) > 23:
-            default_name = default_name[:22]
+        if len(default_name) > 40:
+            default_name = default_name[:39]
         if not re.match('.*[a-zA-Z0-9]$', default_name):  # end correctly
             default_name += '0'
 
@@ -212,7 +212,7 @@ def prompt_for_environment_name(default_name='myEnv',
         if re.match(constraint_pattern, env_name.lower()):
             break
         else:
-            echo('Environment name must be 4 to 23 characters in length. It '
+            echo('Environment name must be 4 to 40 characters in length. It '
                  'can only contain letters, numbers, and hyphens. It can not '
                  'start or end with a hyphen')
 
@@ -238,7 +238,7 @@ def validate_action(output, expected_input):
 
 def prompt_for_cname(default=None):
     # Validate cname: spec says:
-    # Constraint: Must be from 4 to 23 characters in length.
+    # Constraint: Must be from 4 to 40 characters in length.
     # The name can contain only letters, numbers, and hyphens.
     # It cannot start or end with a hyphen.
     while True:

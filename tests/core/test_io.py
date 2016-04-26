@@ -27,7 +27,6 @@ class TestFileOperations(unittest.TestCase):
         invalid_cases = [
             'Inv@lid',
             'sml',
-            'this-name-is-too-long-99',
             'this-name-is-definitely-too-long-like-seriously-who-does-this',
             'bad:char',
             'bad_char',
@@ -56,6 +55,8 @@ class TestFileOperations(unittest.TestCase):
             'ends-with-num1',
             'has0-nums1-23422',
             'this-name-is-just-right',
+            'this-name-is-now-fine-99',
+            '1234567890123456789012345678901234567890',
             'four']
 
         mock_prompt.side_effect = invalid_cases
