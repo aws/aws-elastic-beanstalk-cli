@@ -78,7 +78,14 @@ def delete_objects(bucket, keys):
 
 
 def upload_application_version(bucket, key, file_path):
-    size = os.path.getsize(file_path)
+    try:
+        size = os.path.getsize(file_path)
+    except OSError as err:
+        if err.errno == 2:
+            raise NotFoundError('Application Version does not exist locally ({0}).'
+                                ' Try uploading the Application Version again.'.format(err.filename))
+        raise err
+
     LOG.debug('Upload Application Version. File size = ' + str(size))
     if size > 536870912:
         raise FileTooLargeError('Application version cannot be any '

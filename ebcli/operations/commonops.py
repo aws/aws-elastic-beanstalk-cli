@@ -350,6 +350,25 @@ def get_app_version_labels(app_name):
     return [v['VersionLabel'] for v in app_versions]
 
 
+def get_app_version_s3_location(app_name, version_label):
+    # Check if the application version already exists. If so get the S3 key to fetch.
+    s3_key = None
+    s3_bucket = None
+    app_versions = elasticbeanstalk.get_application_versions(app_name, tuple(version_label,))
+    app_version = {}
+    for v in app_versions:
+        if v['VersionLabel'] == version_label:
+            app_version = v
+            break
+
+    if app_version:
+        s3_bucket = app_version['SourceBundle']['S3Bucket']
+        s3_key = app_version['SourceBundle']['S3Key']
+        io.log_info("Application Version '{0}' exists. Source from S3: {1}/{2}.".format(version_label, s3_bucket, s3_key))
+
+    return s3_bucket, s3_key
+
+
 def prompt_for_solution_stack(module_name=None):
 
     solution_stacks = elasticbeanstalk.get_available_solution_stacks()
@@ -699,20 +718,36 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
         file_name, file_extension = os.path.splitext(artifact)
         file_name = version_label + file_extension
         file_path = artifact
+        s3_key = None
+        s3_bucket = None
     else:
-        # Create zip file
-        file_name, file_path = _zip_up_project(
-            app_name, version_label, source_control, staged=staged)
+        # Check if the app version already exists
+        s3_bucket, s3_key = get_app_version_s3_location(app_name, version_label)
+
+        # Create zip file if the application version doesn't exist
+        if s3_bucket is None and s3_key is None:
+            file_name, file_path = _zip_up_project(
+                version_label, source_control, staged=staged)
+        else:
+            file_name = None
+            file_path = None
 
     # Get s3 location
-    bucket = elasticbeanstalk.get_storage_location()
-    # upload to s3
-    key = app_name + '/' + file_name
+    bucket = elasticbeanstalk.get_storage_location() if s3_bucket is None else s3_bucket
+    key = app_name + '/' + file_name if s3_key is None else s3_key
 
+    # Upload to S3 if needed
     try:
         s3.get_object_info(bucket, key)
         io.log_info('S3 Object already exists. Skipping upload.')
     except NotFoundError:
+        # If we got the bucket/key from the app version describe call and it doesn't exist then
+        #   the application version must have been deleted out-of-band and we should throw an exception
+        if file_name is None and file_path is None:
+            raise NotFoundError('Application Version does not exist in the S3 bucket.'
+                                ' Try uploading the Application Version again.')
+
+        # Otherwise attempt to upload the local application version
         io.log_info('Uploading archive to s3 location: ' + key)
         s3.upload_application_version(bucket, key, file_path)
 
@@ -752,14 +787,13 @@ def _create_application_version(app_name, version_label, description,
                 raise
 
 
-def _zip_up_project(app_name, version_label, source_control, staged=False):
+def _zip_up_project(version_label, source_control, staged=False):
     # Create zip file
     file_name = version_label + '.zip'
     file_path = fileoperations.get_zip_location(file_name)
+
     # Check to see if file already exists from previous attempt
-    if not fileoperations.file_exists(file_path) and \
-                            version_label not in \
-                            get_app_version_labels(app_name):
+    if not fileoperations.file_exists(file_path):
         # If it doesn't already exist, create it
         io.echo(strings['appversion.create'].replace('{version}',
                                                      version_label))
