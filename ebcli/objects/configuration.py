@@ -171,6 +171,9 @@ def ignore_default_resource_names(api_model):
              'AWSEBLoadBalancer',
              'AWSEBRDSDatabase',
              'AWSEBSecurityGroup',
+             'AWSEBV2LoadBalancer'
+             'AWSEBV2LoadBalancerListener',
+             'AWSEBV2LoadBalancerTargetGroup'
              ]:
             del setting['ResourceName']
 
