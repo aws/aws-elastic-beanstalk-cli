@@ -3,6 +3,13 @@ Changelog
 =========
 
 ------------------
+3.7.7 (2016-04-14)
+------------------
+- Added "ap-south-1" to region list
+- Checking for existing app versions in application, local or in their account, before creating one when label is specified.
+- Updating environment name length constraints to 40 char max.
+
+------------------
 3.7.6 (2016-04-14)
 ------------------
 - The Elastic Beanstalk Service role will now also be created during non-interactive environment creates
