@@ -19,6 +19,7 @@ import os
 import botocore
 import botocore.session
 import botocore.exceptions
+from botocore.config import Config
 from botocore.loaders import Loader
 from cement.utils.misc import minimal_logger
 
@@ -139,7 +140,8 @@ def _get_client(service_name):
                                        # region_name=_region_name,
                                        aws_access_key_id=aws_access_key_id,
                                        aws_secret_access_key=aws_secret_key,
-                                       verify=_verify_ssl)
+                                       verify=_verify_ssl,
+                                       config=Config(signature_version='s3v4'))
 
     except botocore.exceptions.ProfileNotFound as e:
         raise InvalidProfileError(e)
