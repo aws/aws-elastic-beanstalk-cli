@@ -37,7 +37,7 @@ class SetEnvController(AbstractBaseController):
         var_list = self.app.pargs.varKey
         timeout = self.app.pargs.timeout
 
-        envvarops.setenv(app_name, env_name, var_list, timeout=None)
+        envvarops.setenv(app_name, env_name, var_list, timeout)
 
     def complete_command(self, commands):
         self.complete_region(commands)
