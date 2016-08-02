@@ -26,7 +26,8 @@ from . import commonops
 LOG = minimal_logger(__name__)
 
 
-def ssh_into_instance(instance_id, keep_open=False, force_open=False):
+def ssh_into_instance(instance_id, keep_open=False, force_open=False,
+                      custom_ssh=False, command=False):
     instance = ec2.describe_instance(instance_id)
     try:
         keypair_name = instance['KeyName']
@@ -69,11 +70,22 @@ def ssh_into_instance(instance_id, keep_open=False, force_open=False):
     # do ssh
     try:
         ident_file = _get_ssh_file(keypair_name)
-        returncode = subprocess.call(['ssh', '-i', ident_file,
-                                      user + '@' + ip])
+
+        if custom_ssh:
+            custom_ssh = custom_ssh.split()
+        else:
+            custom_ssh = ['ssh', '-i', ident_file]
+
+        custom_ssh.extend([user + '@' + ip])
+
+        if command:
+            custom_ssh.extend(command.split())
+
+        io.echo('INFO: Running ' + ' '.join(custom_ssh))
+        returncode = subprocess.call(custom_ssh)
         if returncode != 0:
-            LOG.debug('ssh returned exitcode: ' + str(returncode))
-            raise CommandError('An error occurred while running ssh.')
+            LOG.debug(custom_ssh[0] + ' returned exitcode: ' + str(returncode))
+            raise CommandError('An error occurred while running: ' + custom_ssh[0] + '.')
     except OSError:
         CommandError(strings['ssh.notpresent'])
     finally:

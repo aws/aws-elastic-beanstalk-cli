@@ -27,6 +27,8 @@ class SSHController(AbstractBaseController):
         arguments = AbstractBaseController.Meta.arguments + [
             (['-n', '--number'], dict(help=flag_text['ssh.number'], type=int)),
             (['-i', '--instance'], dict(help=flag_text['ssh.instance'])),
+            (['-c', '--command'], dict(help=flag_text['ssh.command'], type=str)),
+            (['-e', '--custom'], dict(help=flag_text['ssh.custom'], type=str)),
             (['-o', '--keep_open'], dict(
                 action='store_true', help=flag_text['ssh.keepopen'])),
             (['--force'], dict(
@@ -40,6 +42,8 @@ class SSHController(AbstractBaseController):
         number = self.app.pargs.number
         env_name = self.get_env_name()
         instance = self.app.pargs.instance
+        cmd = self.app.pargs.command
+        custom_ssh = self.app.pargs.custom
         keep_open = self.app.pargs.keep_open
         force = self.app.pargs.force
         setup = self.app.pargs.setup
@@ -71,7 +75,7 @@ class SSHController(AbstractBaseController):
 
         try:
             sshops.ssh_into_instance(instance, keep_open=keep_open,
-                                     force_open=force)
+                                     force_open=force, custom_ssh=custom_ssh, command=cmd)
         except NoKeypairError:
             io.log_error(prompts['ssh.nokey'])
 

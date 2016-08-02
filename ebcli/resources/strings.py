@@ -373,6 +373,8 @@ flag_text = {
     'ssh.number': 'index of instance in list',
     'ssh.instance': 'instance id',
     'ssh.keepopen': 'keep port 22 open',
+    'ssh.command': 'execute COMMAND on the remote host instead of a login shell',
+    'ssh.custom': 'custom ssh command to use',
     'ssh.force': 'force port 22 open to 0.0.0.0',
     'ssh.setup': 'setup SSH for the environment',
 

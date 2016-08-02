@@ -5,8 +5,10 @@ Changelog
 ------------------
 3.7.8 (2016-08-15)
 ------------------
-- Fixed 'eb setenv --timeout' issue
+- Fixed 'eb setenv --timeout' problem
 - Updated 'eb config' inline doc to be clearer on functionality
+- Fixed 'eb deploy --nohang' problem
+- Added commands '--command' and '--custom' to 'eb ssh'
 
 ------------------
 3.7.7 (2016-06-27)
