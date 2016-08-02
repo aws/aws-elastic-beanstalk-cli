@@ -72,7 +72,7 @@ strings = {
     'list.info': 'Lists all environments.',
     'terminate.info': 'Terminates the environment.',
     'terminate.epilog': 'This command terminates the environment. To terminate the application and everything in it, use the "--all" option.',
-    'config.info': 'Edits the environment configuration settings or manages saved configurations.',
+    'config.info': 'Edits the environment configuration settings or manages saved configurations. Specifying no command will deploy the specified configuration to the current environment.',
     'ssh.info': 'Opens the SSH client to connect to an instance.',
     'printenv.info': 'Shows the environment variables.',
     'local.info': 'Runs commands on your local machine.',

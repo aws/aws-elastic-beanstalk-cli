@@ -3,7 +3,13 @@ Changelog
 =========
 
 ------------------
-3.7.7 (2016-04-14)
+3.7.8 (2016-08-15)
+------------------
+- Fixed 'eb setenv --timeout' issue
+- Updated 'eb config' inline doc to be clearer on functionality
+
+------------------
+3.7.7 (2016-06-27)
 ------------------
 - Added "ap-south-1" to region list
 - Checking for existing app versions in application, local or in their account, before creating one when label is specified.
