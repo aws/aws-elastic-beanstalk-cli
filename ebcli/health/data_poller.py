@@ -26,9 +26,10 @@ from copy import copy
 from cement.utils.misc import minimal_logger
 from botocore.compat import six
 
-from ..lib import elasticbeanstalk, utils, elb, ec2
+from ..lib import elasticbeanstalk, utils, elb, elbv2, ec2
 from ..lib.aws import InvalidParameterValueError
-from ..resources.strings import responses
+from ..resources.strings import responses, strings
+from ..resources.statics import elb_names
 Queue = six.moves.queue.Queue
 
 LOG = minimal_logger(__name__)
@@ -339,15 +340,35 @@ class TraditionalHealthDataPoller(DataPoller):
         load_balancers = env_dict.get('LoadBalancers', None)
         if load_balancers and len(load_balancers) > 0:
             load_balancer_name = env_dict.get('LoadBalancers')[0].get('Name')
-            instance_states = elb.get_health_of_instances(load_balancer_name)
+            if elb.version(load_balancer_name) == elb_names.APPLICATION_VERSION:
+                target_groups = [x['PhysicalResourceId'] for x in env_dict['Resources']
+                                 if 'AWS::ElasticLoadBalancingV2::TargetGroup' == x['Type'] ]
+                instance_states = elbv2.get_instance_healths_from_target_groups(target_groups)
+            else:
+                instance_states = elb.get_health_of_instances(load_balancer_name)
         else:
             instance_states = []
         instance_ids = [i['Id'] for i in
                      env_dict.get('Instances', [])]
 
         total_instances = len(instance_ids)
-        total_in_service = len([i for i in instance_states
-                                if i['State'] == 'InService'])
+        if elb.version(load_balancer_name) == elb_names.APPLICATION_VERSION:
+            in_service = []
+            for k in instance_states:
+                all_healthy = True
+                for target_group_state in instance_states[k]:
+                    if elb_names.HEALTHY_STATE != target_group_state['State']:
+                        all_healthy = False
+                        break
+                if all_healthy:
+                    in_service.append(k)
+
+            total_in_service = len(in_service)
+
+        else:
+            total_in_service = len([i for i in instance_states
+                                    if i['State'] == 'InService'])
+
         env_data = {'EnvironmentName': env.name,
                     'Color': env.health,
                     'Status': env.status,
@@ -358,17 +379,40 @@ class TraditionalHealthDataPoller(DataPoller):
         data = {'environment': env_data, 'instances': []}
 
         # Get Instance Health
-        for i in instance_states:
-            instance = {'id': i['InstanceId'], 'state': i['State'],
-                        'description': i['Description']}
-            ec2_health = ec2.describe_instance(instance['id'])
-            instance['health'] = ec2_health['State']['Name']
-            data['instances'].append(instance)
+        if elb.version(load_balancer_name) == elb_names.APPLICATION_VERSION:
+            for k in instance_states:
+                healthy_groups = 0
+                total_groups = 0
+                for target_group_description in instance_states[k]:
+                    total_groups += 1
+                    if 'healthy' == target_group_description['State']:
+                        healthy_groups += 1
+
+                state = elb_names.UNHEALTHY_STATE
+                if total_groups == healthy_groups:
+                    state = elb_names.HEALTHY_STATE
+                description = strings['instance.processes.health']
+                description = description.replace('{healthy}', str(healthy_groups))
+                description = description.replace('{total}', str(total_groups))
+
+                instance = {'id': k, 'state': state,
+                            'description': description}
+                ec2_health = ec2.describe_instance(instance['id'])
+                instance['health'] = ec2_health['State']['Name']
+                data['instances'].append(instance)
+
+        else:
+            for i in instance_states:
+                instance = {'id': i['InstanceId'], 'state': i['State'],
+                            'description': i['Description']}
+                ec2_health = ec2.describe_instance(instance['id'])
+                instance['health'] = ec2_health['State']['Name']
+                data['instances'].append(instance)
 
         # Get Health for instances not in Load Balancer yet
         for i in instance_ids:
             instance = {'id': i}
-            if i not in [x['InstanceId'] for x in instance_states]:
+            if i not in [x['id'] for x in data['instances']]:
                 instance['description'] = 'N/A (Not registered ' \
                                           'with Load Balancer)'
                 instance['state'] = 'n/a'

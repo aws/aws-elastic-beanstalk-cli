@@ -41,6 +41,7 @@ class RequestTable(Table):
 
 
 class StatusTable(RequestTable):
+
     def __init__(self, name, columns=None, screen=None):
         super(StatusTable, self).__init__(name, columns, screen)
         self.header_size = 3
@@ -49,11 +50,17 @@ class StatusTable(RequestTable):
         data = self.expand_rows(table_data)
         super(StatusTable, self).draw(rows, data)
 
+    CAUSE_SCROLL_FACTOR = 5
     def get_column_data(self, data, column):
         if data.get('Copy', False) and column.key != 'Cause':
             d = ' '
         else:
             d = str(data.get(column.key, '-'))
+
+        if column.key == 'Cause'\
+            and self.screen.horizontal_offset > self.screen.max_columns:
+            cause_scroll = (self.screen.horizontal_offset - self.screen.max_columns) * StatusTable.CAUSE_SCROLL_FACTOR
+            d = d[cause_scroll:]
 
         c_data = justify_and_trim(
             d,
@@ -87,6 +94,3 @@ class StatusTable(RequestTable):
                 instance_copy['Copy'] = True
                 new_data.append(instance_copy)
         return new_data
-
-
-

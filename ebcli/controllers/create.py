@@ -61,6 +61,7 @@ class CreateController(AbstractBaseController):
             (['--tags'], dict(help=flag_text['create.tags'])),
             (['--envvars'], dict(help=flag_text['create.envvars'])),
             (['--cfg'], dict(help=flag_text['create.config'])),
+            (['--elb-type'], dict(help=flag_text['create.elb_type'])),
             (['-db', '--database'], dict(
                 action="store_true", help=flag_text['create.database'])),
             ## Add addition hidden db commands
@@ -121,7 +122,8 @@ class CreateController(AbstractBaseController):
         scale = self.app.pargs.scale
         timeout = self.app.pargs.timeout
         cfg = self.app.pargs.cfg
-        flag = False if env_name else True
+        elb_type = self.app.pargs.elb_type
+        interactive = False if env_name else True
 
         provided_env_name = env_name is not None
 
@@ -207,6 +209,8 @@ class CreateController(AbstractBaseController):
         if not key_name:
             key_name = commonops.get_default_keyname()
 
+        if not elb_type and interactive:
+            elb_type = get_elb_type()
 
         database = self.form_database_object()
         vpc = self.form_vpc_object()
@@ -231,15 +235,17 @@ class CreateController(AbstractBaseController):
             tags=tags,
             scale=scale,
             database=database,
-            vpc=vpc)
+            vpc=vpc,
+            elb_type=elb_type)
 
         env_request.option_settings += envvars
+
         process_app_version = fileoperations.env_yaml_exists()
         createops.make_new_env(env_request,
                                branch_default=branch_default,
                                process_app_version=process_app_version,
                                nohang=nohang,
-                               interactive=flag,
+                               interactive=interactive,
                                timeout=timeout)
 
     def complete_command(self, commands):
@@ -401,6 +407,15 @@ def get_cname(env_name):
         else:
             break
     return cname
+
+def get_elb_type():
+    io.echo()
+    io.echo('Select an ELB type')
+    result = utils.prompt_for_item_in_list(["classic", "application"], default=1)
+    elb_type = result
+
+    return elb_type
+
 
 
 def get_and_validate_tags(tags):

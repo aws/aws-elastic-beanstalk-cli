@@ -120,7 +120,7 @@ strings = {
     'exit.noregion': 'The EB CLI cannot find a default region. Run "eb init" or use a specific region by including the "--region" option with the command.',
     # Typical response when an environment is in pending state
     'exit.invalidstate': 'The operation cannot be completed at this time due to a pending operation. Try again later.',
-    'branch.noenv': 'This branch does not have a default environment. You must either specify an environment by typing ' 
+    'branch.noenv': 'This branch does not have a default environment. You must either specify an environment by typing '
                     '"eb {cmd} my-env-name" or set a default environment by typing "eb use my-env-name".',
     'ssh.notpresent': 'SSH is not installed. You must install SSH before continuing.',
     'ssh.filenotfound': 'The EB CLI cannot find your SSH key file for keyname "{key-name}".'
@@ -200,7 +200,8 @@ strings = {
     'compose.novalidmodules': 'No valid modules were found. No environments will be created.',
     'appversion.processfailed': 'Pre-processing of application version {app_version} has failed.',
     'appversion.cannotdeploy': 'Some application versions failed to process. Unable to continue deployment.',
-    'appversion.processtimeout': 'All application versions have not reached a "Processed" state. Unable to continue with deployment.'
+    'appversion.processtimeout': 'All application versions have not reached a "Processed" state. Unable to continue with deployment.',
+    'instance.processes.health': '{healthy}/{total} processes healthy.'
 }
 
 prompts = {
@@ -322,6 +323,7 @@ flag_text = {
     'create.config': 'saved configuration name',
     'create.group': 'group suffix',
     'create.modules': 'a list of modules',
+    'create.elb_type': 'elb type',
 
     # Deploy
     'deploy.env': 'environment name',
@@ -428,6 +430,7 @@ responses = {
     'env.terminated': 'terminateEnvironment completed successfully.',
     'env.invalidstate': 'Environment named {env-name} is in an invalid state for this operation. Must be Ready.',
     'loadbalancer.notfound': 'There is no ACTIVE Load Balancer named',
+    'loadbalancer.targetgroup.notfound': 'Target group \'{tgarn}\' not found',
     'ec2.sshalreadyopen': 'the specified rule "peer: 0.0.0.0/0, TCP, from port: 22, to port: 22,',
     'swap.success': 'Completed swapping CNAMEs for environments',
     'cfg.nameexists': 'Configuration Template {name} already exists.',

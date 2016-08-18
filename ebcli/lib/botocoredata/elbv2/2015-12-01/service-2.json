@@ -1,0 +1,3398 @@
+{
+  "version":"2.0",
+  "metadata":{
+    "apiVersion":"2015-12-01",
+    "endpointPrefix":"elasticloadbalancing",
+    "serviceFullName":"Elastic Load Balancing",
+    "signatureVersion":"v4",
+    "signingName":"elasticloadbalancing",
+    "xmlNamespace":"http://elasticloadbalancing.amazonaws.com/doc/2015-12-01/",
+    "protocol":"query"
+  },
+  "documentation":"<fullname>Elastic Load Balancing</fullname> <p>A load balancer distributes incoming traffic across targets, such as your EC2 instances. This enables you to increase the availability of your application. The load balancer also monitors the health of its registered targets and ensures that it routes traffic only to healthy targets. You configure your load balancer to accept incoming traffic by specifying one or more listeners, which are configured with a protocol and port number for connections from clients to the load balancer and a protocol and port number for connections from the load balancer to the targets.</p> <p>Elastic Load Balancing supports two types of load balancers: standard and application. The application load balancers supersede and are incompatible with the standard load balancers.</p> <p>To get started with an application load balancer, complete the following tasks:</p> <ol> <li><p>Create a load balancer using <a>CreateLoadBalancer</a>.</p></li> <li><p>Create a target group using <a>CreateTargetGroup</a>.</p></li> <li><p>Register targets for the target group using <a>RegisterTargets</a>.</p></li> <li><p>Create one or more listeners for your load balancer using <a>CreateListener</a>.</p></li> <li><p>(Optional) Create one or more rules for content routing based on URL using <a>CreateRule</a>.</p></li> </ol> <p>To delete an application load balancer and its related resources, complete the following tasks:</p> <ol> <li><p>Delete the load balancer using <a>DeleteLoadBalancer</a>.</p></li> <li><p>Delete the target group using <a>DeleteTargetGroup</a>.</p></li> </ol> <p>All Elastic Load Balancing operations are idempotent, which means that they complete at most one time. If you repeat an operation, it succeeds.</p>",
+  "operations":{
+    "AddTags":{
+      "name":"AddTags",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"AddTagsInput",
+        "documentation":"<p>Contains the parameters for AddTags.</p>"
+      },
+      "output":{
+        "shape":"AddTagsOutput",
+        "documentation":"<p>Contains the output of AddTags.</p>",
+        "resultWrapper":"AddTagsResult"
+      },
+      "errors":[
+        {
+          "shape":"DuplicateTagKeysException",
+          "error":{
+            "code":"DuplicateTagKeys",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>A tag key was specified more than once.</p>"
+        },
+        {
+          "shape":"TooManyTagsException",
+          "error":{
+            "code":"TooManyTags",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of tags per load balancer.</p>"
+        },
+        {
+          "shape":"LoadBalancerNotFoundException",
+          "error":{
+            "code":"LoadBalancerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified load balancer does not exist.</p>"
+        },
+        {
+          "shape":"TargetGroupNotFoundException",
+          "error":{
+            "code":"TargetGroupNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target group does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Adds the specified tags to the specified resource. You can tag your application load balancers and your target groups.</p> <p>Each tag consists of a key and an optional value. If a resource already has a tag with the same key, <code>AddTags</code> updates its value.</p> <p>To list the current tags for your resources, use <a>DescribeTags</a>. To remove tags from your resources, use <a>RemoveTags</a>.</p>"
+    },
+    "CreateListener":{
+      "name":"CreateListener",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"CreateListenerInput",
+        "documentation":"<p>Contains the parameters for CreateListener.</p>"
+      },
+      "output":{
+        "shape":"CreateListenerOutput",
+        "documentation":"<p>Contains the output of CreateListener.</p>",
+        "resultWrapper":"CreateListenerResult"
+      },
+      "errors":[
+        {
+          "shape":"DuplicateListenerException",
+          "error":{
+            "code":"DuplicateListener",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>A listener with the specified port already exists.</p>"
+        },
+        {
+          "shape":"TooManyListenersException",
+          "error":{
+            "code":"TooManyListeners",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of listeners per load balancer.</p>"
+        },
+        {
+          "shape":"TooManyCertificatesException",
+          "error":{
+            "code":"TooManyCertificates",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of certificates per listener.</p>"
+        },
+        {
+          "shape":"LoadBalancerNotFoundException",
+          "error":{
+            "code":"LoadBalancerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified load balancer does not exist.</p>"
+        },
+        {
+          "shape":"TargetGroupNotFoundException",
+          "error":{
+            "code":"TargetGroupNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target group does not exist.</p>"
+        },
+        {
+          "shape":"TargetGroupAssociationLimitException",
+          "error":{
+            "code":"TargetGroupAssociationLimit",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of load balancers per target group.</p>"
+        },
+        {
+          "shape":"InvalidConfigurationRequestException",
+          "error":{
+            "code":"InvalidConfigurationRequest",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The requested configuration is not valid.</p>"
+        },
+        {
+          "shape":"IncompatibleProtocolsException",
+          "error":{
+            "code":"IncompatibleProtocols",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified configuration is not valid with this protocol.</p>"
+        },
+        {
+          "shape":"SSLPolicyNotFoundException",
+          "error":{
+            "code":"SSLPolicyNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified SSL policy does not exist.</p>"
+        },
+        {
+          "shape":"CertificateNotFoundException",
+          "error":{
+            "code":"CertificateNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified certificate does not exist.</p>"
+        },
+        {
+          "shape":"UnsupportedProtocolException",
+          "error":{
+            "code":"UnsupportedProtocol",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified protocol is not supported.</p>"
+        }
+      ],
+      "documentation":"<p>Creates a listener for the specified application load balancer.</p> <p>To update a listener, use <a>ModifyListener</a>. When you are finished with a listener, you can delete it using <a>DeleteListener</a>. If you are finished with both the listener and the load balancer, you can delete them both using <a>DeleteLoadBalancer</a>.</p>"
+    },
+    "CreateLoadBalancer":{
+      "name":"CreateLoadBalancer",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"CreateLoadBalancerInput",
+        "documentation":"<p>Contains the parameters for CreateLoadBalancer.</p>"
+      },
+      "output":{
+        "shape":"CreateLoadBalancerOutput",
+        "documentation":"<p>Contains the output of CreateLoadBalancer.</p>",
+        "resultWrapper":"CreateLoadBalancerResult"
+      },
+      "errors":[
+        {
+          "shape":"DuplicateLoadBalancerNameException",
+          "error":{
+            "code":"DuplicateLoadBalancerName",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>A load balancer with the specified name already exists for this account.</p>"
+        },
+        {
+          "shape":"TooManyLoadBalancersException",
+          "error":{
+            "code":"TooManyLoadBalancers",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of load balancers for your AWS account.</p>"
+        },
+        {
+          "shape":"InvalidConfigurationRequestException",
+          "error":{
+            "code":"InvalidConfigurationRequest",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The requested configuration is not valid.</p>"
+        },
+        {
+          "shape":"SubnetNotFoundException",
+          "error":{
+            "code":"SubnetNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified subnet does not exist.</p>"
+        },
+        {
+          "shape":"InvalidSubnetException",
+          "error":{
+            "code":"InvalidSubnet",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified subnet is out of available addresses.</p>"
+        },
+        {
+          "shape":"InvalidSecurityGroupException",
+          "error":{
+            "code":"InvalidSecurityGroup",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified security group does not exist.</p>"
+        },
+        {
+          "shape":"InvalidSchemeException",
+          "error":{
+            "code":"InvalidScheme",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The requested scheme is not valid.</p>"
+        },
+        {
+          "shape":"TooManyTagsException",
+          "error":{
+            "code":"TooManyTags",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of tags per load balancer.</p>"
+        },
+        {
+          "shape":"DuplicateTagKeysException",
+          "error":{
+            "code":"DuplicateTagKeys",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>A tag key was specified more than once.</p>"
+        }
+      ],
+      "documentation":"<p>Creates an application load balancer.</p> <p>To create listeners for your load balancer, use <a>CreateListener</a>. You can add security groups, subnets, and tags when you create your load balancer, or you can add them later using <a>SetSecurityGroups</a>, <a>SetSubnets</a>, and <a>AddTags</a>.</p> <p>To describe your current load balancers, see <a>DescribeLoadBalancers</a>. When you are finished with a load balancer, you can delete it using <a>DeleteLoadBalancer</a>.</p>"
+    },
+    "CreateRule":{
+      "name":"CreateRule",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"CreateRuleInput",
+        "documentation":"<p>Contains the parameters for CreateRule.</p>"
+      },
+      "output":{
+        "shape":"CreateRuleOutput",
+        "documentation":"<p>Contains the output of CreateRule.</p>",
+        "resultWrapper":"CreateRuleResult"
+      },
+      "errors":[
+        {
+          "shape":"PriorityInUseException",
+          "error":{
+            "code":"PriorityInUse",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified priority is in use.</p>"
+        },
+        {
+          "shape":"TooManyTargetGroupsException",
+          "error":{
+            "code":"TooManyTargetGroups",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of target groups for your AWS account.</p>"
+        },
+        {
+          "shape":"TooManyRulesException",
+          "error":{
+            "code":"TooManyRules",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of rules per load balancer.</p>"
+        },
+        {
+          "shape":"TargetGroupAssociationLimitException",
+          "error":{
+            "code":"TargetGroupAssociationLimit",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of load balancers per target group.</p>"
+        },
+        {
+          "shape":"ListenerNotFoundException",
+          "error":{
+            "code":"ListenerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified listener does not exist.</p>"
+        },
+        {
+          "shape":"TargetGroupNotFoundException",
+          "error":{
+            "code":"TargetGroupNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target group does not exist.</p>"
+        },
+        {
+          "shape":"InvalidConfigurationRequestException",
+          "error":{
+            "code":"InvalidConfigurationRequest",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The requested configuration is not valid.</p>"
+        }
+      ],
+      "documentation":"<p>Creates a rule for the specified listener.</p> <p>A rule consists conditions and actions. Rules are evaluated in priority order, from the lowest value to the highest value. When the conditions for a rule are met, the specified actions are taken. If no rule's conditions are met, the default actions for the listener are taken.</p> <p>To view your current rules, use <a>DescribeRules</a>. To update a rule, use <a>ModifyRule</a>. To set the priorities of your rules, use <a>SetRulePriorities</a>. To delete a rule, use <a>DeleteRule</a>.</p>"
+    },
+    "CreateTargetGroup":{
+      "name":"CreateTargetGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"CreateTargetGroupInput",
+        "documentation":"<p>Contains the parameters for CreateTargetGroup.</p>"
+      },
+      "output":{
+        "shape":"CreateTargetGroupOutput",
+        "documentation":"<p>Contains the output of CreateTargetGroup.</p>",
+        "resultWrapper":"CreateTargetGroupResult"
+      },
+      "errors":[
+        {
+          "shape":"DuplicateTargetGroupNameException",
+          "error":{
+            "code":"DuplicateTargetGroupName",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>A target group with the specified name already exists.</p>"
+        },
+        {
+          "shape":"TooManyTargetGroupsException",
+          "error":{
+            "code":"TooManyTargetGroups",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of target groups for your AWS account.</p>"
+        }
+      ],
+      "documentation":"<p>Creates a target group.</p> <p>To register targets with the target group, use <a>RegisterTargets</a>. To update the health check for the target group, use <a>ModifyTargetGroup</a>. To monitor the health of targets in the target group, use <a>DescribeTargetHealth</a>.</p> <p>To route traffic to the targets in a target group, specify the target group in an action using <a>CreateListener</a> or <a>CreateRule</a>.</p> <p>To delete a target group, use <a>DeleteTargetGroup</a>.</p>"
+    },
+    "DeleteListener":{
+      "name":"DeleteListener",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DeleteListenerInput",
+        "documentation":"<p>Contains the parameters for DeleteListener.</p>"
+      },
+      "output":{
+        "shape":"DeleteListenerOutput",
+        "documentation":"<p>Contains the output of DeleteListener.</p>",
+        "resultWrapper":"DeleteListenerResult"
+      },
+      "errors":[
+        {
+          "shape":"ListenerNotFoundException",
+          "error":{
+            "code":"ListenerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified listener does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Deletes the specified listener.</p> <p>Alternatively, your listener is deleted when you delete the load balancer it is attached to using <a>DeleteLoadBalancer</a>.</p>"
+    },
+    "DeleteLoadBalancer":{
+      "name":"DeleteLoadBalancer",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DeleteLoadBalancerInput",
+        "documentation":"<p>Contains the parameters for DeleteLoadBalancer.</p>"
+      },
+      "output":{
+        "shape":"DeleteLoadBalancerOutput",
+        "documentation":"<p>Contains the output of DeleteLoadBalancer.</p>",
+        "resultWrapper":"DeleteLoadBalancerResult"
+      },
+      "errors":[
+        {
+          "shape":"LoadBalancerNotFoundException",
+          "error":{
+            "code":"LoadBalancerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified load balancer does not exist.</p>"
+        },
+        {
+          "shape":"OperationNotPermittedException",
+          "error":{
+            "code":"OperationNotPermitted",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>This operation is not allowed.</p>"
+        }
+      ],
+      "documentation":"<p>Deletes the specified load balancer and its attached listeners.</p> <p>You can't delete a load balancer if deletion protection is enabled. If the load balancer does not exist or has already been deleted, the call succeeds.</p> <p>Deleting a load balancer does not affect its registered targets. For example, your EC2 instances continue to run. If you no longer need these EC2 instances, you can stop or terminate them.</p>"
+    },
+    "DeleteRule":{
+      "name":"DeleteRule",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DeleteRuleInput",
+        "documentation":"<p>Contains the parameters for DeleteRule.</p>"
+      },
+      "output":{
+        "shape":"DeleteRuleOutput",
+        "documentation":"<p>Contains the output of DeleteRule.</p>",
+        "resultWrapper":"DeleteRuleResult"
+      },
+      "errors":[
+        {
+          "shape":"RuleNotFoundException",
+          "error":{
+            "code":"RuleNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified rule does not exist.</p>"
+        },
+        {
+          "shape":"OperationNotPermittedException",
+          "error":{
+            "code":"OperationNotPermitted",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>This operation is not allowed.</p>"
+        }
+      ],
+      "documentation":"<p>Deletes the specified rule.</p>"
+    },
+    "DeleteTargetGroup":{
+      "name":"DeleteTargetGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DeleteTargetGroupInput",
+        "documentation":"<p>Contains the parameters for DeleteTargetGroup.</p>"
+      },
+      "output":{
+        "shape":"DeleteTargetGroupOutput",
+        "documentation":"<p>Contains the output of DeleteTargetGroup.</p>",
+        "resultWrapper":"DeleteTargetGroupResult"
+      },
+      "errors":[
+        {
+          "shape":"ResourceInUseException",
+          "error":{
+            "code":"ResourceInUse",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>A specified resource is in use.</p>"
+        }
+      ],
+      "documentation":"<p>Deletes the specified target group.</p> <p>You can delete a target group if it is not referenced by any actions. Deleting a target group also deletes any associated health checks.</p>"
+    },
+    "DeregisterTargets":{
+      "name":"DeregisterTargets",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DeregisterTargetsInput",
+        "documentation":"<p>Contains the parameters for DeregisterTargets.</p>"
+      },
+      "output":{
+        "shape":"DeregisterTargetsOutput",
+        "documentation":"<p>Contains the output of DeregisterTargets.</p>",
+        "resultWrapper":"DeregisterTargetsResult"
+      },
+      "errors":[
+        {
+          "shape":"TargetGroupNotFoundException",
+          "error":{
+            "code":"TargetGroupNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target group does not exist.</p>"
+        },
+        {
+          "shape":"InvalidTargetException",
+          "error":{
+            "code":"InvalidTarget",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Deregisters the specified targets from the specified target group. After the targets are deregistered, they no longer receive traffic from the load balancer.</p>"
+    },
+    "DescribeListeners":{
+      "name":"DescribeListeners",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DescribeListenersInput",
+        "documentation":"<p>Contains the parameters for DescribeListeners.</p>"
+      },
+      "output":{
+        "shape":"DescribeListenersOutput",
+        "documentation":"<p>Contains the output of DescribeListeners.</p>",
+        "resultWrapper":"DescribeListenersResult"
+      },
+      "errors":[
+        {
+          "shape":"ListenerNotFoundException",
+          "error":{
+            "code":"ListenerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified listener does not exist.</p>"
+        },
+        {
+          "shape":"LoadBalancerNotFoundException",
+          "error":{
+            "code":"LoadBalancerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified load balancer does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Describes the specified listeners or the listeners for the specified load balancer. You must specify either a load balancer or one or more listeners.</p>"
+    },
+    "DescribeLoadBalancerAttributes":{
+      "name":"DescribeLoadBalancerAttributes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DescribeLoadBalancerAttributesInput",
+        "documentation":"<p>Contains the parameters for DescribeLoadBalancerAttributes.</p>"
+      },
+      "output":{
+        "shape":"DescribeLoadBalancerAttributesOutput",
+        "documentation":"<p>Contains the output of DescribeLoadBalancerAttributes.</p>",
+        "resultWrapper":"DescribeLoadBalancerAttributesResult"
+      },
+      "errors":[
+        {
+          "shape":"LoadBalancerNotFoundException",
+          "error":{
+            "code":"LoadBalancerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified load balancer does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Describes the specified attributes or all attributes for the specified load balancer.</p>"
+    },
+    "DescribeLoadBalancers":{
+      "name":"DescribeLoadBalancers",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DescribeLoadBalancersInput",
+        "documentation":"<p>Contains the parameters for DescribeLoadBalancers.</p>"
+      },
+      "output":{
+        "shape":"DescribeLoadBalancersOutput",
+        "documentation":"<p>Contains the output of DescribeLoadBalancers.</p>",
+        "resultWrapper":"DescribeLoadBalancersResult"
+      },
+      "errors":[
+        {
+          "shape":"LoadBalancerNotFoundException",
+          "error":{
+            "code":"LoadBalancerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified load balancer does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Describes the specified application load balancers or all of your application load balancers.</p>"
+    },
+    "DescribeRules":{
+      "name":"DescribeRules",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DescribeRulesInput",
+        "documentation":"<p>Contains the parameters for DescribeRules.</p>"
+      },
+      "output":{
+        "shape":"DescribeRulesOutput",
+        "documentation":"<p>Contains the output of DescribeRules.</p>",
+        "resultWrapper":"DescribeRulesResult"
+      },
+      "errors":[
+        {
+          "shape":"ListenerNotFoundException",
+          "error":{
+            "code":"ListenerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified listener does not exist.</p>"
+        },
+        {
+          "shape":"RuleNotFoundException",
+          "error":{
+            "code":"RuleNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified rule does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Describes the specified rules or the rules for the specified listener. You must specify either a listener or one or more rules.</p>"
+    },
+    "DescribeSSLPolicies":{
+      "name":"DescribeSSLPolicies",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DescribeSSLPoliciesInput",
+        "documentation":"<p>Contains the parameters for DescribeSSLPolicies.</p>"
+      },
+      "output":{
+        "shape":"DescribeSSLPoliciesOutput",
+        "documentation":"<p>Contains the output of DescribeSSLPolicies.</p>",
+        "resultWrapper":"DescribeSSLPoliciesResult"
+      },
+      "errors":[
+        {
+          "shape":"SSLPolicyNotFoundException",
+          "error":{
+            "code":"SSLPolicyNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified SSL policy does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Describes the specified policies or all policies used for SSL negotiation.</p> <p>Note that the only supported policy at this time is ELBSecurityPolicy-2015-05.</p>"
+    },
+    "DescribeTags":{
+      "name":"DescribeTags",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DescribeTagsInput",
+        "documentation":"<p>Contains the parameters for DescribeTags.</p>"
+      },
+      "output":{
+        "shape":"DescribeTagsOutput",
+        "documentation":"<p>Contains the output of DescribeTags.</p>",
+        "resultWrapper":"DescribeTagsResult"
+      },
+      "errors":[
+        {
+          "shape":"LoadBalancerNotFoundException",
+          "error":{
+            "code":"LoadBalancerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified load balancer does not exist.</p>"
+        },
+        {
+          "shape":"TargetGroupNotFoundException",
+          "error":{
+            "code":"TargetGroupNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target group does not exist.</p>"
+        },
+        {
+          "shape":"ListenerNotFoundException",
+          "error":{
+            "code":"ListenerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified listener does not exist.</p>"
+        },
+        {
+          "shape":"RuleNotFoundException",
+          "error":{
+            "code":"RuleNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified rule does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Describes the tags for the specified resources.</p>"
+    },
+    "DescribeTargetGroupAttributes":{
+      "name":"DescribeTargetGroupAttributes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DescribeTargetGroupAttributesInput",
+        "documentation":"<p>Contains the parameters for DescribeTargetGroupAttributes.</p>"
+      },
+      "output":{
+        "shape":"DescribeTargetGroupAttributesOutput",
+        "documentation":"<p>Contains the output of DescribeTargetGroupAttributes.</p>",
+        "resultWrapper":"DescribeTargetGroupAttributesResult"
+      },
+      "errors":[
+        {
+          "shape":"TargetGroupNotFoundException",
+          "error":{
+            "code":"TargetGroupNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target group does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Describes the attributes for the specified target group.</p>"
+    },
+    "DescribeTargetGroups":{
+      "name":"DescribeTargetGroups",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DescribeTargetGroupsInput",
+        "documentation":"<p>Contains the parameters for DescribeTargetGroups.</p>"
+      },
+      "output":{
+        "shape":"DescribeTargetGroupsOutput",
+        "documentation":"<p>Contains the output of DescribeTargetGroups.</p>",
+        "resultWrapper":"DescribeTargetGroupsResult"
+      },
+      "errors":[
+        {
+          "shape":"LoadBalancerNotFoundException",
+          "error":{
+            "code":"LoadBalancerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified load balancer does not exist.</p>"
+        },
+        {
+          "shape":"TargetGroupNotFoundException",
+          "error":{
+            "code":"TargetGroupNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target group does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Describes the specified target groups or all of your target groups.</p>"
+    },
+    "DescribeTargetHealth":{
+      "name":"DescribeTargetHealth",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"DescribeTargetHealthInput",
+        "documentation":"<p>Contains the parameters for DescribeTargetHealth.</p>"
+      },
+      "output":{
+        "shape":"DescribeTargetHealthOutput",
+        "documentation":"<p>Contains the output of DescribeTargetHealth.</p>",
+        "resultWrapper":"DescribeTargetHealthResult"
+      },
+      "errors":[
+        {
+          "shape":"InvalidTargetException",
+          "error":{
+            "code":"InvalidTarget",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target does not exist.</p>"
+        },
+        {
+          "shape":"TargetGroupNotFoundException",
+          "error":{
+            "code":"TargetGroupNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target group does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Describes the health of the specified targets or all of your targets.</p>"
+    },
+    "ModifyListener":{
+      "name":"ModifyListener",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"ModifyListenerInput",
+        "documentation":"<p>Contains the parameters for ModifyListener.</p>"
+      },
+      "output":{
+        "shape":"ModifyListenerOutput",
+        "documentation":"<p>Contains the output of ModifyListener.</p>",
+        "resultWrapper":"ModifyListenerResult"
+      },
+      "errors":[
+        {
+          "shape":"DuplicateListenerException",
+          "error":{
+            "code":"DuplicateListener",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>A listener with the specified port already exists.</p>"
+        },
+        {
+          "shape":"TooManyListenersException",
+          "error":{
+            "code":"TooManyListeners",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of listeners per load balancer.</p>"
+        },
+        {
+          "shape":"TooManyCertificatesException",
+          "error":{
+            "code":"TooManyCertificates",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of certificates per listener.</p>"
+        },
+        {
+          "shape":"ListenerNotFoundException",
+          "error":{
+            "code":"ListenerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified listener does not exist.</p>"
+        },
+        {
+          "shape":"TargetGroupNotFoundException",
+          "error":{
+            "code":"TargetGroupNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target group does not exist.</p>"
+        },
+        {
+          "shape":"TargetGroupAssociationLimitException",
+          "error":{
+            "code":"TargetGroupAssociationLimit",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of load balancers per target group.</p>"
+        },
+        {
+          "shape":"IncompatibleProtocolsException",
+          "error":{
+            "code":"IncompatibleProtocols",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified configuration is not valid with this protocol.</p>"
+        },
+        {
+          "shape":"SSLPolicyNotFoundException",
+          "error":{
+            "code":"SSLPolicyNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified SSL policy does not exist.</p>"
+        },
+        {
+          "shape":"CertificateNotFoundException",
+          "error":{
+            "code":"CertificateNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified certificate does not exist.</p>"
+        },
+        {
+          "shape":"InvalidConfigurationRequestException",
+          "error":{
+            "code":"InvalidConfigurationRequest",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The requested configuration is not valid.</p>"
+        },
+        {
+          "shape":"UnsupportedProtocolException",
+          "error":{
+            "code":"UnsupportedProtocol",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified protocol is not supported.</p>"
+        }
+      ],
+      "documentation":"<p>Modifies the specified properties of the specified listener.</p> <p>Any properties that you do not specify retain their current values. However, changing the protocol from HTTPS to HTTP removes the security policy and SSL certificate properties. If you change the protocol from HTTP to HTTPS, you must add the security policy.</p>"
+    },
+    "ModifyLoadBalancerAttributes":{
+      "name":"ModifyLoadBalancerAttributes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"ModifyLoadBalancerAttributesInput",
+        "documentation":"<p>Contains the parameters for ModifyLoadBalancerAttributes.</p>"
+      },
+      "output":{
+        "shape":"ModifyLoadBalancerAttributesOutput",
+        "documentation":"<p>Contains the output of ModifyLoadBalancerAttributes.</p>",
+        "resultWrapper":"ModifyLoadBalancerAttributesResult"
+      },
+      "errors":[
+        {
+          "shape":"LoadBalancerNotFoundException",
+          "error":{
+            "code":"LoadBalancerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified load balancer does not exist.</p>"
+        },
+        {
+          "shape":"InvalidConfigurationRequestException",
+          "error":{
+            "code":"InvalidConfigurationRequest",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The requested configuration is not valid.</p>"
+        }
+      ],
+      "documentation":"<p>Modifies the specified attributes of the specified load balancer.</p> <p>If any of the specified attributes can't be modified as requested, the call fails. Any existing attributes that you do not modify retain their current values.</p>"
+    },
+    "ModifyRule":{
+      "name":"ModifyRule",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"ModifyRuleInput",
+        "documentation":"<p>Contains the parameters for ModifyRules.</p>"
+      },
+      "output":{
+        "shape":"ModifyRuleOutput",
+        "documentation":"<p>Contains the output of ModifyRules.</p>",
+        "resultWrapper":"ModifyRuleResult"
+      },
+      "errors":[
+        {
+          "shape":"TargetGroupAssociationLimitException",
+          "error":{
+            "code":"TargetGroupAssociationLimit",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of load balancers per target group.</p>"
+        },
+        {
+          "shape":"RuleNotFoundException",
+          "error":{
+            "code":"RuleNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified rule does not exist.</p>"
+        },
+        {
+          "shape":"OperationNotPermittedException",
+          "error":{
+            "code":"OperationNotPermitted",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>This operation is not allowed.</p>"
+        }
+      ],
+      "documentation":"<p>Modifies the specified rule.</p> <p>Any existing properties that you do not modify retain their current values.</p> <p>To modify the default action, use <a>ModifyListener</a>.</p>"
+    },
+    "ModifyTargetGroup":{
+      "name":"ModifyTargetGroup",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"ModifyTargetGroupInput",
+        "documentation":"<p>Contains the parameters for ModifyTargetGroup.</p>"
+      },
+      "output":{
+        "shape":"ModifyTargetGroupOutput",
+        "documentation":"<p>Contains the output of ModifyTargetGroup.</p>",
+        "resultWrapper":"ModifyTargetGroupResult"
+      },
+      "errors":[
+        {
+          "shape":"TargetGroupNotFoundException",
+          "error":{
+            "code":"TargetGroupNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target group does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Modifies the health checks used when evaluating the health state of the targets in the specified target group.</p> <p>To monitor the health of the targets, use <a>DescribeTargetHealth</a>.</p>"
+    },
+    "ModifyTargetGroupAttributes":{
+      "name":"ModifyTargetGroupAttributes",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"ModifyTargetGroupAttributesInput",
+        "documentation":"<p>Contains the parameters for ModifyTargetGroupAttributes.</p>"
+      },
+      "output":{
+        "shape":"ModifyTargetGroupAttributesOutput",
+        "documentation":"<p>Contains the output of ModifyTargetGroupAttributes.</p>",
+        "resultWrapper":"ModifyTargetGroupAttributesResult"
+      },
+      "errors":[
+        {
+          "shape":"TargetGroupNotFoundException",
+          "error":{
+            "code":"TargetGroupNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target group does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Modifies the specified attributes of the specified target group.</p>"
+    },
+    "RegisterTargets":{
+      "name":"RegisterTargets",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"RegisterTargetsInput",
+        "documentation":"<p>Contains the parameters for RegisterTargets.</p>"
+      },
+      "output":{
+        "shape":"RegisterTargetsOutput",
+        "documentation":"<p>Contains the output of RegisterTargets.</p>",
+        "resultWrapper":"RegisterTargetsResult"
+      },
+      "errors":[
+        {
+          "shape":"TargetGroupNotFoundException",
+          "error":{
+            "code":"TargetGroupNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target group does not exist.</p>"
+        },
+        {
+          "shape":"TooManyTargetsException",
+          "error":{
+            "code":"TooManyTargets",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of targets for the target group.</p>"
+        },
+        {
+          "shape":"InvalidTargetException",
+          "error":{
+            "code":"InvalidTarget",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Registers the specified targets with the specified target group.</p> <p>The target must be in the virtual private cloud (VPC) that you specified for the target group.</p> <p>To remove a target from a target group, use <a>DeregisterTargets</a>.</p>"
+    },
+    "RemoveTags":{
+      "name":"RemoveTags",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"RemoveTagsInput",
+        "documentation":"<p>Contains the parameters for RemoveTags.</p>"
+      },
+      "output":{
+        "shape":"RemoveTagsOutput",
+        "documentation":"<p>Contains the output of RemoveTags.</p>",
+        "resultWrapper":"RemoveTagsResult"
+      },
+      "errors":[
+        {
+          "shape":"LoadBalancerNotFoundException",
+          "error":{
+            "code":"LoadBalancerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified load balancer does not exist.</p>"
+        },
+        {
+          "shape":"TargetGroupNotFoundException",
+          "error":{
+            "code":"TargetGroupNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified target group does not exist.</p>"
+        },
+        {
+          "shape":"ListenerNotFoundException",
+          "error":{
+            "code":"ListenerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified listener does not exist.</p>"
+        },
+        {
+          "shape":"RuleNotFoundException",
+          "error":{
+            "code":"RuleNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified rule does not exist.</p>"
+        },
+        {
+          "shape":"TooManyTagsException",
+          "error":{
+            "code":"TooManyTags",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>You've reached the limit on the number of tags per load balancer.</p>"
+        }
+      ],
+      "documentation":"<p>Removes the specified tags from the specified resource.</p> <p>To list the current tags for your resources, use <a>DescribeTags</a>.</p>"
+    },
+    "SetRulePriorities":{
+      "name":"SetRulePriorities",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"SetRulePrioritiesInput",
+        "documentation":"<p>Contains the parameters for SetRulePriorities.</p>"
+      },
+      "output":{
+        "shape":"SetRulePrioritiesOutput",
+        "documentation":"<p>Contains the output of SetRulePriorities.</p>",
+        "resultWrapper":"SetRulePrioritiesResult"
+      },
+      "errors":[
+        {
+          "shape":"RuleNotFoundException",
+          "error":{
+            "code":"RuleNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified rule does not exist.</p>"
+        },
+        {
+          "shape":"PriorityInUseException",
+          "error":{
+            "code":"PriorityInUse",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified priority is in use.</p>"
+        },
+        {
+          "shape":"OperationNotPermittedException",
+          "error":{
+            "code":"OperationNotPermitted",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>This operation is not allowed.</p>"
+        }
+      ],
+      "documentation":"<p>Sets the priorities of the specified rules.</p> <p>You can reorder the rules as long as there are no priority conflicts in the new order. Any existing rules that you do not specify retain their current priority.</p>"
+    },
+    "SetSecurityGroups":{
+      "name":"SetSecurityGroups",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"SetSecurityGroupsInput",
+        "documentation":"<p>Contains the parameters for SetSecurityGroups.</p>"
+      },
+      "output":{
+        "shape":"SetSecurityGroupsOutput",
+        "documentation":"<p>Contains the output of SetSecurityGroups.</p>",
+        "resultWrapper":"SetSecurityGroupsResult"
+      },
+      "errors":[
+        {
+          "shape":"LoadBalancerNotFoundException",
+          "error":{
+            "code":"LoadBalancerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified load balancer does not exist.</p>"
+        },
+        {
+          "shape":"InvalidConfigurationRequestException",
+          "error":{
+            "code":"InvalidConfigurationRequest",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The requested configuration is not valid.</p>"
+        },
+        {
+          "shape":"InvalidSecurityGroupException",
+          "error":{
+            "code":"InvalidSecurityGroup",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified security group does not exist.</p>"
+        }
+      ],
+      "documentation":"<p>Associates the specified security groups with the specified load balancer. The specified security groups override the previously associated security groups.</p>"
+    },
+    "SetSubnets":{
+      "name":"SetSubnets",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{
+        "shape":"SetSubnetsInput",
+        "documentation":"<p>Contains the parameters for SetSubnets.</p>"
+      },
+      "output":{
+        "shape":"SetSubnetsOutput",
+        "documentation":"<p>Contains the output of SetSubnets.</p>",
+        "resultWrapper":"SetSubnetsResult"
+      },
+      "errors":[
+        {
+          "shape":"LoadBalancerNotFoundException",
+          "error":{
+            "code":"LoadBalancerNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified load balancer does not exist.</p>"
+        },
+        {
+          "shape":"InvalidConfigurationRequestException",
+          "error":{
+            "code":"InvalidConfigurationRequest",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The requested configuration is not valid.</p>"
+        },
+        {
+          "shape":"SubnetNotFoundException",
+          "error":{
+            "code":"SubnetNotFound",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified subnet does not exist.</p>"
+        },
+        {
+          "shape":"InvalidSubnetException",
+          "error":{
+            "code":"InvalidSubnet",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>The specified subnet is out of available addresses.</p>"
+        }
+      ],
+      "documentation":"<p>Enables the Availability Zone for the specified subnets for the specified load balancer. The specified subnets replace the previously enabled subnets.</p>"
+    }
+  },
+  "shapes":{
+    "Action":{
+      "type":"structure",
+      "required":[
+        "Type",
+        "TargetGroupArn"
+      ],
+      "members":{
+        "Type":{
+          "shape":"ActionTypeEnum",
+          "documentation":"<p>The type of action.</p>"
+        },
+        "TargetGroupArn":{
+          "shape":"TargetGroupArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the target group.</p>"
+        }
+      },
+      "documentation":"<p>Information about an action.</p>"
+    },
+    "ActionTypeEnum":{
+      "type":"string",
+      "enum":["forward"]
+    },
+    "Actions":{
+      "type":"list",
+      "member":{"shape":"Action"}
+    },
+    "AddTagsInput":{
+      "type":"structure",
+      "required":[
+        "ResourceArns",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArns":{
+          "shape":"ResourceArns",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>The tags. Each resource can have a maximum of 10 tags.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for AddTags.</p>"
+    },
+    "AddTagsOutput":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Contains the output of AddTags.</p>"
+    },
+    "AvailabilityZone":{
+      "type":"structure",
+      "members":{
+        "ZoneName":{
+          "shape":"ZoneName",
+          "documentation":"<p>The name of the Availability Zone.</p>"
+        },
+        "SubnetId":{
+          "shape":"SubnetId",
+          "documentation":"<p>The ID of the subnet.</p>"
+        }
+      },
+      "documentation":"<p>Information about an Availability Zone.</p>"
+    },
+    "AvailabilityZones":{
+      "type":"list",
+      "member":{"shape":"AvailabilityZone"}
+    },
+    "CanonicalHostedZoneId":{"type":"string"},
+    "Certificate":{
+      "type":"structure",
+      "members":{
+        "CertificateArn":{
+          "shape":"CertificateArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the certificate.</p>"
+        }
+      },
+      "documentation":"<p>Information about an SSL server certificate deployed on a load balancer.</p>"
+    },
+    "CertificateArn":{"type":"string"},
+    "CertificateList":{
+      "type":"list",
+      "member":{"shape":"Certificate"}
+    },
+    "CertificateNotFoundException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"CertificateNotFound",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The specified certificate does not exist.</p>"
+    },
+    "Cipher":{
+      "type":"structure",
+      "members":{
+        "Name":{
+          "shape":"CipherName",
+          "documentation":"<p>The name of the cipher.</p>"
+        },
+        "Priority":{
+          "shape":"CipherPriority",
+          "documentation":"<p>The priority of the cipher.</p>"
+        }
+      },
+      "documentation":"<p>Information about a cipher used in a policy.</p>"
+    },
+    "CipherName":{"type":"string"},
+    "CipherPriority":{"type":"integer"},
+    "Ciphers":{
+      "type":"list",
+      "member":{"shape":"Cipher"}
+    },
+    "ConditionFieldName":{
+      "type":"string",
+      "max":64
+    },
+    "CreateListenerInput":{
+      "type":"structure",
+      "required":[
+        "LoadBalancerArn",
+        "Protocol",
+        "Port",
+        "DefaultActions"
+      ],
+      "members":{
+        "LoadBalancerArn":{
+          "shape":"LoadBalancerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the load balancer.</p>"
+        },
+        "Protocol":{
+          "shape":"ProtocolEnum",
+          "documentation":"<p>The protocol for connections from clients to the load balancer.</p>"
+        },
+        "Port":{
+          "shape":"Port",
+          "documentation":"<p>The port on which the load balancer is listening.</p>"
+        },
+        "SslPolicy":{
+          "shape":"SslPolicyName",
+          "documentation":"<p>The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.</p>"
+        },
+        "Certificates":{
+          "shape":"CertificateList",
+          "documentation":"<p>The SSL server certificate. You must provide exactly one certificate if the protocol is HTTPS.</p>"
+        },
+        "DefaultActions":{
+          "shape":"Actions",
+          "documentation":"<p>The default actions for the listener.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for CreateListener.</p>"
+    },
+    "CreateListenerOutput":{
+      "type":"structure",
+      "members":{
+        "Listeners":{
+          "shape":"Listeners",
+          "documentation":"<p>Information about the listener.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of CreateListener.</p>"
+    },
+    "CreateLoadBalancerInput":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Subnets"
+      ],
+      "members":{
+        "Name":{
+          "shape":"LoadBalancerName",
+          "documentation":"<p>The name of the load balancer.</p> <p>This name must be unique within your AWS account, can have a maximum of 32 characters, must contain only alphanumeric characters or hyphens, and must not begin or end with a hyphen.</p>"
+        },
+        "Subnets":{
+          "shape":"Subnets",
+          "documentation":"<p>The IDs of the subnets to attach to the load balancer. You can specify only one subnet per Availability Zone. You must specify subnets from at least two Availability Zones.</p>"
+        },
+        "SecurityGroups":{
+          "shape":"SecurityGroups",
+          "documentation":"<p>The IDs of the security groups to assign to the load balancer.</p>"
+        },
+        "Scheme":{
+          "shape":"LoadBalancerSchemeEnum",
+          "documentation":"<p>An Internet-facing load balancer routes requests from clients over the Internet to targets in your public subnets. An internal load balancer routes requests to targets in your private subnets. The default is an Internet-facing load balancer.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>One or more tags to assign to the load balancer.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for CreateLoadBalancer.</p>"
+    },
+    "CreateLoadBalancerOutput":{
+      "type":"structure",
+      "members":{
+        "LoadBalancers":{
+          "shape":"LoadBalancers",
+          "documentation":"<p>Information about the load balancer.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of CreateLoadBalancer.</p>"
+    },
+    "CreateRuleInput":{
+      "type":"structure",
+      "required":[
+        "ListenerArn",
+        "Conditions",
+        "Priority",
+        "Actions"
+      ],
+      "members":{
+        "ListenerArn":{
+          "shape":"ListenerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the listener.</p>"
+        },
+        "Conditions":{
+          "shape":"RuleConditionList",
+          "documentation":"<p>The conditions.</p>"
+        },
+        "Priority":{
+          "shape":"RulePriority",
+          "documentation":"<p>The priority for the rule. A target group can't have multiple rules with the same priority.</p>"
+        },
+        "Actions":{
+          "shape":"Actions",
+          "documentation":"<p>The actions for the rule.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for CreateRule.</p>"
+    },
+    "CreateRuleOutput":{
+      "type":"structure",
+      "members":{
+        "Rules":{
+          "shape":"Rules",
+          "documentation":"<p>Information about the rule.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of CreateRule.</p>"
+    },
+    "CreateTargetGroupInput":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "Protocol",
+        "Port",
+        "VpcId"
+      ],
+      "members":{
+        "Name":{
+          "shape":"TargetGroupName",
+          "documentation":"<p>The name of the target group.</p>"
+        },
+        "Protocol":{
+          "shape":"ProtocolEnum",
+          "documentation":"<p>The protocol to use for routing traffic to the targets.</p>"
+        },
+        "Port":{
+          "shape":"Port",
+          "documentation":"<p>The port on which the targets are listening.</p>"
+        },
+        "VpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The identifier of the VPC.</p>"
+        },
+        "HealthCheckProtocol":{
+          "shape":"ProtocolEnum",
+          "documentation":"<p>The protocol to use to connect to the target. The default is the HTTP protocol.</p>"
+        },
+        "HealthCheckPort":{
+          "shape":"HealthCheckPort",
+          "documentation":"<p>The port to use to connect to the target for the health check request. The default is <code>target-port</code>, which indicates the port on which each target receives traffic.</p>"
+        },
+        "HealthCheckPath":{
+          "shape":"Path",
+          "documentation":"<p>The ping path that is the destination for the health check request. The default is /.</p>"
+        },
+        "HealthCheckIntervalSeconds":{
+          "shape":"HealthCheckIntervalSeconds",
+          "documentation":"<p>The approximate amount of time, in seconds, between health checks of an individual target. The default is 30 seconds.</p>"
+        },
+        "HealthCheckTimeoutSeconds":{
+          "shape":"HealthCheckTimeoutSeconds",
+          "documentation":"<p>The amount of time, in seconds, during which no response means a failed health check. The default is 5 seconds.</p>"
+        },
+        "HealthyThresholdCount":{
+          "shape":"HealthCheckThresholdCount",
+          "documentation":"<p>The number of consecutive health checks successes required before considering an unhealthy target healthy. The default is 5.</p>"
+        },
+        "UnhealthyThresholdCount":{
+          "shape":"HealthCheckThresholdCount",
+          "documentation":"<p>The number of consecutive health check failures required before considering the target unhealthy. The default is 2.</p>"
+        },
+        "Matcher":{
+          "shape":"Matcher",
+          "documentation":"<p>The HTTP codes to use when checking for a successful response from a target.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for CreateTargetGroup.</p>"
+    },
+    "CreateTargetGroupOutput":{
+      "type":"structure",
+      "members":{
+        "TargetGroups":{
+          "shape":"TargetGroups",
+          "documentation":"<p>Information about the target group.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of CreateTargetGroup.</p>"
+    },
+    "CreatedTime":{"type":"timestamp"},
+    "DNSName":{"type":"string"},
+    "DeleteListenerInput":{
+      "type":"structure",
+      "required":["ListenerArn"],
+      "members":{
+        "ListenerArn":{
+          "shape":"ListenerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the listener.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DeleteListener.</p>"
+    },
+    "DeleteListenerOutput":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Contains the output of DeleteListener.</p>"
+    },
+    "DeleteLoadBalancerInput":{
+      "type":"structure",
+      "required":["LoadBalancerArn"],
+      "members":{
+        "LoadBalancerArn":{
+          "shape":"LoadBalancerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the load balancer.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DeleteLoadBalancer.</p>"
+    },
+    "DeleteLoadBalancerOutput":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Contains the output of DeleteLoadBalancer.</p>"
+    },
+    "DeleteRuleInput":{
+      "type":"structure",
+      "required":["RuleArn"],
+      "members":{
+        "RuleArn":{
+          "shape":"RuleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rule.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DeleteRule.</p>"
+    },
+    "DeleteRuleOutput":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Contains the output of DeleteRule.</p>"
+    },
+    "DeleteTargetGroupInput":{
+      "type":"structure",
+      "required":["TargetGroupArn"],
+      "members":{
+        "TargetGroupArn":{
+          "shape":"TargetGroupArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the target group.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DeleteTargetGroup.</p>"
+    },
+    "DeleteTargetGroupOutput":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Contains the output of DeleteTargetGroup.</p>"
+    },
+    "DeregisterTargetsInput":{
+      "type":"structure",
+      "required":[
+        "TargetGroupArn",
+        "Targets"
+      ],
+      "members":{
+        "TargetGroupArn":{
+          "shape":"TargetGroupArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the target group.</p>"
+        },
+        "Targets":{
+          "shape":"TargetDescriptions",
+          "documentation":"<p>The targets.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DeregisterTargets.</p>"
+    },
+    "DeregisterTargetsOutput":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Contains the output of DeregisterTargets.</p>"
+    },
+    "DescribeListenersInput":{
+      "type":"structure",
+      "members":{
+        "LoadBalancerArn":{
+          "shape":"LoadBalancerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the load balancer.</p>"
+        },
+        "ListenerArns":{
+          "shape":"ListenerArns",
+          "documentation":"<p>The Amazon Resource Names (ARN) of the listeners.</p>"
+        },
+        "Marker":{
+          "shape":"Marker",
+          "documentation":"<p>The marker for the next set of results. (You received this marker from a previous call.)</p>"
+        },
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of results to return with this call.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DescribeListeners.</p>"
+    },
+    "DescribeListenersOutput":{
+      "type":"structure",
+      "members":{
+        "Listeners":{
+          "shape":"Listeners",
+          "documentation":"<p>Information about the listeners.</p>"
+        },
+        "NextMarker":{
+          "shape":"Marker",
+          "documentation":"<p>The marker to use when requesting the next set of results. If there are no additional results, the string is empty.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of DescribeListeners.</p>"
+    },
+    "DescribeLoadBalancerAttributesInput":{
+      "type":"structure",
+      "required":["LoadBalancerArn"],
+      "members":{
+        "LoadBalancerArn":{
+          "shape":"LoadBalancerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the load balancer.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DescribeLoadBalancerAttributes.</p>"
+    },
+    "DescribeLoadBalancerAttributesOutput":{
+      "type":"structure",
+      "members":{
+        "Attributes":{
+          "shape":"LoadBalancerAttributes",
+          "documentation":"<p>Information about the load balancer attributes.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of DescribeLoadBalancerAttributes.</p>"
+    },
+    "DescribeLoadBalancersInput":{
+      "type":"structure",
+      "members":{
+        "LoadBalancerArns":{
+          "shape":"LoadBalancerArns",
+          "documentation":"<p>The Amazon Resource Names (ARN) of the load balancers.</p>"
+        },
+        "Names":{
+          "shape":"LoadBalancerNames",
+          "documentation":"<p>The names of the load balancers.</p>"
+        },
+        "Marker":{
+          "shape":"Marker",
+          "documentation":"<p>The marker for the next set of results. (You received this marker from a previous call.)</p>"
+        },
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of results to return with this call.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DescribeLoadBalancers.</p>"
+    },
+    "DescribeLoadBalancersOutput":{
+      "type":"structure",
+      "members":{
+        "LoadBalancers":{
+          "shape":"LoadBalancers",
+          "documentation":"<p>Information about the load balancers.</p>"
+        },
+        "NextMarker":{
+          "shape":"Marker",
+          "documentation":"<p>The marker to use when requesting the next set of results. If there are no additional results, the string is empty.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of DescribeLoadBalancers.</p>"
+    },
+    "DescribeRulesInput":{
+      "type":"structure",
+      "members":{
+        "ListenerArn":{
+          "shape":"ListenerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the listener.</p>"
+        },
+        "RuleArns":{
+          "shape":"RuleArns",
+          "documentation":"<p>The Amazon Resource Names (ARN) of the rules.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DescribeRules.</p>"
+    },
+    "DescribeRulesOutput":{
+      "type":"structure",
+      "members":{
+        "Rules":{
+          "shape":"Rules",
+          "documentation":"<p>Information about the rules.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of DescribeRules.</p>"
+    },
+    "DescribeSSLPoliciesInput":{
+      "type":"structure",
+      "members":{
+        "Names":{
+          "shape":"SslPolicyNames",
+          "documentation":"<p>The names of the policies.</p>"
+        },
+        "Marker":{
+          "shape":"Marker",
+          "documentation":"<p>The marker for the next set of results. (You received this marker from a previous call.)</p>"
+        },
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of results to return with this call.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DescribeSSLPolicies.</p>"
+    },
+    "DescribeSSLPoliciesOutput":{
+      "type":"structure",
+      "members":{
+        "SslPolicies":{
+          "shape":"SslPolicies",
+          "documentation":"<p>Information about the policies.</p>"
+        },
+        "NextMarker":{
+          "shape":"Marker",
+          "documentation":"<p>The marker to use when requesting the next set of results. If there are no additional results, the string is empty.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of DescribeSSLPolicies.</p>"
+    },
+    "DescribeTagsInput":{
+      "type":"structure",
+      "required":["ResourceArns"],
+      "members":{
+        "ResourceArns":{
+          "shape":"ResourceArns",
+          "documentation":"<p>The Amazon Resource Names (ARN) of the resources.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DescribeTags.</p>"
+    },
+    "DescribeTagsOutput":{
+      "type":"structure",
+      "members":{
+        "TagDescriptions":{
+          "shape":"TagDescriptions",
+          "documentation":"<p>Information about the tags.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of DescribeTags.</p>"
+    },
+    "DescribeTargetGroupAttributesInput":{
+      "type":"structure",
+      "required":["TargetGroupArn"],
+      "members":{
+        "TargetGroupArn":{
+          "shape":"TargetGroupArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the target group.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DescribeTargetGroupAttributes.</p>"
+    },
+    "DescribeTargetGroupAttributesOutput":{
+      "type":"structure",
+      "members":{
+        "Attributes":{
+          "shape":"TargetGroupAttributes",
+          "documentation":"<p>Information about the target group attributes</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of DescribeTargetGroupAttributes.</p>"
+    },
+    "DescribeTargetGroupsInput":{
+      "type":"structure",
+      "members":{
+        "LoadBalancerArn":{
+          "shape":"LoadBalancerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the load balancer.</p>"
+        },
+        "TargetGroupArns":{
+          "shape":"TargetGroupArns",
+          "documentation":"<p>The Amazon Resource Names (ARN) of the target groups.</p>"
+        },
+        "Names":{
+          "shape":"TargetGroupNames",
+          "documentation":"<p>The names of the target groups.</p>"
+        },
+        "Marker":{
+          "shape":"Marker",
+          "documentation":"<p>The marker for the next set of results. (You received this marker from a previous call.)</p>"
+        },
+        "PageSize":{
+          "shape":"PageSize",
+          "documentation":"<p>The maximum number of results to return with this call.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DescribeTargetGroups.</p>"
+    },
+    "DescribeTargetGroupsOutput":{
+      "type":"structure",
+      "members":{
+        "TargetGroups":{
+          "shape":"TargetGroups",
+          "documentation":"<p>Information about the target groups.</p>"
+        },
+        "NextMarker":{
+          "shape":"Marker",
+          "documentation":"<p>The marker to use when requesting the next set of results. If there are no additional results, the string is empty.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of DescribeTargetGroups.</p>"
+    },
+    "DescribeTargetHealthInput":{
+      "type":"structure",
+      "required":["TargetGroupArn"],
+      "members":{
+        "TargetGroupArn":{
+          "shape":"TargetGroupArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the target group.</p>"
+        },
+        "Targets":{
+          "shape":"TargetDescriptions",
+          "documentation":"<p>The targets.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for DescribeTargetHealth.</p>"
+    },
+    "DescribeTargetHealthOutput":{
+      "type":"structure",
+      "members":{
+        "TargetHealthDescriptions":{
+          "shape":"TargetHealthDescriptions",
+          "documentation":"<p>Information about the health of the targets.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of DescribeTargetHealth.</p>"
+    },
+    "Description":{"type":"string"},
+    "DuplicateListenerException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"DuplicateListener",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>A listener with the specified port already exists.</p>"
+    },
+    "DuplicateLoadBalancerNameException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"DuplicateLoadBalancerName",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>A load balancer with the specified name already exists for this account.</p>"
+    },
+    "DuplicateTagKeysException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"DuplicateTagKeys",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>A tag key was specified more than once.</p>"
+    },
+    "DuplicateTargetGroupNameException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"DuplicateTargetGroupName",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>A target group with the specified name already exists.</p>"
+    },
+    "HealthCheckIntervalSeconds":{
+      "type":"integer",
+      "min":5,
+      "max":300
+    },
+    "HealthCheckPort":{"type":"string"},
+    "HealthCheckThresholdCount":{
+      "type":"integer",
+      "min":2,
+      "max":10
+    },
+    "HealthCheckTimeoutSeconds":{
+      "type":"integer",
+      "min":2,
+      "max":60
+    },
+    "HttpCode":{"type":"string"},
+    "IncompatibleProtocolsException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"IncompatibleProtocols",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The specified configuration is not valid with this protocol.</p>"
+    },
+    "InvalidConfigurationRequestException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"InvalidConfigurationRequest",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The requested configuration is not valid.</p>"
+    },
+    "InvalidSchemeException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"InvalidScheme",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The requested scheme is not valid.</p>"
+    },
+    "InvalidSecurityGroupException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"InvalidSecurityGroup",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The specified security group does not exist.</p>"
+    },
+    "InvalidSubnetException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"InvalidSubnet",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The specified subnet is out of available addresses.</p>"
+    },
+    "InvalidTargetException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"InvalidTarget",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The specified target does not exist.</p>"
+    },
+    "IsDefault":{"type":"boolean"},
+    "ListOfString":{
+      "type":"list",
+      "member":{"shape":"StringValue"}
+    },
+    "Listener":{
+      "type":"structure",
+      "members":{
+        "ListenerArn":{
+          "shape":"ListenerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the listener.</p>"
+        },
+        "LoadBalancerArn":{
+          "shape":"LoadBalancerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the load balancer.</p>"
+        },
+        "Port":{
+          "shape":"Port",
+          "documentation":"<p>The port on which the load balancer is listening.</p>"
+        },
+        "Protocol":{
+          "shape":"ProtocolEnum",
+          "documentation":"<p>The protocol for connections from clients to the load balancer.</p>"
+        },
+        "Certificates":{
+          "shape":"CertificateList",
+          "documentation":"<p>The SSL server certificate. You must provide a certificate if the protocol is HTTPS.</p>"
+        },
+        "SslPolicy":{
+          "shape":"SslPolicyName",
+          "documentation":"<p>The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.</p>"
+        },
+        "DefaultActions":{
+          "shape":"Actions",
+          "documentation":"<p>The default actions for the listener.</p>"
+        }
+      },
+      "documentation":"<p>Information about a listener.</p>"
+    },
+    "ListenerArn":{"type":"string"},
+    "ListenerArns":{
+      "type":"list",
+      "member":{"shape":"ListenerArn"}
+    },
+    "ListenerNotFoundException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"ListenerNotFound",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The specified listener does not exist.</p>"
+    },
+    "Listeners":{
+      "type":"list",
+      "member":{"shape":"Listener"}
+    },
+    "LoadBalancer":{
+      "type":"structure",
+      "members":{
+        "LoadBalancerArn":{
+          "shape":"LoadBalancerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the load balancer.</p>"
+        },
+        "DNSName":{
+          "shape":"DNSName",
+          "documentation":"<p>The public DNS name of the load balancer.</p>"
+        },
+        "CanonicalHostedZoneId":{
+          "shape":"CanonicalHostedZoneId",
+          "documentation":"<p>The ID of the Amazon Route 53 hosted zone associated with the load balancer.</p>"
+        },
+        "CreatedTime":{
+          "shape":"CreatedTime",
+          "documentation":"<p>The date and time the load balancer was created.</p>"
+        },
+        "LoadBalancerName":{
+          "shape":"LoadBalancerName",
+          "documentation":"<p>The name of the load balancer.</p>"
+        },
+        "Scheme":{
+          "shape":"LoadBalancerSchemeEnum",
+          "documentation":"<p>An Internet-facing load balancer routes requests from clients over the Internet to targets in your public subnets. An internal load balancer routes requests to targets in your private subnets.</p>"
+        },
+        "VpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the VPC for the load balancer.</p>"
+        },
+        "State":{
+          "shape":"LoadBalancerState",
+          "documentation":"<p>The state of the load balancer.</p>"
+        },
+        "Type":{
+          "shape":"LoadBalancerTypeEnum",
+          "documentation":"<p>The type of load balancer.</p>"
+        },
+        "AvailabilityZones":{
+          "shape":"AvailabilityZones",
+          "documentation":"<p>The Availability Zones for the load balancer.</p>"
+        },
+        "SecurityGroups":{
+          "shape":"SecurityGroups",
+          "documentation":"<p>The IDs of the security groups for the load balancer.</p>"
+        }
+      },
+      "documentation":"<p>Information about a load balancer.</p>"
+    },
+    "LoadBalancerArn":{"type":"string"},
+    "LoadBalancerArns":{
+      "type":"list",
+      "member":{"shape":"LoadBalancerArn"}
+    },
+    "LoadBalancerAttribute":{
+      "type":"structure",
+      "members":{
+        "Key":{
+          "shape":"LoadBalancerAttributeKey",
+          "documentation":"<p>The name of the attribute.</p> <ul> <li><p><code>access_logs.s3.enabled</code> - Indicates whether access logs stored in Amazon S3 are enabled.</p></li> <li><p><code>access_logs.s3.bucket</code> - The name of the S3 bucket for the access logs. This attribute is required if access logs in Amazon S3 are enabled. The bucket must exist in the same region as the load balancer.</p></li> <li><p><code>access_logs.s3.prefix</code> - The prefix for the location in the S3 bucket. If you don't specify a prefix, the access logs are stored in the root of the bucket.</p></li> <li><p><code>deletion_protection.enabled</code> - Indicates whether deletion protection is enabled.</p></li> <li><p><code>idle_timeout.timeout_seconds</code> - The idle timeout value, in seconds. The valid range is 1-3600. The default is 60 seconds.</p></li> </ul>"
+        },
+        "Value":{
+          "shape":"LoadBalancerAttributeValue",
+          "documentation":"<p>The value of the attribute.</p>"
+        }
+      },
+      "documentation":"<p>Information about a load balancer attribute.</p>"
+    },
+    "LoadBalancerAttributeKey":{
+      "type":"string",
+      "max":256,
+      "pattern":"^[a-zA-Z0-9._]+$"
+    },
+    "LoadBalancerAttributeValue":{
+      "type":"string",
+      "max":1024
+    },
+    "LoadBalancerAttributes":{
+      "type":"list",
+      "member":{"shape":"LoadBalancerAttribute"},
+      "max":20
+    },
+    "LoadBalancerName":{"type":"string"},
+    "LoadBalancerNames":{
+      "type":"list",
+      "member":{"shape":"LoadBalancerName"}
+    },
+    "LoadBalancerNotFoundException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"LoadBalancerNotFound",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The specified load balancer does not exist.</p>"
+    },
+    "LoadBalancerSchemeEnum":{
+      "type":"string",
+      "enum":[
+        "internet-facing",
+        "internal"
+      ]
+    },
+    "LoadBalancerState":{
+      "type":"structure",
+      "members":{
+        "Code":{
+          "shape":"LoadBalancerStateEnum",
+          "documentation":"<p>The state code. The initial state of the load balancer is <code>provisioning</code>. After the load balancer is fully set up, its state is <code>active</code>. If the load balancer could not be set up, its state is <code>failed</code>.</p>"
+        },
+        "Reason":{
+          "shape":"StateReason",
+          "documentation":"<p>A description of the state.</p>"
+        }
+      },
+      "documentation":"<p>Information about the state of the load balancer.</p>"
+    },
+    "LoadBalancerStateEnum":{
+      "type":"string",
+      "enum":[
+        "active",
+        "provisioning",
+        "failed"
+      ]
+    },
+    "LoadBalancerTypeEnum":{
+      "type":"string",
+      "enum":[
+        "standard",
+        "application"
+      ]
+    },
+    "LoadBalancers":{
+      "type":"list",
+      "member":{"shape":"LoadBalancer"}
+    },
+    "Marker":{"type":"string"},
+    "Matcher":{
+      "type":"structure",
+      "required":["HttpCode"],
+      "members":{
+        "HttpCode":{
+          "shape":"HttpCode",
+          "documentation":"<p>The HTTP codes. The default value is \"200\". You can specify multiple values (for example, \"200,202\") or a range of values (for example, \"200-299\").</p>"
+        }
+      },
+      "documentation":"<p>Information to use when checking for a successful response from a target.</p>"
+    },
+    "ModifyListenerInput":{
+      "type":"structure",
+      "required":["ListenerArn"],
+      "members":{
+        "ListenerArn":{
+          "shape":"ListenerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the listener.</p>"
+        },
+        "Port":{
+          "shape":"Port",
+          "documentation":"<p>The port for connections from clients to the load balancer.</p>"
+        },
+        "Protocol":{
+          "shape":"ProtocolEnum",
+          "documentation":"<p>The protocol for connections from clients to the load balancer.</p>"
+        },
+        "SslPolicy":{
+          "shape":"SslPolicyName",
+          "documentation":"<p>The security policy that defines which ciphers and protocols are supported.</p>"
+        },
+        "Certificates":{
+          "shape":"CertificateList",
+          "documentation":"<p>The SSL server certificate.</p>"
+        },
+        "DefaultActions":{
+          "shape":"Actions",
+          "documentation":"<p>The default actions.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for ModifyListener.</p>"
+    },
+    "ModifyListenerOutput":{
+      "type":"structure",
+      "members":{
+        "Listeners":{
+          "shape":"Listeners",
+          "documentation":"<p>Information about the modified listeners.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of ModifyListener.</p>"
+    },
+    "ModifyLoadBalancerAttributesInput":{
+      "type":"structure",
+      "required":[
+        "LoadBalancerArn",
+        "Attributes"
+      ],
+      "members":{
+        "LoadBalancerArn":{
+          "shape":"LoadBalancerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the load balancer.</p>"
+        },
+        "Attributes":{
+          "shape":"LoadBalancerAttributes",
+          "documentation":"<p>The load balancer attributes.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for ModifyLoadBalancerAttributes.</p>"
+    },
+    "ModifyLoadBalancerAttributesOutput":{
+      "type":"structure",
+      "members":{
+        "Attributes":{
+          "shape":"LoadBalancerAttributes",
+          "documentation":"<p>Information about the load balancer attributes.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of ModifyLoadBalancerAttributes.</p>"
+    },
+    "ModifyRuleInput":{
+      "type":"structure",
+      "required":["RuleArn"],
+      "members":{
+        "RuleArn":{
+          "shape":"RuleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rule.</p>"
+        },
+        "Conditions":{
+          "shape":"RuleConditionList",
+          "documentation":"<p>The conditions.</p>"
+        },
+        "Actions":{
+          "shape":"Actions",
+          "documentation":"<p>The actions.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for ModifyRules.</p>"
+    },
+    "ModifyRuleOutput":{
+      "type":"structure",
+      "members":{
+        "Rules":{
+          "shape":"Rules",
+          "documentation":"<p>Information about the rule.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of ModifyRules.</p>"
+    },
+    "ModifyTargetGroupAttributesInput":{
+      "type":"structure",
+      "required":[
+        "TargetGroupArn",
+        "Attributes"
+      ],
+      "members":{
+        "TargetGroupArn":{
+          "shape":"TargetGroupArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the target group.</p>"
+        },
+        "Attributes":{
+          "shape":"TargetGroupAttributes",
+          "documentation":"<p>The attributes.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for ModifyTargetGroupAttributes.</p>"
+    },
+    "ModifyTargetGroupAttributesOutput":{
+      "type":"structure",
+      "members":{
+        "Attributes":{
+          "shape":"TargetGroupAttributes",
+          "documentation":"<p>Information about the attributes.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of ModifyTargetGroupAttributes.</p>"
+    },
+    "ModifyTargetGroupInput":{
+      "type":"structure",
+      "required":["TargetGroupArn"],
+      "members":{
+        "TargetGroupArn":{
+          "shape":"TargetGroupArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the target group.</p>"
+        },
+        "HealthCheckProtocol":{
+          "shape":"ProtocolEnum",
+          "documentation":"<p>The protocol to use to connect with the target.</p>"
+        },
+        "HealthCheckPort":{
+          "shape":"HealthCheckPort",
+          "documentation":"<p>The port to use to connect with the target.</p>"
+        },
+        "HealthCheckPath":{
+          "shape":"Path",
+          "documentation":"<p>The ping path that is the destination for the health check request.</p>"
+        },
+        "HealthCheckIntervalSeconds":{
+          "shape":"HealthCheckIntervalSeconds",
+          "documentation":"<p>The approximate amount of time, in seconds, between health checks of an individual target.</p>"
+        },
+        "HealthCheckTimeoutSeconds":{
+          "shape":"HealthCheckTimeoutSeconds",
+          "documentation":"<p>The amount of time, in seconds, during which no response means a failed health check.</p>"
+        },
+        "HealthyThresholdCount":{
+          "shape":"HealthCheckThresholdCount",
+          "documentation":"<p>The number of consecutive health checks successes required before considering an unhealthy target healthy.</p>"
+        },
+        "UnhealthyThresholdCount":{
+          "shape":"HealthCheckThresholdCount",
+          "documentation":"<p>The number of consecutive health check failures required before considering the target unhealthy.</p>"
+        },
+        "Matcher":{
+          "shape":"Matcher",
+          "documentation":"<p>The HTTP codes to use when checking for a successful response from a target.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for ModifyTargetGroup.</p>"
+    },
+    "ModifyTargetGroupOutput":{
+      "type":"structure",
+      "members":{
+        "TargetGroups":{
+          "shape":"TargetGroups",
+          "documentation":"<p>Information about the target group.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of ModifyTargetGroup.</p>"
+    },
+    "OperationNotPermittedException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"OperationNotPermitted",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>This operation is not allowed.</p>"
+    },
+    "PageSize":{
+      "type":"integer",
+      "min":1,
+      "max":400
+    },
+    "Path":{
+      "type":"string",
+      "max":1024
+    },
+    "Port":{
+      "type":"integer",
+      "min":1,
+      "max":65535
+    },
+    "PriorityInUseException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"PriorityInUse",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The specified priority is in use.</p>"
+    },
+    "ProtocolEnum":{
+      "type":"string",
+      "enum":[
+        "HTTP",
+        "HTTPS"
+      ]
+    },
+    "RegisterTargetsInput":{
+      "type":"structure",
+      "required":[
+        "TargetGroupArn",
+        "Targets"
+      ],
+      "members":{
+        "TargetGroupArn":{
+          "shape":"TargetGroupArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the target group.</p>"
+        },
+        "Targets":{
+          "shape":"TargetDescriptions",
+          "documentation":"<p>The targets.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for RegisterTargets.</p>"
+    },
+    "RegisterTargetsOutput":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Contains the output of RegisterTargets.</p>"
+    },
+    "RemoveTagsInput":{
+      "type":"structure",
+      "required":[
+        "ResourceArns",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArns":{
+          "shape":"ResourceArns",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "TagKeys":{
+          "shape":"TagKeys",
+          "documentation":"<p>The tag keys for the tags to remove.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for RemoveTags.</p>"
+    },
+    "RemoveTagsOutput":{
+      "type":"structure",
+      "members":{
+      },
+      "documentation":"<p>Contains the output of RemoveTags.</p>"
+    },
+    "ResourceArn":{"type":"string"},
+    "ResourceArns":{
+      "type":"list",
+      "member":{"shape":"ResourceArn"}
+    },
+    "ResourceInUseException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"ResourceInUse",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>A specified resource is in use.</p>"
+    },
+    "Rule":{
+      "type":"structure",
+      "members":{
+        "RuleArn":{
+          "shape":"RuleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rule.</p>"
+        },
+        "Priority":{
+          "shape":"String",
+          "documentation":"<p>The priority of the rule.</p>"
+        },
+        "Conditions":{
+          "shape":"RuleConditionList",
+          "documentation":"<p>The conditions.</p>"
+        },
+        "Actions":{
+          "shape":"Actions",
+          "documentation":"<p>The actions.</p>"
+        },
+        "IsDefault":{
+          "shape":"IsDefault",
+          "documentation":"<p>Indicates whether this is the default rule.</p>"
+        }
+      },
+      "documentation":"<p>Information about a rule.</p>"
+    },
+    "RuleArn":{"type":"string"},
+    "RuleArns":{
+      "type":"list",
+      "member":{"shape":"RuleArn"}
+    },
+    "RuleCondition":{
+      "type":"structure",
+      "members":{
+        "Field":{
+          "shape":"ConditionFieldName",
+          "documentation":"<p>The name of the field. The possible value is <code>path-pattern</code>.</p>"
+        },
+        "Values":{
+          "shape":"ListOfString",
+          "documentation":"<p>The values for the field.</p>"
+        }
+      },
+      "documentation":"<p>Information about a condition for a rule.</p>"
+    },
+    "RuleConditionList":{
+      "type":"list",
+      "member":{"shape":"RuleCondition"}
+    },
+    "RuleNotFoundException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"RuleNotFound",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The specified rule does not exist.</p>"
+    },
+    "RulePriority":{
+      "type":"integer",
+      "min":1,
+      "max":1000
+    },
+    "RulePriorityList":{
+      "type":"list",
+      "member":{"shape":"RulePriorityPair"}
+    },
+    "RulePriorityPair":{
+      "type":"structure",
+      "members":{
+        "RuleArn":{
+          "shape":"RuleArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the rule.</p>"
+        },
+        "Priority":{
+          "shape":"RulePriority",
+          "documentation":"<p>The rule priority.</p>"
+        }
+      },
+      "documentation":"<p>Information about the priorities for the rules for a listener.</p>"
+    },
+    "Rules":{
+      "type":"list",
+      "member":{"shape":"Rule"}
+    },
+    "SSLPolicyNotFoundException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"SSLPolicyNotFound",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The specified SSL policy does not exist.</p>"
+    },
+    "SecurityGroupId":{"type":"string"},
+    "SecurityGroups":{
+      "type":"list",
+      "member":{"shape":"SecurityGroupId"}
+    },
+    "SetRulePrioritiesInput":{
+      "type":"structure",
+      "required":["RulePriorities"],
+      "members":{
+        "RulePriorities":{
+          "shape":"RulePriorityList",
+          "documentation":"<p>The rule priorities.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for SetRulePriorities.</p>"
+    },
+    "SetRulePrioritiesOutput":{
+      "type":"structure",
+      "members":{
+        "Rules":{
+          "shape":"Rules",
+          "documentation":"<p>Information about the rules.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of SetRulePriorities.</p>"
+    },
+    "SetSecurityGroupsInput":{
+      "type":"structure",
+      "required":[
+        "LoadBalancerArn",
+        "SecurityGroups"
+      ],
+      "members":{
+        "LoadBalancerArn":{
+          "shape":"LoadBalancerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the load balancer.</p>"
+        },
+        "SecurityGroups":{
+          "shape":"SecurityGroups",
+          "documentation":"<p>The IDs of the security groups.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for SetSecurityGroups.</p>"
+    },
+    "SetSecurityGroupsOutput":{
+      "type":"structure",
+      "members":{
+        "SecurityGroupIds":{
+          "shape":"SecurityGroups",
+          "documentation":"<p>The IDs of the security groups associated with the load balancer.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of SetSecurityGroups.</p>"
+    },
+    "SetSubnetsInput":{
+      "type":"structure",
+      "required":[
+        "LoadBalancerArn",
+        "Subnets"
+      ],
+      "members":{
+        "LoadBalancerArn":{
+          "shape":"LoadBalancerArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the load balancer.</p>"
+        },
+        "Subnets":{
+          "shape":"Subnets",
+          "documentation":"<p>The IDs of the subnets. You must specify at least two subnets. You can add only one subnet per Availability Zone.</p>"
+        }
+      },
+      "documentation":"<p>Contains the parameters for SetSubnets.</p>"
+    },
+    "SetSubnetsOutput":{
+      "type":"structure",
+      "members":{
+        "AvailabilityZones":{
+          "shape":"AvailabilityZones",
+          "documentation":"<p>Information about the subnet and Availability Zone.</p>"
+        }
+      },
+      "documentation":"<p>Contains the output of SetSubnets.</p>"
+    },
+    "SslPolicies":{
+      "type":"list",
+      "member":{"shape":"SslPolicy"}
+    },
+    "SslPolicy":{
+      "type":"structure",
+      "members":{
+        "SslProtocols":{
+          "shape":"SslProtocols",
+          "documentation":"<p>The protocols.</p>"
+        },
+        "Ciphers":{
+          "shape":"Ciphers",
+          "documentation":"<p>The ciphers.</p>"
+        },
+        "Name":{
+          "shape":"SslPolicyName",
+          "documentation":"<p>The name of the policy.</p>"
+        }
+      },
+      "documentation":"<p>Information about a policy used for SSL negotiation.</p>"
+    },
+    "SslPolicyName":{"type":"string"},
+    "SslPolicyNames":{
+      "type":"list",
+      "member":{"shape":"SslPolicyName"}
+    },
+    "SslProtocol":{"type":"string"},
+    "SslProtocols":{
+      "type":"list",
+      "member":{"shape":"SslProtocol"}
+    },
+    "StateReason":{"type":"string"},
+    "String":{"type":"string"},
+    "StringValue":{"type":"string"},
+    "SubnetId":{"type":"string"},
+    "SubnetNotFoundException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"SubnetNotFound",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The specified subnet does not exist.</p>"
+    },
+    "Subnets":{
+      "type":"list",
+      "member":{"shape":"SubnetId"}
+    },
+    "Tag":{
+      "type":"structure",
+      "required":["Key"],
+      "members":{
+        "Key":{
+          "shape":"TagKey",
+          "documentation":"<p>The key of the tag.</p>"
+        },
+        "Value":{
+          "shape":"TagValue",
+          "documentation":"<p>The value of the tag.</p>"
+        }
+      },
+      "documentation":"<p>Information about a tag.</p>"
+    },
+    "TagDescription":{
+      "type":"structure",
+      "members":{
+        "ResourceArn":{
+          "shape":"ResourceArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the resource.</p>"
+        },
+        "Tags":{
+          "shape":"TagList",
+          "documentation":"<p>Information about the tags.</p>"
+        }
+      },
+      "documentation":"<p>The tags associated with a resource.</p>"
+    },
+    "TagDescriptions":{
+      "type":"list",
+      "member":{"shape":"TagDescription"}
+    },
+    "TagKey":{
+      "type":"string",
+      "min":1,
+      "max":128,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"TagKey"}
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"},
+      "min":1
+    },
+    "TagValue":{
+      "type":"string",
+      "min":0,
+      "max":256,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "TargetDescription":{
+      "type":"structure",
+      "required":["Id"],
+      "members":{
+        "Id":{
+          "shape":"TargetId",
+          "documentation":"<p>The ID of the target.</p>"
+        },
+        "Port":{
+          "shape":"Port",
+          "documentation":"<p>The port on which the target is listening.</p>"
+        }
+      },
+      "documentation":"<p>Information about a target.</p>"
+    },
+    "TargetDescriptions":{
+      "type":"list",
+      "member":{"shape":"TargetDescription"}
+    },
+    "TargetGroup":{
+      "type":"structure",
+      "members":{
+        "TargetGroupArn":{
+          "shape":"TargetGroupArn",
+          "documentation":"<p>The Amazon Resource Name (ARN) of the target group.</p>"
+        },
+        "TargetGroupName":{
+          "shape":"TargetGroupName",
+          "documentation":"<p>The name of the target group.</p>"
+        },
+        "Protocol":{
+          "shape":"ProtocolEnum",
+          "documentation":"<p>The protocol to use for routing traffic to the targets.</p>"
+        },
+        "Port":{
+          "shape":"Port",
+          "documentation":"<p>The port on which the targets are listening.</p>"
+        },
+        "VpcId":{
+          "shape":"VpcId",
+          "documentation":"<p>The ID of the VPC for the targets.</p>"
+        },
+        "HealthCheckProtocol":{
+          "shape":"ProtocolEnum",
+          "documentation":"<p>The protocol to use to connect with the target.</p>"
+        },
+        "HealthCheckPort":{
+          "shape":"HealthCheckPort",
+          "documentation":"<p>The port to use to connect with the target.</p>"
+        },
+        "HealthCheckIntervalSeconds":{
+          "shape":"HealthCheckIntervalSeconds",
+          "documentation":"<p>The approximate amount of time, in seconds, between health checks of an individual target.</p>"
+        },
+        "HealthCheckTimeoutSeconds":{
+          "shape":"HealthCheckTimeoutSeconds",
+          "documentation":"<p>The amount of time, in seconds, during which no response means a failed health check.</p>"
+        },
+        "HealthyThresholdCount":{
+          "shape":"HealthCheckThresholdCount",
+          "documentation":"<p>The number of consecutive health checks successes required before considering an unhealthy target healthy.</p>"
+        },
+        "UnhealthyThresholdCount":{
+          "shape":"HealthCheckThresholdCount",
+          "documentation":"<p>The number of consecutive health check failures required before considering the target unhealthy.</p>"
+        },
+        "HealthCheckPath":{
+          "shape":"Path",
+          "documentation":"<p>The destination for the health check request.</p>"
+        },
+        "Matcher":{
+          "shape":"Matcher",
+          "documentation":"<p>The HTTP codes to use when checking for a successful response from a target.</p>"
+        },
+        "LoadBalancerArns":{
+          "shape":"LoadBalancerArns",
+          "documentation":"<p>The Amazon Resource Names (ARN) of the load balancers for this target group.</p>"
+        }
+      },
+      "documentation":"<p>Information about a target group.</p>"
+    },
+    "TargetGroupArn":{"type":"string"},
+    "TargetGroupArns":{
+      "type":"list",
+      "member":{"shape":"TargetGroupArn"}
+    },
+    "TargetGroupAssociationLimitException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"TargetGroupAssociationLimit",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>You've reached the limit on the number of load balancers per target group.</p>"
+    },
+    "TargetGroupAttribute":{
+      "type":"structure",
+      "members":{
+        "Key":{
+          "shape":"TargetGroupAttributeKey",
+          "documentation":"<p>The name of the attribute.</p> <ul> <li><p><code>deregistration_delay.timeout_seconds</code> - Targets can be described for this duration. The state of a deregistering target is <code>draining</code>. The range is 0-3600 seconds. The default value is 300 seconds.</p></li> </ul>"
+        },
+        "Value":{
+          "shape":"TargetGroupAttributeValue",
+          "documentation":"<p>The value of the attribute.</p>"
+        }
+      },
+      "documentation":"<p>Information about a target group attribute.</p>"
+    },
+    "TargetGroupAttributeKey":{
+      "type":"string",
+      "max":256,
+      "pattern":"^[a-zA-Z0-9._]+$"
+    },
+    "TargetGroupAttributeValue":{"type":"string"},
+    "TargetGroupAttributes":{
+      "type":"list",
+      "member":{"shape":"TargetGroupAttribute"}
+    },
+    "TargetGroupName":{"type":"string"},
+    "TargetGroupNames":{
+      "type":"list",
+      "member":{"shape":"TargetGroupName"}
+    },
+    "TargetGroupNotFoundException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"TargetGroupNotFound",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The specified target group does not exist.</p>"
+    },
+    "TargetGroups":{
+      "type":"list",
+      "member":{"shape":"TargetGroup"}
+    },
+    "TargetHealth":{
+      "type":"structure",
+      "members":{
+        "State":{
+          "shape":"TargetHealthStateEnum",
+          "documentation":"<p>The state of the target.</p>"
+        },
+        "Reason":{
+          "shape":"TargetHealthReasonEnum",
+          "documentation":"<p>The reason code. If the target state is <code>healthy</code>, a reason code is not provided.</p> <p>If the target state is <code>initial</code>, the reason code can be one of the following values:</p> <ul> <li> <p><code>Elb.RegistrationInProgress</code> - The target is in the process of being registered with the load balancer.</p> </li> <li> <p><code>Elb.InitialHealthChecking</code> - The load balancer is still sending the target the minimum number of health checks required to determine its health status.</p> </li> </ul> <p>If the target state is <code>unhealthy</code>, the reason code can be one of the following values:</p> <ul> <li> <p><code>Target.ResponseCodeMismatch</code> - A health check did not return an expected HTTP code.</p> </li> <li> <p><code>Target.Timeout</code> - A health check or connection request timed out.</p> </li> <li> <p><code>Target.FailedHealthChecks</code> - A health check failed for another reason.</p> </li> </ul> <p>If the target state is <code>unused</code>, the reason code can be one of the following values:</p> <ul> <li> <p><code>Target.NotRegistered</code> - The target is not registered with the target group.</p> </li> <li> <p><code>Target.NotInUse</code> - The target group is not used by the load balancer or the target is in an Availability Zone that is not enabled.</p> </li> <li> <p><code>Target.InvalidState</code> - The target is in the stopped or terminated state.</p> </li> </ul> <p>If the target state is <code>draining</code>, the reason code can be the following value:</p> <ul> <li> <p><code>Target.DeregistrationInProgress</code> - The target is in the process of being de-registered and the delay period has not expired.</p> </li> </ul>"
+        },
+        "Description":{
+          "shape":"Description",
+          "documentation":"<p>A description of the target health that provides additional details. If the state is <code>healthy</code>, a description is not provided.</p>"
+        }
+      },
+      "documentation":"<p>Information about the current health of a target.</p>"
+    },
+    "TargetHealthDescription":{
+      "type":"structure",
+      "members":{
+        "Target":{
+          "shape":"TargetDescription",
+          "documentation":"<p>The description of the target.</p>"
+        },
+        "HealthCheckPort":{
+          "shape":"HealthCheckPort",
+          "documentation":"<p>The port to use to connect with the target.</p>"
+        },
+        "TargetHealth":{
+          "shape":"TargetHealth",
+          "documentation":"<p>The health information for the target.</p>"
+        }
+      },
+      "documentation":"<p>Information about the health of a target.</p>"
+    },
+    "TargetHealthDescriptions":{
+      "type":"list",
+      "member":{"shape":"TargetHealthDescription"}
+    },
+    "TargetHealthReasonEnum":{
+      "type":"string",
+      "enum":[
+        "Elb.RegistrationInProgress",
+        "Elb.InitialHealthChecking",
+        "Target.ResponseCodeMismatch",
+        "Target.ResponseBodyMismatch",
+        "Target.Timeout",
+        "Target.FailedHealthChecks",
+        "Target.NotRegistered",
+        "Target.NotInUse",
+        "Target.DeregistrationInProgress",
+        "Target.InvalidState"
+      ]
+    },
+    "TargetHealthStateEnum":{
+      "type":"string",
+      "enum":[
+        "initial",
+        "healthy",
+        "unhealthy",
+        "unused",
+        "draining"
+      ]
+    },
+    "TargetId":{"type":"string"},
+    "TooManyCertificatesException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"TooManyCertificates",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>You've reached the limit on the number of certificates per listener.</p>"
+    },
+    "TooManyListenersException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"TooManyListeners",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>You've reached the limit on the number of listeners per load balancer.</p>"
+    },
+    "TooManyLoadBalancersException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"TooManyLoadBalancers",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>You've reached the limit on the number of load balancers for your AWS account.</p>"
+    },
+    "TooManyRulesException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"TooManyRules",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>You've reached the limit on the number of rules per load balancer.</p>"
+    },
+    "TooManyTagsException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"TooManyTags",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>You've reached the limit on the number of tags per load balancer.</p>"
+    },
+    "TooManyTargetGroupsException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"TooManyTargetGroups",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>You've reached the limit on the number of target groups for your AWS account.</p>"
+    },
+    "TooManyTargetsException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"TooManyTargets",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>You've reached the limit on the number of targets for the target group.</p>"
+    },
+    "UnsupportedProtocolException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"UnsupportedProtocol",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true,
+      "documentation":"<p>The specified protocol is not supported.</p>"
+    },
+    "VpcId":{"type":"string"},
+    "ZoneName":{"type":"string"}
+  },
+  "examples":{
+  }
+}

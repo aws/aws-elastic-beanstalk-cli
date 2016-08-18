@@ -66,7 +66,8 @@ class TestCreate(BaseControllerTest):
             app_name=self.app_name,
             env_name=env_name,
             cname=cname_prefix,
-            platform=self.solution
+            platform=self.solution,
+            elb_type='classic'
         )
         args, kwargs = self.mock_operations.make_new_env.call_args
         self.assertEqual(args[0], env_request)
@@ -86,7 +87,8 @@ class TestCreate(BaseControllerTest):
         self.mock_input.return_value = None
 
         # run cmd
-        self.app = EB(argv=['create'])
+        # (don't test elb_type prompt as None causes it to fail)
+        self.app = EB(argv=['create', '--elb-type', 'classic'])
         self.app.setup()
         self.app.run()
         self.app.close()
@@ -96,7 +98,8 @@ class TestCreate(BaseControllerTest):
             app_name=self.app_name,
             env_name=self.app_name + '-dev',
             cname=self.app_name + '-dev',
-            platform=self.solution
+            platform=self.solution,
+            elb_type='classic'
         )
         args, kwargs = self.mock_operations.make_new_env.call_args
         self.assertEqual(args[0], env_request)
@@ -131,13 +134,13 @@ class TestCreate(BaseControllerTest):
 
     def test_create_script_mode(self):
         """
-        Provide env name and tier as command line options.
+        Provide env name and tier and elb_type as command line options.
         Command should now no longer be interactive and it should ask no questions.
         """
         env_name = 'my-awesome-env'
         self.mock_commonops.get_solution_stack.return_value = self.solution
 
-        self.app = EB(argv=['create', env_name])
+        self.app = EB(argv=['create', env_name, '--elb-type', 'classic'])
         self.app.setup()
         self.app.run()
         self.app.close()
@@ -183,7 +186,8 @@ class TestCreate(BaseControllerTest):
             instance_type=itype,
             key_name=keyname,
             scale=3,
-            tags=[{'Key': 'a', 'Value': '1'}, {'Key': 'b', 'Value': '2'}]
+            tags=[{'Key': 'a', 'Value': '1'}, {'Key': 'b', 'Value': '2'}],
+            elb_type='classic'
         )
         args, kwargs = self.mock_operations.make_new_env.call_args
         self.assertEqual(args[0], env_request)

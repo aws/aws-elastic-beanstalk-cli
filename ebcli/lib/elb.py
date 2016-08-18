@@ -16,6 +16,7 @@ from cement.utils.misc import minimal_logger
 from ..lib import aws
 from ..objects.exceptions import ServiceError, NotFoundError
 from ..resources.strings import responses
+from ..resources.statics import elb_names
 
 LOG = minimal_logger(__name__)
 
@@ -23,6 +24,10 @@ LOG = minimal_logger(__name__)
 def _make_api_call(operation_name, **operation_options):
     return aws.make_api_call('elb', operation_name, **operation_options)
 
+def version(load_balancer_name):
+    if '/app/' in load_balancer_name:
+        return elb_names.APPLICATION_VERSION
+    return elb_names.CLASSIC_VERSION
 
 def get_health_of_instances(load_balancer_name):
     try:

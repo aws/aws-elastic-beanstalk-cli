@@ -64,7 +64,7 @@ def create_health_tables(screen, env):
     screen.add_table(StatusTable('health', columns=[
         Column('instance-id', None, 'InstanceId', 'left'),
         Column('status', 10, 'HealthStatus', 'left', 'status_sort'),
-        Column('cause', 60, 'Cause', 'none'),
+        Column('cause', None, 'Cause', 'none'),
     ]))
     screen.add_table(RequestTable('requests', columns=[
         Column('instance-id', None, 'InstanceId', 'left'),

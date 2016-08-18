@@ -9,6 +9,7 @@ Changelog
 - Updated 'eb config' inline doc to be clearer on functionality
 - Fixed 'eb deploy --nohang' problem
 - Added commands '--command' and '--custom' to 'eb ssh'
+- Added support for Application Load Balancer with 'create', 'health' and 'status'
 
 ------------------
 3.7.7 (2016-06-27)

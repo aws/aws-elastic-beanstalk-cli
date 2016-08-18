@@ -48,6 +48,7 @@ class option_names(object):
     INTERVAL = 'Interval'
     LOAD_BALANCER_HTTP_PORT = 'LoadBalancerHTTPPort'
     LOAD_BALANCER_HTTPS_PORT = 'LoadBalancerHTTPSPort'
+    LOAD_BALANCER_TYPE = 'LoadBalancerType'
     MAX_SIZE = 'MaxSize'
     MIN_SIZE = 'MinSize'
     PUBLIC_IP = 'AssociatePublicIpAddress'
@@ -59,3 +60,12 @@ class option_names(object):
     SSL_CERT_ID = 'SSLCertificateId'
     SYSTEM_TYPE = 'SystemType'
     VPC_ID = 'VPCId'
+
+
+class elb_names(object):
+    HEALTHY_STATE = 'healthy'
+    UNHEALTHY_STATE = 'unhealthy'
+    V2_RESOURCE_TYPE = 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    DEFAULT_PROCESS_LOGICAL_ID = 'AWSEBV2LoadBalancerTargetGroup'
+    CLASSIC_VERSION = 'classic'
+    APPLICATION_VERSION = 'application'

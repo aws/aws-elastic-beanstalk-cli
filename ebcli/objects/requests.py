@@ -22,7 +22,8 @@ class CreateEnvironmentRequest(object):
                  instance_profile=None, service_role=None,
                  single_instance=False, key_name=None,
                  sample_application=False, tags=None, scale=None,
-                 database=None, vpc=None, template_name=None, group_name=None):
+                 database=None, vpc=None, template_name=None, group_name=None,
+                 elb_type=None):
         self.app_name = app_name
         self.cname = cname
         self.env_name = env_name
@@ -50,6 +51,7 @@ class CreateEnvironmentRequest(object):
         else:
             self.vpc = dict(vpc)
 
+        self.elb_type = elb_type
         self.scale = None
         self.option_settings = []
         self.compiled = False
@@ -162,6 +164,11 @@ class CreateEnvironmentRequest(object):
                 namespaces.AUTOSCALING,
                 option_names.MIN_SIZE,
                 self.scale)
+        if self.elb_type:
+            self.add_option_setting(
+                namespaces.ENVIRONMENT,
+                option_names.LOAD_BALANCER_TYPE,
+                self.elb_type)
 
     def add_client_defaults(self):
         if self.template_name:
