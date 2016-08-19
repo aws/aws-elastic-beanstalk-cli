@@ -72,7 +72,7 @@ strings = {
     'list.info': 'Lists all environments.',
     'terminate.info': 'Terminates the environment.',
     'terminate.epilog': 'This command terminates the environment. To terminate the application and everything in it, use the "--all" option.',
-    'config.info': 'Edits the environment configuration settings or manages saved configurations. Specifying no command will deploy the specified configuration to the current environment.',
+    'config.info': "Modify an environment's configuration. Use subcommands to manage saved configurations.",
     'ssh.info': 'Opens the SSH client to connect to an instance.',
     'printenv.info': 'Shows the environment variables.',
     'local.info': 'Runs commands on your local machine.',
@@ -323,7 +323,7 @@ flag_text = {
     'create.config': 'saved configuration name',
     'create.group': 'group suffix',
     'create.modules': 'a list of modules',
-    'create.elb_type': 'elb type',
+    'create.elb_type': 'load balancer type',
 
     # Deploy
     'deploy.env': 'environment name',
@@ -375,8 +375,8 @@ flag_text = {
     'ssh.number': 'index of instance in list',
     'ssh.instance': 'instance id',
     'ssh.keepopen': 'keep port 22 open',
-    'ssh.command': 'execute COMMAND on the remote host instead of a login shell',
-    'ssh.custom': 'custom ssh command to use',
+    'ssh.command': 'Execute a shell command on the specified instance instead of starting an SSH session.',
+    'ssh.custom': "Specify an SSH command to use instead of 'ssh -i keyfile'. Do not include the remote user and hostname.",
     'ssh.force': 'force port 22 open to 0.0.0.0',
     'ssh.setup': 'setup SSH for the environment',
 

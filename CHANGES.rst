@@ -3,7 +3,7 @@ Changelog
 =========
 
 ------------------
-3.7.8 (2016-08-15)
+3.7.8 (2016-08-22)
 ------------------
 - Fixed 'eb setenv --timeout' problem
 - Updated 'eb config' inline doc to be clearer on functionality

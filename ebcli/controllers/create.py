@@ -410,7 +410,7 @@ def get_cname(env_name):
 
 def get_elb_type():
     io.echo()
-    io.echo('Select an ELB type')
+    io.echo('Select a load balancer type')
     result = utils.prompt_for_item_in_list(["classic", "application"], default=1)
     elb_type = result
 
