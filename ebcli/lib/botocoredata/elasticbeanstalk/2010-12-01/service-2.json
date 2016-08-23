@@ -1576,6 +1576,20 @@
       "type":"list",
       "member":{"shape":"Cause"}
     },
+    "CfnEnvironmentResourceDescriptionList":{
+      "type":"list",
+      "member":{"shape":"CfnEnvironmentResourceItem"}
+    },
+    "CfnEnvironmentResourceItem":{
+      "type":"structure",
+      "members":{
+        "Type":{"shape":"String"},
+        "LogicalResourceId":{"shape":"String"},
+        "PhysicalResourceId":{"shape":"String"},
+        "Description":{"shape":"String"},
+        "Properties":{"shape":"ResourcePropertyList"}
+      }
+    },
     "CheckDNSAvailabilityMessage":{
       "type":"structure",
       "required":["CNAMEPrefix"],
@@ -2153,6 +2167,7 @@
         "LaunchConfigurations":{"shape":"LaunchConfigurationList"},
         "LoadBalancers":{"shape":"LoadBalancerList"},
         "Triggers":{"shape":"TriggerList"},
+        "Resources":{"shape":"CfnEnvironmentResourceDescriptionList"},
         "Queues":{"shape":"QueueList"}
       }
     },
@@ -2553,6 +2568,17 @@
       "type":"string",
       "min":1,
       "max":256
+    },
+    "ResourceProperty":{
+      "type":"structure",
+      "members":{
+        "Name":{"shape":"String"},
+        "Value":{"shape":"String"}
+      }
+    },
+    "ResourcePropertyList":{
+      "type":"list",
+      "member":{"shape":"ResourceProperty"}
     },
     "RestartAppServerMessage":{
       "type":"structure",
