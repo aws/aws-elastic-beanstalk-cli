@@ -56,7 +56,7 @@ class TestInit(BaseControllerTest):
         self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
-        self.mock_commonops.create_app.return_value = None, None
+        self.mock_commonops.pull_down_app_info.return_value = None, None
         self.mock_commonops.get_default_keyname.return_value = ''
         self.mock_commonops.get_default_region.return_value = ''
         self.mock_commonops.get_default_solution_stack.return_value = ''
@@ -97,7 +97,7 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.prompt_for_solution_stack.return_value = \
             self.solution
         self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
-        self.mock_commonops.create_app.return_value = 'something', 'smthing'
+        self.mock_commonops.pull_down_app_info.return_value = 'something', 'smthing'
 
         self.mock_input.side_effect = [
             '3',  # region number

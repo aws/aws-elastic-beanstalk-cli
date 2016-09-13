@@ -67,7 +67,7 @@ class InitController(AbstractBaseController):
         self.set_up_credentials()
 
         self.solution = self.get_solution_stack()
-        self.app_name = self.get_app_name()
+        self.app_name, new_app = self.get_app_name()
         if self.noverify:
             fileoperations.write_config_setting('global',
                                                 'no-verify-ssl', True)
@@ -85,8 +85,8 @@ class InitController(AbstractBaseController):
             default_env = '/ni'
 
         # Create application
-        sstack, key = commonops.create_app(self.app_name,
-                                           default_env=default_env)
+        sstack, key = commonops.create_app(self.app_name, default_env=default_env) if new_app \
+            else commonops.pull_down_app_info(self.app_name, default_env=default_env)
 
         if not self.solution:
             self.solution = sstack
@@ -156,6 +156,7 @@ class InitController(AbstractBaseController):
                                                 profile)
 
     def get_app_name(self):
+        new_app = True
         # Get app name from command line arguments
         app_name = self.app.pargs.application_name
 
@@ -173,7 +174,7 @@ class InitController(AbstractBaseController):
         # Ask for app name
         if not app_name or \
                 (self.interactive and not self.app.pargs.application_name):
-            app_name = _get_application_name_interactive()
+            app_name, new_app = _get_application_name_interactive()
 
         if sys.version_info[0] < 3 and isinstance(app_name, unicode):
             try:
@@ -182,7 +183,7 @@ class InitController(AbstractBaseController):
             except UnicodeDecodeError:
                 pass
 
-        return app_name
+        return app_name, new_app
 
     def get_region_from_inputs(self):
         # Get region from command line arguments
@@ -395,4 +396,4 @@ def _get_application_name_interactive():
         unique_name = utils.get_unique_name(file_name, app_list)
         app_name = io.prompt_for_unique_name(unique_name, app_list)
 
-    return app_name
+    return app_name, new_app

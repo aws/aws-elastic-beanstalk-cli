@@ -169,7 +169,7 @@ class TestCreate(BaseControllerTest):
                             '-ip', profile, '-r', 'us-east-1',
                             '-t', 'web', '-i', itype, '-p', self.solution.name,
                             '--sample', '-d', '-k', keyname, '--scale', '3',
-                            '--tags', 'a=1,b=2'])
+                            '--tags', 'a=1,b=2', '--elb-type', 'classic'])
         self.app.setup()
         self.app.run()
         self.app.close()

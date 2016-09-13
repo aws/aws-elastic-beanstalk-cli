@@ -3,6 +3,12 @@ Changelog
 =========
 
 ------------------
+3.7.9 (2016-09-19)
+------------------
+- Fixed elb prompt for single instance creations
+- Fixed eb init to no longer call CreateApplication when a preexisting application is chosen
+
+------------------
 3.7.8 (2016-08-22)
 ------------------
 - Fixed 'eb setenv --timeout' problem
