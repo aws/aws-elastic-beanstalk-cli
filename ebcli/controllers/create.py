@@ -209,7 +209,7 @@ class CreateController(AbstractBaseController):
         if not key_name:
             key_name = commonops.get_default_keyname()
 
-        if not elb_type and interactive:
+        if not elb_type and interactive and not single:
             elb_type = get_elb_type()
 
         database = self.form_database_object()
