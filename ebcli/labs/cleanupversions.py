@@ -30,7 +30,7 @@ class CleanupVersionsController(AbstractBaseController):
         arguments = AbstractBaseController.Meta.arguments + [
             (['--num-to-leave'], dict(
                 action='store', type=int, default=10, metavar='NUM',
-                help='number of versions to leave DEFAULT=10')),
+                help='number of unused versions to leave DEFAULT=10')),
             (['--older-than'], dict(
                 action='store', type=int, default=60, metavar='DAYS',
                 help='delete only versions older than x days DEFAULT=60')),
@@ -51,7 +51,13 @@ class CleanupVersionsController(AbstractBaseController):
         app_versions.sort(key=itemgetter('DateUpdated'), reverse=True)
 
         # Filter out versions currently being used
-        app_versions = [v for v in app_versions if v not in versions_in_use]
+        app_versions = [v for v in app_versions if v['VersionLabel'] not in versions_in_use]
+
+        total_num_unused_versions = len(app_versions)
+
+        if total_num_unused_versions < num_to_leave:
+            io.echo('Not enough unused application version to leave behind {0}; No application versions to delete.'.format(num_to_leave))
+            return
 
         # Filter out versions newer than filter date
         app_versions = [v for v in app_versions if
