@@ -36,7 +36,11 @@ def ssh_into_instance(instance_id, keep_open=False, force_open=False,
     try:
         ip = instance['PublicIpAddress']
     except KeyError:
-        raise NotFoundError(strings['ssh.noip'])
+        # Now allows access to private subnet
+        if 'PrivateIpAddress' in instance and 'PrivateDnsName' in instance:
+            ip = instance['PrivateDnsName']
+        else:
+            raise NotFoundError(strings['ssh.noip'])
     security_groups = instance['SecurityGroups']
 
     user = 'ec2-user'
