@@ -19,13 +19,14 @@ def get_all_regions():
         Region('us-west-2', 'US West (Oregon)'),
         Region('eu-west-1', 'EU (Ireland)'),
         Region('eu-central-1', 'EU (Frankfurt)'),
-	Region('ap-south-1', 'Asia Pacific (Mumbai)'),
+        Region('ap-south-1', 'Asia Pacific (Mumbai)'),
         Region('ap-southeast-1', 'Asia Pacific (Singapore)'),
         Region('ap-southeast-2', 'Asia Pacific (Sydney)'),
         Region('ap-northeast-1', 'Asia Pacific (Tokyo)'),
         Region('ap-northeast-2', 'Asia Pacific (Seoul)'),
         Region('sa-east-1', 'South America (Sao Paulo)'),
         Region('cn-north-1', 'China (Beijing)'),
+        Region('us-east-2', 'US East (Ohio)'),
     ]
 
 
