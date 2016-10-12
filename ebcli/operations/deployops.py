@@ -10,20 +10,27 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
+from ..operations import gitops
 from ..lib import elasticbeanstalk, aws
 from ..core import io
 from . import commonops
 
 
 def deploy(app_name, env_name, version, label, message, group_name=None,
-           process_app_versions=False, staged=False, timeout=5):
+           process_app_versions=False, staged=False, timeout=5, source=None):
     region_name = aws.get_region_name()
 
     io.log_info('Deploying code to ' + env_name + " in region " + region_name)
 
     if version:
         app_version_label = version
+    elif source is not None:
+        app_version_label = commonops.create_app_version_from_source(
+            app_name, source, process=process_app_versions, label=label, message=message)
+    elif gitops.git_management_enabled() and not staged:
+        app_version_label = commonops.create_codecommit_app_version(
+            app_name, process=process_app_versions, label=label, message=message)
+        io.echo("Starting environment deployment via CodeCommit")
     else:
         # Create app version
         app_version_label = commonops.create_app_version(

@@ -14,15 +14,19 @@
 import sys
 import os.path
 
+from cement.utils.misc import minimal_logger
+
 from ..core import fileoperations, io
 from ..core.abstractcontroller import AbstractBaseController
-from ..lib import utils, elasticbeanstalk, aws
-from ..objects import solutionstack, region as regions
+from ..lib import utils, elasticbeanstalk, codecommit, aws
+from ..objects.sourcecontrol import SourceControl
+from ..objects import sourcecontrol, solutionstack, region as regions
 from ..objects.exceptions import NotInitializedError, NoRegionError, \
-    InvalidProfileError
-from ..operations import commonops, initializeops, sshops
+    InvalidProfileError, ServiceError, ValidationError, CommandError
+from ..operations import commonops, initializeops, sshops, gitops
 from ..resources.strings import strings, flag_text
 
+LOG = minimal_logger(__name__)
 
 class InitController(AbstractBaseController):
     class Meta:
@@ -36,6 +40,7 @@ class InitController(AbstractBaseController):
             (['-k', '--keyname'], dict(help=flag_text['init.keyname'])),
             (['-i', '--interactive'], dict(
                 action='store_true', help=flag_text['init.interactive'])),
+            (['--source'], dict(type=utils.check_source, help=flag_text['init.source'])),
         ]
         usage = 'eb init <application_name> [options ...]'
         epilog = strings['init.epilog']
@@ -49,6 +54,10 @@ class InitController(AbstractBaseController):
         if self.app.pargs.platform:
             self.flag = True
         self.modules = self.app.pargs.modules
+        # Code Commit integration
+        self.source = self.app.pargs.source
+        branch = None
+        repository = None
 
         # The user specifies directories to initialize
         if self.modules and len(self.modules) > 0:
@@ -63,6 +72,11 @@ class InitController(AbstractBaseController):
         else:
             self.region = self.get_region_from_inputs()
         aws.set_region(self.region)
+
+        # Warn the customer if they picked a region that CodeCommit is not supported
+        codecommit_region_supported = codecommit.region_supported(self.region)
+        if self.source is not None and not codecommit_region_supported:
+            io.log_warning("AWS CodeCommit is not supported in this region. Continuing initialization without CodeCommit")
 
         self.set_up_credentials()
 
@@ -105,7 +119,67 @@ class InitController(AbstractBaseController):
                 result = commonops.prompt_for_solution_stack()
                 self.solution = result.version
 
-        initializeops.setup(self.app_name, self.region, self.solution)
+        # Setup code commit integration
+        # Ensure that git is setup
+        source_control = SourceControl.get_source_control()
+        try:
+            source_control_setup = source_control.is_setup()
+            if source_control_setup is None:
+                source_control_setup = False
+        except CommandError:
+            source_control_setup = False
+
+        if not source_control_setup:
+            io.echo("Cannot setup CodeCommit because there is no Source Control setup")
+            return
+
+        default_branch_exists = False
+        if gitops.git_management_enabled() and not self.interactive:
+            default_branch_exists = True
+
+        codecommit_region_supported = codecommit.region_supported(self.region)
+        if (not default_branch_exists or self.source is not None) and codecommit_region_supported:
+            if self.source is None:
+                io.echo("Note: Elastic Beanstalk now supports AWS CodeCommit; a fully-managed source control service."
+                    " To learn more, see Docs: https://aws.amazon.com/codecommit/")
+            try:
+                if self.source is None:
+                    io.validate_action("Do you wish to continue with CodeCommit? (y/n)(default is n)", "y")
+
+                # Setup git config settings for code commit credentials
+                source_control.setup_codecommit_cred_config()
+
+                # parse the repository and branch
+                if self.source is not None:
+                    repository, branch = utils.parse_source(self.source)
+
+                # Get user specified repository
+                if repository is None:
+                    repository = get_repository_interactive()
+                else:
+                    try:
+                        result = codecommit.get_repository(repository)
+                        source_control.setup_codecommit_remote_repo(remote_url=result['repositoryMetadata']['cloneUrlHttp'])
+                    except ServiceError as ex:
+                        io.log_error("Repository does not exist in CodeCommit.")
+                        raise ex
+
+                # Get user specified branch
+                if branch is None:
+                    branch = get_branch_interactive(repository)
+                else:
+                    try:
+                        codecommit.get_branch(repository, branch)
+                    except ServiceError as ex:
+                        io.log_error("Branch does not exist in CodeCommit.")
+                        raise ex
+                    source_control.setup_existing_codecommit_branch(branch)
+
+            except ValidationError:
+                LOG.debug("Denied option to use CodeCommit, continuing initialization")
+
+        # Initialize the whole setup
+        initializeops.setup(self.app_name, self.region, self.solution, None, repository, branch)
 
         if 'IIS' not in self.solution:
             self.keyname = self.get_keyname(default=key)
@@ -397,3 +471,115 @@ def _get_application_name_interactive():
         app_name = io.prompt_for_unique_name(unique_name, app_list)
 
     return app_name, new_app
+
+
+# Code Commit repository setup methods
+def get_repository_interactive():
+    source_control = SourceControl.get_source_control()
+    # Give list of code commit repositories to use
+    new_repo = False
+    repo_list = codecommit.list_repositories()["repositories"]
+
+    # If there are existing repositories prompt the user to pick one
+    # otherwise set default as the file name
+    if len(repo_list) > 0:
+        repo_list = list(map(lambda r: r["repositoryName"], repo_list))
+        io.echo()
+        io.echo('Select a repository')
+        new_repo_option = '[ Create new Repository ]'
+        repo_list.append(new_repo_option)
+
+        current_repository = source_control.get_current_repository()
+        current_repository = fileoperations.get_current_directory_name() \
+            if current_repository is None else current_repository
+
+        try:
+            default_option = repo_list.index(current_repository) + 1
+        except ValueError:
+            default_option = len(repo_list)
+        repo_name = utils.prompt_for_item_in_list(repo_list,
+                                                 default=default_option)
+        if repo_name == new_repo_option:
+            new_repo = True
+
+    # Create a new repository if the user specifies or there are no existing repositories
+    if len(repo_list) == 0 or new_repo:
+        io.echo()
+        io.echo('Enter Repository Name')
+        unique_name = utils.get_unique_name(current_repository, repo_list)
+        repo_name = io.prompt_for_unique_name(unique_name, repo_list)
+
+        # Create the repository if we get here
+        codecommit.create_repository(repo_name, "Created with EB CLI")
+        io.echo("Successfully created repository: {0}".format(repo_name))
+
+    return repo_name
+
+
+def get_branch_interactive(repository):
+    source_control = SourceControl.get_source_control()
+    # Give list of code commit branches to use
+    new_branch = False
+    branch_list = codecommit.list_branches(repository)["branches"]
+    current_branch = source_control.get_current_branch()
+
+    # If there are existing branches prompt the user to pick one
+    if len(branch_list) > 0:
+        io.echo()
+        io.echo('Select a branch')
+        new_branch_option = '[ Create new Branch with local HEAD ]'
+        branch_list.append(new_branch_option)
+        try:
+            default_option = branch_list.index(current_branch) + 1
+        except ValueError:
+            default_option = len(branch_list)
+        branch_name = utils.prompt_for_item_in_list(branch_list,
+                                                    default=default_option)
+        if branch_name == new_branch_option:
+            new_branch = True
+
+    # Create a new branch if the user specifies or there are no existing branches
+    current_commit = source_control.get_current_commit()
+    if len(branch_list) == 0 or new_branch:
+        new_branch = True
+        io.echo()
+        io.echo('Enter Branch Name')
+        io.echo('***** Must have at least one commit to create a new branch with CodeCommit *****')
+        unique_name = utils.get_unique_name(current_branch, branch_list)
+        branch_name = io.prompt_for_unique_name(unique_name, branch_list)
+
+    # Setup git to push to this repo
+    result = codecommit.get_repository(repository)
+    source_control.setup_codecommit_remote_repo(remote_url=result['repositoryMetadata']['cloneUrlHttp'])
+
+    if len(branch_list) == 0 or new_branch:
+        LOG.debug("Creating a new branch")
+        try:
+            # Creating the branch requires that we setup the remote branch first
+            # to ensure the code commit branch is synced with the local branch
+            if current_commit is None:
+                # TODO: Test on windows for weird empty returns with the staged files
+                staged_files = source_control.get_list_of_staged_files()
+                if staged_files is None or not staged_files:
+                    source_control.create_initial_commit()
+                else:
+                    LOG.debug("Cannot create placeholder commit because there are staged files: {0}".format(staged_files))
+                    io.echo("Could not set create a commit with staged files; cannot setup CodeCommit branch without a commit")
+                    return None
+
+                current_commit = source_control.get_current_commit()
+
+            source_control.setup_new_codecommit_branch(branch_name=branch_name)
+            codecommit.create_branch(repository, branch_name, current_commit)
+            io.echo("Successfully created branch: {0}".format(branch_name))
+        except ServiceError:
+            io.echo("Could not set CodeCommit branch with the current commit, run with '--debug' to get the full error")
+            return None
+    elif not new_branch:
+        LOG.debug("Setting up an existing branch")
+        succesful_branch = source_control.setup_existing_codecommit_branch(branch_name)
+        if not succesful_branch:
+            io.echo("Could not set CodeCommit branch, run with '--debug' to get the full error")
+            return None
+
+    return branch_name

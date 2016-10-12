@@ -10,7 +10,12 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from os import path, chdir, getcwd, listdir
+import argparse
+import re
+
+from os import path, chdir, getcwd
+
+from ..lib import utils
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
@@ -39,6 +44,7 @@ class DeployController(AbstractBaseController):
             (['--staged'], dict(
                 action='store_true', help=flag_text['deploy.staged'])),
             (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
+            (['--source'], dict(type=utils.check_source, help=flag_text['deploy.source'])),
             ]
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 
@@ -48,6 +54,7 @@ class DeployController(AbstractBaseController):
         self.timeout = self.app.pargs.timeout
         self.nohang =  self.app.pargs.nohang
         self.modules = self.app.pargs.modules
+        self.source = self.app.pargs.source
 
         if self.modules and len(self.modules) > 0:
             self.multiple_app_deploy()
@@ -84,7 +91,7 @@ class DeployController(AbstractBaseController):
 
         deployops.deploy(self.app_name, self.env_name, self.version, self.label,
                          self.message, group_name=group_name, process_app_versions=process_app_versions,
-                         staged=self.staged, timeout=self.timeout)
+                         staged=self.staged, timeout=self.timeout, source=self.source)
 
     def complete_command(self, commands):
         #ToDo, edit this if we ever support multiple env deploys

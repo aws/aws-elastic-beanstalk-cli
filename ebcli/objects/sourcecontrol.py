@@ -20,6 +20,7 @@ import sys
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
 
+from ..lib import codecommit, aws
 from ..core import fileoperations, io
 from ..objects.exceptions import NoSourceControlError, CommandError, \
     NotInitializedError
@@ -108,6 +109,7 @@ class Git(SourceControl):
     """
     The user has git installed
     """
+    codecommit_remote_name = 'codecommit-origin'
 
     def get_name(self):
         return 'git'
@@ -141,6 +143,44 @@ class Git(SourceControl):
             return True
         return False
 
+    def get_current_repository(self):
+        # it's possible 'origin' isn't the name of their remote so attempt to get their current remote
+        current_branch = self.get_current_branch()
+        stdout, stderr, exitcode = self._run_cmd(
+            ['git', 'config', '--get', 'branch.{0}.remote'.format(current_branch)], handle_exitcode=False)
+
+        current_remote = stdout
+        if exitcode != 0:
+            LOG.debug("No remote found for the current working directory.")
+            current_remote = "origin"
+        else:
+            LOG.debug("Found remote branch {0} that is currently being tracked".format(current_remote))
+            try:
+                if current_remote.split('/') > 1:
+                    # TODO: To confirm a url like this is really hacky I should change it.
+                    # This assumes the remote they have is a raw address and get the repository name from that. It works
+                    # for the way that I use it but it might fail if it is used to get repos that were not created by
+                    # the eb cli
+                    LOG.debug("Assuming remote branch is a raw url, returning this as the repository")
+                    return stdout.split('/')[-1]
+            except TypeError:
+                LOG.debug("stdout from git config branch remote was not a string: {0}".format(stdout))
+                current_remote = "origin"
+
+        # We want the name of the repository not the remote it is saved as locally
+        stdout, stderr, exitcode = self._run_cmd(
+            ['git', 'config', '--get', 'remote.{0}.url'.format(current_remote)], handle_exitcode=False)
+        if exitcode != 0:
+            LOG.debug('No remote repository found')
+            return
+        else:
+            self._handle_exitcode(exitcode, stderr)
+
+        LOG.debug('git config --get remote.origin.url: ' + stdout)
+        # Need to parse branch from ref manually because "--short" is
+        # not supported on git < 1.8
+        return stdout.split('/')[-1]
+
     def get_current_branch(self):
         try:
             stdout, stderr, exitcode = self._run_cmd(['git', '--version'])
@@ -160,6 +200,18 @@ class Git(SourceControl):
         # Need to parse branch from ref manually because "--short" is
         # not supported on git < 1.8
         return stdout.split('/')[-1]
+
+    def get_current_commit(self):
+        stdout, stderr, exitcode = self._run_cmd(
+            ['git', 'rev-parse', '--verify', 'HEAD'], handle_exitcode=False)
+        if exitcode != 0:
+            LOG.debug('No current commit found')
+            return
+        else:
+            self._handle_exitcode(exitcode, stderr)
+
+        LOG.debug('git rev-parse --verify HEAD result: ' + stdout)
+        return stdout
 
     def do_zip(self, location, staged=False):
         cwd = os.getcwd()
@@ -227,6 +279,134 @@ class Git(SourceControl):
         finally:
             os.chdir(cwd)
 
+    def push_codecommit_code(self):
+        io.log_info('Pushing local code to codecommit with git-push')
+        stdout, stderr, exitcode = self._run_cmd(['git', 'push', self.get_codecommit_presigned_remote_url()])
+
+        if exitcode != 0:
+            io.log_warning('Git is not able to push code: {0}'.format(exitcode))
+            io.log_warning(stderr)
+        else:
+            LOG.debug('git push result: {0}'.format(stdout))
+            self._handle_exitcode(exitcode, stderr)
+
+    def setup_codecommit_remote_repo(self, remote_url):
+        stdout, stderr, exitcode = self._run_cmd(['git', 'remote', 'add', self.codecommit_remote_name, remote_url], handle_exitcode=False)
+
+        # Setup the remote repository with code commit
+        if exitcode != 0:
+            if exitcode == 128:
+                LOG.debug("git remote already exists modifying to new url: {0}".format(remote_url))
+                self._run_cmd(['git', 'remote', 'set-url', self.codecommit_remote_name, remote_url])
+                self._run_cmd(['git', 'remote', 'set-url', '--push', self.codecommit_remote_name, remote_url])
+            else:
+                LOG.debug("Error setting up git config for code commit: {0}".format(stderr))
+                return
+        else:
+            self._run_cmd(['git', 'remote', 'set-url', '--add', '--push', self.codecommit_remote_name, remote_url])
+            self._handle_exitcode(exitcode, stderr)
+
+        LOG.debug('git remote result: ' + stdout)
+
+    def setup_new_codecommit_branch(self, branch_name):
+        # Get fetch to ensure the remote repository is up to date
+        self.fetch_remote_branches(self.codecommit_remote_name)
+
+        # Attempt to check out the desired branch, if it doesn't exist create it from the current HEAD
+        self.checkout_branch(branch_name, create_branch=True)
+
+        # Push the current code and set the remote as the current working remote
+        stdout, stderr, exitcode = self._run_cmd(['git', 'push', '-u', self.get_codecommit_presigned_remote_url(), branch_name], handle_exitcode=False)
+
+        if exitcode != 0:
+            LOG.debug('git push error: ' + stderr)
+            if exitcode == 1:
+                io.log_warning('Git is not able to push code: {0}'.format(exitcode))
+                io.log_warning(stderr)
+
+        LOG.debug('git push result: ' + stdout)
+
+        # Get fetch to ensure the remote repository is up to date because we just pushed a new branch
+        self.fetch_remote_branches(self.codecommit_remote_name)
+
+        # Set the remote branch up so it's not using the presigned remote OR if the push failed.
+        stdout, stderr, exitcode = self._run_cmd(
+            ['git', 'branch', '--set-upstream-to', "{0}/{1}".format(self.codecommit_remote_name, branch_name)],
+            handle_exitcode=False)
+
+        if exitcode != 0:
+            LOG.debug('git branch --set-upstream-to error: ' + stderr)
+            return False
+
+        LOG.debug('git branch result: ' + stdout)
+
+        return True
+
+    def setup_existing_codecommit_branch(self, branch_name):
+        # Get fetch to ensure the remote repository is up to date
+        self.fetch_remote_branches(self.codecommit_remote_name)
+
+        # Attempt to check out the desired branch, if it doesn't exist create it from the current HEAD
+        self.checkout_branch(branch_name, create_branch=True)
+
+        # Setup the remote branch with the local git directory
+        stdout, stderr, exitcode = self._run_cmd(
+            ['git', 'branch', '--set-upstream-to', "{0}/{1}".format(self.codecommit_remote_name, branch_name)],
+            handle_exitcode=False)
+
+        if exitcode != 0:
+            LOG.debug('git branch --set-upstream-to error: ' + stderr)
+            return False
+
+        LOG.debug('git branch result: ' + stdout)
+
+        return True
+
+    def checkout_branch(self, branch_name, create_branch=False):
+        # Attempt to checkout an existing branch and if it doesn't exist create a new one.
+        stdout, stderr, exitcode = self._run_cmd(['git', 'checkout', branch_name], handle_exitcode=False)
+
+        if exitcode != 0:
+            LOG.debug('Git is not able to checkout code: {0}'.format(exitcode))
+            LOG.debug(stderr)
+            if exitcode == 1:
+                if create_branch:
+                    LOG.debug("Could not checkout branch '{0}', creating the branch locally with current HEAD".format(branch_name))
+                    stdout, stderr, exitcode = self._run_cmd(['git', 'checkout', '-b', branch_name])
+                else:
+                    return False
+        return True
+
+    def get_list_of_staged_files(self):
+        stdout, stderr, exitcode = self._run_cmd(['git', 'diff', '--name-only', '--cached'])
+        LOG.debug('git diff result: {0}'.format(stdout))
+        return stdout
+
+    def create_initial_commit(self):
+        stdout, stderr, exitcode = self._run_cmd(['git', 'commit', '--allow-empty', '-m', 'EB CLI initial commit'], handle_exitcode=False)
+
+        if exitcode !=0:
+            LOG.debug('git was not able to initialize an empty commit: {0}'.format(stderr))
+
+        LOG.debug('git commit result: {0}'.format(stdout))
+        return stdout
+
+    def fetch_remote_branches(self, remote):
+        stdout, stderr, exitcode = self._run_cmd(['git', 'fetch', self.get_codecommit_presigned_remote_url(),
+                                                  '+refs/heads/*:refs/remotes/{0}/*'.format(remote)],
+                                                    handle_exitcode=False)
+        if exitcode != 0:
+            if exitcode == 1:
+                LOG.debug('git fetch error: ' + stderr)
+
+        LOG.debug('git fetch result: {0}'.format(stdout))
+
+    def setup_codecommit_cred_config(self):
+        self._run_cmd(
+            ['git', 'config', '--local', '--replace-all', 'credential.UseHttpPath', 'true'])
+        self._run_cmd(
+            ['git', 'config', '--local', '--replace-all', 'credential.helper', '!aws codecommit credential-helper $@'])
+
     def _run_cmd(self, cmd, handle_exitcode=True):
         stdout, stderr, exitcode = exec_cmd(cmd)
         if sys.version_info[0] >= 3:
@@ -237,3 +417,17 @@ class Git(SourceControl):
         if handle_exitcode:
             self._handle_exitcode(exitcode, stderr)
         return stdout, stderr, exitcode
+
+    def get_url_from_remote_repo(self, remote):
+        stdout, stderr, exitcode = self._run_cmd(['git', 'config', '--get', "remote.{0}.url".format(remote)], handle_exitcode=False)
+        if exitcode != 0:
+            LOG.debug('git remote error: ' + stderr)
+            return
+
+        LOG.debug('git remote result: ' + stdout)
+        return stdout
+
+    def get_codecommit_presigned_remote_url(self):
+        remote_url = self.get_url_from_remote_repo(self.codecommit_remote_name)
+        signed_url = codecommit.create_signed_url(remote_url)
+        return signed_url

@@ -10,7 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
+import argparse
 import os
 import re
 import pkg_resources
@@ -298,3 +298,38 @@ def merge_dicts(low_priority, high_priority):
     result_dict = low_priority.copy()
     result_dict.update(high_priority)
     return result_dict
+
+
+def retract_string(string):
+    try:
+        string_len = len(string)
+        keep_characters = range(0, 4)
+        keep_characters.extend(range(string_len - 4, string_len))
+        retracted_string = []
+        for i, c in enumerate(string):
+            if i in keep_characters:
+                retracted_string.append(c)
+            else:
+                retracted_string.append('*')
+        return ''.join(retracted_string)
+    except:
+        return ''
+
+
+def check_source(value):
+    match = re.match(r"([^/]+/[^/]+)", value)
+    if match is None or len(value.split("/")) > 2:
+        raise argparse.ArgumentTypeError(
+            "%s is a invalid source. Example source would be something like: repo/branch" % value)
+    return value
+
+
+def parse_source(source):
+    # Source is already validated by the check_source method.
+    if source is None:
+        return
+
+    split_source = source.split('/')
+    repository = split_source[0]
+    branch = split_source[1]
+    return repository, branch

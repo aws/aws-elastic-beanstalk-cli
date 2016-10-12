@@ -24,7 +24,7 @@ from botocore.compat import six
 from ..core import fileoperations, io
 from ..core.fileoperations import _marker
 from ..containers import dockerrun
-from ..lib import aws, ec2, elasticbeanstalk, heuristics, s3, utils
+from ..lib import aws, ec2, elasticbeanstalk, heuristics, s3, utils, codecommit
 from ..lib.aws import InvalidParameterValueError
 from ..objects.exceptions import *
 from ..objects.solutionstack import SolutionStack
@@ -757,8 +757,108 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
                                        bucket, key, process)
 
 
+def create_codecommit_app_version(app_name, process=False, label=None, message=None):
+    cwd = os.getcwd()
+    fileoperations._traverse_to_project_root()
+
+    source_control = SourceControl.get_source_control()
+    if source_control.get_current_commit() is None:
+        io.log_warning('There are no commits for the current branch, attempting to create an empty commit and launching with the sample application')
+        source_control.create_initial_commit()
+
+    if source_control.untracked_changes_exist():
+        io.log_warning(strings['sc.unstagedchanges'])
+
+    #get version_label
+    if label:
+        version_label = label
+    else:
+        version_label = source_control.get_version_label()
+
+
+    # get description
+    if message:
+        description = message
+    else:
+        description = source_control.get_message()
+
+    if len(description) > 200:
+        description = description[:195] + '...'
+
+    # Push code with git
+    try:
+        source_control.push_codecommit_code()
+    except CommandError as e:
+        io.echo("Could not push code to the CodeCommit repository:")
+        raise e
+
+    # Get additional arguments for deploying code commit and poll
+    #  for the commit to propagate to code commit.
+    from . import gitops
+    repository = gitops.get_default_repository()
+    commit_id = source_control.get_current_commit()
+
+    if repository is None or commit_id is None:
+        raise ServiceError("Could not find repository or commit id to create an application version")
+
+    # Deploy Application version with freshly pushed git commit
+
+    io.log_info('Creating AppVersion ' + version_label)
+    return _create_application_version(app_name, version_label, description,
+                                       None, None, process, repository=repository, commit_id=commit_id)
+
+
+def create_app_version_from_source(app_name, source, process=False, label=None, message=None):
+    cwd = os.getcwd()
+    fileoperations._traverse_to_project_root()
+    try:
+        if heuristics.directory_is_empty():
+            io.log_warning(strings['appversion.none'])
+            return None
+    finally:
+        os.chdir(cwd)
+
+    source_control = SourceControl.get_source_control()
+    if source_control.untracked_changes_exist():
+        io.log_warning(strings['sc.unstagedchanges'])
+
+    # get version_label
+    if label:
+        version_label = label
+    else:
+        version_label = source_control.get_version_label()
+
+    # get description
+    if message:
+        description = message
+    else:
+        description = source_control.get_message()
+
+    if len(description) > 200:
+        description = description[:195] + '...'
+
+    # Parse the source and attempt to push via code commit
+    repository, branch = utils.parse_source(source)
+
+    try:
+        result = codecommit.get_branch(repository, branch)
+    except ServiceError as ex:
+        io.log_error("Could not get branch '{0}' for the repository '{1}' because of this error: {2}".format(branch, repository, ex.code))
+        raise ex
+
+    commit_id = result['branch']['commitId']
+    if repository is None or commit_id is None:
+        raise ServiceError("Could not find repository or commit id to create an application version")
+
+    # Deploy Application version with freshly pushed git commit
+
+    io.log_info('Creating AppVersion ' + version_label)
+    return _create_application_version(app_name, version_label, description,
+                                       None, None, process, repository=repository, commit_id=commit_id)
+
+
 def _create_application_version(app_name, version_label, description,
-                                bucket, key, process=False, warning=True):
+                                bucket, key, process=False, warning=True, repository=None, commit_id=None):
     """
     A wrapper around elasticbeanstalk.create_application_version that
     handles certain error cases:
@@ -768,7 +868,7 @@ def _create_application_version(app_name, version_label, description,
     while True:
         try:
             elasticbeanstalk.create_application_version(
-                app_name, version_label, description, bucket, key, process
+                app_name, version_label, description, bucket, key, process, repository, commit_id
             )
             return version_label
         except InvalidParameterValueError as e:
@@ -832,7 +932,7 @@ def update_environment(env_name, changes, nohang, remove=None,
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 
-
+# BRANCH-DEFAULTS FOR CONFIG FILE
 def write_setting_to_current_branch(keyname, value):
     source_control = SourceControl.get_source_control()
 

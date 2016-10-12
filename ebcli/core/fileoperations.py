@@ -182,6 +182,23 @@ def save_to_aws_config(access_key, secret_key):
     set_user_only_permissions(aws_config_location)
 
 
+def read_credentials_from_aws_config():
+    config = configparser.ConfigParser()
+    if not os.path.isdir(aws_config_folder):
+        os.makedirs(aws_config_folder)
+
+    config.read(aws_config_location)
+
+    if ebcli_section not in config.sections():
+        LOG.debug("Credentials not found in aws config file")
+        return None, None
+
+    access_key = _get_option(config, ebcli_section, aws_access_key, None)
+    secret_key = _get_option(config, ebcli_section, aws_secret_key, None)
+
+    return access_key, secret_key
+
+
 def set_user_only_permissions(location):
     """
     Sets permissions so that only a user can read/write (chmod 400).
@@ -249,7 +266,7 @@ def touch_config_folder(dir_path=None):
                     else beanstalk_directory)
 
 
-def create_config_file(app_name, region, solution_stack, dir_path=None):
+def create_config_file(app_name, region, solution_stack, dir_path=None, repository=None, branch=None):
     """
         We want to make sure we do not override the file if it already exists,
          but we do want to fill in all missing pieces
@@ -269,6 +286,9 @@ def create_config_file(app_name, region, solution_stack, dir_path=None):
     write_config_setting('global', 'application_name', app_name, dir_path=dir_path)
     write_config_setting('global', 'default_region', region, dir_path=dir_path)
     write_config_setting('global', 'default_platform', solution_stack, dir_path=dir_path)
+    from ebcli.operations import gitops
+    gitops.set_repo_default_for_current_environment(repository)
+    gitops.set_branch_default_for_current_environment(branch)
 
 
 def _traverse_to_project_root():

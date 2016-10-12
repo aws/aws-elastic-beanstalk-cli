@@ -120,6 +120,7 @@ strings = {
     'exit.noregion': 'The EB CLI cannot find a default region. Run "eb init" or use a specific region by including the "--region" option with the command.',
     # Typical response when an environment is in pending state
     'exit.invalidstate': 'The operation cannot be completed at this time due to a pending operation. Try again later.',
+    'exit.argerror': 'There was an argument error in the given command',
     'branch.noenv': 'This branch does not have a default environment. You must either specify an environment by typing '
                     '"eb {cmd} my-env-name" or set a default environment by typing "eb use my-env-name".',
     'ssh.notpresent': 'SSH is not installed. You must install SSH before continuing.',
@@ -201,7 +202,8 @@ strings = {
     'appversion.processfailed': 'Pre-processing of application version {app_version} has failed.',
     'appversion.cannotdeploy': 'Some application versions failed to process. Unable to continue deployment.',
     'appversion.processtimeout': 'All application versions have not reached a "Processed" state. Unable to continue with deployment.',
-    'instance.processes.health': '{healthy}/{total} processes healthy.'
+    'instance.processes.health': '{healthy}/{total} processes healthy.',
+    'codesource.info': 'Configures the code source for the EB CLI to use by default.',
 }
 
 prompts = {
@@ -300,6 +302,8 @@ flag_text = {
 
     # Config
     'config.nohang': 'return immediately, do not wait for config to be completed',
+    'config.codesource': 'configure the settings for which source the CLI will use for your code.'
+                         ' Availables sources: {codecommit}. Available actions: {enable, disable}',
 
     # Create
     'create.name': 'desired Environment name',
@@ -334,6 +338,7 @@ flag_text = {
     'deploy.nohang': 'return immediately, do not wait for deploy to be completed',
     'deploy.staged': 'deploy files staged in git rather than the HEAD commit',
     'deploy.group_suffix': 'group suffix',
+    'deploy.source': 'source of code to deploy directly; example repo/branch',
 
     # Events
     'events.follow': 'wait and continue to print events as they come',
@@ -344,6 +349,7 @@ flag_text = {
     'init.keyname': 'default EC2 key name',
     'init.interactive': 'force interactive mode',
     'init.module': 'module directory',
+    'init.source': 'source of code to set as default; example repo/branch',
 
     # labs
     'labs.cwl.remove': 'remove .ebextensions',
@@ -391,10 +397,16 @@ flag_text = {
 
     # use
     'use.env': 'environment name',
+    'use.source': 'source of code to set as default; example repo/branch',
+    'use.repo': 'default code commit repository',
+    'use.branch': 'default code commit branch will use default repository if none is specified',
 
     # swap
     'swap.env': 'name of source environment',
     'swap.name': 'name of destination environment',
+
+    # codesource
+    'codesource.sourcename': 'name of the code source to set as default'
 }
 
 

@@ -11,25 +11,26 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import time
-import random
-import warnings
 import os
+import random
+import time
+import warnings
 
 import botocore
-import botocore.session
 import botocore.exceptions
+import botocore.session
 from botocore.config import Config
 from botocore.loaders import Loader
 from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
+from .botopatch import apply_patches
+from .utils import static_var
+from ..core import fileoperations
 from ..objects.exceptions import ServiceError, NotAuthorizedError, \
     CredentialsError, NoRegionError,  ValidationError, \
     InvalidProfileError, ConnectionError, AlreadyExistsError, NotFoundError, \
     NotAuthorizedInRegionError
-from .utils import static_var
-from .botopatch import apply_patches
 from ..resources.strings import strings
 
 LOG = minimal_logger(__name__)
@@ -171,6 +172,14 @@ def _get_botocore_session():
 
 def get_region_name():
     return _region_name
+
+
+def get_credentials():
+    access_key, secret_key = fileoperations.read_credentials_from_aws_config()
+    return botocore.credentials.Credentials(
+        access_key=access_key,
+        secret_key=secret_key,
+    )
 
 
 def make_api_call(service_name, operation_name, **operation_options):

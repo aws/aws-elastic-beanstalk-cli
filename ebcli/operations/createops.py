@@ -15,6 +15,7 @@ import re
 import time
 
 from cement.utils.misc import minimal_logger
+from ..operations import gitops
 
 from ..lib import elasticbeanstalk, iam, utils
 from ..lib.aws import InvalidParameterValueError
@@ -44,10 +45,22 @@ def make_new_env(env_request, branch_default=False, process_app_version=False,
     resolve_roles(env_request, interactive)
 
     # deploy code
+    codecommit_setup = gitops.git_management_enabled()
     if not env_request.sample_application and not env_request.version_label:
-        io.log_info('Creating new application version using project code')
-        env_request.version_label = \
-            commonops.create_app_version(env_request.app_name, process=process_app_version)
+        if codecommit_setup:
+            io.log_info('Creating new application version using Code Commit')
+            io.echo("Starting environment deployment via CodeCommit")
+            env_request.version_label = \
+                commonops.create_codecommit_app_version(env_request.app_name, process=process_app_version)
+            success = commonops.wait_for_processed_app_versions(env_request.app_name,
+                                                                [env_request.version_label])
+            if not success:
+                return
+        else:
+            io.log_info('Creating new application version using project code')
+            env_request.version_label = \
+                commonops.create_app_version(env_request.app_name, process=process_app_version)
+
         if process_app_version is True:
             success = commonops.wait_for_processed_app_versions(env_request.app_name,
                                                                 [env_request.version_label])
@@ -74,6 +87,10 @@ def make_new_env(env_request, branch_default=False, process_app_version=False,
     ## Save env as branch default if needed
     if not default_env or branch_default:
         commonops.set_environment_for_current_branch(env_name)
+        if codecommit_setup:
+            io.echo("Setting up default branch")
+            gitops.set_branch_default_for_current_environment(gitops.get_default_branch())
+            gitops.set_repo_default_for_current_environment(gitops.get_default_repository())
 
     # Print status of env
     commonops.print_env_details(result, health=False)

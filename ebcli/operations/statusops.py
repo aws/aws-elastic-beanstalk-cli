@@ -16,7 +16,7 @@ from ..core import io
 from ..resources.strings import alerts
 from ..resources.statics import elb_names
 from ..objects.exceptions import NotFoundError
-from . import commonops
+from . import commonops, gitops
 
 
 SPACER = ' ' * 5
@@ -86,3 +86,12 @@ def status(app_name, env_name, verbose):
     latest = commonops.get_latest_solution_stack(env.platform.version)
     if env.platform != latest:
         io.log_alert(alerts['platform.old'])
+
+    # print out code commit repos if they exist
+    default_branch = gitops.get_default_branch()
+    default_repo = gitops.get_default_repository()
+    codecommit_setup = (default_repo and default_repo is not None) or (default_branch and default_branch is not None)
+    if codecommit_setup:
+        io.echo("Current CodeCommit settings:")
+        io.echo("  Repository: " + str(default_repo))
+        io.echo("  Branch: " + str(default_branch))

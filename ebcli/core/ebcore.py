@@ -31,7 +31,7 @@ def fix_path():
 fix_path()
 
 import logging
-from argparse import SUPPRESS
+from argparse import SUPPRESS, ArgumentTypeError
 
 from cement.core import foundation, handler, hook
 from cement.utils.misc import init_defaults
@@ -69,7 +69,7 @@ from ..controllers.local import LocalController, LocalRunController,\
 from ..objects.exceptions import *
 from ..resources.strings import strings, flag_text
 from ..labs.controller import LabsController
-
+from ..controllers.codesource import CodeSourceController
 
 class EB(foundation.CementApp):
     class Meta:
@@ -109,6 +109,7 @@ class EB(foundation.CementApp):
             LabsController,
             LocalController,
             HealthController,
+            CodeSourceController,
         ]
 
         # register all controllers
@@ -169,8 +170,11 @@ def main():
     except ConnectionError:
         io.log_error(strings['connection.error'])
         app.close(code=2)
+    except ArgumentTypeError:
+        io.log_error(strings['exit.argerror'])
+        app.close(code=4)
     except EBCLIException as e:
-        if app.pargs.debug:
+        if app.pargs is None or not app.pargs.debug:
             raise
 
         message = next(io._convert_to_strings([e]))
@@ -182,7 +186,7 @@ def main():
         app.close(code=4)
     except Exception as e:
         # Generic catch all
-        if app.pargs.debug:
+        if app.pargs is None or not app.pargs.debug:
             raise
 
         message = next(io._convert_to_strings([e]))

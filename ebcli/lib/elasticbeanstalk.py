@@ -54,7 +54,7 @@ def create_application(app_name, descrip):
 
 
 def create_application_version(app_name, vers_label, descrip, s3_bucket,
-                               s3_key, process=False):
+                               s3_key, process=False, repository=None, commit_id=None):
     kwargs = dict()
     kwargs['Process'] = process
     if descrip is not None:
@@ -62,6 +62,12 @@ def create_application_version(app_name, vers_label, descrip, s3_bucket,
     if s3_bucket and s3_key:
         kwargs['SourceBundle'] = {'S3Bucket': s3_bucket,
                                   'S3Key': s3_key}
+    if repository and commit_id:
+        kwargs['SourceBuildInformation'] = {'SourceType': 'Git',
+                                  'SourceRepository': 'CodeCommit',
+                                  'SourceLocation': "{0}/{1}".format(repository, commit_id)}
+        kwargs['Process'] = True
+
     LOG.debug('Inside create_application_version api wrapper')
     return _make_api_call('create_application_version',
                           ApplicationName=app_name,

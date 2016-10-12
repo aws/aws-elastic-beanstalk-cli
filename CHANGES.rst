@@ -3,11 +3,12 @@ Changelog
 =========
 
 ------------------
-3.7.9 (2016-09-19)
+3.7.9 (2016-10-13)
 ------------------
 - Fixed elb prompt for single instance creations
 - Fixed eb init to no longer call CreateApplication when a preexisting application is chosen
 - Allowing eb ssh to attempt to access private ip address if public ip is not available
+- Added support for CodeCommit depoloyment and integration
 
 ------------------
 3.7.8 (2016-08-22)

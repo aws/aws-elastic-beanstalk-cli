@@ -1485,7 +1485,7 @@
         "ApplicationName":{"shape":"ApplicationName"},
         "Description":{"shape":"Description"},
         "VersionLabel":{"shape":"VersionLabel"},
-        "SourceLocation":{"shape":"SourceLocation"},
+        "SourceBuildInformation":{"shape":"SourceBuildInformation"},
         "SourceBundle":{"shape":"S3Location"},
         "DateCreated":{"shape":"CreationDate"},
         "DateUpdated":{"shape":"UpdateDate"},
@@ -1605,10 +1605,6 @@
       }
     },
     "CnameAvailability":{"type":"boolean"},
-    "CommitId":{
-      "type":"string",
-      "max":100
-    },
     "ComposeEnvironmentsMessage":{
       "type":"structure",
       "members":{
@@ -1756,7 +1752,7 @@
         "ApplicationName":{"shape":"ApplicationName"},
         "VersionLabel":{"shape":"VersionLabel"},
         "Description":{"shape":"Description"},
-        "SourceLocation":{"shape":"SourceLocation"},
+        "SourceBuildInformation":{"shape":"SourceBuildInformation"},
         "SourceBundle":{"shape":"S3Location"},
         "SourceBundleUrl":{"shape":"S3LocationUrl"},
         "AutoCreateApplication":{"shape":"AutoCreateApplication"},
@@ -2415,10 +2411,6 @@
       "type":"list",
       "member":{"shape":"Listener"}
     },
-    "Location":{
-      "type":"string",
-      "enum":["CodeCommit"]
-    },
     "ManagedAction":{
       "type":"structure",
       "members":{
@@ -2548,10 +2540,6 @@
     "RefreshedAt":{"type":"timestamp"},
     "RegexLabel":{"type":"string"},
     "RegexPattern":{"type":"string"},
-    "Repository":{
-      "type":"string",
-      "max":255
-    },
     "RequestCount":{"type":"integer"},
     "RequestEnvironmentInfoMessage":{
       "type":"structure",
@@ -2678,6 +2666,19 @@
       "type":"string",
       "max":100
     },
+    "SourceBuildInformation":{
+      "type":"structure",
+      "required":[
+        "SourceType",
+        "SourceRepository",
+        "SourceLocation"
+      ],
+      "members":{
+        "SourceType":{"shape":"SourceType"},
+        "SourceRepository":{"shape":"SourceRepository"},
+        "SourceLocation":{"shape":"SourceLocation"}
+      }
+    },
     "SourceBundleDeletionException":{
       "type":"structure",
       "members":{
@@ -2698,19 +2699,18 @@
       }
     },
     "SourceLocation":{
-      "type":"structure",
-      "required":[
-        "Type",
-        "Location",
-        "Repository",
-        "CommitId"
-      ],
-      "members":{
-        "Type":{"shape":"Type"},
-        "Location":{"shape":"Location"},
-        "Repository":{"shape":"Repository"},
-        "CommitId":{"shape":"CommitId"}
-      }
+      "type":"string",
+      "min":3,
+      "max":255,
+      "pattern":".+/.+"
+    },
+    "SourceRepository":{
+      "type":"string",
+      "enum":["CodeCommit"]
+    },
+    "SourceType":{
+      "type":"string",
+      "enum":["Git"]
     },
     "StatusCodes":{
       "type":"structure",
@@ -2894,10 +2894,6 @@
     "TriggerList":{
       "type":"list",
       "member":{"shape":"Trigger"}
-    },
-    "Type":{
-      "type":"string",
-      "enum":["Git"]
     },
     "UpdateApplicationMessage":{
       "type":"structure",

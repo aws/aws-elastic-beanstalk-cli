@@ -31,8 +31,8 @@ def credentials_are_valid():
         return False
 
 
-def setup(app_name, region, solution, dir_path=None):
-    setup_directory(app_name, region, solution, dir_path=dir_path)
+def setup(app_name, region, solution, dir_path=None, repository=None, branch=None):
+    setup_directory(app_name, region, solution, dir_path=dir_path, repository=repository, branch=branch)
 
     # Handle tomcat special case
     if 'tomcat' in solution.lower() and \
@@ -63,9 +63,9 @@ def setup_credentials(access_id=None, secret_key=None):
     aws.set_session_creds(access_id, secret_key)
 
 
-def setup_directory(app_name, region, solution, dir_path=None):
+def setup_directory(app_name, region, solution, dir_path=None, repository=None, branch=None):
     io.log_info('Setting up .elasticbeanstalk directory')
-    fileoperations.create_config_file(app_name, region, solution, dir_path=dir_path)
+    fileoperations.create_config_file(app_name, region, solution, dir_path=dir_path, repository=repository, branch=branch)
 
 
 def setup_ignore_file():
