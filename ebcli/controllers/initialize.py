@@ -129,16 +129,19 @@ class InitController(AbstractBaseController):
         except CommandError:
             source_control_setup = False
 
-        if not source_control_setup:
-            io.echo("Cannot setup CodeCommit because there is no Source Control setup")
-            return
-
         default_branch_exists = False
         if gitops.git_management_enabled() and not self.interactive:
             default_branch_exists = True
 
+        # TODO: Hotfix for sev2 make better logic later
+        prompt_codecommit = True
+        if self.app.pargs.modules is not None or self.app.pargs.platform is not None or self.app.pargs.keyname is not None or self.app.pargs.region is not None or self.app.pargs.no_verify_ssl:
+            prompt_codecommit = False
         codecommit_region_supported = codecommit.region_supported(self.region)
-        if (not default_branch_exists or self.source is not None) and codecommit_region_supported:
+        if (not default_branch_exists or self.source is not None) and codecommit_region_supported and prompt_codecommit:
+            if not source_control_setup:
+                io.echo("Cannot setup CodeCommit because there is no Source Control setup")
+                return
             if self.source is None:
                 io.echo("Note: Elastic Beanstalk now supports AWS CodeCommit; a fully-managed source control service."
                     " To learn more, see Docs: https://aws.amazon.com/codecommit/")

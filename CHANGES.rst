@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------------------
+3.8.1 (2016-10-13)
+------------------
+- CodeCommit bug fixes
+
+------------------
 3.8.0 (2016-10-13)
 ------------------
 - Fixed elb prompt for single instance creations
