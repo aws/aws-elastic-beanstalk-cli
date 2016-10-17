@@ -483,6 +483,10 @@ def get_repository_interactive():
     new_repo = False
     repo_list = codecommit.list_repositories()["repositories"]
 
+    current_repository = source_control.get_current_repository()
+    current_repository = fileoperations.get_current_directory_name() \
+        if current_repository is None else current_repository
+
     # If there are existing repositories prompt the user to pick one
     # otherwise set default as the file name
     if len(repo_list) > 0:
@@ -491,10 +495,6 @@ def get_repository_interactive():
         io.echo('Select a repository')
         new_repo_option = '[ Create new Repository ]'
         repo_list.append(new_repo_option)
-
-        current_repository = source_control.get_current_repository()
-        current_repository = fileoperations.get_current_directory_name() \
-            if current_repository is None else current_repository
 
         try:
             default_option = repo_list.index(current_repository) + 1

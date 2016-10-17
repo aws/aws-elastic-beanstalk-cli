@@ -101,7 +101,7 @@ def list_branches(repo_name, next_token=None):
 
 
 def region_supported(region):
-    supported_regions = ["us-east-1"]
+    supported_regions = ["us-east-1", "us-east-2"]
     if region is not None and region in supported_regions:
         return True
 
