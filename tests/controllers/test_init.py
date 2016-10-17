@@ -78,7 +78,7 @@ class TestInit(BaseControllerTest):
         # make sure setup was called correctly
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
-                                                      'PHP 5.5')
+                                                      'PHP 5.5', None, None, None)
 
     def test_init_interactive(self):
         """
@@ -116,7 +116,7 @@ class TestInit(BaseControllerTest):
         # make sure setup was called correctly
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
-                                                      'PHP 5.5')
+                                                      'PHP 5.5', None, None, None)
 
     def test_init_no_creds(self):
         """
@@ -147,7 +147,7 @@ class TestInit(BaseControllerTest):
         self.mock_operations.setup_credentials.assert_called_with()
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
-                                                      'PHP 5.5')
+                                                      'PHP 5.5', None, None, None)
 
     def test_init_script_mode(self):
         """
@@ -176,4 +176,4 @@ class TestInit(BaseControllerTest):
 
         self.mock_operations.setup.assert_called_with('testDir',
                                                       'us-west-2',
-                                                      'php')
+                                                      'php', None, None, None)

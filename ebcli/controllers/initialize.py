@@ -140,46 +140,46 @@ class InitController(AbstractBaseController):
         codecommit_region_supported = codecommit.region_supported(self.region)
         if (not default_branch_exists or self.source is not None) and codecommit_region_supported and prompt_codecommit:
             if not source_control_setup:
-                io.echo("Cannot setup CodeCommit because there is no Source Control setup")
-                return
-            if self.source is None:
-                io.echo("Note: Elastic Beanstalk now supports AWS CodeCommit; a fully-managed source control service."
-                    " To learn more, see Docs: https://aws.amazon.com/codecommit/")
-            try:
+                io.echo("Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization")
+            else:
                 if self.source is None:
-                    io.validate_action("Do you wish to continue with CodeCommit? (y/n)(default is n)", "y")
+                    io.echo("Note: Elastic Beanstalk now supports AWS CodeCommit; a fully-managed source control service."
+                        " To learn more, see Docs: https://aws.amazon.com/codecommit/")
+                try:
+                    if self.source is None:
+                        io.validate_action("Do you wish to continue with CodeCommit? (y/n)(default is n)", "y")
 
-                # Setup git config settings for code commit credentials
-                source_control.setup_codecommit_cred_config()
+                    # Setup git config settings for code commit credentials
+                    source_control.setup_codecommit_cred_config()
 
-                # parse the repository and branch
-                if self.source is not None:
-                    repository, branch = utils.parse_source(self.source)
+                    # parse the repository and branch
+                    if self.source is not None:
+                        repository, branch = utils.parse_source(self.source)
 
-                # Get user specified repository
-                if repository is None:
-                    repository = get_repository_interactive()
-                else:
-                    try:
-                        result = codecommit.get_repository(repository)
-                        source_control.setup_codecommit_remote_repo(remote_url=result['repositoryMetadata']['cloneUrlHttp'])
-                    except ServiceError as ex:
-                        io.log_error("Repository does not exist in CodeCommit.")
-                        raise ex
+                    # Get user specified repository
+                    if repository is None:
+                        repository = get_repository_interactive()
+                    else:
+                        try:
+                            result = codecommit.get_repository(repository)
+                            source_control.setup_codecommit_remote_repo(remote_url=result['repositoryMetadata']['cloneUrlHttp'])
+                        except ServiceError as ex:
+                            io.log_error("Repository does not exist in CodeCommit.")
+                            raise ex
 
-                # Get user specified branch
-                if branch is None:
-                    branch = get_branch_interactive(repository)
-                else:
-                    try:
-                        codecommit.get_branch(repository, branch)
-                    except ServiceError as ex:
-                        io.log_error("Branch does not exist in CodeCommit.")
-                        raise ex
-                    source_control.setup_existing_codecommit_branch(branch)
+                    # Get user specified branch
+                    if branch is None:
+                        branch = get_branch_interactive(repository)
+                    else:
+                        try:
+                            codecommit.get_branch(repository, branch)
+                        except ServiceError as ex:
+                            io.log_error("Branch does not exist in CodeCommit.")
+                            raise ex
+                        source_control.setup_existing_codecommit_branch(branch)
 
-            except ValidationError:
-                LOG.debug("Denied option to use CodeCommit, continuing initialization")
+                except ValidationError:
+                    LOG.debug("Denied option to use CodeCommit, continuing initialization")
 
         # Initialize the whole setup
         initializeops.setup(self.app_name, self.region, self.solution, None, repository, branch)

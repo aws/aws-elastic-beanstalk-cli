@@ -15,7 +15,6 @@
 def get_all_regions():
     return [
         Region('us-east-1', 'US East (N. Virginia)'),
-        Region('us-east-2', 'US East (Ohio)'),
         Region('us-west-1', 'US West (N. California)'),
         Region('us-west-2', 'US West (Oregon)'),
         Region('eu-west-1', 'EU (Ireland)'),
@@ -27,6 +26,7 @@ def get_all_regions():
         Region('ap-northeast-2', 'Asia Pacific (Seoul)'),
         Region('sa-east-1', 'South America (Sao Paulo)'),
         Region('cn-north-1', 'China (Beijing)'),
+        Region('us-east-2', 'US East (Ohio)'),
     ]
 
 
