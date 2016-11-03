@@ -174,7 +174,7 @@ def main():
         io.log_error(strings['exit.argerror'])
         app.close(code=4)
     except EBCLIException as e:
-        if app.pargs is None or not app.pargs.debug:
+        if app.pargs.debug:
             raise
 
         message = next(io._convert_to_strings([e]))
@@ -186,7 +186,7 @@ def main():
         app.close(code=4)
     except Exception as e:
         # Generic catch all
-        if app.pargs is None or not app.pargs.debug:
+        if app.pargs.debug:
             raise
 
         message = next(io._convert_to_strings([e]))
