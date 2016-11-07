@@ -60,6 +60,7 @@ global_config_file = beanstalk_directory + 'config.global.yml'
 local_config_file = beanstalk_directory + 'config.yml'
 aws_config_folder = get_aws_home()
 aws_config_location = aws_config_folder + 'config'
+aws_credentials_location = aws_config_folder + 'credentials'
 aws_access_key = 'aws_access_key_id'
 aws_secret_key = 'aws_secret_access_key'
 region_key = 'region'
@@ -182,19 +183,27 @@ def save_to_aws_config(access_key, secret_key):
     set_user_only_permissions(aws_config_location)
 
 
-def read_credentials_from_aws_config():
+def read_credentials_from_aws_dir():
     config = configparser.ConfigParser()
     if not os.path.isdir(aws_config_folder):
         os.makedirs(aws_config_folder)
 
-    config.read(aws_config_location)
+    # The credential file credentials take precedence over config credentials so we check those first.
+    from ..lib import aws
+    profile = aws.get_profile()
+    config.read(aws_credentials_location)
 
-    if ebcli_section not in config.sections():
-        LOG.debug("Credentials not found in aws config file")
-        return None, None
+    if profile not in config.sections():
+        LOG.debug("Credentials not found in aws credentials file; trying config file")
+        profile = ebcli_section
+        config.read(aws_config_location)
 
-    access_key = _get_option(config, ebcli_section, aws_access_key, None)
-    secret_key = _get_option(config, ebcli_section, aws_secret_key, None)
+        if profile not in config.sections():
+            LOG.debug("Credentials not found in aws config file")
+            return None, None
+
+    access_key = _get_option(config, profile, aws_access_key, None)
+    secret_key = _get_option(config, profile, aws_secret_key, None)
 
     return access_key, secret_key
 

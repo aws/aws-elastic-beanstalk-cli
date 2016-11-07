@@ -80,6 +80,12 @@ def set_profile(profile):
     _api_clients = {}
 
 
+def get_profile():
+    if _profile is not None:
+        return _profile
+    from ..operations import commonops
+    return commonops.get_default_profile(require_default=True)
+
 def set_region(region_name):
     global _region_name
     _region_name = region_name
@@ -175,7 +181,7 @@ def get_region_name():
 
 
 def get_credentials():
-    access_key, secret_key = fileoperations.read_credentials_from_aws_config()
+    access_key, secret_key = fileoperations.read_credentials_from_aws_dir()
     return botocore.credentials.Credentials(
         access_key=access_key,
         secret_key=secret_key,

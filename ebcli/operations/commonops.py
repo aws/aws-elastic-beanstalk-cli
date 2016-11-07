@@ -965,9 +965,12 @@ def get_default_keyname():
     return get_config_setting_from_branch_or_default('default_ec2_keyname')
 
 
-def get_default_profile():
+def get_default_profile(require_default=False):
     try:
-        return get_config_setting_from_branch_or_default('profile')
+        profile = get_config_setting_from_branch_or_default('profile')
+        if profile is None and require_default:
+            return "default"
+        return profile
     except NotInitializedError:
         return None
 
