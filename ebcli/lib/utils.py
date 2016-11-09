@@ -25,7 +25,7 @@ from cement.utils.misc import minimal_logger
 from subprocess import Popen, PIPE, STDOUT
 urllib = six.moves.urllib
 
-from ..objects.exceptions import CommandError
+from ..objects.exceptions import CommandError, InvalidOptionsError
 from ..core import io, fileoperations
 
 
@@ -317,10 +317,10 @@ def retract_string(string):
 
 
 def check_source(value):
-    match = re.match(r"([^/]+/[^/]+)", value)
-    if match is None or len(value.split("/")) > 2:
+    match = re.match(r"([^/]+/[^/]+/[^/]+)", value)
+    if match is None or len(value.split("/")) > 3:
         raise argparse.ArgumentTypeError(
-            "%s is a invalid source. Example source would be something like: repo/branch" % value)
+            "%s is a invalid source. Example source would be something like: codecommit/repo/branch" % value)
     return value
 
 
@@ -330,6 +330,19 @@ def parse_source(source):
         return
 
     split_source = source.split('/')
-    repository = split_source[0]
-    branch = split_source[1]
-    return repository, branch
+
+    # Validate that we support the source location
+    source_location = split_source[0].lower()
+    validate_source_location(source_location)
+
+    repository = split_source[1]
+    branch = split_source[2]
+    return source_location, repository, branch
+
+
+def validate_source_location(source_location):
+    valid_source_locations = ['codecommit']
+    if source_location in valid_source_locations:
+        return
+    else:
+        raise InvalidOptionsError("Source location '{0}' is not in the list of valid locations: {1}".format(source_location, valid_source_locations))

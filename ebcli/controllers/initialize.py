@@ -20,7 +20,7 @@ from ..core import fileoperations, io
 from ..core.abstractcontroller import AbstractBaseController
 from ..lib import utils, elasticbeanstalk, codecommit, aws
 from ..objects.sourcecontrol import SourceControl
-from ..objects import sourcecontrol, solutionstack, region as regions
+from ..objects import solutionstack, region as regions
 from ..objects.exceptions import NotInitializedError, NoRegionError, \
     InvalidProfileError, ServiceError, ValidationError, CommandError
 from ..operations import commonops, initializeops, sshops, gitops
@@ -50,16 +50,22 @@ class InitController(AbstractBaseController):
         self.interactive = self.app.pargs.interactive
         self.region = self.app.pargs.region
         self.noverify = self.app.pargs.no_verify_ssl
-        self.flag = False
+        self.force_non_interactive = False
+
+        # Determine if the customer is avoiding interactive mode by setting the platform flag
         if self.app.pargs.platform:
-            self.flag = True
-        self.modules = self.app.pargs.modules
+            self.force_non_interactive = True
+
         # Code Commit integration
         self.source = self.app.pargs.source
+        source_location = None
         branch = None
         repository = None
+        if self.source is not None:
+            source_location, repository, branch = utils.parse_source(self.source)
 
         # The user specifies directories to initialize
+        self.modules = self.app.pargs.modules
         if self.modules and len(self.modules) > 0:
             self.initialize_multiple_directories()
             return
@@ -95,7 +101,7 @@ class InitController(AbstractBaseController):
         elif self.interactive:
             default_env = None
 
-        if self.flag:
+        if self.force_non_interactive:
             default_env = '/ni'
 
         # Create application
@@ -133,28 +139,27 @@ class InitController(AbstractBaseController):
         if gitops.git_management_enabled() and not self.interactive:
             default_branch_exists = True
 
-        # TODO: Hotfix for sev2 make better logic later
         prompt_codecommit = True
-        if self.app.pargs.modules is not None or self.app.pargs.platform is not None or self.app.pargs.keyname is not None or self.app.pargs.region is not None or self.app.pargs.no_verify_ssl:
+        # Do not prompt if we are in non-interactive mode, the region is not supported for CodeCommit,
+        #  the specified source is from CodeCommit OR we already have default CodeCommit values set.
+        if self.force_non_interactive \
+                or not codecommit.region_supported(self.region) \
+                or self.source is not None \
+                or default_branch_exists:
             prompt_codecommit = False
-        codecommit_region_supported = codecommit.region_supported(self.region)
-        if (not default_branch_exists or self.source is not None) and codecommit_region_supported and prompt_codecommit:
+
+        # Prompt for interactive CodeCommit
+        if prompt_codecommit:
             if not source_control_setup:
                 io.echo("Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization")
             else:
-                if self.source is None:
-                    io.echo("Note: Elastic Beanstalk now supports AWS CodeCommit; a fully-managed source control service."
-                        " To learn more, see Docs: https://aws.amazon.com/codecommit/")
+                io.echo("Note: Elastic Beanstalk now supports AWS CodeCommit; a fully-managed source control service."
+                    " To learn more, see Docs: https://aws.amazon.com/codecommit/")
                 try:
-                    if self.source is None:
-                        io.validate_action("Do you wish to continue with CodeCommit? (y/n)(default is n)", "y")
+                    io.validate_action("Do you wish to continue with CodeCommit? (y/n)(default is n)", "y")
 
                     # Setup git config settings for code commit credentials
                     source_control.setup_codecommit_cred_config()
-
-                    # parse the repository and branch
-                    if self.source is not None:
-                        repository, branch = utils.parse_source(self.source)
 
                     # Get user specified repository
                     if repository is None:
@@ -244,7 +249,7 @@ class InitController(AbstractBaseController):
             except NotInitializedError:
                 app_name = None
 
-        if not app_name and self.flag:
+        if not app_name and self.force_non_interactive:
             # Choose defaults
             app_name = fileoperations.get_current_directory_name()
 
@@ -280,7 +285,7 @@ class InitController(AbstractBaseController):
         region = self.get_region_from_inputs()
 
         # Ask for region
-        if (not region) and self.flag:
+        if (not region) and self.force_non_interactive:
             # Choose defaults
             region_list = regions.get_all_regions()
             region = region_list[2].name
@@ -324,7 +329,7 @@ class InitController(AbstractBaseController):
             except NotInitializedError:
                 keyname = None
 
-        if self.flag and not self.interactive:
+        if self.force_non_interactive and not self.interactive:
             return keyname
 
         if keyname is None or \
@@ -404,7 +409,7 @@ class InitController(AbstractBaseController):
 
                 default_env = None
 
-                if self.flag:
+                if self.force_non_interactive:
                     default_env = '/ni'
 
                 if not application_created:

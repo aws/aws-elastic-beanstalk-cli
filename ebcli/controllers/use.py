@@ -10,16 +10,16 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+from cement.utils.misc import minimal_logger
+
 from ..lib import utils
-
 from ..objects.exceptions import NotFoundError
-
 from ..objects.sourcecontrol import SourceControl
-
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
 from ..operations import useops, gitops
 
+LOG = minimal_logger(__name__)
 
 class UseController(AbstractBaseController):
     class Meta:
@@ -40,18 +40,21 @@ class UseController(AbstractBaseController):
         useops.switch_default_environment(app_name, env_name)
 
         if self.source is not None:
-            repo, branch = utils.parse_source(self.source)
+            source_location, repo, branch = utils.parse_source(self.source)
 
-            source_control = SourceControl.get_source_control()
-            source_control.is_setup()
+            if source_location == "codecommit":
+                source_control = SourceControl.get_source_control()
+                source_control.is_setup()
 
-            if repo is None:
-                repo = gitops.get_default_repository()
+                if repo is None:
+                    repo = gitops.get_default_repository()
 
-            useops.switch_default_repo_and_branch(repo, branch)
-            successfully_checked_out_branch = source_control.checkout_branch(branch)
-            if not successfully_checked_out_branch:
-                raise NotFoundError("Could not checkout branch {0}.".format(branch))
+                useops.switch_default_repo_and_branch(repo, branch)
+                successfully_checked_out_branch = source_control.checkout_branch(branch)
+                if not successfully_checked_out_branch:
+                    raise NotFoundError("Could not checkout branch {0}.".format(branch))
+            else:
+                LOG.debug("Source location '{0}' is not supported by 'eb use'".format(source_location))
 
         # If source is not set attempt to change branch to the environment default
         else:

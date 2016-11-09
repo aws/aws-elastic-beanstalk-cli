@@ -55,16 +55,15 @@ class DeployController(AbstractBaseController):
         self.nohang =  self.app.pargs.nohang
         self.modules = self.app.pargs.modules
         self.source = self.app.pargs.source
-
-        if self.modules and len(self.modules) > 0:
-            self.multiple_app_deploy()
-            return
-
         self.app_name = self.get_app_name()
         self.env_name = self.app.pargs.environment_name
         self.version = self.app.pargs.version
         self.label = self.app.pargs.label
         group_name = self.app.pargs.env_group_suffix
+
+        if self.modules and len(self.modules) > 0:
+            self.multiple_app_deploy()
+            return
 
         if self.nohang:
             self.timeout = 0

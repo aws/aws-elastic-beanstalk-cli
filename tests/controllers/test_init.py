@@ -177,3 +177,104 @@ class TestInit(BaseControllerTest):
         self.mock_operations.setup.assert_called_with('testDir',
                                                       'us-west-2',
                                                       'php', None, None, None)
+
+    @mock.patch('ebcli.controllers.initialize.SourceControl')
+    def test_init_with_codecommit_source(self, mock_sourcecontrol):
+        """
+        Test that we prompt for
+        """
+
+        # setup mock response
+        self.mock_operations.credentials_are_valid.side_effect = [
+            NoRegionError,
+            True
+        ]
+        self.mock_commonops.prompt_for_solution_stack.return_value = Exception
+        self.mock_sshops.prompt_for_ec2_keyname.return_value = Exception
+        self.mock_commonops.get_current_branch_environment.side_effect = \
+            NotInitializedError,
+        self.mock_commonops.create_app.return_value = None, None
+        self.mock_commonops.get_default_keyname.return_value = ''
+        self.mock_commonops.get_default_region.return_value = ''
+        self.mock_commonops.get_default_solution_stack.return_value = ''
+
+        # run cmd
+        self.app = EB(argv=['init', '-p', 'ruby', '--source', 'CodeCommit/my-repo/prod', '--region', 'us-east-1'])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+        # assert we ran the methods we intended too
+        self.mock_operations.setup.assert_called_with('testDir',
+                                                      'us-east-1',
+                                                      'ruby', None, 'my-repo', 'prod')
+
+        mock_sourcecontrol.setup_codecommit_cred_config.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    @mock.patch('ebcli.controllers.initialize.codecommit')
+    @mock.patch('ebcli.operations.gitops')
+    def test_init_with_codecommit_prompt(self, mock_gitops, mock_codecommit, mock_fileoperations):
+        """
+        Tests that interactive mode correctly asks for all new values
+        """
+        # First, set up config file to contain all values
+        fileoperations.create_config_file('app1', 'us-west-1', 'random')
+
+        # Set up mock responses
+        # 1. Get solution stacks
+        # 2. Get solution stacks again
+        # 3. Create app
+        self.mock_operations.credentials_are_valid.return_value = True
+        self.mock_commonops.create_app.return_value = None, None
+        self.mock_commonops.get_default_solution_stack.return_value = ''
+        self.mock_commonops.pull_down_app_info.return_value = 'something', 'smthing'
+        self.mock_commonops.prompt_for_solution_stack.return_value = \
+            self.solution
+
+        # Mocks for getting into CodeCommit interactive mode
+
+
+        mock_gitops.git_management_enabled.return_value = False
+
+        mock_codecommit.list_repositories.return_value = {'repositories': [{'repositoryName': 'only-repo'}]}
+        mock_codecommit.list_branches.return_value = {'branches': ['only-branch']}
+        mock_codecommit.get_repository.return_value =\
+            {'repositoryMetadata': {'cloneUrlHttp': 'https://git-codecommit.fake.amazonaws.com/v1/repos/only-repo'}}
+
+        # Mocks for setting up SSH
+        self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
+
+
+        self.mock_input.side_effect = [
+            'y',  # Yes to setup CodeCommit
+            '2',  # Pick to create new repo
+            'new-repo',  # set repo name
+            '2',  # Pick first option for branch
+            'devo',  #
+            'n',  # Set up ssh selection
+        ]
+
+        with mock.patch('ebcli.objects.sourcecontrol.Git') as MockGitClass:
+            mock_git_sourcecontrol = MockGitClass.return_value
+            mock_git_sourcecontrol.is_setup.return_value = "SourceControlObject"
+            mock_git_sourcecontrol.get_current_commit.return_value = "CommitId"
+            with mock.patch('ebcli.controllers.initialize.SourceControl') as MockSourceControlClass:
+                mock_sourcecontrol = MockSourceControlClass.return_value
+                mock_sourcecontrol.get_source_control.return_value = mock_git_sourcecontrol
+
+            # run cmd
+            self.app = EB(argv=['init', '--region', 'us-east-1', 'my-app'])
+            self.app.setup()
+            self.app.run()
+            self.app.close()
+
+        # assert we ran the methods we intended too
+        self.mock_operations.setup.assert_called_with('my-app',
+                                                      'us-east-1',
+                                                      'PHP 5.5', None, 'new-repo', 'devo')
+
+
+        mock_codecommit.create_repository.assert_called_once_with('new-repo','Created with EB CLI')
+        mock_git_sourcecontrol.setup_new_codecommit_branch.assert_called_once_with(branch_name='devo')
+        mock_codecommit.create_branch.assert_called_once_with('new-repo', 'devo', 'CommitId')
