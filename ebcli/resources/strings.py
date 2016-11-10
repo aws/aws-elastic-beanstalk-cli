@@ -203,7 +203,10 @@ strings = {
     'appversion.cannotdeploy': 'Some application versions failed to process. Unable to continue deployment.',
     'appversion.processtimeout': 'All application versions have not reached a "Processed" state. Unable to continue with deployment.',
     'instance.processes.health': '{healthy}/{total} processes healthy.',
+
+    # codesource
     'codesource.info': 'Configures the code source for the EB CLI to use by default.',
+    'codesource.localmsg': 'Default set to use local sources',
 }
 
 prompts = {
@@ -274,7 +277,10 @@ prompts = {
                                         'Create an IAM role called "{}" with appropriate permissions to continue, or specify a role with --service-role.\n'
                                         'See http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/concepts-roles.html for more info. \nActual error: {}',
     'general.pressenter': 'Press enter to continue',
-    'compose.groupname': 'Please enter the group name to be used'
+    'compose.groupname': 'Please enter the group name to be used',
+
+    # codesource
+    'codesource.codesourceprompt': 'Select your codesource',
 }
 
 alerts = {

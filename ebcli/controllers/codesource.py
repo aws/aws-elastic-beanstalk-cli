@@ -14,7 +14,7 @@ from ..lib import utils
 from ..core import io
 
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, flag_text
+from ..resources.strings import strings, flag_text, prompts
 from ..operations import gitops
 
 
@@ -24,7 +24,8 @@ class CodeSourceController(AbstractBaseController):
         description = strings['codesource.info']
         arguments = [
             (['sourcename'], dict(action='store', nargs='?',
-                                    help=flag_text['codesource.sourcename'], choices=['codecommit', 'local'])),
+                                    help=flag_text['codesource.sourcename'],
+                                  choices=['codecommit', 'local'], type=str.lower)),
         ]
         usage = 'eb codesource <sourcename> [options ...]'
 
@@ -41,7 +42,7 @@ class CodeSourceController(AbstractBaseController):
 
     def prompt_for_codesource(self):
         gitops.print_current_codecommit_settings()
-        io.echo("Select your codesource")
+        io.echo(prompts['codesource.codesourceprompt'])
         setup_choices = ['CodeCommit', 'Local']
         choice = utils.prompt_for_item_in_list(setup_choices, 2)
         if choice == setup_choices[0]:
@@ -51,7 +52,7 @@ class CodeSourceController(AbstractBaseController):
 
     def set_local(self):
         gitops.disable_codecommit()
-        io.echo('Default set to use local sources')
+        io.echo(strings['codesource.localmsg'])
 
     def set_codecommit(self):
         gitops.initialize_codecommit()
