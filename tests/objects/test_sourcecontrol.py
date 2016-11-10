@@ -19,6 +19,7 @@ import mock
 
 from ebcli.objects import sourcecontrol
 from ebcli.core import fileoperations
+from ebcli.objects.exceptions import CommandError, NoSourceControlError
 
 
 class TestNoSourceControl(unittest.TestCase):
@@ -137,5 +138,27 @@ class TestGitSourceControl(unittest.TestCase):
             self.assertEqual(f[0], 'line1' + os.linesep)
             self.assertEqual(f[1], 'line2' + os.linesep)
 
+    @mock.patch('ebcli.objects.sourcecontrol.exec_cmd')
+    def test_error_handler_for_exit_code_128(self, mock_exec_cmd):
+        stdout = ""
+        stderr = "Not a valid object name HEAD"
+        exit_code = 128
+        mock_exec_cmd.return_value = stdout, stderr, exit_code
+        self.assertRaises(CommandError, sourcecontrol.Git().get_version_label)
 
 
+    @mock.patch('ebcli.objects.sourcecontrol.exec_cmd')
+    def test_error_handler_for_exit_code_127(self, mock_exec_cmd):
+        stdout = ""
+        stderr = "git not installed"
+        exit_code = 127
+        mock_exec_cmd.return_value = stdout, stderr, exit_code
+        self.assertRaises(NoSourceControlError, sourcecontrol.Git().get_version_label)
+
+    @mock.patch('ebcli.objects.sourcecontrol.exec_cmd')
+    def test_error_handler_for_non_handled_exit_code(self, mock_exec_cmd):
+        stdout = ""
+        stderr = "git not installed"
+        exit_code = 99999
+        mock_exec_cmd.return_value = stdout, stderr, exit_code
+        self.assertRaises(CommandError, sourcecontrol.Git().get_version_label)

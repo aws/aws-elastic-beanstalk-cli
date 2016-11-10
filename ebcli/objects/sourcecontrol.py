@@ -120,7 +120,14 @@ class Git(SourceControl):
         if exitcode == 127:
             # 127 = git not installed
             raise NoSourceControlError
-
+        if exitcode == 128:
+            # 128 = No HEAD
+            if "HEAD" in stderr:
+                LOG.debug('An error occurred while handling git command.'
+                                   '\nError code: ' + str(exitcode) + ' Error: ' +
+                                   stderr)
+                raise CommandError('git could not find the HEAD; most likely because there are no commits present')
+            
         # Something else happened
         raise CommandError('An error occurred while handling git command.'
                            '\nError code: ' + str(exitcode) + ' Error: ' +
