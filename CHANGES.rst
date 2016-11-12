@@ -6,6 +6,7 @@ Changelog
 3.8.4 (2016-11-16)
 ------------------
 - Added 'eb deploy --source' flag to deploy directly from CodeCommit repositories
+- Added us-west-2 (Oregon) and eu-west-1 (Ireland) CodeCommit support
 
 ------------------
 3.8.3 (2016-10-17)
