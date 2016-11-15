@@ -344,7 +344,7 @@ flag_text = {
     'deploy.nohang': 'return immediately, do not wait for deploy to be completed',
     'deploy.staged': 'deploy files staged in git rather than the HEAD commit',
     'deploy.group_suffix': 'group suffix',
-    'deploy.source': 'source of code to deploy directly; example repo/branch',
+    'deploy.source': 'source of code to deploy directly; example source_location/repo/branch',
 
     # Events
     'events.follow': 'wait and continue to print events as they come',
@@ -355,7 +355,7 @@ flag_text = {
     'init.keyname': 'default EC2 key name',
     'init.interactive': 'force interactive mode',
     'init.module': 'module directory',
-    'init.source': 'source of code to set as default; example repo/branch',
+    'init.source': 'source of code to set as default; example source_location/repo/branch',
 
     # labs
     'labs.cwl.remove': 'remove .ebextensions',
@@ -403,7 +403,7 @@ flag_text = {
 
     # use
     'use.env': 'environment name',
-    'use.source': 'source of code to set as default; example repo/branch',
+    'use.source': 'source of code to set as default; example source_location/repo/branch',
     'use.repo': 'default code commit repository',
     'use.branch': 'default code commit branch will use default repository if none is specified',
 

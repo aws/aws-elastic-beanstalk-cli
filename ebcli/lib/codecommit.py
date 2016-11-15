@@ -108,8 +108,7 @@ def region_supported(region):
     return False
 
 
-def _sign_codecommit_url(region, url_to_sign):
-    credentials = aws.get_credentials()
+def _sign_codecommit_url(credentials, region, url_to_sign):
     signer = SigV4Auth(credentials, 'codecommit', region)
     request = AWSRequest()
     request.url = url_to_sign
@@ -135,7 +134,7 @@ def _sign_codecommit_url(region, url_to_sign):
 def create_signed_url(remote_url):
     split_url = remote_url.split("//")
     credentials = aws.get_credentials()
-    password = _sign_codecommit_url(aws.get_region_name(), remote_url)
+    password = _sign_codecommit_url(credentials, aws.get_region_name(), remote_url)
     username = credentials.access_key
 
     if credentials.token is not None:
