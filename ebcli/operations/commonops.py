@@ -853,8 +853,8 @@ def create_app_version_from_source(app_name, source, process=False, label=None, 
         if repository is None or commit_id is None:
             raise ServiceError("Could not find repository or commit id to create an application version")
     else:
-        LOG.debug("Source location '{0}' is not supported by 'eb use'".format(source_location))
-        raise InvalidOptionsError("Deploy does not support the given source location: {0}".format(source_location))
+        LOG.debug("Source location '{0}' is not supported".format(source_location))
+        raise InvalidOptionsError("This command does not support the given source location: {0}".format(source_location))
 
     # Deploy Application version with freshly pushed git commit
     io.log_info('Creating AppVersion ' + version_label)

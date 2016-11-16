@@ -12,7 +12,6 @@
 # language governing permissions and limitations under the License.
 
 import re
-import time
 
 from cement.utils.misc import minimal_logger
 from ..operations import gitops
@@ -21,7 +20,7 @@ from ..lib import elasticbeanstalk, iam, utils
 from ..lib.aws import InvalidParameterValueError
 from ..core import io
 from ..objects.exceptions import TimeoutError, AlreadyExistsError, \
-    NotAuthorizedError, NotSupportedError
+    NotAuthorizedError
 from ..resources.strings import strings, responses, prompts
 from . import commonops
 import json
@@ -40,15 +39,25 @@ DEFAULT_SERVICE_ROLE_POLICIES = [
     'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService'
 ]
 
+
 def make_new_env(env_request, branch_default=False, process_app_version=False,
-                 nohang=False, interactive=True, timeout=None):
+                 nohang=False, interactive=True, timeout=None, source=None):
     resolve_roles(env_request, interactive)
 
     # deploy code
     codecommit_setup = gitops.git_management_enabled()
     if not env_request.sample_application and not env_request.version_label:
-        if codecommit_setup:
-            io.log_info('Creating new application version using Code Commit')
+        if source is not None:
+            io.log_info('Creating new application version using remote source')
+            io.echo("Starting environment deployment via remote source")
+            env_request.version_label = commonops.create_app_version_from_source(
+                env_request.app_name, source, process=process_app_version, label=env_request.version_label)
+            success = commonops.wait_for_processed_app_versions(env_request.app_name,
+                                                                [env_request.version_label])
+            if not success:
+                return
+        elif codecommit_setup:
+            io.log_info('Creating new application version using CodeCommit')
             io.echo("Starting environment deployment via CodeCommit")
             env_request.version_label = \
                 commonops.create_codecommit_app_version(env_request.app_name, process=process_app_version)

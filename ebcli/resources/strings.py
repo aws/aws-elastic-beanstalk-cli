@@ -334,6 +334,7 @@ flag_text = {
     'create.group': 'group suffix',
     'create.modules': 'a list of modules',
     'create.elb_type': 'load balancer type',
+    'create.source': 'source of code to create from directly; example source_location/repo/branch',
 
     # Deploy
     'deploy.env': 'environment name',

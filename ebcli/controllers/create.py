@@ -61,6 +61,7 @@ class CreateController(AbstractBaseController):
             (['--tags'], dict(help=flag_text['create.tags'])),
             (['--envvars'], dict(help=flag_text['create.envvars'])),
             (['--cfg'], dict(help=flag_text['create.config'])),
+            (['--source'], dict(type=utils.check_source, help=flag_text['create.source'])),
             (['--elb-type'], dict(help=flag_text['create.elb_type'])),
             (['-db', '--database'], dict(
                 action="store_true", help=flag_text['create.database'])),
@@ -123,6 +124,7 @@ class CreateController(AbstractBaseController):
         timeout = self.app.pargs.timeout
         cfg = self.app.pargs.cfg
         elb_type = self.app.pargs.elb_type
+        source = self.app.pargs.source
         interactive = False if env_name else True
 
         provided_env_name = env_name is not None
@@ -246,7 +248,8 @@ class CreateController(AbstractBaseController):
                                process_app_version=process_app_version,
                                nohang=nohang,
                                interactive=interactive,
-                               timeout=timeout)
+                               timeout=timeout,
+                               source=source)
 
     def complete_command(self, commands):
         app_name = fileoperations.get_application_name()
