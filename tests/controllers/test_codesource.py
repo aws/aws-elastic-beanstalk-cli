@@ -30,7 +30,8 @@ class TestCodeSource(unittest.TestCase):
     def tearDown(self):
         self.patcher_io.stop()
 
-    def test_case_insensative_input(self):
+    @mock.patch('ebcli.controllers.codesource.gitops')
+    def test_case_insensative_input(self, mock_gitops):
         # run cmd
         self.app = EB(argv=['codesource',
                             'LoCaL'])
@@ -40,7 +41,7 @@ class TestCodeSource(unittest.TestCase):
 
         self.mock_io.echo.assert_called_once_with(strings['codesource.localmsg'])
 
-    @mock.patch('ebcli.controllers.codesource.gitops.initialize_codecommit')
+    @mock.patch('ebcli.controllers.codesource.gitops')
     @mock.patch('ebcli.controllers.codesource.utils.io')
     def test_interactive_choices_codecommit(self, mock_utils_io, mock_gitops):
         mock_utils_io.prompt.side_effect = [
