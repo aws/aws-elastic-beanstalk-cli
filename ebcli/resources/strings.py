@@ -155,6 +155,7 @@ strings = {
     'sc.gitnotinstalled': 'Your project is using git, but git doesn\'t appear to be installed.\n'
                           'Have you added git to your PATH?',
     'events.streamprompt': ' -- Events -- (safe to Ctrl+C)',
+    'events.unsafestreamprompt': ' -- Events -- (Ctrl+C will abort the deployment)',
     'events.abortmessage': ' Use "eb abort" to cancel the command.',
     'abort.noabortableenvs': 'There are no environments currently being updated.',
     'local.unsupported': 'You can use "eb local" only with preconfigured, generic and multicontainer Docker platforms.',
@@ -203,6 +204,8 @@ strings = {
     'appversion.cannotdeploy': 'Some application versions failed to process. Unable to continue deployment.',
     'appversion.processtimeout': 'All application versions have not reached a "Processed" state. Unable to continue with deployment.',
     'instance.processes.health': '{healthy}/{total} processes healthy.',
+    'appversion.attributefailed': 'Application Version {app_version} has failed to generate required attributes.',
+    'appversion.attributetimeout': 'Application Versions did not generated the required attributes. Unable to continue with deployment.',
 
     # codesource
     'codesource.info': 'Configures the code source for the EB CLI to use by default.',
@@ -455,6 +458,7 @@ responses = {
     'cfg.nameexists': 'Configuration Template {name} already exists.',
     'create.noplatform': 'Unable to determine base for template pack (no solution stack)',
     'create.ecsdockerrun1': 'ECS Application sourcebundle validation error: Unsupported AWSEBDockerrunVersion:',
+    'appversion.finished': 'Finished processing application version',
 }
 git_ignore = [
     '# Elastic Beanstalk Files',        # comment line

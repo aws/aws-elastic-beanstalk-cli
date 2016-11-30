@@ -17,7 +17,8 @@ import unittest
 import yaml
 
 from ebcli.core import fileoperations
-from ebcli.objects.exceptions import NotInitializedError
+from ebcli.objects.exceptions import NotInitializedError, ValidationError
+from ebcli.objects.buildconfiguration import BuildConfiguration
 from mock import patch
 
 
@@ -408,3 +409,57 @@ class TestFileOperations(unittest.TestCase):
             credentials = fileoperations.read_credentials_from_aws_dir()
             self.assertEqual(credentials, credentials_expected,
                              "Expected credentials to be {0} but were: {1}".format(credentials_expected, credentials))
+
+    @patch('ebcli.core.fileoperations.codecs')
+    @patch('ebcli.core.fileoperations.load')
+    def test_get_build_spec_info(self, mock_yaml_load, mock_codecs):
+        # Setup mocks
+        image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3'
+        compute_type = 'BUILD_GENERAL1_SMALL'
+        service_role = 'eb-test'
+        timeout = 60
+
+        mock_yaml_load.return_value = {fileoperations.buildspec_config_header:
+                                       {'ComputeType': compute_type,
+                                        'CodeBuildServiceRole': service_role,
+                                        'Image': image,
+                                        'Timeout': timeout}}
+
+        expected_build_config = BuildConfiguration(image=image, compute_type=compute_type,
+                                                   service_role=service_role, timeout=timeout)
+        actual_build_config = fileoperations.get_build_configuration()
+        self.assertEqual(expected_build_config.__str__(), actual_build_config.__str__(),
+                         "Expected '{0}' but got: {1}".format(expected_build_config.__str__(), actual_build_config.__str__()))
+
+    @patch('ebcli.core.fileoperations.codecs')
+    @patch('ebcli.core.fileoperations.load')
+    def test_get_build_spec_info_with_bad_header(self, mock_yaml_load, mock_codecs):
+        # Setup mocks
+        image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3'
+        compute_type = 'BUILD_GENERAL1_SMALL'
+        service_role = 'eb-test'
+        timeout = 60
+
+        mock_yaml_load.return_value = {'BadHeader':
+                                           {'ComputeType': compute_type,
+                                            'CodeBuildServiceRole': service_role,
+                                            'Image': image,
+                                            'Timeout': timeout}}
+
+        self.assertRaises(ValidationError, fileoperations.get_build_configuration)
+
+    def test_build_spec_file_exists_yaml(self):
+        # Create buildspec file quickly
+        file = 'buildspec.yaml'
+        open(file, 'a').close()
+        self.assertFalse(fileoperations.build_spec_exists(),
+                        "Expected to find build spec file with filename: {0}".format(file))
+        os.remove(file)
+
+    def test_build_spec_file_exists_yml(self):
+        # Create buildspec file quickly
+        file = 'buildspec.yml'
+        open(file, 'a').close()
+        self.assertTrue(fileoperations.build_spec_exists(),
+                        "Expected to find build spec file with filename: {0}".format(file))
+        os.remove(file)

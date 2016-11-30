@@ -10,15 +10,15 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
+import time
 import re
 
 from cement.utils.misc import minimal_logger
-from ..operations import gitops
+from ..operations import gitops, buildspecops
 
 from ..lib import elasticbeanstalk, iam, utils
 from ..lib.aws import InvalidParameterValueError
-from ..core import io
+from ..core import io, fileoperations
 from ..objects.exceptions import TimeoutError, AlreadyExistsError, \
     NotAuthorizedError
 from ..resources.strings import strings, responses, prompts
@@ -39,10 +39,16 @@ DEFAULT_SERVICE_ROLE_POLICIES = [
     'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService'
 ]
 
-
+# TODO: Make unit tests for these changes
 def make_new_env(env_request, branch_default=False, process_app_version=False,
                  nohang=False, interactive=True, timeout=None, source=None):
     resolve_roles(env_request, interactive)
+
+    # Parse and get Build Configuration from BuildSpec if it exists
+    build_config = None
+    if fileoperations.build_spec_exists():
+        build_config = fileoperations.get_build_configuration()
+        LOG.debug("Retrieved build configuration from buildspec: {0}".format(build_config.__str__()))
 
     # deploy code
     codecommit_setup = gitops.git_management_enabled()
@@ -51,26 +57,25 @@ def make_new_env(env_request, branch_default=False, process_app_version=False,
             io.log_info('Creating new application version using remote source')
             io.echo("Starting environment deployment via remote source")
             env_request.version_label = commonops.create_app_version_from_source(
-                env_request.app_name, source, process=process_app_version, label=env_request.version_label)
-            success = commonops.wait_for_processed_app_versions(env_request.app_name,
-                                                                [env_request.version_label])
-            if not success:
-                return
+                env_request.app_name, source, process=process_app_version, label=env_request.version_label,
+                build_config=build_config)
+            process_app_version = True
         elif codecommit_setup:
             io.log_info('Creating new application version using CodeCommit')
             io.echo("Starting environment deployment via CodeCommit")
             env_request.version_label = \
-                commonops.create_codecommit_app_version(env_request.app_name, process=process_app_version)
-            success = commonops.wait_for_processed_app_versions(env_request.app_name,
-                                                                [env_request.version_label])
-            if not success:
-                return
+                commonops.create_codecommit_app_version(env_request.app_name, process=process_app_version,
+                                                        build_config=build_config)
+            process_app_version = True
         else:
             io.log_info('Creating new application version using project code')
             env_request.version_label = \
-                commonops.create_app_version(env_request.app_name, process=process_app_version)
+                commonops.create_app_version(env_request.app_name, process=process_app_version,
+                                             build_config=build_config)
 
-        if process_app_version is True:
+        if build_config is not None:
+            buildspecops.stream_build_configuration_app_version_creation(env_request.app_name, env_request.version_label)
+        elif process_app_version is True:
             success = commonops.wait_for_processed_app_versions(env_request.app_name,
                                                                 [env_request.version_label])
             if not success:

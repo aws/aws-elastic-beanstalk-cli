@@ -22,12 +22,33 @@ from collections import Counter
 from botocore.compat import six
 from mock import Mock
 
-from ebcli.objects.exceptions import InvalidOptionsError
 from ebcli.core import fileoperations
 from ebcli.operations import commonops
-
+from ebcli.lib.aws import InvalidParameterValueError
+from ebcli.objects.buildconfiguration import BuildConfiguration
+from ebcli.resources.strings import strings, responses
 
 class TestCommonOperations(unittest.TestCase):
+    app_name = 'ebcli-app'
+    app_version_name = 'ebcli-app-version'
+    env_name = 'ebcli-env'
+    description = 'ebcli testing app'
+    s3_bucket = 'app_bucket'
+    s3_key = 'app_bucket_key'
+
+    repository = 'my-repo'
+    branch = 'my-branch'
+    commit_id = '123456789'
+
+    image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3'
+    compute_type = 'BUILD_GENERAL1_SMALL'
+    service_role = 'eb-test'
+    service_role_arn = 'arn:testcli:eb-test'
+    timeout = 60
+    build_config = BuildConfiguration(image=image, compute_type=compute_type,
+                                      service_role=service_role, timeout=timeout)
+
+
     def assertListsOfDictsEquivalent(self, ls1, ls2):
         return self.assertEqual(
             Counter(frozenset(six.iteritems(d)) for d in ls1),
@@ -213,3 +234,90 @@ class TestCommonOperations(unittest.TestCase):
             options, options_to_remove = commonops.create_envvars_list(
                 ['foo=' + s], as_option_settings=False)
             self.assertEqual(options, {'foo': s})
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk')
+    def test_create_application_version_wrapper(self, mock_beanstalk):
+        # Make the actual call
+        actual_return = commonops._create_application_version(self.app_name, self.app_version_name,
+                                              self.description, self.s3_bucket, self.s3_key)
+
+        # Assert return and methods were called for the correct workflow
+        self.assertEqual(self.app_version_name, actual_return, "Expected {0} but got: {1}"
+                         .format(self.app_version_name, actual_return))
+        mock_beanstalk.create_application_version.assert_called_with(self.app_name, self.app_version_name,
+                                                                     self.description, self.s3_bucket, self.s3_key,
+                                                                     False, None, None, None)
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk')
+    def test_create_application_version_wrapper_app_version_already_exists(self, mock_beanstalk):
+        # Mock out methods
+        mock_beanstalk.create_application_version.side_effect = InvalidParameterValueError('Application Version {0} already exists.'
+                                                                .format(self.app_version_name))
+
+        # Make the actual call
+        actual_return = commonops._create_application_version(self.app_name, self.app_version_name,
+                                              self.description, self.s3_bucket, self.s3_key)
+
+        # Assert return and methods were called for the correct workflow
+        self.assertEqual(self.app_version_name, actual_return, "Expected {0} but got: {1}"
+                         .format(self.app_version_name, actual_return))
+        mock_beanstalk.create_application_version.assert_called_with(self.app_name, self.app_version_name,
+                                                                     self.description, self.s3_bucket, self.s3_key,
+                                                                     False, None, None, None)
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk')
+    @mock.patch('ebcli.operations.commonops.fileoperations')
+    def test_create_application_version_wrapper_app_does_not_exist(self, mock_fileoperations, mock_beanstalk):
+        # Mock out methods
+        mock_beanstalk.create_application_version.side_effect = [InvalidParameterValueError(responses['app.notexists'].replace(
+                                                                '{app-name}', '\'' + self.app_name + '\'')), None]
+
+        with mock.patch('ebcli.objects.sourcecontrol.Git') as MockGitClass:
+            mock_git_sourcecontrol = MockGitClass.return_value
+            mock_git_sourcecontrol.get_current_branch.return_value = self.branch
+            with mock.patch('ebcli.operations.commonops.SourceControl') as MockSourceControlClass:
+                mock_sourcecontrol = MockSourceControlClass.return_value
+                mock_sourcecontrol.get_source_control.return_value = mock_git_sourcecontrol
+
+            # Make the actual call
+            actual_return = commonops._create_application_version(self.app_name, self.app_version_name,
+                                          self.description, self.s3_bucket, self.s3_key)
+
+        # Assert return and methods were called for the correct workflow
+        self.assertEqual(self.app_version_name, actual_return, "Expected {0} but got: {1}"
+                         .format(self.app_version_name, actual_return))
+        mock_beanstalk.create_application_version.assert_called_with(self.app_name, self.app_version_name,
+                                                                     self.description, self.s3_bucket, self.s3_key,
+                                                                     False, None, None, None)
+        mock_beanstalk.create_application.assert_called_with(self.app_name, strings['app.description'])
+
+        write_config_calls = (mock.call('branch-defaults', self.branch, {'environment': None}),
+                             mock.call('branch-defaults', self.branch, {'group_suffix': None}))
+        mock_fileoperations.write_config_setting.assert_has_calls(write_config_calls)
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk')
+    def test_create_application_version_wrapper_app_version_throws_unknown_exception(self, mock_beanstalk):
+        # Mock out methods
+        mock_beanstalk.create_application_version.side_effect = Exception("FooException")
+
+        # Make the actual call
+        self.assertRaises(Exception, commonops._create_application_version, self.app_name, self.app_version_name,
+                          self.description, self.s3_bucket, self.s3_key)
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk')
+    def test_create_application_version_wrapper_with_build_config(self, mock_beanstalk):
+        # Mock out methods
+        with mock.patch('ebcli.lib.iam.get_roles') as mock_iam_get_roles:
+            mock_iam_get_roles.return_value = [{'RoleName': self.service_role, 'Arn': self.service_role_arn},
+                                               {'RoleName': self.service_role, 'Arn': self.service_role_arn}]
+
+            # Make the actual call
+            actual_return = commonops._create_application_version(self.app_name, self.app_version_name,
+                                                  self.description, self.s3_bucket, self.s3_key, build_config=self.build_config)
+
+        # Assert return and methods were called for the correct workflow
+        self.assertEqual(self.app_version_name, actual_return, "Expected {0} but got: {1}"
+                         .format(self.app_version_name, actual_return))
+        mock_beanstalk.create_application_version.assert_called_with(self.app_name, self.app_version_name,
+                                                                     self.description, self.s3_bucket, self.s3_key,
+                                                                     False, None, None, self.build_config)

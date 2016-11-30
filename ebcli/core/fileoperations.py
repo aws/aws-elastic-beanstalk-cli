@@ -23,6 +23,7 @@ import yaml
 
 from botocore.compat import six
 from cement.utils.misc import minimal_logger
+from ebcli.objects.buildconfiguration import BuildConfiguration
 from six import StringIO
 from yaml import load, dump, safe_dump
 from yaml.parser import ParserError
@@ -34,8 +35,8 @@ except ImportError:
     import ConfigParser as configparser
 
 from ..core import io
-from ..objects.exceptions import NotInitializedError, InvalidSyntaxError, \
-    NotFoundError
+from ebcli.objects.exceptions import NotInitializedError, InvalidSyntaxError, \
+    NotFoundError, ValidationError
 
 LOG = minimal_logger(__name__)
 
@@ -56,6 +57,9 @@ def get_ssh_folder():
 
 
 beanstalk_directory = '.elasticbeanstalk' + os.path.sep
+# TODO: Need to support yaml and yml
+buildspec_name = "buildspec.yml"
+buildspec_config_header = 'eb_codebuild_settings'
 global_config_file = beanstalk_directory + 'config.global.yml'
 local_config_file = beanstalk_directory + 'config.yml'
 aws_config_folder = get_aws_home()
@@ -564,14 +568,14 @@ def get_environment_from_file(env_name):
     return env
 
 
-def write_config_setting(section, key_name, value, dir_path=None):
+def write_config_setting(section, key_name, value, dir_path=None, file=local_config_file):
     cwd = os.getcwd()  # save working directory
     if dir_path:
         os.chdir(dir_path)
     try:
         _traverse_to_project_root()
 
-        config = _get_yaml_dict(local_config_file)
+        config = _get_yaml_dict(file)
         if not config:
             config = {}
         # Value will be a dict when we are passing in branch config settings
@@ -581,7 +585,7 @@ def write_config_setting(section, key_name, value, dir_path=None):
         else:
             config.setdefault(section, {})[key_name] = value
 
-        with codecs.open(local_config_file, 'w', encoding='utf8') as f:
+        with codecs.open(file, 'w', encoding='utf8') as f:
             f.write(safe_dump(config, default_flow_style=False,
                               line_break=os.linesep))
 
@@ -662,6 +666,58 @@ def eb_file_exists(location):
         return os.path.isfile(path)
     finally:
         os.chdir(cwd)
+
+
+def build_spec_exists():
+    cwd = os.getcwd()
+    try:
+        _traverse_to_project_root()
+        return os.path.isfile(buildspec_name)
+    finally:
+        os.chdir(cwd)
+
+
+def get_build_configuration():
+    # TODO: Verify this is correct.
+    # Values expected in the eb config section in BuildSpec
+    service_role_key = 'CodeBuildServiceRole'
+    image_key = 'Image'
+    compute_key = 'ComputeType'
+    timeout_key = 'Timeout'
+
+    # get setting from global if it exists
+    cwd = os.getcwd()  # save working directory
+
+    try:
+        _traverse_to_project_root()
+
+        build_spec = _get_yaml_dict(buildspec_name)
+
+        # Assert that special beanstalk section exists
+        if buildspec_config_header not in build_spec.keys():
+            LOG.debug("Buildspec Keys: {0}".format(build_spec.keys()))
+            raise ValidationError("Beanstalk configuration header '{0}' is missing from Buildspec file".format(buildspec_config_header))
+
+        build_configuration = BuildConfiguration()
+        beanstalk_build_configs = build_spec[buildspec_config_header]
+        LOG.debug("EB Config Keys: {0}".format(beanstalk_build_configs.keys()))
+
+        if service_role_key in beanstalk_build_configs.keys():
+            build_configuration.service_role = beanstalk_build_configs[service_role_key]
+
+        if image_key in beanstalk_build_configs.keys():
+            build_configuration.image = beanstalk_build_configs[image_key]
+
+        if compute_key in beanstalk_build_configs.keys():
+            build_configuration.compute_type = beanstalk_build_configs[compute_key]
+
+        if timeout_key in beanstalk_build_configs.keys():
+            build_configuration.timeout = beanstalk_build_configs[timeout_key]
+
+    finally:
+        os.chdir(cwd)  # move back to working directory
+
+    return build_configuration
 
 
 def directory_empty(location):

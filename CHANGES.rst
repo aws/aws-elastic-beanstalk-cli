@@ -3,6 +3,11 @@ Changelog
 =========
 
 ------------------
+3.8.5 (2016-12-01)
+------------------
+- Added support for CodeBuild by autodetecting a buildspec file and deploying with settings from that
+
+------------------
 3.8.4 (2016-11-16)
 ------------------
 - Added '--source' flag to create, deploy, init and use to directly use source from CodeCommit repositories

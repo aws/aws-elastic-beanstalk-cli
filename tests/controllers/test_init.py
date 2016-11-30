@@ -19,6 +19,7 @@ from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
 from ebcli.objects.exceptions import NotInitializedError, NoRegionError
 from ebcli.objects.solutionstack import SolutionStack
+from ebcli.objects.buildconfiguration import BuildConfiguration
 
 
 class TestInit(BaseControllerTest):
@@ -278,3 +279,193 @@ class TestInit(BaseControllerTest):
         mock_codecommit.create_repository.assert_called_once_with('new-repo','Created with EB CLI')
         mock_git_sourcecontrol.setup_new_codecommit_branch.assert_called_once_with(branch_name='devo')
         mock_codecommit.create_branch.assert_called_once_with('new-repo', 'devo', 'CommitId')
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations')
+    def test_init_with_codebuild_buildspec_interactive_choice(self, mock_fileops):
+        """
+        Tests that interactive mode correctly asks for all new values
+        """
+        # Setup variables
+        expected_image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6'
+        compute_type = 'BUILD_GENERAL1_SMALL'
+        service_role = 'eb-test'
+        timeout = 60
+        build_config = BuildConfiguration(image=None, compute_type=compute_type,
+                                          service_role=service_role, timeout=timeout)
+
+        # First, set up config file to contain all values
+        fileoperations.create_config_file('app1', 'us-west-1', 'random')
+
+        # Set up mock responses
+        # 1. Get solution stacks
+        # 2. Get solution stacks again
+        # 3. Create app
+        self.mock_commonops.get_application_names.return_value = list()
+        self.mock_operations.credentials_are_valid.return_value = True
+        self.mock_commonops.prompt_for_solution_stack.return_value = \
+            self.solution
+        mock_fileops.env_yaml_exists.return_value = None
+
+        # Mock out operations for Codebuild Integration
+        mock_fileops.build_spec_exists.return_value = True
+        mock_fileops.get_build_configuration.return_value = build_config
+        mock_fileops.buildspec_config_header = fileoperations.buildspec_config_header
+        mock_fileops.buildspec_name = fileoperations.buildspec_name
+
+        self.mock_operations.get_codebuild_image_from_platform.return_value = \
+            [{u'name': u'aws/codebuild/eb-java-7-amazonlinux-64:2.1.6', u'description': u'Java 7 Running on Amazon Linux 64bit '},
+             {u'name': expected_image, u'description': u'Java 8 Running on Amazon Linux 64bit '},
+             {u'name': u'aws/codebuild/eb-ruby-1.9-amazonlinux-64:2.1.6', u'description': u'Ruby 1.9 Running on Amazon Linux 64bit '}]
+
+        # Mock out getting the application information
+        self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
+        self.mock_commonops.pull_down_app_info.return_value = 'something', 'smthing'
+
+        self.mock_input.side_effect = [
+            '3',  # region number
+            self.app_name,  # Application name
+            '2',  # Image Platform selection
+            '2',  # Platform version selection
+            'n',  # Set up ssh selection
+        ]
+
+        # run cmd
+        self.app = EB(argv=['init', '-i'])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+        # make sure setup was called correctly
+        self.mock_operations.setup.assert_called_with(self.app_name,
+                                                      'us-west-2',
+                                                      'PHP 5.5', None, None, None)
+        self.mock_operations.get_codebuild_image_from_platform.assert_called_with('PHP 5.5')
+
+        write_config_calls = [mock.call('global', 'profile', 'eb-cli'),
+                              mock.call(fileoperations.buildspec_config_header,
+                                        'Image',
+                                        expected_image,
+                                        file=fileoperations.buildspec_name),
+                              mock.call('global', 'default_ec2_keyname', 'test'),]
+        mock_fileops.write_config_setting.assert_has_calls(write_config_calls)
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations')
+    def test_init_with_codebuild_buildspec_non_interactive_choice(self, mock_fileops):
+        """
+        Tests that interactive mode correctly asks for all new values
+        """
+        # Setup variables
+        expected_image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6'
+        compute_type = 'BUILD_GENERAL1_SMALL'
+        service_role = 'eb-test'
+        timeout = 60
+        build_config = BuildConfiguration(image=None, compute_type=compute_type,
+                                          service_role=service_role, timeout=timeout)
+
+        # First, set up config file to contain all values
+        fileoperations.create_config_file('app1', 'us-west-1', 'random')
+
+        # Set up mock responses
+        # 1. Get solution stacks
+        # 2. Get solution stacks again
+        # 3. Create app
+        self.mock_commonops.get_application_names.return_value = list()
+        self.mock_operations.credentials_are_valid.return_value = True
+        self.mock_commonops.prompt_for_solution_stack.return_value = \
+            self.solution
+        mock_fileops.env_yaml_exists.return_value = None
+
+        # Mock out operations for Codebuild Integration
+        mock_fileops.build_spec_exists.return_value = True
+        mock_fileops.get_build_configuration.return_value = build_config
+        mock_fileops.buildspec_config_header = fileoperations.buildspec_config_header
+        mock_fileops.buildspec_name = fileoperations.buildspec_name
+
+        self.mock_operations.get_codebuild_image_from_platform.return_value = \
+             {u'name': expected_image, u'description': u'Java 8 Running on Amazon Linux 64bit '}
+
+        # Mock out getting the application information
+        self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
+        self.mock_commonops.pull_down_app_info.return_value = 'something', 'smthing'
+
+        self.mock_input.side_effect = [
+            '3',  # region number
+            self.app_name,  # Application name
+            '2',  # Platform version selection
+            'n',  # Set up ssh selection
+        ]
+
+        # run cmd
+        self.app = EB(argv=['init', '-i'])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+        # make sure setup was called correctly
+        self.mock_operations.setup.assert_called_with(self.app_name,
+                                                      'us-west-2',
+                                                      'PHP 5.5', None, None, None)
+        self.mock_operations.get_codebuild_image_from_platform.assert_called_with('PHP 5.5')
+
+        write_config_calls = [mock.call('global', 'profile', 'eb-cli'),
+                              mock.call(fileoperations.buildspec_config_header,
+                                        'Image',
+                                        expected_image,
+                                        file=fileoperations.buildspec_name),
+                              mock.call('global', 'default_ec2_keyname', 'test'), ]
+        mock_fileops.write_config_setting.assert_has_calls(write_config_calls)
+
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations')
+    @mock.patch('ebcli.controllers.initialize.SourceControl')
+    def test_init_with_codecommit_source_and_codebuild(self, mock_sourcecontrol, mock_fileops):
+        """
+        Test that we prompt for
+        """
+        # Setup variables
+        expected_image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6'
+        compute_type = 'BUILD_GENERAL1_SMALL'
+        service_role = 'eb-test'
+        timeout = 60
+        build_config = BuildConfiguration(image=None, compute_type=compute_type,
+                                          service_role=service_role, timeout=timeout)
+
+        # setup mock response
+        # Mock out operations for Codebuild Integration
+        mock_fileops.get_application_name.return_value = 'testDir'
+        mock_fileops.get_platform_from_env_yaml.return_value = 'PHP 5.5'
+        mock_fileops.build_spec_exists.return_value = True
+        mock_fileops.get_build_configuration.return_value = build_config
+        mock_fileops.buildspec_config_header = fileoperations.buildspec_config_header
+        mock_fileops.buildspec_name = fileoperations.buildspec_name
+
+        self.mock_operations.get_codebuild_image_from_platform.return_value = \
+            {u'name': expected_image, u'description': u'PHP 5.5 Running on Amazon Linux 64bit '}
+
+        # mockout other methods
+        self.mock_operations.credentials_are_valid.side_effect = [
+            NoRegionError,
+            True
+        ]
+        self.mock_commonops.prompt_for_solution_stack.return_value = Exception
+        self.mock_sshops.prompt_for_ec2_keyname.return_value = Exception
+        self.mock_commonops.get_current_branch_environment.side_effect = \
+            NotInitializedError,
+        self.mock_commonops.create_app.return_value = None, None
+        self.mock_commonops.get_default_keyname.return_value = ''
+        self.mock_commonops.get_default_region.return_value = ''
+        self.mock_commonops.get_default_solution_stack.return_value = ''
+
+        # run cmd
+        self.app = EB(argv=['init', '--source', 'CodeCommit/my-repo/prod', '--region', 'us-east-1'])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+        # assert we ran the methods we intended too
+        self.mock_operations.setup.assert_called_with('testDir',
+                                                      'us-east-1',
+                                                      'PHP 5.5', None, 'my-repo', 'prod')
+
+        mock_sourcecontrol.setup_codecommit_cred_config.assert_not_called()
+        self.mock_operations.get_codebuild_image_from_platform.assert_called_with('PHP 5.5')

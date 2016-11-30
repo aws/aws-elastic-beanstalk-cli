@@ -111,3 +111,35 @@ class TestFileOperations(unittest.TestCase):
         self.assertFalse(result3)
         self.assertFalse(result4)
         self.assertFalse(result5)
+
+    @mock.patch('ebcli.core.io.sys')
+    def test_event_streamer(self, mock_sys):
+        mock_sys.stdout.isatty.return_value = True
+        with mock.patch('ebcli.core.io.echo') as echo_mocked:
+            streamer = io.get_event_streamer()
+            streamer.stream_event("msg1")
+            streamer.stream_event("msg2")
+            echo_mocked.assert_called_with(streamer.prompt, end='')
+            streamer.end_stream()
+        self.assertEqual(streamer.eventcount, 2, "Expected event count to be 2 but was: {0}".format(streamer.eventcount))
+
+    @mock.patch('ebcli.core.io.sys')
+    def test_event_streamer_with_unsafe_exit(self, mock_sys):
+        mock_sys.stdout.isatty.return_value = True
+        with mock.patch('ebcli.core.io.echo') as echo_mocked:
+            streamer = io.get_event_streamer()
+            streamer.stream_event("msg1", safe_to_quit=False)
+            echo_mocked.assert_called_with(streamer.unsafe_prompt, end='')
+            streamer.end_stream()
+        self.assertEqual(streamer.eventcount, 1, "Expected event count to be 1 but was: {0}".format(streamer.eventcount))
+
+    @mock.patch('ebcli.core.io.sys')
+    def test_pipe_streamer(self, mock_sys):
+        mock_sys.stdout.isatty.return_value = False
+        message = "msg1"
+        with mock.patch('ebcli.core.io.echo') as echo_mocked:
+            streamer = io.get_event_streamer()
+            streamer.stream_event(message)
+            echo_mocked.assert_called_with(message)
+            streamer.end_stream()
+        self.assertEqual(streamer.eventcount, 0, "Expected event count to be 0 but was: {0}".format(streamer.eventcount))

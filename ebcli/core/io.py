@@ -16,6 +16,7 @@ import warnings
 import getpass
 import sys
 import logging
+import signal
 
 import colorama
 import pydoc
@@ -315,16 +316,22 @@ def get_event_streamer():
 class EventStreamer(object):
     def __init__(self):
         self.prompt = strings['events.streamprompt']
+        self.unsafe_prompt = strings['events.unsafestreamprompt']
         self.eventcount = 0
 
-    def stream_event(self, message):
+    def stream_event(self, message, safe_to_quit=True):
         """
         Streams an event so a prompt is displayed at the bottom of the stream
+        :param safe_to_quit: this determines which static event prompt to show to the user
         :param message: message to be streamed
         """
         length = len(self.prompt)
         echo('\r', message.ljust(length), sep='')
-        echo(self.prompt, end='')
+        if safe_to_quit:
+            echo(self.prompt, end='')
+        else:
+            echo(self.unsafe_prompt, end='')
+
         sys.stdout.flush()
         self.eventcount += 1
 
@@ -343,7 +350,7 @@ class PipeStreamer(EventStreamer):
     We dont want to actually do any "streaming" if
     a pipe is being used, so we will just use standard printing
     """
-    def stream_event(self, message):
+    def stream_event(self, message, safe_to_quit=True):
         echo(message)
 
     def end_stream(self):

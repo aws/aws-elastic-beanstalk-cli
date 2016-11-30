@@ -125,6 +125,30 @@ class InitController(AbstractBaseController):
                 result = commonops.prompt_for_solution_stack()
                 self.solution = result.version
 
+        # Select CodeBuild image if BuildSpec is present do not prompt or show if we are non-interactive
+        if fileoperations.build_spec_exists() and not self.force_non_interactive:
+            build_spec = fileoperations.get_build_configuration()
+            # TODO: always go on interactive?
+            if build_spec.image is None:
+                LOG.debug("Buildspec file is present but image is does not exist. Attempting to fill best guess.")
+                platform_image = initializeops.get_codebuild_image_from_platform(self.solution)
+
+                # If the return is a dictionary then it must be a single image and we can use that automatically
+                if type(platform_image) is dict:
+                    io.echo("buildspec file is present but no image is specified. Using latest image for selected platform: {0}".format(self.solution))
+                else:
+                    # Otherwise we have an array for images which we must prompt the customer to pick from
+                    io.echo("Could not determine best image for buildspec file please select from list.\n"
+                            "Current chosen platform: {0}".format(self.solution))
+                    selected = utils.prompt_for_index_in_list(map(lambda image: image['description'], platform_image))
+                    platform_image = platform_image[selected]
+
+                # Finally write the CodeBuild image back to the buildspec file
+                fileoperations.write_config_setting(fileoperations.buildspec_config_header,
+                                                    'Image',
+                                                    platform_image['name'].encode('ascii', 'ignore'),
+                                                    file=fileoperations.buildspec_name)
+
         # Setup code commit integration
         # Ensure that git is setup
         source_control = SourceControl.get_source_control()
@@ -153,10 +177,10 @@ class InitController(AbstractBaseController):
             if not source_control_setup:
                 io.echo("Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization")
             else:
-                io.echo("Note: Elastic Beanstalk now supports AWS CodeCommit; a fully-managed source control service."
+                io.echo("Note:\n Elastic Beanstalk now supports AWS CodeCommit; a fully-managed source control service."
                     " To learn more, see Docs: https://aws.amazon.com/codecommit/")
                 try:
-                    io.validate_action("Do you wish to continue with CodeCommit? (y/n)(default is n)", "y")
+                    io.validate_action("Do you wish to continue with CodeCommit? (y/n) (default is n)", "y")
 
                     # Setup git config settings for code commit credentials
                     source_control.setup_codecommit_cred_config()

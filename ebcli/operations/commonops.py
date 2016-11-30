@@ -21,6 +21,7 @@ from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
 from botocore.compat import six
 
+from ebcli.operations import buildspecops
 from ..core import fileoperations, io
 from ..core.fileoperations import _marker
 from ..containers import dockerrun
@@ -35,7 +36,7 @@ LOG = minimal_logger(__name__)
 
 
 def wait_for_success_events(request_id, timeout_in_minutes=None,
-                            sleep_time=5, stream_events=True, can_abort=False):
+                            sleep_time=5, stream_events=True, can_abort=False, version_label=None):
     if timeout_in_minutes == 0:
         return
     if timeout_in_minutes is None:
@@ -51,11 +52,18 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
         streamer.prompt += strings['events.abortmessage']
 
     events = []
+
+    # If the even stream is terminated before we finish streaming application version events we will not
+    #   be able to continue the command so we must warn the user it is not safe to quit.
+    safe_to_quit = True
+    if version_label is not None and request_id is None:
+        safe_to_quit = False
+
     try:
         # Get first event in order to get start time
         while not events:
             events = elasticbeanstalk.get_new_events(
-                None, None, request_id, last_event_time=None
+                None, None, request_id, last_event_time=None, version_label=version_label
             )
 
             if len(events) > 0:
@@ -64,7 +72,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                 env_name = event.environment_name
 
                 if stream_events:
-                    streamer.stream_event(get_event_string(event))
+                    streamer.stream_event(get_event_string(event), safe_to_quit=safe_to_quit)
                 # Test event message for success string
                 if _is_success_string(event.message):
                     return
@@ -82,7 +90,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
 
             for event in reversed(events):
                 if stream_events:
-                    streamer.stream_event(get_event_string(event))
+                    streamer.stream_event(get_event_string(event), safe_to_quit=safe_to_quit)
                     # We dont need to update last_time if we are not printing.
                     # This can solve timing issues
                     last_time = event.event_date
@@ -286,6 +294,10 @@ def _is_success_string(message):
         raise NotSupportedError(prompts['create.dockerrunupgrade'])
     if message == responses['event.updatefailed']:
         raise ServiceError(message)
+    if message.startswith(responses['appversion.finished']) and message.endswith('FAILED.'):
+        raise ServiceError(message)
+    if message.startswith(responses['appversion.finished']) and message.endswith('PROCESSED.'):
+        return True
 
     return False
 
@@ -677,7 +689,7 @@ def create_dummy_app_version(app_name):
                                        None, None, warning=False)
 
 
-def create_app_version(app_name, process=False, label=None, message=None, staged=False):
+def create_app_version(app_name, process=False, label=None, message=None, staged=False, build_config=None):
     cwd = os.getcwd()
     fileoperations._traverse_to_project_root()
     try:
@@ -754,10 +766,10 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
     fileoperations.delete_app_versions()
     io.log_info('Creating AppVersion ' + version_label)
     return _create_application_version(app_name, version_label, description,
-                                       bucket, key, process)
+                                       bucket, key, process, build_config=build_config)
 
 
-def create_codecommit_app_version(app_name, process=False, label=None, message=None):
+def create_codecommit_app_version(app_name, process=False, label=None, message=None, build_config=None):
     cwd = os.getcwd()
     fileoperations._traverse_to_project_root()
 
@@ -805,10 +817,11 @@ def create_codecommit_app_version(app_name, process=False, label=None, message=N
 
     io.log_info('Creating AppVersion ' + version_label)
     return _create_application_version(app_name, version_label, description,
-                                       None, None, process, repository=repository, commit_id=commit_id)
+                                       None, None, process, repository=repository, commit_id=commit_id,
+                                       build_config=build_config)
 
 
-def create_app_version_from_source(app_name, source, process=False, label=None, message=None):
+def create_app_version_from_source(app_name, source, process=False, label=None, message=None, build_config=None):
     cwd = os.getcwd()
     fileoperations._traverse_to_project_root()
     try:
@@ -859,21 +872,27 @@ def create_app_version_from_source(app_name, source, process=False, label=None, 
     # Deploy Application version with freshly pushed git commit
     io.log_info('Creating AppVersion ' + version_label)
     return _create_application_version(app_name, version_label, description,
-                                       None, None, process, repository=repository, commit_id=commit_id)
+                                       None, None, process, repository=repository, commit_id=commit_id,
+                                       build_config=build_config)
 
 
 def _create_application_version(app_name, version_label, description,
-                                bucket, key, process=False, warning=True, repository=None, commit_id=None):
+                                bucket, key, process=False, warning=True,
+                                repository=None, commit_id=None,
+                                build_config=None):
     """
     A wrapper around elasticbeanstalk.create_application_version that
     handles certain error cases:
      * application doesnt exist
      * version already exists
+     * validates BuildSpec files for CodeBuild
     """
+    if build_config is not None:
+        buildspecops.validate_build_config(build_config)
     while True:
         try:
             elasticbeanstalk.create_application_version(
-                app_name, version_label, description, bucket, key, process, repository, commit_id
+                app_name, version_label, description, bucket, key, process, repository, commit_id, build_config
             )
             return version_label
         except InvalidParameterValueError as e:
@@ -1113,7 +1132,7 @@ def wait_for_processed_app_versions(app_name, version_labels, timeout=5):
     versions_to_check = list(version_labels)
     processed = {}
     failed = {}
-    io.echo('--- Waiting for application versions to be pre-processed ---')
+    io.echo('--- Waiting for Application Versions to be pre-processed ---')
     for version in version_labels:
         processed[version] = False
         failed[version] = False

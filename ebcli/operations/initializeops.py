@@ -11,12 +11,17 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import re
+
+from cement.utils.misc import minimal_logger
+
 from ..core import fileoperations, io
-from ..lib import elasticbeanstalk, heuristics, aws
+from ..lib import elasticbeanstalk, heuristics, aws, codebuild
 from ..objects.exceptions import CredentialsError, NotAuthorizedError
 from ..objects.sourcecontrol import SourceControl
-from ..operations import commonops
 from ..resources.strings import strings
+
+LOG = minimal_logger(__name__)
 
 
 def credentials_are_valid():
@@ -77,3 +82,15 @@ def setup_ignore_file():
         source_control.set_up_ignore_file()
         sc_name = source_control.get_name()
         fileoperations.write_config_setting('global', 'sc', sc_name)
+
+
+def get_codebuild_image_from_platform(platform):
+    platform_image = None
+    beanstalk_images = codebuild.list_curated_environment_images()
+    for image in beanstalk_images:
+        if platform in image['description']:
+            platform_image = image
+
+    LOG.debug("Searching for images for platform '{0}'. Found: {1}".format(platform, platform_image))
+
+    return beanstalk_images if platform_image is None else platform_image

@@ -54,18 +54,30 @@ def create_application(app_name, descrip):
 
 
 def create_application_version(app_name, vers_label, descrip, s3_bucket,
-                               s3_key, process=False, repository=None, commit_id=None):
+                               s3_key, process=False, repository=None, commit_id=None, build_configuration=None):
     kwargs = dict()
     kwargs['Process'] = process
     if descrip is not None:
         kwargs['Description'] = descrip
     if s3_bucket and s3_key:
-        kwargs['SourceBundle'] = {'S3Bucket': s3_bucket,
-                                  'S3Key': s3_key}
-    if repository and commit_id:
+        if build_configuration is None:
+            kwargs['SourceBundle'] = {'S3Bucket': s3_bucket,
+                                      'S3Key': s3_key}
+        else:
+            kwargs['SourceBuildInformation'] = {'SourceType': 'Zip',
+                                                'SourceRepository': 'S3',
+                                                'SourceLocation': "{0}/{1}".format(s3_bucket, s3_key)}
+    elif repository and commit_id:
         kwargs['SourceBuildInformation'] = {'SourceType': 'Git',
                                   'SourceRepository': 'CodeCommit',
                                   'SourceLocation': "{0}/{1}".format(repository, commit_id)}
+        kwargs['Process'] = True
+
+    if build_configuration is not None:
+        kwargs['BuildConfiguration'] = {"CodeBuildServiceRole": build_configuration.service_role,
+                                        "Image": build_configuration.image,
+                                        "ComputeType": build_configuration.compute_type,
+                                        "TimeoutInMinutes": build_configuration.timeout}
         kwargs['Process'] = True
 
     LOG.debug('Inside create_application_version api wrapper')
@@ -359,7 +371,7 @@ def get_environment_resources(env_name):
 
 
 def get_new_events(app_name, env_name, request_id,
-                   last_event_time=None):
+                   last_event_time=None, version_label=None):
     LOG.debug('Inside get_new_events api wrapper')
     # make call
     if last_event_time is not None:
@@ -372,6 +384,8 @@ def get_new_events(app_name, env_name, request_id,
     kwargs = {}
     if app_name:
         kwargs['ApplicationName'] = app_name
+    if version_label:
+        kwargs['VersionLabel'] = version_label
     if env_name:
         kwargs['EnvironmentName'] = env_name
     if request_id:

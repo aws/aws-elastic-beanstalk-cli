@@ -10,15 +10,26 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from ..operations import gitops
-from ..lib import elasticbeanstalk, aws
-from ..core import io
+import time
+from cement.utils.misc import minimal_logger
+
 from . import commonops
+from ..core import io, fileoperations
+from ..lib import elasticbeanstalk, aws
+from ..operations import gitops, buildspecops
+
+LOG = minimal_logger(__name__)
 
 
 def deploy(app_name, env_name, version, label, message, group_name=None,
            process_app_versions=False, staged=False, timeout=5, source=None):
     region_name = aws.get_region_name()
+
+    # Parse and get Build Configuration from BuildSpec if it exists
+    build_config = None
+    if fileoperations.build_spec_exists() and version is None:
+        build_config = fileoperations.get_build_configuration()
+        LOG.debug("Retrieved build configuration from buildspec: {0}".format(build_config.__str__()))
 
     io.log_info('Deploying code to ' + env_name + " in region " + region_name)
 
@@ -26,15 +37,26 @@ def deploy(app_name, env_name, version, label, message, group_name=None,
         app_version_label = version
     elif source is not None:
         app_version_label = commonops.create_app_version_from_source(
-            app_name, source, process=process_app_versions, label=label, message=message)
+            app_name, source, process=process_app_versions, label=label, message=message, build_config=build_config)
+        io.echo("Starting environment deployment via specified source")
+        process_app_versions = True
     elif gitops.git_management_enabled() and not staged:
         app_version_label = commonops.create_codecommit_app_version(
-            app_name, process=process_app_versions, label=label, message=message)
+            app_name, process=process_app_versions, label=label, message=message, build_config=build_config)
         io.echo("Starting environment deployment via CodeCommit")
+        process_app_versions = True
     else:
         # Create app version
         app_version_label = commonops.create_app_version(
-            app_name, process=process_app_versions, label=label, message=message, staged=staged)
+            app_name, process=process_app_versions, label=label, message=message, staged=staged, build_config=build_config)
+
+    if build_config is not None:
+        buildspecops.stream_build_configuration_app_version_creation(app_name, app_version_label)
+    elif process_app_versions is True:
+        success = commonops.wait_for_processed_app_versions(app_name,
+                                                            [app_version_label])
+        if not success:
+            return
 
     # swap env to new app version
     request_id = elasticbeanstalk.update_env_application_version(
