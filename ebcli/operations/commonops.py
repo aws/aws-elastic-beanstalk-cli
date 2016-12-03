@@ -17,13 +17,13 @@ import time
 from datetime import datetime, timedelta
 import platform
 
+from ..core.fileoperations import _marker
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
 from botocore.compat import six
 
 from ebcli.operations import buildspecops
 from ..core import fileoperations, io
-from ..core.fileoperations import _marker
 from ..containers import dockerrun
 from ..lib import aws, ec2, elasticbeanstalk, heuristics, s3, utils, codecommit
 from ..lib.aws import InvalidParameterValueError
@@ -36,7 +36,8 @@ LOG = minimal_logger(__name__)
 
 
 def wait_for_success_events(request_id, timeout_in_minutes=None,
-                            sleep_time=5, stream_events=True, can_abort=False, version_label=None):
+                            sleep_time=5, stream_events=True, can_abort=False,
+                            streamer=None, app_name=None, env_name=None, version_label=None):
     if timeout_in_minutes == 0:
         return
     if timeout_in_minutes is None:
@@ -45,9 +46,12 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
     start = datetime.now()
     timediff = timedelta(seconds=timeout_in_minutes * 60)
 
-    last_time = None
+    # default to now, will update if request_id is provided
+    last_time = start
 
-    streamer = io.get_event_streamer()
+    if streamer is None:
+        streamer = io.get_event_streamer()
+
     if can_abort:
         streamer.prompt += strings['events.abortmessage']
 
@@ -1011,9 +1015,12 @@ def get_default_solution_stack():
 
 
 def get_setting_from_current_branch(keyname):
-    source_control = SourceControl.get_source_control()
-
-    branch_name = source_control.get_current_branch()
+    try:
+        source_control = SourceControl.get_source_control()
+        branch_name = source_control.get_current_branch()
+    except CommandError as ex:
+        LOG.debug("Git is not installed returning None for setting: %s".format(keyname))
+        return None
 
     branch_dict = fileoperations.get_config_setting('branch-defaults', branch_name)
 

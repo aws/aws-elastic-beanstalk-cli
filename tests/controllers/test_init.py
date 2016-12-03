@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import unittest
 import mock
 
 from .basecontrollertest import BaseControllerTest
@@ -118,7 +119,6 @@ class TestInit(BaseControllerTest):
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
                                                       'PHP 5.5', None, None, None)
-
     def test_init_no_creds(self):
         """
         Test that we prompt for credentials

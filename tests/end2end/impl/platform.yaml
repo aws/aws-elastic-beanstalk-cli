@@ -1,0 +1,5 @@
+version: "1.0"
+provisioner:
+  type: packer
+  template: platform.json
+  flavor: amazon

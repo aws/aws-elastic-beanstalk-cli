@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 
 import re
+
 import pkg_resources
 
 from cement.utils.misc import minimal_logger
@@ -45,8 +46,8 @@ class SolutionStack():
 
     def has_healthd_group_version_2_support(self):
         stack_version = utils.parse_version(self.stack_version)
-        if type(stack_version) is pkg_resources.SetuptoolsVersion:
-            return  stack_version >= utils.parse_version('2.0.10')
+        if stack_version is not None:
+            return stack_version >= utils.parse_version('2.0.10')
         return True
 
     @staticmethod

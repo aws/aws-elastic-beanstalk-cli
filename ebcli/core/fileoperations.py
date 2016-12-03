@@ -28,7 +28,6 @@ from six import StringIO
 from yaml import load, dump, safe_dump
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
-import pathspec
 try:
     import configparser
 except ImportError:
@@ -736,7 +735,7 @@ def get_ebignore_list():
     and give us a list of files to ignore
     '''
     # Patch iter_tree to not throw recursion error on non recursive links
-    from pathspec import util
+    from pathspec import pathspec, util
     def iter_tree(root):
         """
         Walks the specified root path for all files.

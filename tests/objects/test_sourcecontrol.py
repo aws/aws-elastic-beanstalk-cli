@@ -96,36 +96,45 @@ class TestGitSourceControl(unittest.TestCase):
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
 
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_source_control(self):
         sc = sourcecontrol.SourceControl.get_source_control()
         self.assertIsInstance(sc, sourcecontrol.Git)
 
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_name(self):
         self.assertEqual(sourcecontrol.Git().get_name(), 'git')
 
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_current_branch(self):
         self.assertEqual(sourcecontrol.Git().get_current_branch(), 'master')
 
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_current_branch_detached_head(self):
         # Checkout a commit back to get us in detached head state
         subprocess.call(['git', 'checkout', 'HEAD^'])
         self.assertEqual(sourcecontrol.Git().get_current_branch(), 'default')
 
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_do_zip(self):
         #Just want to make sure no errors happen
         sourcecontrol.Git().do_zip(os.getcwd() + os.path.sep + 'file.zip')
 
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_message(self):
         self.assertEqual(sourcecontrol.Git().get_message(), 'Hello')
 
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_version_label(self):
         self.assertTrue(sourcecontrol.Git().get_version_label().startswith('app-v1-'))
 
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_set_up_ignore_no_file(self):
         self.assertFalse(os.path.isfile('.gitignore'))
         sourcecontrol.Git().set_up_ignore_file()
         self.assertTrue(os.path.isfile('.gitignore'))
 
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_set_up_ignore_file_file_exists(self):
         with open('.gitignore', 'w') as f:
             f.write('line1' + os.linesep)

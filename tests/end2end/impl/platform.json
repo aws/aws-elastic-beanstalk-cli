@@ -1,0 +1,20 @@
+{
+  "builders": [
+     {
+         "type": "amazon-ebs",
+         "name": "PV AMI builder",
+         "region": "us-east-1",
+         "source_ami": "ami-0188776c",
+         "instance_type": "c3.xlarge",
+         "ssh_username": "ec2-user",
+         "ssh_pty": "true",
+         "ami_name": "custom platform test ami {{isotime \"20060102150405\"}}"
+     }
+  ],
+  "provisioners": [
+     {
+         "type": "shell",
+         "inline": ["echo Instance launched"]
+     }
+  ]
+}
