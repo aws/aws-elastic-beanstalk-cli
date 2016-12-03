@@ -128,7 +128,6 @@ class InitController(AbstractBaseController):
         # Select CodeBuild image if BuildSpec is present do not prompt or show if we are non-interactive
         if fileoperations.build_spec_exists() and not self.force_non_interactive:
             build_spec = fileoperations.get_build_configuration()
-            # TODO: always go on interactive?
             if build_spec.image is None:
                 LOG.debug("Buildspec file is present but image is does not exist. Attempting to fill best guess.")
                 platform_image = initializeops.get_codebuild_image_from_platform(self.solution)

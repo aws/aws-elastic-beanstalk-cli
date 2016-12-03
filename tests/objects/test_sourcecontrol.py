@@ -147,6 +147,7 @@ class TestGitSourceControl(unittest.TestCase):
             self.assertEqual(f[0], 'line1' + os.linesep)
             self.assertEqual(f[1], 'line2' + os.linesep)
 
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     @mock.patch('ebcli.objects.sourcecontrol.exec_cmd')
     def test_error_handler_for_exit_code_128(self, mock_exec_cmd):
         stdout = ""
@@ -155,7 +156,7 @@ class TestGitSourceControl(unittest.TestCase):
         mock_exec_cmd.return_value = stdout, stderr, exit_code
         self.assertRaises(CommandError, sourcecontrol.Git().get_version_label)
 
-
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     @mock.patch('ebcli.objects.sourcecontrol.exec_cmd')
     def test_error_handler_for_exit_code_127(self, mock_exec_cmd):
         stdout = ""
@@ -164,6 +165,7 @@ class TestGitSourceControl(unittest.TestCase):
         mock_exec_cmd.return_value = stdout, stderr, exit_code
         self.assertRaises(NoSourceControlError, sourcecontrol.Git().get_version_label)
 
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     @mock.patch('ebcli.objects.sourcecontrol.exec_cmd')
     def test_error_handler_for_non_handled_exit_code(self, mock_exec_cmd):
         stdout = ""

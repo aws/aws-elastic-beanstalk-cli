@@ -291,8 +291,8 @@ class TestCommonOperations(unittest.TestCase):
                                                                      False, None, None, None)
         mock_beanstalk.create_application.assert_called_with(self.app_name, strings['app.description'])
 
-        write_config_calls = (mock.call('branch-defaults', self.branch, {'environment': None}),
-                             mock.call('branch-defaults', self.branch, {'group_suffix': None}))
+        write_config_calls = [mock.call('branch-defaults', self.branch, {'environment': None}),
+                             mock.call('branch-defaults', self.branch, {'group_suffix': None})]
         mock_fileoperations.write_config_setting.assert_has_calls(write_config_calls)
 
     @mock.patch('ebcli.operations.commonops.elasticbeanstalk')

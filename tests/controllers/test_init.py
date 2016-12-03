@@ -38,7 +38,9 @@ class TestInit(BaseControllerTest):
         self.patcher_sshops.stop()
         super(TestInit, self).tearDown()
 
-    def test_init_standard(self):
+    @mock.patch('ebcli.objects.sourcecontrol.Git')
+    @mock.patch('ebcli.controllers.initialize.SourceControl')
+    def test_init_standard(self, mock_sourcecontrol, mock_git):
         """
                 testing for:
                 1. Prompt for a region
@@ -62,6 +64,9 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.get_default_keyname.return_value = ''
         self.mock_commonops.get_default_region.return_value = ''
         self.mock_commonops.get_default_solution_stack.return_value = ''
+        # Mock out source control so we don't depend on git
+        mock_sourcecontrol.get_source_control.return_value = mock_git
+        mock_git.is_setup.return_value = None
 
         self.mock_input.side_effect = [
             '3',  # region number
@@ -82,7 +87,9 @@ class TestInit(BaseControllerTest):
                                                       'us-west-2',
                                                       'PHP 5.5', None, None, None)
 
-    def test_init_interactive(self):
+    @mock.patch('ebcli.objects.sourcecontrol.Git')
+    @mock.patch('ebcli.controllers.initialize.SourceControl')
+    def test_init_interactive(self, mock_sourcecontrol, mock_git):
         """
         Tests that interactive mode correctly asks for all new values
         """
@@ -109,6 +116,10 @@ class TestInit(BaseControllerTest):
             'n',  # Set up ssh selection
         ]
 
+        # Mock out source control so we don't depend on git
+        mock_sourcecontrol.get_source_control.return_value = mock_git
+        mock_git.is_setup.return_value = None
+
         # run cmd
         self.app = EB(argv=['init', '-i'])
         self.app.setup()
@@ -119,7 +130,10 @@ class TestInit(BaseControllerTest):
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
                                                       'PHP 5.5', None, None, None)
-    def test_init_no_creds(self):
+
+    @mock.patch('ebcli.objects.sourcecontrol.Git')
+    @mock.patch('ebcli.controllers.initialize.SourceControl')
+    def test_init_no_creds(self, mock_sourcecontrol, mock_git):
         """
         Test that we prompt for credentials
         """
@@ -136,6 +150,10 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.get_default_region.return_value = ''
         self.mock_commonops.get_default_solution_stack.return_value = ''
 
+        # Mock out source control so we don't depend on git
+        mock_sourcecontrol.get_source_control.return_value = mock_git
+        mock_git.is_setup.return_value = None
+
         # run cmd
         self.app = EB(argv=['init',
                             self.app_name,
@@ -150,7 +168,9 @@ class TestInit(BaseControllerTest):
                                                       'us-west-2',
                                                       'PHP 5.5', None, None, None)
 
-    def test_init_script_mode(self):
+    @mock.patch('ebcli.objects.sourcecontrol.Git')
+    @mock.patch('ebcli.controllers.initialize.SourceControl')
+    def test_init_script_mode(self, mock_sourcecontrol, mock_git):
         """
         Test that we prompt for credentials
         """
@@ -169,6 +189,10 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.get_default_region.return_value = ''
         self.mock_commonops.get_default_solution_stack.return_value = ''
 
+        # Mock out source control so we don't depend on git
+        mock_sourcecontrol.get_source_control.return_value = mock_git
+        mock_git.is_setup.return_value = None
+
         # run cmd
         self.app = EB(argv=['init', '-p', 'php'])
         self.app.setup()
@@ -179,8 +203,9 @@ class TestInit(BaseControllerTest):
                                                       'us-west-2',
                                                       'php', None, None, None)
 
+    @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
-    def test_init_with_codecommit_source(self, mock_sourcecontrol):
+    def test_init_with_codecommit_source(self, mock_sourcecontrol, mock_git):
         """
         Test that we prompt for
         """
@@ -199,6 +224,10 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.get_default_region.return_value = ''
         self.mock_commonops.get_default_solution_stack.return_value = ''
 
+        # Mock out source control so we don't depend on git
+        mock_sourcecontrol.get_source_control.return_value = mock_git
+        mock_git.is_setup.return_value = None
+
         # run cmd
         self.app = EB(argv=['init', '-p', 'ruby', '--source', 'CodeCommit/my-repo/prod', '--region', 'us-east-1'])
         self.app.setup()
@@ -212,10 +241,12 @@ class TestInit(BaseControllerTest):
 
         mock_sourcecontrol.setup_codecommit_cred_config.assert_not_called()
 
+    @mock.patch('ebcli.objects.sourcecontrol.Git')
+    @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     @mock.patch('ebcli.controllers.initialize.codecommit')
     @mock.patch('ebcli.operations.gitops')
-    def test_init_with_codecommit_prompt(self, mock_gitops, mock_codecommit, mock_fileoperations):
+    def test_init_with_codecommit_prompt(self, mock_gitops, mock_codecommit, mock_fileoperations, mock_sourcecontrol, mock_git):
         """
         Tests that interactive mode correctly asks for all new values
         """
@@ -234,8 +265,6 @@ class TestInit(BaseControllerTest):
             self.solution
 
         # Mocks for getting into CodeCommit interactive mode
-
-
         mock_gitops.git_management_enabled.return_value = False
 
         mock_codecommit.list_repositories.return_value = {'repositories': [{'repositoryName': 'only-repo'}]}
@@ -256,19 +285,16 @@ class TestInit(BaseControllerTest):
             'n',  # Set up ssh selection
         ]
 
-        with mock.patch('ebcli.objects.sourcecontrol.Git') as MockGitClass:
-            mock_git_sourcecontrol = MockGitClass.return_value
-            mock_git_sourcecontrol.is_setup.return_value = "SourceControlObject"
-            mock_git_sourcecontrol.get_current_commit.return_value = "CommitId"
-            with mock.patch('ebcli.controllers.initialize.SourceControl') as MockSourceControlClass:
-                mock_sourcecontrol = MockSourceControlClass.return_value
-                mock_sourcecontrol.get_source_control.return_value = mock_git_sourcecontrol
+        # Mock out source control so we don't depend on git
+        mock_sourcecontrol.get_source_control.return_value = mock_git
+        mock_git.is_setup.return_value = 'GitSetup'
+        mock_git.get_current_commit.return_value = 'CommitId'
 
-            # run cmd
-            self.app = EB(argv=['init', '--region', 'us-east-1', 'my-app'])
-            self.app.setup()
-            self.app.run()
-            self.app.close()
+        # run cmd
+        self.app = EB(argv=['init', '--region', 'us-east-1', 'my-app'])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
 
         # assert we ran the methods we intended too
         self.mock_operations.setup.assert_called_with('my-app',
@@ -277,11 +303,13 @@ class TestInit(BaseControllerTest):
 
 
         mock_codecommit.create_repository.assert_called_once_with('new-repo','Created with EB CLI')
-        mock_git_sourcecontrol.setup_new_codecommit_branch.assert_called_once_with(branch_name='devo')
+        mock_git.setup_new_codecommit_branch.assert_called_once_with(branch_name='devo')
         mock_codecommit.create_branch.assert_called_once_with('new-repo', 'devo', 'CommitId')
 
+    @mock.patch('ebcli.objects.sourcecontrol.Git')
+    @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.fileoperations')
-    def test_init_with_codebuild_buildspec_interactive_choice(self, mock_fileops):
+    def test_init_with_codebuild_buildspec_interactive_choice(self, mock_fileops, mock_sourcecontrol, mock_git):
         """
         Tests that interactive mode correctly asks for all new values
         """
@@ -329,6 +357,10 @@ class TestInit(BaseControllerTest):
             'n',  # Set up ssh selection
         ]
 
+        # Mock out source control so we don't depend on git
+        mock_sourcecontrol.get_source_control.return_value = mock_git
+        mock_git.is_setup.return_value = None
+
         # run cmd
         self.app = EB(argv=['init', '-i'])
         self.app.setup()
@@ -349,8 +381,10 @@ class TestInit(BaseControllerTest):
                               mock.call('global', 'default_ec2_keyname', 'test'),]
         mock_fileops.write_config_setting.assert_has_calls(write_config_calls)
 
+    @mock.patch('ebcli.objects.sourcecontrol.Git')
+    @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.fileoperations')
-    def test_init_with_codebuild_buildspec_non_interactive_choice(self, mock_fileops):
+    def test_init_with_codebuild_buildspec_non_interactive_choice(self, mock_fileops, mock_sourcecontrol, mock_git):
         """
         Tests that interactive mode correctly asks for all new values
         """
@@ -395,6 +429,10 @@ class TestInit(BaseControllerTest):
             'n',  # Set up ssh selection
         ]
 
+        # Mock out source control so we don't depend on git
+        mock_sourcecontrol.get_source_control.return_value = mock_git
+        mock_git.is_setup.return_value = None
+
         # run cmd
         self.app = EB(argv=['init', '-i'])
         self.app.setup()
@@ -415,10 +453,10 @@ class TestInit(BaseControllerTest):
                               mock.call('global', 'default_ec2_keyname', 'test'), ]
         mock_fileops.write_config_setting.assert_has_calls(write_config_calls)
 
-
+    @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.fileoperations')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
-    def test_init_with_codecommit_source_and_codebuild(self, mock_sourcecontrol, mock_fileops):
+    def test_init_with_codecommit_source_and_codebuild(self, mock_sourcecontrol, mock_fileops, mock_git):
         """
         Test that we prompt for
         """
