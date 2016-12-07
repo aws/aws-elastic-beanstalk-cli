@@ -65,7 +65,8 @@ def save_env_file(api_model):
 
 
 def open_file_for_editing(file_location):
-
+    # Added this line for windows whitespace escaping
+    file_location = '"{0}"'.format(file_location)
     editor = fileoperations.get_editor()
     if editor:
         try:
