@@ -1,3 +1,7 @@
 include *.txt
 include *.rst
 include *.json
+exclude .coveragerc
+exclude index.rst
+exclude conf.py
+exclude .gitignore
