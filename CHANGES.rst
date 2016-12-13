@@ -2,6 +2,11 @@
 Changelog
 =========
 ------------------
+3.8.8 (2016-12-13)
+------------------
+- Added eu-west-2 EU (London) region
+
+------------------
 3.8.7 (2016-12-08)
 ------------------
 - Fixed Windows installation bug

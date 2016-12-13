@@ -28,6 +28,7 @@ def get_all_regions():
         Region('cn-north-1', 'China (Beijing)'),
         Region('us-east-2', 'US East (Ohio)'),
         Region('ca-central-1', 'Canada (Central)'),
+        Region('eu-west-2', 'EU (London)'),
     ]
 
 
