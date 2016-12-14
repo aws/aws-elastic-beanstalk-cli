@@ -63,7 +63,7 @@ def get_quick_link(app_name, env_name):
         link += '&environmentType=' + environment_type
     if env.version_label:
         app_version = elasticbeanstalk.get_application_versions(
-            app_name, version_labels=[env.version_label])[0]
+            app_name, version_labels=[env.version_label])['ApplicationVersions'][0]
         source_bundle = app_version['SourceBundle']
         source_url = 'https://s3.amazonaws.com/' + source_bundle['S3Bucket'] + \
                      '/' + source_bundle['S3Key']

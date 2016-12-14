@@ -266,15 +266,19 @@ def get_available_solution_stacks():
     return solution_stacks
 
 
-def get_application_versions(app_name, version_labels=None):
+def get_application_versions(app_name, version_labels=None, max_records=None, next_token=None):
     LOG.debug('Inside get_application_versions api wrapper')
     kwargs = {}
     if version_labels:
         kwargs['VersionLabels'] = version_labels
+    if max_records:
+        kwargs['MaxRecords'] = max_records
+    if next_token:
+        kwargs['NextToken'] = next_token
     result = _make_api_call('describe_application_versions',
                             ApplicationName=app_name,
                             **kwargs)
-    return result['ApplicationVersions']
+    return result
 
 
 def get_all_applications():

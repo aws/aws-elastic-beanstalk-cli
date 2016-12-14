@@ -15,7 +15,7 @@ from operator import itemgetter
 
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings
-from ..lib import elasticbeanstalk, s3, utils
+from ..lib import elasticbeanstalk, utils
 from ..core import io
 from ..objects.exceptions import ServiceError
 
@@ -47,7 +47,7 @@ class CleanupVersionsController(AbstractBaseController):
         envs = elasticbeanstalk.get_app_environments(app_name)
         versions_in_use = [e.version_label for e in envs]
 
-        app_versions = elasticbeanstalk.get_application_versions(app_name)
+        app_versions = elasticbeanstalk.get_application_versions(app_name)['ApplicationVersions']
         app_versions.sort(key=itemgetter('DateUpdated'), reverse=True)
 
         # Filter out versions currently being used

@@ -33,6 +33,10 @@ class Table(object):
         self.vertical_offset = 0
         self.visible_rows = 0
         self.header_size = 2
+        self.shift_col = 0
+
+    def set_shift_col(self, offset):
+        self.shift_col = offset
 
     def draw(self, num_of_rows, table_data):
         self.width = term.width()
@@ -54,6 +58,7 @@ class Table(object):
 
     HEADER_SPACE_NEEDED = 16
     HEADER_WIDTH = 11
+    MAX_DESCRIPTION = 100
     def draw_header_row(self):
         # Print headers
         t = term.get_terminal()
@@ -62,8 +67,12 @@ class Table(object):
         for c in [0] + list(range(self.first_column, len(self.columns))):
             column = self.columns[c]
             column_size = column.size
-            if None == column_size:
+            if column_size is None:
                 column_size = self.get_widest_data_length_in_column(self.columns[c]) + 2
+                # special case for Description column this should be the same for all description columns, allows very
+                #   large descriptions that we are able to scroll through.
+                if column.name == 'Description' and column_size > self.MAX_DESCRIPTION:
+                    column_size = self.MAX_DESCRIPTION
                 column.fit_size = column_size
             header = justify_and_trim(column.name, column_size, column.justify)
             if (self.screen.sort_index and  # We are sorting
@@ -122,7 +131,10 @@ class Table(object):
         ]
         for c in [0] + list(range(self.first_column, len(self.columns))):
             column = self.columns[c]
-            c_data = self.get_column_data(data, column)
+            if column.key == 'Description' and self.shift_col > 0:
+                c_data = self.shift_description_data(data, column)
+            else:
+                c_data = self.get_column_data(data, column)
             row_data.append(
                 c_data
             )
@@ -133,7 +145,16 @@ class Table(object):
         c_data = justify_and_trim(
             str(data.get(column.key, '-')),
             column.size or column.fit_size,
-            column.justify)
+            column.justify,
+            column.key, self.shift_col)
+        return c_data
+
+    def shift_description_data(self, data, column):
+        c_data = justify_and_trim(
+            str(data.get(column.key)[(self.shift_col):]),
+            column.size or column.fit_size,
+            column.justify,
+            column.key, self.shift_col)
         return c_data
 
     def get_widest_data_length_in_column(self, column):
@@ -199,19 +220,34 @@ class Table(object):
         return ids
 
 
-def justify_and_trim(string, justify_size, justify_side):
+def justify_and_trim(string, justify_size, justify_side, key=None, shift_col=0):
     if justify_side == 'right':
         s = string.rjust(justify_size)
     else:
         s = string.ljust(justify_size)
+        # Special case where 'Description' column needs trimming in versions table
+        if key is not None and key == 'Description':
+            if len(s) > justify_size:
+                s = _add_arrow(s, justify_size - 1, u'\u25B6', '>')
+            if shift_col > 0:
+                s = _add_arrow(s, 0, u'\u25C0', '<', s[1:])
     if justify_side == 'none':
         return s
     return s[:justify_size]
 
 
+def _add_arrow(string, index, arrow1, arrow2, rest_of_string=''):
+    try:
+        s = string[:index] + arrow1 + rest_of_string
+    except UnicodeError:
+        LOG.debug("Bad unicode translation.")
+        s = string[:index] + arrow2
+        pass
+    return s
+
+
 class Column(object):
-    def __init__(self, name=None, size=6, key=None,
-                 justify=None, sort_key=None):
+    def __init__(self, name=None, size=6, key=None, justify=None, sort_key=None):
         self.name = name
         self.size = size
         self.fit_size = size

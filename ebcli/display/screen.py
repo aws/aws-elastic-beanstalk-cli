@@ -13,6 +13,8 @@
 
 import time
 import sys
+
+from decimal import InvalidOperation
 from . import term
 import errno
 import pprint
@@ -74,7 +76,7 @@ class Screen(object):
                 self.get_data(poller)
                 if not self.data:
                     return
-                self.draw()
+                self.draw('instances')
                 term.reset_terminal()
                 if not refresh:
                     return
@@ -92,7 +94,10 @@ class Screen(object):
         if not self.frozen:
             self.data = poller.get_fresh_data()
 
-    def draw(self):
+    def draw(self, key):
+        """Formats and draws banner and tables in screen.
+        :param key is 'instances' for health tables and 'app_versions' for versions table.
+        """
         self.data = self.sort_data(self.data)
         n = term.height() - 1
         n = self.draw_banner(n, self.data)
@@ -109,7 +114,7 @@ class Screen(object):
                 self.max_columns = max([len(t.columns)
                                         for t in self.tables if t.visible]) - 1
                 for table in self.tables:
-                    table.draw(visible_rows, self.data['instances'])
+                    table.draw(visible_rows, self.data[key])
 
         self.show_help_line()
 
@@ -216,11 +221,11 @@ class Screen(object):
             sys.stdout.flush()
             time.sleep(4)
 
-    def get_instance_id_view(self, prompt_string, action):
+    def prompt_and_action(self, prompt_string, action):
         id = ''
         t = term.get_terminal()
         io.echo(t.normal_cursor(), end='')
-        # Move cursor to 5th line
+        # Move cursor to specified empty row
         with t.location(y=self.empty_row, x=2), t.cbreak():
             io.echo(io.bold(prompt_string), end=' ')
             sys.stdout.flush()
@@ -241,22 +246,40 @@ class Screen(object):
 
         term.hide_cursor()
         if val.name == 'KEY_ESCAPE' or not id:
-            return
+            return False
         with t.location(y=self.empty_row, x=2):
             sys.stdout.flush()
             io.echo(t.clear_eol(), end='')
             try:
                 action(id)
-            except ServiceError as e:
+                return True
+            except (ServiceError) as e:
                 io.log_error(e.message)
                 time.sleep(4)  # Leave screen stable for a little
+                return False
+            except (IndexError, InvalidOperation, ValueError) as e:
+                if self.poller.all_app_versions:  # Error thrown in versions table
+                    max_input = len(self.poller.all_app_versions)
+                    io.log_error("Enter a number between 1 and " + str(max_input) + ".")
+                else:
+                    io.log_error(e)
+                time.sleep(4)
+                return False
+            except KeyboardInterrupt:
+                io.log_info("Fail gracefully on SIGINT")
+                return False
+            except Exception as e:  # Should never get thrown
+                io.log_error("Exception thrown: {0}. Something strange happened and the request could not be completed."
+                             .format(e.message))
+                time.sleep(4)
+                return False
 
     def reboot_instance_view(self):
-        self.get_instance_id_view('instance-ID to reboot:',
+        self.prompt_and_action('instance-ID to reboot:',
                                   ec2.reboot_instance)
 
     def replace_instance_view(self):
-        self.get_instance_id_view('instance-ID to replace:',
+        self.prompt_and_action('instance-ID to replace:',
                                   ec2.terminate_instance)
 
     def toggle_freeze(self):
@@ -426,26 +449,3 @@ def _get_table_index(tables, table_name):
         if table.name == table_name:
             return i
     return 0
-
-
-class TraditionalHealthScreen(Screen):
-    def __init__(self):
-        super(TraditionalHealthScreen, self).__init__()
-        self.empty_row = 3
-
-    def draw_banner_info_lines(self, lines, data):
-        if lines > 2:
-            # Get instance health count
-            term.echo_line('instances:',
-                           io.bold(data.get('Total', 0)), 'Total,',
-                           io.bold(data.get('InService', 0)), 'InService,',
-                           io.bold(data.get('Other', 0)), 'Other',
-                           )
-            lines -= 1
-        if lines > 2:
-            status = data.get('Status', 'Unknown')
-            term.echo_line(' Status:', io.bold(status),
-                           'Health', io.bold(data.get('Color', 'Grey')))
-            lines -= 1
-
-        return lines

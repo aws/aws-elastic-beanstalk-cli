@@ -10,21 +10,20 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-import argparse
-import re
 
 from os import path, chdir, getcwd
 
-from ..lib import utils
+from cement.utils.misc import minimal_logger
 
+from ..core import io, hooks, fileoperations
 from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, flag_text
-from ..core import fileoperations
+from ..lib import utils
 from ..objects.exceptions import NoEnvironmentForBranchError, \
     InvalidOptionsError
-from ..core import io, hooks
 from ..operations import commonops, deployops, composeops
+from ..resources.strings import strings, flag_text
 
+LOG = minimal_logger(__name__)
 
 class DeployController(AbstractBaseController):
     class Meta(AbstractBaseController.Meta):
@@ -52,7 +51,7 @@ class DeployController(AbstractBaseController):
         self.message = self.app.pargs.message
         self.staged = self.app.pargs.staged
         self.timeout = self.app.pargs.timeout
-        self.nohang =  self.app.pargs.nohang
+        self.nohang = self.app.pargs.nohang
         self.modules = self.app.pargs.modules
         self.source = self.app.pargs.source
         self.app_name = self.get_app_name()
@@ -72,12 +71,11 @@ class DeployController(AbstractBaseController):
             raise InvalidOptionsError(strings['deploy.invalidoptions'])
 
         if not self.env_name:
-            self.env_name = \
-                commonops.get_current_branch_environment()
+            self.env_name = commonops.get_current_branch_environment()
 
         if not self.env_name:
             self.message = strings['branch.noenv'].replace('eb {cmd}',
-                                                      self.Meta.label)
+                                                           self.Meta.label)
             io.log_error(self.message)
             raise NoEnvironmentForBranchError()
 
@@ -93,7 +91,7 @@ class DeployController(AbstractBaseController):
                          staged=self.staged, timeout=self.timeout, source=self.source)
 
     def complete_command(self, commands):
-        #ToDo, edit this if we ever support multiple env deploys
+        # TODO: edit this if we ever support multiple env deploys
         super(DeployController, self).complete_command(commands)
 
         ## versionlabels on --version
@@ -123,8 +121,7 @@ class DeployController(AbstractBaseController):
             module_list = ''
             for module_name in missing_env_yaml:
                 module_list = module_list + module_name + ', '
-            io.echo(strings['deploy.modulemissingenvyaml'].replace('{modules}',
-                                                                   module_list[:-2]))
+            io.echo(strings['deploy.modulemissingenvyaml'].replace('{modules}', module_list[:-2]))
 
             return
 
@@ -191,7 +188,7 @@ class DeployController(AbstractBaseController):
         if len(stages_version_labels) > 0:
             for stage in stages_version_labels.keys():
                 request_id = composeops.compose_no_events(app_name, stages_version_labels[stage],
-                                             group_name=stage)
+                                                          group_name=stage)
                 if request_id is None:
                     io.error("Unable to compose modules.")
                     return

@@ -13,13 +13,14 @@
 
 from cement.utils.misc import minimal_logger
 
-from ..lib import elasticbeanstalk, elb, ec2
-from ..health.data_poller import DataPoller, TraditionalHealthDataPoller
-from ..health.screen import Screen, TraditionalHealthScreen
-from ..health.help import HelpTable, ViewlessHelpTable
-from ..health import term
-from ..health.table import Column, Table
-from ..health.specialtables import RequestTable, StatusTable
+from ..lib import elasticbeanstalk
+from ..display.data_poller import DataPoller
+from ..display.screen import Screen
+from ..display.traditional import TraditionalHealthScreen, TraditionalHealthDataPoller
+from ..display.help import HelpTable, ViewlessHelpTable
+from ..display import term
+from ..display.table import Column, Table
+from ..display.specialtables import RequestTable, StatusTable
 from ..objects.exceptions import NotSupportedError
 from ..objects.solutionstack import SolutionStack
 from ..resources.statics import namespaces, option_names

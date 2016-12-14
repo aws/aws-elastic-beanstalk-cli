@@ -1,0 +1,29 @@
+# Copyright 2014 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"). You
+# may not use this file except in compliance with the License. A copy of
+# the License is located at
+#
+# http://aws.amazon.com/apache2.0/
+#
+# or in the "license" file accompanying this file. This file is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+# ANY KIND, either express or implied. See the License for the specific
+# language governing permissions and limitations under the License.
+
+
+How to use this package:
+
+"display" is a package that allows developers to display data in a compact, visually appealing
+table. Essentially, a screen takes a table and some data (from a data_poller) and uses the draw method to draw the display.
+
+See an example of a display by running eb health.
+See another example of a display by running eb deploy --version (with no other params)
+
+In order to create your own display, look at the examples in traditional.py and versions.py.
+Then see how to instantiate your screen, data_poller, and table in the file deployops.py, method display_versions
+Or you can see in healthops.py, method display_interactive_health
+
+You can use this template to easily make your static display.
+
+(To make a dynamic, updating display, look through screen.py and data_poller.py. Check out background polling in data_poller)

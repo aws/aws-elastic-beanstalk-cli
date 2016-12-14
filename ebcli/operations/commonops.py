@@ -362,7 +362,7 @@ def get_env_names(app_name):
 
 
 def get_app_version_labels(app_name):
-    app_versions = elasticbeanstalk.get_application_versions(app_name)
+    app_versions = elasticbeanstalk.get_application_versions(app_name)['ApplicationVersions']
     return [v['VersionLabel'] for v in app_versions]
 
 
@@ -370,7 +370,7 @@ def get_app_version_s3_location(app_name, version_label):
     # Check if the application version already exists. If so get the S3 key to fetch.
     s3_key = None
     s3_bucket = None
-    app_versions = elasticbeanstalk.get_application_versions(app_name, tuple(version_label,))
+    app_versions = elasticbeanstalk.get_application_versions(app_name, tuple(version_label,))['ApplicationVersions']
     app_version = {}
     for v in app_versions:
         if v['VersionLabel'] == version_label:
@@ -1149,7 +1149,7 @@ def wait_for_processed_app_versions(app_name, version_labels, timeout=5):
             io.log_error(strings['appversion.processtimeout'])
             return False
         io.LOG.debug('Retrieving app versions.')
-        app_versions = elasticbeanstalk.get_application_versions(app_name, versions_to_check)
+        app_versions = elasticbeanstalk.get_application_versions(app_name, versions_to_check)["ApplicationVersions"]
 
         for v in app_versions:
             if v['Status'] == 'PROCESSED':

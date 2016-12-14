@@ -73,7 +73,7 @@ def delete_app(app_name, force, nohang=False, cleanup=True,
 def cleanup_application_versions(app_name):
     # Clean up app versions from s3
     io.echo('Removing application versions from s3.')
-    versions = elasticbeanstalk.get_application_versions(app_name)
+    versions = elasticbeanstalk.get_application_versions(app_name)['ApplicationVersions']
     buckets = defaultdict(list)
     for version in versions:
         bundle = version.get('SourceBundle', {})

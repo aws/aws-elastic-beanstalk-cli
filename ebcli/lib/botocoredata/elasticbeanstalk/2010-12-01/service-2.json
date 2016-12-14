@@ -1516,7 +1516,8 @@
     "ApplicationVersionDescriptionsMessage":{
       "type":"structure",
       "members":{
-        "ApplicationVersions":{"shape":"ApplicationVersionDescriptionList"}
+        "ApplicationVersions":{"shape":"ApplicationVersionDescriptionList"},
+        "NextToken":{"shape":"Token"}
       }
     },
     "ApplicationVersionProccess":{"type":"boolean"},
@@ -1925,7 +1926,9 @@
       "type":"structure",
       "members":{
         "ApplicationName":{"shape":"ApplicationName"},
-        "VersionLabels":{"shape":"VersionLabelsList"}
+        "VersionLabels":{"shape":"VersionLabelsList"},
+        "MaxRecords":{"shape":"MaxRecords"},
+        "NextToken":{"shape":"Token"}
       }
     },
     "DescribeApplicationsMessage":{
