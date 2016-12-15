@@ -23,6 +23,7 @@ from copy import copy
 from collections import OrderedDict
 
 from cement.utils.misc import minimal_logger
+from cement.core.exc import CaughtSignal
 from botocore.compat import six
 
 from ..objects.solutionstack import SolutionStack
@@ -251,8 +252,10 @@ class Screen(object):
             sys.stdout.flush()
             io.echo(t.clear_eol(), end='')
             try:
-                action(id)
-                return True
+                should_exit_display = action(id)
+                if should_exit_display is None:
+                    should_exit_display = True
+                return should_exit_display
             except (ServiceError) as e:
                 io.log_error(e.message)
                 time.sleep(4)  # Leave screen stable for a little
@@ -265,12 +268,13 @@ class Screen(object):
                     io.log_error(e)
                 time.sleep(4)
                 return False
-            except KeyboardInterrupt:
-                io.log_info("Fail gracefully on SIGINT")
-                return False
+            except CaughtSignal as sig:
+                if sig.signum == 2:
+                    LOG.debug("Caught SIGINT and exiting gracefully from action")
+                    return True
             except Exception as e:  # Should never get thrown
                 io.log_error("Exception thrown: {0}. Something strange happened and the request could not be completed."
-                             .format(e.message))
+                             .format(e))
                 time.sleep(4)
                 return False
 

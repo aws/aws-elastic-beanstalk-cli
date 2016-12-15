@@ -309,11 +309,31 @@ def get_all_applications():
     return app_list
 
 
-def get_app_environments(app_name):
+def get_raw_app_environments(app_name, include_deleted=False, deleted_back_to=None):
     LOG.debug('Inside get_app_environments api wrapper')
+
+    kwargs = {}
+    if include_deleted and deleted_back_to is not None:
+        kwargs['IncludedDeletedBackTo'] = deleted_back_to
+
     result = _make_api_call('describe_environments',
                             ApplicationName=app_name,
-                            IncludeDeleted=False)
+                            IncludeDeleted=include_deleted,
+                            **kwargs)
+    return result['Environments']
+
+
+def get_app_environments(app_name, include_deleted=False, deleted_back_to=None):
+    LOG.debug('Inside get_app_environments api wrapper')
+
+    kwargs = {}
+    if include_deleted and deleted_back_to is not None:
+        kwargs['IncludedDeletedBackTo'] = deleted_back_to
+
+    result = _make_api_call('describe_environments',
+                            ApplicationName=app_name,
+                            IncludeDeleted=include_deleted,
+                            **kwargs)
     # convert to objects
     envs = [_api_to_environment(env) for env in result['Environments']]
 
@@ -331,16 +351,27 @@ def get_all_environments():
     return envs
 
 
-def get_environment(app_name, env_name):
+def get_environment(app_name=None, env_name=None, env_id=None, include_deleted=False, deleted_back_to=None):
     LOG.debug('Inside get_environment api wrapper')
+
+    kwargs = {}
+    if app_name is not None:
+        kwargs['ApplicationName'] = app_name
+    if env_name is not None:
+        kwargs['EnvironmentNames'] = [env_name]
+    if env_id is not None:
+        kwargs['EnvironmentIds'] = [env_id]
+    if include_deleted and deleted_back_to is not None:
+        kwargs['IncludedDeletedBackTo'] = deleted_back_to
+
     result = _make_api_call('describe_environments',
-                            ApplicationName=app_name,
-                            EnvironmentNames=[env_name],
-                            IncludeDeleted=False)
+                            IncludeDeleted=include_deleted,
+                            **kwargs)
 
     envs = result['Environments']
     if len(envs) < 1:
-        raise NotFoundError('Environment "' + env_name + '" not Found.')
+        env_str = env_id if env_name is None else env_name
+        raise NotFoundError('Environment "' + env_str + '" not Found.')
     else:
         return _api_to_environment(envs[0])
 
@@ -616,4 +647,18 @@ def compose_environments(application_name, version_labels_list, group_name=None)
                             **kwargs)
     request_id = result['ResponseMetadata']['RequestId']
 
+    return request_id
+
+
+def rebuild_environment(env_id=None, env_name=None):
+    kwargs = {}
+    if env_name is not None:
+        kwargs['EnvironmentName'] = env_name
+    if env_id is not None:
+        kwargs['EnvironmentId'] = env_id
+
+    result = _make_api_call('rebuild_environment',
+                            **kwargs)
+
+    request_id = result['ResponseMetadata']['RequestId']
     return request_id

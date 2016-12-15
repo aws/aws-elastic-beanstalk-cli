@@ -70,6 +70,7 @@ from ..objects.exceptions import *
 from ..resources.strings import strings, flag_text
 from ..labs.controller import LabsController
 from ..controllers.codesource import CodeSourceController
+from ..controllers.restore import RestoreController
 
 class EB(foundation.CementApp):
     class Meta:
@@ -110,6 +111,7 @@ class EB(foundation.CementApp):
             LocalController,
             HealthController,
             CodeSourceController,
+            RestoreController,
         ]
 
         # register all controllers
