@@ -21,10 +21,13 @@ from ebcli.core.ebcore import EB
 class TestRestore(unittest.TestCase):
     def setUp(self):
         self.patcher_restore_ops = mock.patch('ebcli.controllers.restore.restoreops')
+        self.patcher_base_controller = mock.patch('ebcli.controllers.restore.AbstractBaseController.get_app_name')
         self.mock_restore_ops = self.patcher_restore_ops.start()
+        self.mock_base_controller = self.patcher_base_controller.start()
 
     def tearDown(self):
         self.patcher_restore_ops.stop()
+        self.patcher_base_controller.stop()
 
     def test_restore_with_id(self):
         env_id = 'e-1234567890'

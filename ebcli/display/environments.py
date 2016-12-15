@@ -27,7 +27,7 @@ from data_poller import format_time_since, DataPoller
 from screen import Screen
 from cement.utils.misc import minimal_logger
 from botocore.compat import six
-from ebcli.lib import elasticbeanstalk
+from ebcli.lib import elasticbeanstalk, utils
 from ebcli.objects.exceptions import ValidationError
 
 Queue = six.moves.queue.Queue
@@ -144,8 +144,14 @@ class EnvironmentScreen(Screen):
         should_exit_display = True
         if env_id:
             try:
-                io.validate_action(prompts['restore.confirmation'].replace('{env_id}', env_id), 'y')
                 self.flusher(term.get_terminal())
+                io.validate_action(prompts['restore.selectedenv'].replace('{env_id}', env_id)
+                                   .replace('{app}', utils.encode_to_ascii(environment.get('ApplicationName')))
+                                   .replace('{desc}', utils.encode_to_ascii(environment.get('Description')))
+                                   .replace('{cname}', utils.encode_to_ascii(environment.get('CNAME')))
+                                   .replace('{version}', utils.encode_to_ascii(environment.get('VersionLabel')))
+                                   .replace('{platform}', utils.encode_to_ascii(environment.get('SolutionStackName')))
+                                   .replace('{dat_term}', environment.get('DateUpdated')), 'y')
                 from ebcli.operations import restoreops
                 # restore specified environment
                 self.request_id = restoreops.restore(env_id)
@@ -212,7 +218,7 @@ class EnvironmentDataPoller(DataPoller):
             if isinstance(page_table_data[x][u'DateUpdated'], datetime):
                 page_table_data[x][u'SinceCreated'] = format_time_since(page_table_data[x][u'DateUpdated'])
                 page_table_data[x][u'DateUpdated'] = get_local_time(page_table_data[x][u'DateUpdated']) \
-                    .strftime("%Y/%m/%d %H:%M")
+                    .strftime("%Y/%m/%d %H:%M %Z")
             else:
                 page_table_data[x][u'SinceCreated'] = None
                 page_table_data[x][u'DateUpdated'] = None

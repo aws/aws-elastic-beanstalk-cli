@@ -41,5 +41,5 @@ class RestoreController(AbstractBaseController):
             environments and allow a choice to restore one.
             Run when the user supplies no arguments.
         """
-        environments = restoreops.get_restorable_envs()
+        environments = restoreops.get_restorable_envs(self.get_app_name())
         restoreops.display_environments(environments)

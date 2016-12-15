@@ -77,10 +77,9 @@ class TestRestoreEnvironment(unittest.TestCase):
 
 
     def test_fetch_restorable_envs(self):
-        self.mock_beanstalk.get_all_applications.return_value = [self.app]
         self.mock_beanstalk.get_raw_app_environments.return_value = [self.env1, self.env2]
 
-        environments = restoreops.get_restorable_envs()
+        environments = restoreops.get_restorable_envs(self.app)
 
         self.assertNotIn(self.env1, environments,
                          "Non-terminated environment returned in restorable environments when it should not be")

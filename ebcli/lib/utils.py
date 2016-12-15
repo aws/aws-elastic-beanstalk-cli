@@ -346,3 +346,10 @@ def validate_source_location(source_location):
         return
     else:
         raise InvalidOptionsError("Source location '{0}' is not in the list of valid locations: {1}".format(source_location, valid_source_locations))
+
+
+def encode_to_ascii(unicode_value):
+    empty_string = ""
+    if unicode_value is None:
+        return empty_string
+    return unicode_value.encode('ascii', 'ignore')

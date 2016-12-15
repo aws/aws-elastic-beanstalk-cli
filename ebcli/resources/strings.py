@@ -214,7 +214,7 @@ strings = {
     'restore.no_env': 'No terminated environments found.\nEnvironments are available for six weeks after termination.',
 
     # Resotre Environment
-    'restore.displayheader': 'Select an environment to restore.',
+    'restore.displayheader': 'Select a terminated environment to restore',
 }
 
 prompts = {
@@ -289,7 +289,9 @@ prompts = {
 
     # Restore
     'restore.prompt': 'Enter a environment # to restore. ESC to exit.',
-    'restore.confirmation': 'The environment {env_id} will be restored. Is this correct? (y/n)',
+    'restore.selectedenv': '\nSelected environment {env_id}\nApplication:   {app}\nDescription:   {desc}\nCNAME:         {cname}\n'
+                           'Version:       {version}\nPlatform:      {platform}\nTerminated:    {dat_term}\n'
+                           'Restore this environment? [y/n]\n',
 
     # codesource
     'codesource.codesourceprompt': 'Select your codesource',

@@ -47,17 +47,14 @@ def restore(env_id):
     commonops.wait_for_success_events(request_id, timeout_in_minutes=None, can_abort=True)
 
 
-def get_restorable_envs():
-    applications = elasticbeanstalk.get_all_applications()
+def get_restorable_envs(app_name):
     date_cutoff = get_date_cutoff()
     environments = []
 
-    for app in applications:
-        app_envs = elasticbeanstalk.get_raw_app_environments(app.name, include_deleted=True, deleted_back_to=date_cutoff)
-
-        for env in app_envs:
-            if env['Status'] == 'Terminated':
-                environments.append(env)
+    app_envs = elasticbeanstalk.get_raw_app_environments(app_name, include_deleted=True, deleted_back_to=date_cutoff)
+    for env in app_envs:
+        if env['Status'] == 'Terminated':
+            environments.append(env)
 
     environments = sorted(environments, key=operator.itemgetter('DateUpdated'), reverse=True)
     return environments
@@ -96,7 +93,6 @@ def _create_environment_table(screen):
         Column('#', None, 'DeployNum', 'left'),
         Column('Name', None, 'EnvironmentName', 'left'),
         Column('ID', None, 'EnvironmentId', 'left'),
-        Column('Application', None, 'ApplicationName', 'left'),
         Column('Application Version', None, 'VersionLabel', 'left'),
         Column('Date Terminated', None, 'DateUpdated', 'left'),
         Column('Ago', None, 'SinceCreated', 'left'),
