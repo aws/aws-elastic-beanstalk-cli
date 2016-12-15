@@ -24,6 +24,7 @@ class namespaces(object):
     ELB_POLICIES = 'aws:elb:policies'
     ROLLING_UPDATES = 'aws:autoscaling:updatepolicy:rollingupdate'
     VPC = 'aws:ec2:vpc'
+    CLOUDWATCH_LOGS = 'aws:elasticbeanstalk:cloudwatch:logs'
 
 
 class option_names(object):
@@ -60,6 +61,9 @@ class option_names(object):
     SSL_CERT_ID = 'SSLCertificateId'
     SYSTEM_TYPE = 'SystemType'
     VPC_ID = 'VPCId'
+    STREAM_LOGS = 'StreamLogs'
+    DELETE_ON_TERMINATE = 'DeleteOnTerminate'
+    RETENTION_DAYS = 'RetentionInDays'
 
 
 class elb_names(object):

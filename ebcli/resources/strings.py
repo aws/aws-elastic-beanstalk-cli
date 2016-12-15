@@ -40,10 +40,8 @@ strings = {
     'clone.epilog': 'This command clones your environment and attempts to upgrade the platform to the latest version.\n'
                     'To create a clone with the same platform version, use the "--exact" option.',
     'abort.info': 'Cancels an environment update or deployment.',
-    'logs.info': 'Gets recent logs.',
     'use.info': 'Sets default environment.',
     'health.info': 'Shows detailed environment health.',
-    'logs.epilog': 'This command displays the last 100 lines of logs. To retrieve all logs, use the "--all" option.',
     'deploy.info': 'Deploys your source code to the environment.',
     'platform.info': 'Manages platforms.',
     'platformshow.info': 'Shows information about current platform.',
@@ -89,8 +87,6 @@ strings = {
     'create.appdoesntexist': 'The specified app {app_name} does not exist. Skipping.',
     'create.missinggroupsuffix': 'The environment name specified in env.yaml ends with a \'+\', but no group suffix was provided. Please pass the --env-group-suffix argument.',
     'appversion.create': 'Creating application version archive "{version}".',
-    'logs.allandzip': 'You cannot use the "--all" and "--all_zip" options together.',
-    'logs.allandinstance': 'You cannot use the "--all" and "--instance" options together.',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',
     # Text shown if 'eb terminate' is called while no environment is selected as default
     'terminate.noenv': 'To delete the application and all application versions, type "eb terminate --all".',
@@ -126,7 +122,6 @@ strings = {
     'ssh.notpresent': 'SSH is not installed. You must install SSH before continuing.',
     'ssh.filenotfound': 'The EB CLI cannot find your SSH key file for keyname "{key-name}".'
                         ' Your SSH key file must be located in the .ssh folder in your home directory.',
-    'logs.location': 'Logs were saved to {location}',
     'local.logs.location': 'Elastic Beanstalk will write logs locally to {location}',
     'local.logs.lastlocation': 'Logs were most recently created {prettydate} and written to {location}',
     'local.logs.symlink': 'Updated symlink at {symlink}',
@@ -180,18 +175,6 @@ strings = {
     'download.info': 'Download Application Version.',
     'convert-dockkerrun.info': 'Converts Dockerrun.aws.json from version 1 to version 2.',
     'cleanup-versions.info': 'Cleans up old application versions.',
-    'cloudwatch-setup.info': 'Create .ebextensions files necessary for setting up CloudWatch used in logging instance deployment.',
-    'cloudwatch-setup.alreadysetup': 'CloudWatch file {filename} is already set up.',
-    'cloudwatch-stream.notsetup': 'eb-activity.log not setup with AWS Cloudwatch for this environment.\n'
-                                  'Try running "eb labs cloudwatch-setup".',
-    'cloudwatch-setup.text': '.ebextensions created. In order to complete setup you will need\n'
-                             'to check in any changes, (if applicable) and run "eb deploy".\n'
-                             'You will also need the cloudwatch log permissions for this IAM User\n'
-                             'as well as for the environments instance profile.\n'
-                             'For more information see: http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/AWSHowTo.cloudwatchlogs.html',
-    'cloudwatch-setup.removetext': 'Removed .ebextensions. In order to complete removal you\n'
-                                   'will need to check in any changes, (if applicable) an run\n'
-                                   '"eb deploy".',
     'setup-ssl.info': 'Sets up ssl on your environment.',
     'region.china.credentials': 'To use the China (Beijing) region, account credentials unique to the China (Beijing) region must be used.',
     'deploy.notadirectory': 'The directory {module} does not exist.',
@@ -211,12 +194,41 @@ strings = {
     'codesource.info': 'Configures the code source for the EB CLI to use by default.',
     'codesource.localmsg': 'Default set to use local sources',
     'restore.info': 'Restores a terminated environment.',
-    'restore.no_env': 'No terminated environments found.\nEnvironments are available for six weeks after termination.',
 
     # Resotre Environment
-    'restore.displayheader': 'Select a terminated environment to restore',
     'restore.no_env': 'No terminated environments found.\nEnvironments are available for six weeks after termination.',
+    'restore.displayheader': 'Select a terminated environment to restore',
 
+    # Log command/ Beanstalk logs
+    'logs.info': 'Gets recent logs.',
+    'logs.epilog': 'This command displays the last 100 lines of logs. To retrieve all logs, use the "--all" option.',
+    'logs.allandzip': 'You cannot use the "--all" and "--all_zip" options together.',
+    'logs.allandinstance': 'You cannot use the "--all" and "--instance" options together.',
+    'logs.location': 'Logs were saved to {location}',
+    'beanstalk-logs.badinstance': 'Could not find specified instance "{instance_id}" in the retrieved logs',
+
+    # labs cloudwatch-setup command
+    'cloudwatch-setup.info': 'Create .ebextensions files necessary for setting up CloudWatch used in logging instance deployment.',
+    'cloudwatch-setup.alreadysetup': 'CloudWatch file {filename} is already set up.',
+    'cloudwatch-setup.text': '.ebextensions created. In order to complete setup you will need\n'
+                             'to check in any changes, (if applicable) and run "eb deploy".\n'
+                             'You will also need the cloudwatch log permissions for this IAM User\n'
+                             'as well as for the environments instance profile.\n'
+                             'For more information see: http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/AWSHowTo.cloudwatchlogs.html',
+    'cloudwatch-setup.removetext': 'Removed .ebextensions. In order to complete removal you\n'
+                                   'will need to check in any changes, (if applicable) an run\n'
+                                   '"eb deploy".',
+
+    # Log streaming
+    'cloudwatch-stream.notsetup': 'Could not find log group; CloudWatch log streaming may not enabled for this environment.\n'
+                                  'Run "eb logs -cw enable".',
+    'cloudwatch-logs.nostreams': 'Could not find any log streams with log group: {log_group}',
+    'cloudwatch-logs.enable': 'Enabling CloudWatch logs for your environment',
+    'cloudwatch-logs.disable': 'Disabling CloudWatch logs for your environment',
+    'cloudwatch-logs.link': 'After the environment is updated you can view your logs by following the link:\n'
+                   'https://console.aws.amazon.com/cloudwatch/home?region={region}#logs:prefix=/aws/elasticbeanstalk/{env_name}/',
+    'cloudwatch-logs.alreadyenabled': 'CloudWatch logs are already enabled for your environment',
+    'cloudwatch-logs.alreadydisabled': 'CloudWatch logs are already disabled for your environment',
 }
 
 prompts = {
@@ -390,6 +402,7 @@ flag_text = {
     'logs.all': 'retrieve all logs',
     'logs.zip': 'retrieve all logs as .zip',
     'logs.instance': 'instance id',
+    'logs.log-group': 'entire log group or just the path to the file, ex: "var/log/httpd/error_log"',
     'logs.stream': 'stream deployment logs that were set up with cloudwatch',
 
     # Restore

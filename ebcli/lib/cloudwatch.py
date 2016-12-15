@@ -11,20 +11,20 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from . import aws
+from ebcli.lib import aws
 
 
 def _make_api_call(operation_name, **operation_options):
     return aws.make_api_call('logs', operation_name, **operation_options)
 
 
-def get_all_stream_names(log_group_name):
+def get_all_stream_names(log_group_name, log_stream_name_prefix=None):
     """
     Return all stream names under the log group.
     param: log_group_name: str
     """
 
-    streams = describe_log_streams(log_group_name)
+    streams = describe_log_streams(log_group_name, log_stream_name_prefix=log_stream_name_prefix)
 
     streams = streams or {}
     return [s['logStreamName'] for s in streams.get('logStreams')]
