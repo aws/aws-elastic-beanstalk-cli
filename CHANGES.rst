@@ -2,6 +2,11 @@
 Changelog
 =========
 ------------------
+3.8.9 (2016-12-16)
+------------------
+- Added 'eb restore' command, used to restore terminated environments
+
+------------------
 3.8.8 (2016-12-13)
 ------------------
 - Added eu-west-2 EU (London) region
