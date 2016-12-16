@@ -215,6 +215,8 @@ strings = {
 
     # Resotre Environment
     'restore.displayheader': 'Select a terminated environment to restore',
+    'restore.no_env': 'No terminated environments found.\nEnvironments are available for six weeks after termination.',
+
 }
 
 prompts = {

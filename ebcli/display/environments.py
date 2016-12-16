@@ -27,8 +27,9 @@ from data_poller import format_time_since, DataPoller
 from screen import Screen
 from cement.utils.misc import minimal_logger
 from botocore.compat import six
-from ebcli.lib import elasticbeanstalk, utils
-from ebcli.objects.exceptions import ValidationError
+from ebcli.lib import utils
+from ebcli.objects.exceptions import ValidationError, NotFoundError
+from ebcli.resources.strings import strings
 
 Queue = six.moves.queue.Queue
 LOG = minimal_logger(__name__)
@@ -176,8 +177,6 @@ class EnvironmentDataPoller(DataPoller):
         self.history = []
         self.environments = []
         self.curr_page = 0
-        self.env = elasticbeanstalk.get_environment(self.app_name, self.env_name)
-        self.env_data = self.get_env_data()
         self.all_environments = all_environments
 
     PAGE_LENGTH = 10
@@ -190,7 +189,7 @@ class EnvironmentDataPoller(DataPoller):
         """
 
         if self.list_len_left <= 0:
-            return {'environment': self.get_env_data(), TABLE_DATA_KEY: self.environments}
+            raise NotFoundError(strings['restore.no_env'])
 
         current_item = self.curr_page * self.PAGE_LENGTH
         new_page_environments = self.all_environments[current_item: current_item + self.PAGE_LENGTH]
@@ -257,13 +256,6 @@ class EnvironmentDataPoller(DataPoller):
             self.curr_page -= 1
             self.environments = self.history[self.curr_page]
         return self.get_table_data()
-
-    def get_env_data(self):
-        return {
-                'EnvironmentName': self.env.name,
-                'Color': self.env.health,
-                'Status': self.env.status,
-                }
 
     def get_table_data(self):
         return {
