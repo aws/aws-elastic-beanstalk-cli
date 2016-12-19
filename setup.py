@@ -72,13 +72,6 @@ setup_options = dict(
             'eb=ebcli.core.ebcore:main'
         ]
     },
-    # For internal Amazon use only! REMOVE FOR DEPLOYMENTS
-    options={
-         # make sure the right shebang is set for the scripts
-         'build_scripts': {
-             'executable': '/apollo/sbin/envroot "$ENVROOT/bin/python"',
-            },
-    },
 )
 
 def _unpack_eggs(egg_list):

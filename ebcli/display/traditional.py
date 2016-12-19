@@ -17,12 +17,12 @@ import locale
 
 locale.setlocale(locale.LC_ALL, 'C')
 from datetime import datetime
-from data_poller import DataPoller
-from screen import Screen
 from cement.utils.misc import minimal_logger
 from botocore.compat import six
 from dateutil import tz
-from ..lib import elasticbeanstalk, elb, ec2
+from ebcli.display.data_poller import DataPoller
+from ebcli.display.screen import Screen
+from ebcli.lib import elasticbeanstalk, elb, ec2
 
 Queue = six.moves.queue.Queue
 LOG = minimal_logger(__name__)

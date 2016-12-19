@@ -23,10 +23,10 @@ from ..core import io
 
 locale.setlocale(locale.LC_ALL, 'C')
 from datetime import datetime, timedelta
-from data_poller import format_time_since, DataPoller
-from screen import Screen
 from cement.utils.misc import minimal_logger
 from botocore.compat import six
+from ebcli.display.data_poller import format_time_since, DataPoller
+from ebcli.display.screen import Screen
 from ebcli.lib import utils
 from ebcli.objects.exceptions import ValidationError, NotFoundError
 from ebcli.resources.strings import strings
