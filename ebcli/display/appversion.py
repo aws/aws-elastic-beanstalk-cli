@@ -13,23 +13,25 @@
 import errno
 import locale
 import sys
+import time
 
 locale.setlocale(locale.LC_ALL, 'C')
 from datetime import datetime, timedelta
-from data_poller import format_time_since, DataPoller
-from screen import Screen
 from cement.utils.misc import minimal_logger
 from botocore.compat import six
 
+from ebcli.display.data_poller import format_time_since, DataPoller
+from ebcli.display.screen import Screen
 from ebcli.core import io
 from ebcli.display import term
 from ebcli.lib import elasticbeanstalk as elasticbeanstalk
 from ebcli.lib.utils import get_local_time
 from ebcli.resources.strings import prompts
-
+from ebcli.operations.lifecycleops import interactive_update_lifcycle_policy
 
 Queue = six.moves.queue.Queue
 LOG = minimal_logger(__name__)
+
 
 class VersionScreen(Screen):
     APP_VERSIONS_TABLE_NAME = 'appversion'
@@ -101,10 +103,9 @@ class VersionScreen(Screen):
                     else:
                         raise
 
-    # TODO: Add lifecycle command here
     def show_help_line(self):
-        text = u' (Commands: {q}uit, {d}elete, {down} {up} {left} {right})' \
-            .format(q=io.bold('Q'), d=io.bold('D'),
+        text = u' (Commands: {q}uit, {d}elete, {l}ifecycle, {down} {up} {left} {right})' \
+            .format(q=io.bold('Q'), d=io.bold('D'), l=io.bold('L'),
                     down=term.DOWN_ARROW, up=term.UP_ARROW,
                     left=term.LEFT_ARROW, right=term.RIGHT_ARROW)
         term.echo_line(text)
@@ -125,6 +126,8 @@ class VersionScreen(Screen):
                 #     return self.redeploy(t)
                 elif char == 'D':
                     return self.delete(t)
+                elif char == 'L':
+                    return self.interactive_lifecycle(t)
                 elif val.name == 'KEY_DOWN':  # Down arrow
                     self._get_more_pages(t)
                 elif val.name == 'KEY_UP':  # Up arrow
@@ -169,6 +172,13 @@ class VersionScreen(Screen):
         save = self.prompt_and_action(prompts['appversion.delete.prompt'].format(len(self.poller.all_app_versions)), self.delete_app_version_num)
         self.flusher(t)
         return save
+
+    def interactive_lifecycle(self, t):
+        """Always return back to the table"""
+        self.flusher(t)
+        io.echo('\n')
+        interactive_update_lifcycle_policy(self.poller.app_name)
+        time.sleep(4)
 
     def flusher(self, t):
         with t.location(y=self.empty_row, x=0):

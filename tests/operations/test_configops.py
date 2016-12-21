@@ -17,7 +17,7 @@ import unittest
 
 import mock
 from ebcli.operations import configops
-
+from ebcli.objects.exceptions import InvalidSyntaxError
 
 class TestConfigOperations(unittest.TestCase):
     app_name = 'ebcli-app'
@@ -28,51 +28,69 @@ class TestConfigOperations(unittest.TestCase):
     file_location = '/wow/eb/white space/.intere-sting'
     editor = 'emacs'
     nohang = False
+    changes = "foo-change"
+    remove = "remove-me"
 
-    @mock.patch('ebcli.operations.configops.os')
-    @mock.patch('ebcli.operations.configops.fileoperations')
-    def test_open_file_for_editing_with_editor(self, mock_fileops, mock_os):
-        # setup editor
-        mock_fileops.get_editor.return_value = self.editor
-        # do the actual call
-        configops.open_file_for_editing(self.file_location)
-        # assert the command has been properly escaped and opened with editor
-        mock_os.system.assert_called_with('{0} "{1}"'.format(self.editor, self.file_location))
+    api_model = {'SolutionStackName': solution_stack_name}
+    usr_model = {'SolutionStackName': new_solution_stack_name}
 
     @mock.patch('ebcli.operations.configops.commonops')
-    @mock.patch('ebcli.operations.configops.configuration')
+    @mock.patch('ebcli.operations.configops.EnvironmentSettings')
     @mock.patch('ebcli.operations.configops.elasticbeanstalk')
     @mock.patch('ebcli.operations.configops.fileoperations')
-    def test_update_environment_configuration_solution_stack_changed(self, mock_fileops, mock_elasticbeanstalk, mock_configuration, mock_commonops):
+    def test_update_environment_configuration_solution_stack_changed(self, mock_fileops, mock_elasticbeanstalk, mock_env_settings, mock_commonops):
         # Mock the configuration returned by api
-        mock_elasticbeanstalk.describe_configuration_settings.return_value = {'SolutionStackName': self.solution_stack_name}
+        mock_elasticbeanstalk.describe_configuration_settings.return_value = self.api_model
         # Mock the configuration after user edition
-        mock_fileops.get_environment_from_file.return_value = {'SolutionStackName': self.new_solution_stack_name}
+        mock_fileops.get_environment_from_file.return_value = self.usr_model
         # Assume no change or removals
-        mock_configuration.collect_changes.return_value = None, None
+        mock_env_settings.return_value = mock_env_settings
+        mock_env_settings.convert_api_to_usr_model.return_value = self.usr_model
+        mock_env_settings.collect_changes.return_value = self.changes, self.remove
         # Mock out the file operations
         mock_fileops.save_env_file.return_value = self.file_location
-        mock_fileops.get_editor.return_value = None
         # Do the actual call
         configops.update_environment_configuration(self.app_name, self.env_name, self.nohang)
         # verify that changes will be made
-        mock_commonops.update_environment.assert_called_with(self.env_name, None, self.nohang,
-                                                             solution_stack_name=self.new_solution_stack_name, remove=None, timeout=None)
+        mock_commonops.update_environment.assert_called_with(self.env_name, self.changes, self.nohang,
+                                                             solution_stack_name=self.new_solution_stack_name,
+                                                             remove=self.remove, timeout=None)
 
     @mock.patch('ebcli.operations.configops.commonops')
-    @mock.patch('ebcli.operations.configops.configuration')
+    @mock.patch('ebcli.operations.configops.EnvironmentSettings')
     @mock.patch('ebcli.operations.configops.elasticbeanstalk')
     @mock.patch('ebcli.operations.configops.fileoperations')
-    def test_update_environment_configuration_no_change(self, mock_fileops, mock_elasticbeanstalk, mock_configuration, mock_commonops):
+    def test_update_environment_configuration_no_change(self, mock_fileops, mock_elasticbeanstalk, mock_env_settings, mock_commonops):
         # Mock the configuration returned by api
-        mock_elasticbeanstalk.describe_configuration_settings.return_value = {'SolutionStackName': self.solution_stack_name}
+        mock_elasticbeanstalk.describe_configuration_settings.return_value = self.usr_model
         # Mock the configuration after user edition
-        mock_fileops.get_environment_from_file.return_value = {'SolutionStackName': self.solution_stack_name}
+        mock_fileops.get_environment_from_file.return_value = self.usr_model
         # Assume no change or removals
-        mock_configuration.collect_changes.return_value = None, None
+        mock_env_settings.return_value = mock_env_settings
+        mock_env_settings.convert_api_to_usr_model.return_value = self.usr_model
+        mock_env_settings.collect_changes.return_value = None, None
         # Mock out the file operations
         mock_fileops.save_env_file.return_value = self.file_location
-        mock_fileops.get_editor.return_value = None
+        # Do the actual call
+        configops.update_environment_configuration(self.app_name, self.env_name, self.nohang)
+        # verify that no changes will be made
+        mock_commonops.update_environment.assert_not_called()
+
+    @mock.patch('ebcli.operations.configops.commonops')
+    @mock.patch('ebcli.operations.configops.EnvironmentSettings')
+    @mock.patch('ebcli.operations.configops.elasticbeanstalk')
+    @mock.patch('ebcli.operations.configops.fileoperations')
+    def test_update_environment_configuration_bad_usr_modification(self, mock_fileops, mock_elasticbeanstalk, mock_env_settings,
+                                                        mock_commonops):
+        # Mock the configuration returned by api
+        mock_elasticbeanstalk.describe_configuration_settings.return_value = self.usr_model
+        # Mock the configuration after user edition
+        mock_fileops.get_environment_from_file.side_effect = InvalidSyntaxError("Bad user changes")
+        # Assume no change or removals
+        mock_env_settings.return_value = mock_env_settings
+        mock_env_settings.convert_api_to_usr_model.return_value = self.usr_model
+        # Mock out the file operations
+        mock_fileops.save_env_file.return_value = self.file_location
         # Do the actual call
         configops.update_environment_configuration(self.app_name, self.env_name, self.nohang)
         # verify that no changes will be made

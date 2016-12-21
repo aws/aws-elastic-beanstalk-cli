@@ -33,6 +33,12 @@ def get_roles():
     return result['Roles']
 
 
+def get_role(role_name):
+    result = _make_api_call('get_role',
+                            RoleName=role_name)
+    return result['Role']
+
+
 def create_instance_profile(profile_name):
     _make_api_call('create_instance_profile',
                    InstanceProfileName=profile_name)

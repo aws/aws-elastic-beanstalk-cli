@@ -34,6 +34,7 @@ Queue = six.moves.queue.Queue
 LOG = minimal_logger(__name__)
 TABLE_DATA_KEY = 'environments'
 
+
 class EnvironmentScreen(Screen):
     def __init__(self, poller=None, header_text='Environments'):
         super(EnvironmentScreen, self).__init__()

@@ -13,7 +13,7 @@
 
 import unittest
 
-from ebcli.objects import configuration
+from ebcli.objects import environmentsettings
 
 
 class TestEnvironment(unittest.TestCase):
@@ -39,7 +39,7 @@ class TestEnvironment(unittest.TestCase):
         example_usr_model['settings']['aws:autoscaling:launchconfiguration']['EC2KeyName'] = None
 
         # compare results
-        changes, remove = configuration.collect_changes(example_api_response, example_usr_model)
+        changes, remove = environmentsettings.collect_changes(example_api_response, example_usr_model)
 
         self.assertEqual(len(changes), 2)
         self.assertEqual(len(remove), 1)

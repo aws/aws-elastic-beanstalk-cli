@@ -1,3 +1,4 @@
 pytest
 nose
 mock
+pytest-cov

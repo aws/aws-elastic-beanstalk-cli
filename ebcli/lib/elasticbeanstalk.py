@@ -505,6 +505,16 @@ def abort_environment_update(env_name):
     return result['ResponseMetadata']['RequestId']
 
 
+def update_application_resource_lifecycle(app_name, resource_config):
+    LOG.debug('Inside update_application_resource_lifecycle api wrapper')
+
+    response = _make_api_call('update_application_resource_lifecycle',
+                              ApplicationName=app_name,
+                              ResourceLifecycleConfig=resource_config)
+
+    return response
+
+
 def update_env_application_version(env_name,
                                    version_label,
                                    group_name):

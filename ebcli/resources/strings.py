@@ -229,14 +229,26 @@ strings = {
                    'https://console.aws.amazon.com/cloudwatch/home?region={region}#logs:prefix=/aws/elasticbeanstalk/{env_name}/',
     'cloudwatch-logs.alreadyenabled': 'CloudWatch logs are already enabled for your environment',
     'cloudwatch-logs.alreadydisabled': 'CloudWatch logs are already disabled for your environment',
+
+    # versions
+    'versions.info': 'Listing application versions',
+
+    # lifecycle
+    'lifecycle.info': 'Modifying application version lifecycle policy',
+    'lifecycle.epilog': 'Use this command to work with application lifecycle configuration settings. \n'
+                        'To update your application directly in an interactive editor, type:\n'
+                        '  eb appversion lifecycle\n',
+    'lifecycle.success': 'Successfully updated application version lifecycle policy',
+    'lifecycle.updatenochanges': 'No changes made; exiting',
+    'lifecycle.invalidrole': 'Passed an invalid role, cannot update application: {role}',
+    'lifecycle.invalidsyntax': 'The configuration settings you provided contain an error;'
+                               ' The lifecycle configuration will not be updated',
+
     # appversion
     'appversion.info': 'Listing and managing application versions',
     'appversion.delete.notfound': 'Application {} does not have Application Version {}.',
     'appversion.delete.deployed': 'Application version {} is deployed to Environments: {}',
     'appversion.delete.none': 'Application version label to delete can not be none',
-
-    # lifecycle
-    'lifecycle.info': 'Modifying application version lifecycle policy'
 }
 
 prompts = {

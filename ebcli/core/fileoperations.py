@@ -21,11 +21,10 @@ import sys
 import zipfile
 import yaml
 
-from botocore.compat import six
 from cement.utils.misc import minimal_logger
 from ebcli.objects.buildconfiguration import BuildConfiguration
 from six import StringIO
-from yaml import load, dump, safe_dump
+from yaml import load, safe_dump
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 try:
@@ -33,7 +32,8 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-from ..core import io
+from ebcli.core import io
+from ebcli.resources.strings import prompts
 from ebcli.objects.exceptions import NotInitializedError, InvalidSyntaxError, \
     NotFoundError, ValidationError
 
@@ -496,6 +496,19 @@ def save_to_file(data, location, filename):
     return file_location
 
 
+def delete_app_file(app_name):
+    cwd = os.getcwd()
+    file_name = beanstalk_directory + app_name
+
+    try:
+        _traverse_to_project_root()
+        for file_ext in ['.app.yml']:
+            path = file_name + file_ext
+            delete_file(path)
+    finally:
+        os.chdir(cwd)
+
+
 def delete_env_file(env_name):
     cwd = os.getcwd()
     file_name = beanstalk_directory + env_name
@@ -522,6 +535,28 @@ def get_editor():
             editor = 'nano'
 
     return editor
+
+
+def save_app_file(app):
+    cwd = os.getcwd()
+    env_name = app['ApplicationName']
+    # ..yml extension helps editors enable syntax highlighting
+    file_name = env_name + '.app.yml'
+
+    file_name = beanstalk_directory + file_name
+    try:
+        _traverse_to_project_root()
+
+        file_name = os.path.abspath(file_name)
+
+        with codecs.open(file_name, 'w', encoding='utf8') as f:
+            f.write(safe_dump(app, default_flow_style=False,
+                              line_break=os.linesep))
+
+    finally:
+        os.chdir(cwd)
+
+    return file_name
 
 
 def save_env_file(env):
@@ -566,6 +601,26 @@ def get_environment_from_file(env_name):
 
     return env
 
+
+def get_application_from_file(app_name):
+    cwd = os.getcwd()
+    file_name = beanstalk_directory + app_name
+
+    try:
+        _traverse_to_project_root()
+        file_ext = '.app.yml'
+        path = file_name + file_ext
+        if os.path.exists(path):
+            with codecs.open(path, 'r', encoding='utf8') as f:
+                app = load(f)
+    except (ScannerError, ParserError):
+        raise InvalidSyntaxError('The application file contains '
+                                 'invalid syntax.')
+
+    finally:
+        os.chdir(cwd)
+
+    return app
 
 def write_config_setting(section, key_name, value, dir_path=None, file=local_config_file):
     cwd = os.getcwd()  # save working directory
@@ -891,3 +946,20 @@ def get_platform_from_env_yaml():
             return env_name
         except KeyError:
             return None
+
+
+def open_file_for_editing(file_location):
+    # Added this line for windows whitespace escaping
+    file_location = '"{0}"'.format(file_location)
+    editor = get_editor()
+    if editor:
+        try:
+            os.system(editor + ' ' + file_location)
+        except OSError:
+            io.log_error(prompts['fileopen.error1'].replace('{editor}',
+                                                            editor))
+    else:
+        try:
+            os.system(file_location)
+        except OSError:
+            io.log_error(prompts['fileopen.error2'])
