@@ -64,13 +64,13 @@ from ..controllers.platform import PlatformController
 from ..controllers.health import HealthController
 from ..controllers.upgrade import UpgradeController
 from ..core.completer import CompleterController
-from ..controllers.local import LocalController, LocalRunController,\
-        LocalLogsController, LocalOpenController, LocalStatusController
+from ..controllers.local import LocalController
 from ..objects.exceptions import *
 from ..resources.strings import strings, flag_text
 from ..labs.controller import LabsController
 from ..controllers.codesource import CodeSourceController
 from ..controllers.restore import RestoreController
+from ..controllers.appversion import AppVersionController
 
 class EB(foundation.CementApp):
     class Meta:
@@ -112,6 +112,7 @@ class EB(foundation.CementApp):
             HealthController,
             CodeSourceController,
             RestoreController,
+            AppVersionController,
         ]
 
         # register all controllers

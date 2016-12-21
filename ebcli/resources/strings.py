@@ -229,6 +229,14 @@ strings = {
                    'https://console.aws.amazon.com/cloudwatch/home?region={region}#logs:prefix=/aws/elasticbeanstalk/{env_name}/',
     'cloudwatch-logs.alreadyenabled': 'CloudWatch logs are already enabled for your environment',
     'cloudwatch-logs.alreadydisabled': 'CloudWatch logs are already disabled for your environment',
+    # appversion
+    'appversion.info': 'Listing and managing application versions',
+    'appversion.delete.notfound': 'Application {} does not have Application Version {}.',
+    'appversion.delete.deployed': 'Application version {} is deployed to Environments: {}',
+    'appversion.delete.none': 'Application version label to delete can not be none',
+
+    # lifecycle
+    'lifecycle.info': 'Modifying application version lifecycle policy'
 }
 
 prompts = {
@@ -309,6 +317,14 @@ prompts = {
 
     # codesource
     'codesource.codesourceprompt': 'Select your codesource',
+
+    # appversion
+    'appversion.redeploy.validate': 'Do you want to deploy a previous or different version? (y/n)',
+    'appversion.redeploy.prompt': 'Select a version # to deploy (1 to {}).',
+    'appversion.redeploy.inprogress': 'Deploying version {}.',
+
+    'appversion.delete.validate': 'Do you want to delete the application version with label: {}? (y/n)',
+    'appversion.delete.prompt': 'Select a version # to delete (1 to {}).',
 }
 
 alerts = {
@@ -445,7 +461,14 @@ flag_text = {
     'swap.name': 'name of destination environment',
 
     # codesource
-    'codesource.sourcename': 'name of the code source to set as default'
+    'codesource.sourcename': 'name of the code source to set as default',
+
+    # appversion
+    'appversion.delete': 'delete the application version with specified version label',
+
+    # lifecycle
+    'lifecycle.print': 'prints the current application version lifecycle policy',
+    'lifecycle.update': 'allows an inline update to a application version lifecycle policy'
 }
 
 

@@ -174,6 +174,7 @@ def delete_application_version(app_name, version_label):
                             ApplicationName=app_name,
                             VersionLabel=version_label,
                             DeleteSourceBundle=True)
+    return result['ResponseMetadata']['RequestId']
 
 
 def delete_application_and_envs(app_name):

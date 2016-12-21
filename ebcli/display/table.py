@@ -59,6 +59,7 @@ class Table(object):
     HEADER_SPACE_NEEDED = 16
     HEADER_WIDTH = 11
     MAX_DESCRIPTION = 100
+
     def draw_header_row(self):
         # Print headers
         t = term.get_terminal()
@@ -151,7 +152,7 @@ class Table(object):
 
     def shift_description_data(self, data, column):
         c_data = justify_and_trim(
-            str(data.get(column.key)[(self.shift_col):]),
+            str(data.get(column.key, '-')[(self.shift_col):]),
             column.size or column.fit_size,
             column.justify,
             column.key, self.shift_col)

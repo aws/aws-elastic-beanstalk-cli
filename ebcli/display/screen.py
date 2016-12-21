@@ -273,8 +273,9 @@ class Screen(object):
                     LOG.debug("Caught SIGINT and exiting gracefully from action")
                     return True
             except Exception as e:  # Should never get thrown
-                io.log_error("Exception thrown: {0},{1}. Something strange happened and the request could not be completed."
+                LOG.debug("Exception thrown: {0},{1}. Something strange happened and the request could not be completed."
                              .format(type(e), e.message))
+                io.log_error("Something strange happened and the request could not be completed.")
                 time.sleep(4)
                 return False
 

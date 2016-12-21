@@ -1242,6 +1242,30 @@
         }
       ]
     },
+    "UpdateApplicationResourceLifecycle":{
+      "name":"UpdateApplicationResourceLifecycle",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateApplicationResourceLifecycleMessage"},
+      "output":{
+        "shape":"ApplicationResourceLifecycleDescriptionMessage",
+        "resultWrapper":"UpdateApplicationResourceLifecycleResult"
+      },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true,
+          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+        }
+      ]
+    },
     "UpdateApplicationVersion":{
       "name":"UpdateApplicationVersion",
       "http":{
@@ -1451,7 +1475,8 @@
         "DateCreated":{"shape":"CreationDate"},
         "DateUpdated":{"shape":"UpdateDate"},
         "Versions":{"shape":"VersionLabelsList"},
-        "ConfigurationTemplates":{"shape":"ConfigurationTemplateNamesList"}
+        "ConfigurationTemplates":{"shape":"ConfigurationTemplateNamesList"},
+        "ResourceLifecycleConfig":{"shape":"ApplicationResourceLifecycleConfig"}
       }
     },
     "ApplicationDescriptionList":{
@@ -1489,6 +1514,20 @@
       "type":"list",
       "member":{"shape":"ApplicationName"}
     },
+    "ApplicationResourceLifecycleConfig":{
+      "type":"structure",
+      "members":{
+        "ServiceRole":{"shape":"String"},
+        "VersionLifecycleConfig":{"shape":"ApplicationVersionLifecycleConfig"}
+      }
+    },
+    "ApplicationResourceLifecycleDescriptionMessage":{
+      "type":"structure",
+      "members":{
+        "ApplicationName":{"shape":"ApplicationName"},
+        "ResourceLifecycleConfig":{"shape":"ApplicationResourceLifecycleConfig"}
+      }
+    },
     "ApplicationVersionDescription":{
       "type":"structure",
       "members":{
@@ -1518,6 +1557,13 @@
       "members":{
         "ApplicationVersions":{"shape":"ApplicationVersionDescriptionList"},
         "NextToken":{"shape":"Token"}
+      }
+    },
+    "ApplicationVersionLifecycleConfig":{
+      "type":"structure",
+      "members":{
+        "MaxCountRule":{"shape":"MaxCountRule"},
+        "MaxAgeRule":{"shape":"MaxAgeRule"}
       }
     },
     "ApplicationVersionProccess":{"type":"boolean"},
@@ -1568,6 +1614,7 @@
       "type":"list",
       "member":{"shape":"SolutionStackName"}
     },
+    "BoxedBoolean":{"type":"boolean"},
     "BoxedInt":{"type":"integer"},
     "BuildConfiguration":{
       "type":"structure",
@@ -1656,9 +1703,9 @@
     "ComputeType":{
       "type":"string",
       "enum":[
-        "small",
-        "medium",
-        "large"
+        "BUILD_GENERAL1_SMALL",
+        "BUILD_GENERAL1_MEDIUM",
+        "BUILD_GENERAL1_LARGE"
       ]
     },
     "ConfigurationDeploymentStatus":{
@@ -1787,7 +1834,8 @@
       "required":["ApplicationName"],
       "members":{
         "ApplicationName":{"shape":"ApplicationName"},
-        "Description":{"shape":"Description"}
+        "Description":{"shape":"Description"},
+        "ResourceLifecycleConfig":{"shape":"ApplicationResourceLifecycleConfig"}
       }
     },
     "CreateApplicationVersionMessage":{
@@ -2509,6 +2557,24 @@
       "min":1,
       "max":100
     },
+    "MaxAgeRule":{
+      "type":"structure",
+      "required":["Enabled"],
+      "members":{
+        "Enabled":{"shape":"BoxedBoolean"},
+        "MaxAgeInDays":{"shape":"BoxedInt"},
+        "DeleteSourceFromS3":{"shape":"BoxedBoolean"}
+      }
+    },
+    "MaxCountRule":{
+      "type":"structure",
+      "required":["Enabled"],
+      "members":{
+        "Enabled":{"shape":"BoxedBoolean"},
+        "MaxCount":{"shape":"BoxedInt"},
+        "DeleteSourceFromS3":{"shape":"BoxedBoolean"}
+      }
+    },
     "MaxRecords":{
       "type":"integer",
       "min":1,
@@ -2962,6 +3028,17 @@
       "members":{
         "ApplicationName":{"shape":"ApplicationName"},
         "Description":{"shape":"Description"}
+      }
+    },
+    "UpdateApplicationResourceLifecycleMessage":{
+      "type":"structure",
+      "required":[
+        "ApplicationName",
+        "ResourceLifecycleConfig"
+      ],
+      "members":{
+        "ApplicationName":{"shape":"ApplicationName"},
+        "ResourceLifecycleConfig":{"shape":"ApplicationResourceLifecycleConfig"}
       }
     },
     "UpdateApplicationVersionMessage":{

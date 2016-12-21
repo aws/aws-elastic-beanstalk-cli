@@ -67,11 +67,9 @@ class AbstractBaseController(controller.CementBaseController):
         app_name = fileoperations.get_application_name()
         return app_name
 
-    def get_env_name(self, cmd_example=None, noerror=False, varname=None):
-        if varname:
-            env_name = getattr(self.app.pargs, varname)
-        else:
-            env_name = self.app.pargs.environment_name
+    def get_env_name(self, cmd_example=None, noerror=False, varname='environment_name'):
+        # Try to get env_name from args using varname, if not found, env_name is None here
+        env_name = getattr(self.app.pargs, varname, None)
         if not env_name:
             # If env name not provided, grab branch default
             env_name = commonops. \
