@@ -259,7 +259,7 @@ class Screen(object):
             except (ServiceError, ValidationError, NotFoundError) as e:
                 # Error messages that should be shown directly to user
                 io.log_error(e.message)
-                time.sleep(6)  # Leave screen stable for a little
+                time.sleep(4)  # Leave screen stable for a little
                 return False
             except (IndexError, InvalidOperation, ValueError) as e:
                 if self.poller.all_app_versions:  # Error thrown in versions table

@@ -224,7 +224,9 @@ class VersionScreen(Screen):
         version_label = app_version.get(u'VersionLabel')
 
         from ebcli.operations import appversionops
-        appversionops.delete_app_version_label(self.poller.app_name, version_label)
+        should_exit_table = appversionops.delete_app_version_label(self.poller.app_name, version_label)
+        time.sleep(4)
+        return should_exit_table
 
 
 class VersionDataPoller(DataPoller):

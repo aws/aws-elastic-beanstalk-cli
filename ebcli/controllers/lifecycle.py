@@ -26,7 +26,7 @@ class LifecycleController(AbstractBaseController):
             (['-p', '--print'], dict(action='store_true', help=flag_text['lifecycle.print'])),
         ]
         usage = 'eb appversion lifecycle [options ...]'
-        epilog = strings['config.epilog']
+        epilog = strings['lifecycle.epilog']
 
     def do_command(self):
         app_name = self.get_app_name()

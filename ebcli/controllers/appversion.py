@@ -25,7 +25,7 @@ class AppVersionController(AbstractBaseController):
         label = 'appversion'
         description = strings['appversion.info']
         arguments = [
-            (['--delete', '-d'], dict(action='store', help=flag_text['appversion.delete'])),
+            (['--delete', '-d'], dict(action='store', help=flag_text['appversion.delete'], metavar='VERSION_LABEL'))
         ]
         usage = 'eb appversion <lifecycle> [options ...]'
 

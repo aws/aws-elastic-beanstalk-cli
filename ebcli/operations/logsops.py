@@ -342,7 +342,14 @@ def enable_cloudwatch_logs(env_name):
         ),
     ]
     io.echo(strings['cloudwatch-logs.enable'])
-    io.echo(strings['cloudwatch-logs.link'].replace('{region}', commonops.get_default_region()).replace('{env_name}', env_name))
+    # echo link to cloudwatch console, BJS console link is different
+    region = commonops.get_default_region()
+    if region == 'cn-north-1':
+        cw_link_regionalized = strings['cloudwatch-logs.bjslink']
+    else:
+        cw_link_regionalized = strings['cloudwatch-logs.link']
+    io.echo(cw_link_regionalized.replace('{region}', region).replace('{env_name}', env_name))
+
     commonops.update_environment(env_name, changes=option_settings, nohang=False)
 
 

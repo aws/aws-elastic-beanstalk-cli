@@ -221,17 +221,19 @@ strings = {
 
     # Log streaming
     'cloudwatch-stream.notsetup': 'Could not find log group; CloudWatch log streaming may not enabled for this environment.\n'
-                                  'Run "eb logs -cw enable".',
+                                  'Run "eb logs -cw enable" to enable log streaming.',
     'cloudwatch-logs.nostreams': 'Could not find any log streams with log group: {log_group}',
-    'cloudwatch-logs.enable': 'Enabling CloudWatch logs for your environment',
-    'cloudwatch-logs.disable': 'Disabling CloudWatch logs for your environment',
+    'cloudwatch-logs.enable': 'Enabling CloudWatch log for your environment',
+    'cloudwatch-logs.disable': 'Disabling CloudWatch log for your environment',
+
+    # The link to Cloudwatch console is different for BJS:
     'cloudwatch-logs.link': 'After the environment is updated you can view your logs by following the link:\n'
                    'https://console.aws.amazon.com/cloudwatch/home?region={region}#logs:prefix=/aws/elasticbeanstalk/{env_name}/',
+    'cloudwatch-logs.bjslink': 'After the environment is updated you can view your logs by following the link:\n'
+                    'https://console.amazonaws.cn/cloudwatch/home?region={region}#logs:prefix=/aws/elasticbeanstalk/{env_name}/',
+
     'cloudwatch-logs.alreadyenabled': 'CloudWatch logs are already enabled for your environment',
     'cloudwatch-logs.alreadydisabled': 'CloudWatch logs are already disabled for your environment',
-
-    # versions
-    'versions.info': 'Listing application versions',
 
     # lifecycle
     'lifecycle.info': 'Modifying application version lifecycle policy',
@@ -240,15 +242,15 @@ strings = {
                         '  eb appversion lifecycle\n',
     'lifecycle.success': 'Successfully updated application version lifecycle policy',
     'lifecycle.updatenochanges': 'No changes made; exiting',
-    'lifecycle.invalidrole': 'Passed an invalid role, cannot update application: {role}',
+    'lifecycle.invalidrole': 'Passed an invalid role: {role}, cannot update application',
     'lifecycle.invalidsyntax': 'The configuration settings you provided contain an error;'
                                ' The lifecycle configuration will not be updated',
 
     # appversion
     'appversion.info': 'Listing and managing application versions',
     'appversion.delete.notfound': 'Application {} does not have Application Version {}.',
-    'appversion.delete.deployed': 'Application version {} is deployed to Environments: {}',
-    'appversion.delete.none': 'Application version label to delete can not be none',
+    'appversion.delete.deployed': 'Cannot delete Application version {} as it is deployed to Environments: {}',
+    'appversion.delete.none': 'You must specify an Application version label to delete an Application version',
 }
 
 prompts = {
@@ -476,7 +478,7 @@ flag_text = {
     'codesource.sourcename': 'name of the code source to set as default',
 
     # appversion
-    'appversion.delete': 'delete the application version with specified version label',
+    'appversion.delete': 'delete the specified application version',
 
     # lifecycle
     'lifecycle.print': 'prints the current application version lifecycle policy',

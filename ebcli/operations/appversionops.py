@@ -43,9 +43,16 @@ def delete_app_version_label(app_name, version_label):
         if used_envs:
             raise ValidationError(strings['appversion.delete.deployed'].format(version_label, ','.join(used_envs)))
 
-        io.validate_action(prompts['appversion.delete.validate'].format(version_label), "y")
-        request_id = elasticbeanstalk.delete_application_version(app_name, version_label)
-        return request_id
+        try:
+            io.validate_action(prompts['appversion.delete.validate'].format(version_label), "y")
+            elasticbeanstalk.delete_application_version(app_name, version_label)
+            io.echo('Application Version deleted successfully.')
+            delete_successful = True
+        except ValidationError:
+            io.echo('Application Version will not be deleted.')
+            delete_successful = False
+
+        return delete_successful
     else:
         raise NotFoundError(strings['appversion.delete.none'])
 
