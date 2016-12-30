@@ -56,6 +56,7 @@ class TestCreate(BaseControllerTest):
         ]
 
         # run cmd
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['create'])
         self.app.setup()
         self.app.run()
@@ -88,6 +89,7 @@ class TestCreate(BaseControllerTest):
 
         # run cmd
         # (don't test elb_type prompt as None causes it to fail)
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['create', '--elb-type', 'classic'])
         self.app.setup()
         self.app.run()
@@ -119,6 +121,7 @@ class TestCreate(BaseControllerTest):
 
         # run cmd
         try:
+            EB.Meta.exit_on_close = False
             self.app = EB(argv=['create', '--sample', '--version', 'myVers'])
             self.app.setup()
             self.app.run()
@@ -140,6 +143,7 @@ class TestCreate(BaseControllerTest):
         env_name = 'my-awesome-env'
         self.mock_commonops.get_solution_stack.return_value = self.solution
 
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['create', env_name, '--elb-type', 'classic'])
         self.app.setup()
         self.app.run()
@@ -165,6 +169,7 @@ class TestCreate(BaseControllerTest):
         ]
 
         # run cmd
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['create', env_name, '-c', cname_prefix,
                             '-ip', profile, '-r', 'us-east-1',
                             '-t', 'web', '-i', itype, '-p', self.solution.name,

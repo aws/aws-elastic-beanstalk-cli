@@ -67,6 +67,7 @@ class BaseControllerTest(test.CementTestCase):
             shutil.rmtree('testDir')
 
     def run_command(self, *args):
+        ebcore.EB.Meta.exit_on_close = False
         self.app = ebcore.EB(argv=list(args))
         self.app.setup()
         self.app.run()

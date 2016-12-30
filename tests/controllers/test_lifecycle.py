@@ -33,6 +33,7 @@ class TestLifecycle(unittest.TestCase):
     def test_lifecycle_with_print_flag(self):
         self.mock_base_get_app.return_value = self.app_name
 
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['appversion', 'lifecycle', '--print'])
         self.app.setup()
         self.app.run()
@@ -43,6 +44,7 @@ class TestLifecycle(unittest.TestCase):
     def test_lifecycle_no_args_spawn_interactive(self):
         self.mock_base_get_app.return_value = self.app_name
 
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['appversion', 'lifecycle'])
         self.app.setup()
         self.app.run()

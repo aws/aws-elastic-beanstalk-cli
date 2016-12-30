@@ -77,6 +77,7 @@ class TestInit(BaseControllerTest):
         ]
 
         # run cmd
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['init'])
         self.app.setup()
         self.app.run()
@@ -121,6 +122,7 @@ class TestInit(BaseControllerTest):
         mock_git.is_setup.return_value = None
 
         # run cmd
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['init', '-i'])
         self.app.setup()
         self.app.run()
@@ -155,6 +157,7 @@ class TestInit(BaseControllerTest):
         mock_git.is_setup.return_value = None
 
         # run cmd
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['init',
                             self.app_name,
                             '-r', 'us-west-2'])
@@ -194,6 +197,7 @@ class TestInit(BaseControllerTest):
         mock_git.is_setup.return_value = None
 
         # run cmd
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['init', '-p', 'php'])
         self.app.setup()
         self.app.run()
@@ -229,6 +233,7 @@ class TestInit(BaseControllerTest):
         mock_git.is_setup.return_value = None
 
         # run cmd
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['init', '-p', 'ruby', '--source', 'CodeCommit/my-repo/prod', '--region', 'us-east-1'])
         self.app.setup()
         self.app.run()
@@ -291,6 +296,7 @@ class TestInit(BaseControllerTest):
         mock_git.get_current_commit.return_value = 'CommitId'
 
         # run cmd
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['init', '--region', 'us-east-1', 'my-app'])
         self.app.setup()
         self.app.run()
@@ -362,6 +368,7 @@ class TestInit(BaseControllerTest):
         mock_git.is_setup.return_value = None
 
         # run cmd
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['init', '-i'])
         self.app.setup()
         self.app.run()
@@ -434,6 +441,7 @@ class TestInit(BaseControllerTest):
         mock_git.is_setup.return_value = None
 
         # run cmd
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['init', '-i'])
         self.app.setup()
         self.app.run()
@@ -495,6 +503,7 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.get_default_solution_stack.return_value = ''
 
         # run cmd
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['init', '--source', 'CodeCommit/my-repo/prod', '--region', 'us-east-1'])
         self.app.setup()
         self.app.run()

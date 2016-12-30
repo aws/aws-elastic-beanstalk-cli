@@ -33,6 +33,7 @@ class TestCodeSource(unittest.TestCase):
     @mock.patch('ebcli.controllers.codesource.gitops')
     def test_case_insensative_input(self, mock_gitops):
         # run cmd
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['codesource',
                             'LoCaL'])
         self.app.setup()
@@ -49,6 +50,7 @@ class TestCodeSource(unittest.TestCase):
         ]
 
         # run cmd
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['codesource'])
         self.app.setup()
         self.app.run()

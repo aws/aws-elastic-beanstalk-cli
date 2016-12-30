@@ -46,6 +46,7 @@ class TestLogs(unittest.TestCase):
         self.mock_logs_ops.log_streaming_enabled.return_value = False
 
         # Run the command
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['logs'])
         self.app.setup()
         self.app.run()
@@ -62,6 +63,7 @@ class TestLogs(unittest.TestCase):
         self.mock_logs_ops.log_streaming_enabled.return_value = False
 
         # Run the command
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['logs', '--all'])
         self.app.setup()
         self.app.run()
@@ -78,6 +80,7 @@ class TestLogs(unittest.TestCase):
         self.mock_logs_ops.log_streaming_enabled.return_value = False
 
         # Run the command
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['logs', '--stream'])
         self.app.setup()
         self.app.run()
@@ -94,6 +97,7 @@ class TestLogs(unittest.TestCase):
         self.mock_logs_ops.log_streaming_enabled.return_value = False
 
         # Run the command
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['logs', '--all', '--instance', self.instance_id])
         self.app.setup()
         self.assertRaises(InvalidOptionsError, self.app.run)
@@ -111,6 +115,7 @@ class TestLogs(unittest.TestCase):
         self.mock_logs_ops.stream_cloudwatch_logs.side_effect = NotFoundError("Cannot find Log Group!")
 
         # Run the command
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['logs', '--stream', '--log-group', self.specified_log_group])
         self.app.setup()
         self.assertRaises(NotFoundError, self.app.run)
@@ -129,6 +134,7 @@ class TestLogs(unittest.TestCase):
         self.mock_logs_ops.beanstalk_log_group_builder.return_value = self.default_log_group
 
         # Run the command
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['logs'])
         self.app.setup()
         self.app.run()
@@ -148,6 +154,7 @@ class TestLogs(unittest.TestCase):
         self.mock_logs_ops.beanstalk_log_group_builder.return_value = self.default_log_group
 
         # Run the command
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['logs', '--stream'])
         self.app.setup()
         self.app.run()
@@ -166,6 +173,7 @@ class TestLogs(unittest.TestCase):
         self.mock_logs_ops.beanstalk_log_group_builder.return_value = self.specified_log_group
 
         # Run the command
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['logs', '--stream', '--log-group', self.specified_log_group])
         self.app.setup()
         self.app.run()
@@ -184,6 +192,7 @@ class TestLogs(unittest.TestCase):
         self.mock_logs_ops.beanstalk_log_group_builder.return_value = self.default_log_group
 
         # Run the command
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['logs', '--all', '--zip'])
         self.app.setup()
         self.app.run()
@@ -204,6 +213,7 @@ class TestLogs(unittest.TestCase):
         self.mock_logs_ops.retrieve_cloudwatch_logs.side_effect = NotFoundError("Cannot find Log Group!")
 
         # Run the command
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['logs'])
         self.app.setup()
         self.assertRaises(NotFoundError, self.app.run)
@@ -221,6 +231,7 @@ class TestLogs(unittest.TestCase):
         self.mock_base_get_env.return_value = self.env_name
 
         # Run the command
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['logs', '--cloudwatch-logs'])
         self.app.setup()
         self.app.run()
@@ -235,6 +246,7 @@ class TestLogs(unittest.TestCase):
         self.mock_base_get_env.return_value = self.env_name
 
         # Run the command
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['logs', '--cloudwatch-logs', 'enable'])
         self.app.setup()
         self.app.run()
@@ -249,6 +261,7 @@ class TestLogs(unittest.TestCase):
         self.mock_base_get_env.return_value = self.env_name
 
         # Run the command
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['logs', '--cloudwatch-logs', 'disable'])
         self.app.setup()
         self.app.run()

@@ -72,6 +72,7 @@ from ..controllers.restore import RestoreController
 from ..controllers.appversion import AppVersionController
 from ..controllers.lifecycle import LifecycleController
 
+
 class EB(foundation.CementApp):
     class Meta:
         label = 'eb'
@@ -79,6 +80,7 @@ class EB(foundation.CementApp):
         defaults = init_defaults('eb', 'log.logging')
         defaults['log.logging']['level'] = 'WARN'
         config_defaults = defaults
+        exit_on_close = True
 
     def setup(self):
         # Add hooks

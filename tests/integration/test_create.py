@@ -40,6 +40,7 @@ class TestCreate(BaseIntegrationTest):
 
 
         # run cmd
+        # EB.Meta.exit_on_close = False
         # self.app = EB(argv=['create'])
         # self.app.setup()
         # self.app.run()

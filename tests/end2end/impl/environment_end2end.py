@@ -36,6 +36,7 @@ class EnvironmentEnd2End():
         self.mock_pager_output = mock_pager_output
 
     def _run_app(self, list_of_args):
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=list_of_args)
         self.app.setup()
         self.app.run()

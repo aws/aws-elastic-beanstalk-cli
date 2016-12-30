@@ -41,6 +41,7 @@ class TestAppVersions(BaseControllerTest):
     def test_delete_with_version_label(self):
         version_label = 'V1'
 
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['appversion', '--delete', version_label])
         self.app.setup()
         self.app.run()
@@ -58,6 +59,7 @@ class TestAppVersions(BaseControllerTest):
 
         mock_elasticbeanstalk.get_application_versions.return_value = get_app_versions_response
 
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['appversion'])
         self.app.setup()
         self.app.run()

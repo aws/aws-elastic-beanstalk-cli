@@ -32,6 +32,7 @@ class TestRestore(unittest.TestCase):
     def test_restore_with_id(self):
         env_id = 'e-1234567890'
 
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['restore', env_id])
         self.app.setup()
         self.app.run()
@@ -49,6 +50,7 @@ class TestRestore(unittest.TestCase):
 
         self.mock_restore_ops.get_restorable_envs.return_value = [env1, env2]
 
+        EB.Meta.exit_on_close = False
         self.app = EB(argv=['restore'])
         self.app.setup()
         self.app.run()
