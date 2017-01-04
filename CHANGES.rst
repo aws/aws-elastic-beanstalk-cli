@@ -2,6 +2,11 @@
 Changelog
 =========
 ------------------
+3.9.1 (2017-01-??)
+------------------
+- Beanstalk CodeBuild integration is optional by not specifying the header in buildspec
+
+------------------
 3.9.0 (2016-12-22)
 ------------------
 - Added native support in 'eb logs' for log streaming.

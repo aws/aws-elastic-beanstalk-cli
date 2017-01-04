@@ -33,7 +33,7 @@ except ImportError:
     import ConfigParser as configparser
 
 from ebcli.core import io
-from ebcli.resources.strings import prompts
+from ebcli.resources.strings import prompts, strings
 from ebcli.objects.exceptions import NotInitializedError, InvalidSyntaxError, \
     NotFoundError, ValidationError
 
@@ -622,6 +622,7 @@ def get_application_from_file(app_name):
 
     return app
 
+
 def write_config_setting(section, key_name, value, dir_path=None, file=local_config_file):
     cwd = os.getcwd()  # save working directory
     if dir_path:
@@ -637,6 +638,8 @@ def write_config_setting(section, key_name, value, dir_path=None, file=local_con
             for key in value.keys():
                 config.setdefault(section, {}).setdefault(key_name, {})[key] = value[key]
         else:
+            if config.get(section) is None:
+                config[section] = {}
             config.setdefault(section, {})[key_name] = value
 
         with codecs.open(file, 'w', encoding='utf8') as f:
@@ -732,7 +735,6 @@ def build_spec_exists():
 
 
 def get_build_configuration():
-    # TODO: Verify this is correct.
     # Values expected in the eb config section in BuildSpec
     service_role_key = 'CodeBuildServiceRole'
     image_key = 'Image'
@@ -748,12 +750,18 @@ def get_build_configuration():
         build_spec = _get_yaml_dict(buildspec_name)
 
         # Assert that special beanstalk section exists
-        if buildspec_config_header not in build_spec.keys():
+        if build_spec is None or buildspec_config_header not in build_spec.keys():
             LOG.debug("Buildspec Keys: {0}".format(build_spec.keys()))
-            raise ValidationError("Beanstalk configuration header '{0}' is missing from Buildspec file".format(buildspec_config_header))
+            io.log_warning(strings['codebuild.noheader'].replace('{header}', buildspec_config_header))
+            return None
 
         build_configuration = BuildConfiguration()
         beanstalk_build_configs = build_spec[buildspec_config_header]
+
+        if beanstalk_build_configs is None:
+            LOG.debug("No values for EB header in buildspec file")
+            return build_configuration
+
         LOG.debug("EB Config Keys: {0}".format(beanstalk_build_configs.keys()))
 
         if service_role_key in beanstalk_build_configs.keys():

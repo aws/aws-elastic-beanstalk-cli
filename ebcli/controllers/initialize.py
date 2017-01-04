@@ -16,15 +16,15 @@ import os.path
 
 from cement.utils.misc import minimal_logger
 
-from ..core import fileoperations, io
-from ..core.abstractcontroller import AbstractBaseController
-from ..lib import utils, elasticbeanstalk, codecommit, aws
-from ..objects.sourcecontrol import SourceControl
-from ..objects import solutionstack, region as regions
-from ..objects.exceptions import NotInitializedError, NoRegionError, \
+from ebcli.core import fileoperations, io
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.lib import utils, elasticbeanstalk, codecommit, aws
+from ebcli.objects.sourcecontrol import SourceControl
+from ebcli.objects import solutionstack, region as regions
+from ebcli.objects.exceptions import NotInitializedError, NoRegionError, \
     InvalidProfileError, ServiceError, ValidationError, CommandError
-from ..operations import commonops, initializeops, sshops, gitops
-from ..resources.strings import strings, flag_text
+from ebcli.operations import commonops, initializeops, sshops, gitops
+from ebcli.resources.strings import strings, flag_text, prompts
 
 LOG = minimal_logger(__name__)
 
@@ -82,7 +82,7 @@ class InitController(AbstractBaseController):
         # Warn the customer if they picked a region that CodeCommit is not supported
         codecommit_region_supported = codecommit.region_supported(self.region)
         if self.source is not None and not codecommit_region_supported:
-            io.log_warning("AWS CodeCommit is not supported in this region. Continuing initialization without CodeCommit")
+            io.log_warning(strings['codecommit.badregion'])
 
         self.set_up_credentials()
 
@@ -128,17 +128,16 @@ class InitController(AbstractBaseController):
         # Select CodeBuild image if BuildSpec is present do not prompt or show if we are non-interactive
         if fileoperations.build_spec_exists() and not self.force_non_interactive:
             build_spec = fileoperations.get_build_configuration()
-            if build_spec.image is None:
+            if build_spec is not None and build_spec.image is None:
                 LOG.debug("Buildspec file is present but image is does not exist. Attempting to fill best guess.")
                 platform_image = initializeops.get_codebuild_image_from_platform(self.solution)
 
                 # If the return is a dictionary then it must be a single image and we can use that automatically
                 if type(platform_image) is dict:
-                    io.echo("buildspec file is present but no image is specified. Using latest image for selected platform: {0}".format(self.solution))
+                    io.echo('codebuild.latestplatform'.replace('{platform}', self.solution))
                 else:
                     # Otherwise we have an array for images which we must prompt the customer to pick from
-                    io.echo("Could not determine best image for buildspec file please select from list.\n"
-                            "Current chosen platform: {0}".format(self.solution))
+                    io.echo(prompts['codebuild.getplatform'].replace('{platform}', self.solution))
                     selected = utils.prompt_for_index_in_list(map(lambda image: image['description'], platform_image))
                     platform_image = platform_image[selected]
 
@@ -174,12 +173,11 @@ class InitController(AbstractBaseController):
         # Prompt for interactive CodeCommit
         if prompt_codecommit:
             if not source_control_setup:
-                io.echo("Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization")
+                io.echo(strings['codecommit.nosc'])
             else:
-                io.echo("Note:\n Elastic Beanstalk now supports AWS CodeCommit; a fully-managed source control service."
-                    " To learn more, see Docs: https://aws.amazon.com/codecommit/")
+                io.echo(strings['codecommit.ccwarning'])
                 try:
-                    io.validate_action("Do you wish to continue with CodeCommit? (y/n) (default is n)", "y")
+                    io.validate_action(prompts['codecommit.usecc'], "y")
 
                     # Setup git config settings for code commit credentials
                     source_control.setup_codecommit_cred_config()
@@ -192,7 +190,7 @@ class InitController(AbstractBaseController):
                             result = codecommit.get_repository(repository)
                             source_control.setup_codecommit_remote_repo(remote_url=result['repositoryMetadata']['cloneUrlHttp'])
                         except ServiceError as ex:
-                            io.log_error("Repository does not exist in CodeCommit.")
+                            io.log_error(strings['codecommit.norepo'])
                             raise ex
 
                     # Get user specified branch
@@ -202,7 +200,7 @@ class InitController(AbstractBaseController):
                         try:
                             codecommit.get_branch(repository, branch)
                         except ServiceError as ex:
-                            io.log_error("Branch does not exist in CodeCommit.")
+                            io.log_error(strings['codecommit.nobranch'])
                             raise ex
                         source_control.setup_existing_codecommit_branch(branch)
 

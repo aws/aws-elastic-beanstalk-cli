@@ -451,7 +451,19 @@ class TestFileOperations(unittest.TestCase):
                                             'Image': image,
                                             'Timeout': timeout}}
 
-        self.assertRaises(ValidationError, fileoperations.get_build_configuration)
+        actual_build_config = fileoperations.get_build_configuration()
+        self.assertIsNone(actual_build_config)
+
+    @patch('ebcli.core.fileoperations.codecs')
+    @patch('ebcli.core.fileoperations.load')
+    def test_get_build_spec_info_with_no_values(self, mock_yaml_load, mock_codecs):
+        # Setup mocks
+        mock_yaml_load.return_value = {fileoperations.buildspec_config_header: None}
+        actual_build_config = fileoperations.get_build_configuration()
+        self.assertIsNone(actual_build_config.compute_type)
+        self.assertIsNone(actual_build_config.image)
+        self.assertIsNone(actual_build_config.service_role)
+        self.assertIsNone(actual_build_config.timeout)
 
     def test_build_spec_file_exists_yaml(self):
         # Create buildspec file quickly
