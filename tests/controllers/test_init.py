@@ -32,10 +32,14 @@ class TestInit(BaseControllerTest):
         self.module_name = 'initialize'
         super(TestInit, self).setUp()
         self.patcher_sshops = mock.patch('ebcli.controllers.initialize.sshops')
+        self.patcher_elasticbeanstalk = mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
         self.mock_sshops = self.patcher_sshops.start()
+        self.mock_eb = self.patcher_elasticbeanstalk.start()
 
     def tearDown(self):
         self.patcher_sshops.stop()
+        self.patcher_elasticbeanstalk.stop()
+
         super(TestInit, self).tearDown()
 
     @mock.patch('ebcli.objects.sourcecontrol.Git')
@@ -60,6 +64,7 @@ class TestInit(BaseControllerTest):
         self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
+        self.mock_eb.application_exist.return_value = False
         self.mock_commonops.pull_down_app_info.return_value = None, None
         self.mock_commonops.get_default_keyname.return_value = ''
         self.mock_commonops.get_default_region.return_value = ''
@@ -104,6 +109,7 @@ class TestInit(BaseControllerTest):
         # 3. Create app
         self.mock_commonops.get_application_names.return_value = list()
         self.mock_operations.credentials_are_valid.return_value = True
+        self.mock_eb.application_exist.return_value = False
         self.mock_commonops.prompt_for_solution_stack.return_value = \
             self.solution
         self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
@@ -341,6 +347,7 @@ class TestInit(BaseControllerTest):
         mock_fileops.env_yaml_exists.return_value = None
 
         # Mock out operations for Codebuild Integration
+        self.mock_eb.application_exist.return_value = False
         mock_fileops.build_spec_exists.return_value = True
         mock_fileops.get_build_configuration.return_value = build_config
         mock_fileops.buildspec_config_header = fileoperations.buildspec_config_header
@@ -418,6 +425,7 @@ class TestInit(BaseControllerTest):
 
         # Mock out operations for Codebuild Integration
         mock_fileops.build_spec_exists.return_value = True
+        self.mock_eb.application_exist.return_value = False
         mock_fileops.get_build_configuration.return_value = build_config
         mock_fileops.buildspec_config_header = fileoperations.buildspec_config_header
         mock_fileops.buildspec_name = fileoperations.buildspec_name

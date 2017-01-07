@@ -216,6 +216,14 @@ def describe_applications():
     return result['Applications']
 
 
+def application_exist(app_name):
+    try:
+        describe_application(app_name)
+    except NotFoundError:
+        return False
+    return True
+
+
 def describe_configuration_settings(app_name, env_name):
     LOG.debug('Inside describe_configuration_settings api wrapper')
     result = _make_api_call('describe_configuration_settings',
