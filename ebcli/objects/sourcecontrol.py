@@ -20,11 +20,11 @@ import sys
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
 
-from ..lib import codecommit, aws
-from ..core import fileoperations, io
-from ..objects.exceptions import NoSourceControlError, CommandError, \
+from ebcli.lib import codecommit, utils
+from ebcli.core import fileoperations, io
+from ebcli.objects.exceptions import NoSourceControlError, CommandError, \
     NotInitializedError
-from ..resources.strings import git_ignore, strings
+from ebcli.resources.strings import git_ignore, strings
 
 LOG = minimal_logger(__name__)
 
@@ -418,11 +418,10 @@ class Git(SourceControl):
 
     def _run_cmd(self, cmd, handle_exitcode=True):
         stdout, stderr, exitcode = exec_cmd(cmd)
-        if sys.version_info[0] >= 3:
-            stdout = stdout.decode('utf8')
-            stderr = stderr.decode('utf8')
-        stdout = stdout.strip()
-        stderr = stderr.strip()
+
+        stdout = utils.decode_bytes(stdout).strip()
+        stderr = utils.decode_bytes(stderr).strip()
+
         if handle_exitcode:
             self._handle_exitcode(exitcode, stderr)
         return stdout, stderr, exitcode

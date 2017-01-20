@@ -58,11 +58,11 @@ def list_curated_environment_images():
         for language in platform['languages']:
             languages_by_platform_version = {}
             for image in language['images']:
-                if 'ElasticBeanstalk' in image['description'].encode('ascii','ignore'):
+                if 'ElasticBeanstalk'.encode(errors='ignore') in image['description'].encode(errors='ignore'):
                     matches = re.search(regex_search_version, image['description'])
 
                     # Get the Platform version for the current image
-                    current_version = int(matches.group(2).encode('ascii', 'ignore').replace(".", ""))
+                    current_version = int(matches.group(2).replace(".", ""))
 
                     # Set the description to to something nicer than the full description from CodeBuild
                     image['description'] = matches.group(1)

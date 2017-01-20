@@ -11,16 +11,13 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from mock import patch, Mock
 from unittest import TestCase
 
-from ebcli.containers import dockerrun
+from mock import patch, Mock
+
 from ebcli.containers.envvarcollector import EnvvarCollector
 from ebcli.containers.preconfigured_container import PreconfiguredContainer
-from ebcli.containers.fshandler import ContainerFSHandler
-from ebcli.objects.exceptions import CommandError
-from tests.containers import dummy
-
+from tests.unit.containers import dummy
 
 OPT_ENV = EnvvarCollector({'a': '1', 'b': '555'})
 SETENV_ENV = EnvvarCollector({'a': '350'})

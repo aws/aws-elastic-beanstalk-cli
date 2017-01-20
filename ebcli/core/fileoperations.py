@@ -35,7 +35,7 @@ except ImportError:
 from ebcli.core import io
 from ebcli.resources.strings import prompts, strings
 from ebcli.objects.exceptions import NotInitializedError, InvalidSyntaxError, \
-    NotFoundError, ValidationError
+    NotFoundError
 
 LOG = minimal_logger(__name__)
 
@@ -251,8 +251,9 @@ def set_all_unrestricted_permissions(location):
 
 def get_current_directory_name():
     dirname, filename = os.path.split(os.getcwd())
-    if sys.version_info[0] < 3:
-        filename = filename.decode('utf8')
+
+    from ebcli.lib.utils import decode_bytes
+    filename = decode_bytes(filename)
 
     return filename
 

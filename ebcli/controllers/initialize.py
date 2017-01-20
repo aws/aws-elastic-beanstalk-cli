@@ -140,11 +140,12 @@ class InitController(AbstractBaseController):
                     io.echo(prompts['codebuild.getplatform'].replace('{platform}', self.solution))
                     selected = utils.prompt_for_index_in_list(map(lambda image: image['description'], platform_image))
                     platform_image = platform_image[selected]
+                    platform_image['name'] = utils.decode_bytes(platform_image['name'])
 
                 # Finally write the CodeBuild image back to the buildspec file
                 fileoperations.write_config_setting(fileoperations.buildspec_config_header,
                                                     'Image',
-                                                    platform_image['name'].encode('ascii', 'ignore'),
+                                                    platform_image['name'],
                                                     file=fileoperations.buildspec_name)
 
         # Setup code commit integration

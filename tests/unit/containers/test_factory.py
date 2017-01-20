@@ -11,15 +11,16 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from mock import patch, Mock
 from unittest import TestCase
 
+from mock import patch
+
 from ebcli.containers import factory
-from ebcli.containers.multicontainer import MultiContainer
 from ebcli.containers.generic_container import GenericContainer
+from ebcli.containers.multicontainer import MultiContainer
 from ebcli.containers.preconfigured_container import PreconfiguredContainer
 from ebcli.objects.exceptions import NotSupportedError
-from tests.containers import dummy
+from tests.unit.containers import dummy
 
 
 class TestFactory(TestCase):

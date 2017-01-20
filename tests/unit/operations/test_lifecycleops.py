@@ -86,7 +86,7 @@ class TestLifecycleOperations(unittest.TestCase):
                          call('{0}Enabled: False'.format(lifecycleops.SPACER * 4)),
                          call('{0}MaxAgeInDays: 180'.format(lifecycleops.SPACER * 4)),
                          call('{0}ServiceRole: arn:aws:iam::293615521073:role/aws-elasticbeanstalk-service-role'.format(lifecycleops.SPACER * 2))]
-        self.mock_io.echo.assert_has_calls(io_echo_calls)
+        self.mock_io.echo.assert_has_calls(io_echo_calls, any_order=True)
 
     @mock.patch('ebcli.operations.lifecycleops.LifecycleConfiguration')
     def test_interactive_update_lifecycle_policy(self, mock_lifecycle_config):

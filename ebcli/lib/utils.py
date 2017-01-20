@@ -16,7 +16,6 @@ import re
 import pkg_resources
 import sys
 from datetime import datetime
-import warnings
 
 from dateutil import tz
 
@@ -25,8 +24,8 @@ from cement.utils.misc import minimal_logger
 from subprocess import Popen, PIPE, STDOUT
 urllib = six.moves.urllib
 
-from ..objects.exceptions import CommandError, InvalidOptionsError
-from ..core import io, fileoperations
+from ebcli.objects.exceptions import CommandError, InvalidOptionsError
+from ebcli.core import io, fileoperations
 
 
 LOG = minimal_logger(__name__)
@@ -38,6 +37,7 @@ def prompt_for_item_in_list(lst, default=1):
 
 
 def prompt_for_index_in_list(lst, default=1):
+    lst = list(lst)
     for x in range(0, len(lst)):
         io.echo(str(x + 1) + ')', lst[x])
 
@@ -353,3 +353,10 @@ def encode_to_ascii(unicode_value):
     if unicode_value is None:
         return empty_string
     return unicode_value.encode('ascii', 'ignore')
+
+
+def decode_bytes(value):
+    if sys.version_info[0] >= 3:
+        if isinstance(value, bytes):
+            value = value.decode('utf8')
+    return value

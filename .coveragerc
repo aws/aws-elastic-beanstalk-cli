@@ -4,5 +4,5 @@ branch = true
 [html]
 directory = build/brazil-documentation/coverage
 
-[xml]
+[xml-only-for-brazil]
 output = build/brazil-documentation/coverage/coverage.xml

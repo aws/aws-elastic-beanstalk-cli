@@ -111,6 +111,4 @@ class TestEnvironmentSettings(unittest.TestCase):
         actual_usr_model = env_settings.convert_api_to_usr_model()
 
         # Assert correct methods weere called
-        print actual_usr_model
-        print self.usr_model
         self.assertEqual(self.usr_model, actual_usr_model)

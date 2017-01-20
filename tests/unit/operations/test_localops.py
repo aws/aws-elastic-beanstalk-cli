@@ -11,14 +11,14 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from mock import patch, Mock
 from unittest import TestCase
+
+from mock import patch
 
 from ebcli.containers.envvarcollector import EnvvarCollector
 from ebcli.operations import localops
 from ebcli.operations.localops import LocalState
-from tests.containers import dummy
-
+from tests.unit.containers import dummy
 
 LOCAL_STATE_PATH = '/.elasticbeanstalk/.localstate'
 

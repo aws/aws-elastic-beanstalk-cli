@@ -12,14 +12,16 @@
 # language governing permissions and limitations under the License.
 
 import unittest
+
 import mock
 
-from tests.controllers.basecontrollertest import BaseControllerTest
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
 from ebcli.objects.solutionstack import SolutionStack
+from tests.unit.controllers.basecontrollertest import BaseControllerTest
 
 
+@unittest.skip
 class TestAppVersions(BaseControllerTest):
     app_name = 'awesomeApp'
     solution = SolutionStack('64bit Amazon Linux 2014.03 '
@@ -32,10 +34,13 @@ class TestAppVersions(BaseControllerTest):
                                           self.solution.string)
 
         self.patcher_versions_ops = mock.patch('ebcli.controllers.appversion.appversionops')
+        self.patcher_gitops = mock.patch('ebcli.operations.gitops')
         self.mock_versions_ops = self.patcher_versions_ops.start()
+        self.mock_gitops = self.patcher_gitops.start()
 
     def tearDown(self):
         self.patcher_versions_ops.stop()
+        self.patcher_gitops.stop()
         super(TestAppVersions, self).tearDown()
 
     def test_delete_with_version_label(self):

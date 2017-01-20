@@ -1,10 +1,11 @@
-from mock import patch, Mock
 from unittest import TestCase
+
+from mock import patch, Mock
 
 from ebcli.containers import dockerrun
 from ebcli.containers.envvarcollector import EnvvarCollector
 from ebcli.containers.multicontainer import MultiContainer
-from tests.containers import dummy
+from tests.unit.containers import dummy
 
 
 class TestMultiContainer(TestCase):

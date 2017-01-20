@@ -106,7 +106,7 @@ class TestLogsOperations(unittest.TestCase):
         # Assert correct methods were called
         self.mock_beanstalk.retrieve_environment_info.assert_called_with(self.env_name, self.info_type_bundle)
         save_from_url_calls = [mock.call(self.message, self.logs_location, self.instance_id + '.zip'), mock.call(self.message_alt, self.logs_location, self.instance_id_alt + '.zip')]
-        self.mock_utils.save_file_from_url.assert_has_calls(save_from_url_calls)
+        self.mock_utils.save_file_from_url.assert_has_calls(save_from_url_calls, any_order=True)
 
     def test_bundle_and_zip_get_logs_call(self):
         # Mock out methods
@@ -121,7 +121,7 @@ class TestLogsOperations(unittest.TestCase):
         # Assert correct methods were called
         self.mock_beanstalk.retrieve_environment_info.assert_called_with(self.env_name, self.info_type_bundle)
         save_from_url_calls = [mock.call(self.message, self.logs_location, self.instance_id + '.zip')]
-        self.mock_utils.save_file_from_url.assert_has_calls(save_from_url_calls)
+        self.mock_utils.save_file_from_url.assert_has_calls(save_from_url_calls,  any_order=True)
         self.mock_fileops.zup_up_folder(self.logs_location, self.logs_location + '.zip')
         self.mock_io.symlink.assert_not_called()
 
@@ -137,7 +137,7 @@ class TestLogsOperations(unittest.TestCase):
         # Assert correct methods were called
         self.mock_beanstalk.retrieve_environment_info.assert_called_with(self.env_name, self.info_type_tail)
         get_data_from_url_calls = [mock.call(self.message), mock.call(self.message_alt)]
-        self.mock_utils.get_data_from_url.assert_has_calls(get_data_from_url_calls)
+        self.mock_utils.get_data_from_url.assert_has_calls(get_data_from_url_calls, any_order=True)
         self.mock_io.echo_with_pager.assert_called_with(self.log_msg)
 
     # TESTING logsops.stream_logs()

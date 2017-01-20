@@ -112,9 +112,7 @@ def get_logs(env_name, info_type, do_zip=False, instance_id=None):
         for i_id, url in iteritems(log_list):
             data.append('============= ' + str(i_id) + ' ==============')
             log_result = utils.get_data_from_url(url)
-            if sys.version_info[0] >= 3:
-                log_result = log_result.decode()
-            data.append(log_result)
+            data.append(utils.decode_bytes(log_result))
         io.echo_with_pager(os.linesep.join(data))
 
 

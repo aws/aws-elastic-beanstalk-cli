@@ -15,7 +15,7 @@ import mock
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.objects.exceptions import NoEnvironmentForBranchError
-from tests.controllers.basecontrollertest import BaseControllerTest
+from tests.unit.controllers.basecontrollertest import BaseControllerTest
 
 class TestAbstract(BaseControllerTest):
     env_name = 'ebcli-abstractTest-env'

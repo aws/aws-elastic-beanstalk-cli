@@ -1,11 +1,11 @@
-from mock import patch
 from unittest import TestCase
+
+from mock import patch
 
 from ebcli.containers import commands, dockerrun
 from ebcli.containers.fshandler import ContainerFSHandler, MultiContainerFSHandler
 from ebcli.resources.strings import docker_ignore
-from tests.containers import dummy
-
+from tests.unit.containers import dummy
 
 IMG_NAME = 'janedoe/image'
 PORT = '5000'

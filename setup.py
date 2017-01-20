@@ -26,7 +26,7 @@ testing_requires = ['pytest>=3.03',
                     'nose>=1.3.7']
 
 if not sys.platform.startswith('win'):
-    requires.append('blessed==1.9.5')
+    requires.append('blessed>=1.9.5')
 
 try:
     with open('/etc/bash_completion.d/eb_completion.extra', 'w') as eo:
@@ -48,7 +48,7 @@ setup_options = dict(
     author='AWS Elastic Beanstalk',
     author_email='aws-eb-cli@amazon.com',
     url='http://aws.amazon.com/elasticbeanstalk/',
-    packages=find_packages('.', exclude=['tests*', 'docs*', 'sampleApps*']),
+    packages=find_packages('.', exclude=['tests*', 'docs*', 'sampleApps*', 'scripts*']),
     package_dir={'ebcli': 'ebcli'},
     package_data={
         'ebcli.lib': ['botocoredata/*/*/*.json'],
@@ -66,6 +66,7 @@ setup_options = dict(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ),
     entry_points={
         'console_scripts': [

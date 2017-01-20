@@ -40,6 +40,7 @@ class TestNoSourceControl(unittest.TestCase):
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
 
+    @unittest.skipIf(fileoperations.program_is_installed('git'), "Skipped because git is installed")
     def test_get_source_control(self):
         sc = sourcecontrol.SourceControl.get_source_control()
         self.assertIsInstance(sc, sourcecontrol.NoSC)
