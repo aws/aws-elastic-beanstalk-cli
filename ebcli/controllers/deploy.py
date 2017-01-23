@@ -46,6 +46,7 @@ class DeployController(AbstractBaseController):
             (['--source'], dict(type=utils.check_source, help=flag_text['deploy.source'])),
             (['-p', '--process'], dict(
                 action='store_true', help=flag_text['deploy.process'])),
+            (['--lambda-subdir', '-ls'], dict(help=flag_text['deploy.lambdasub'], nargs='*')),
             ]
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 
@@ -61,6 +62,7 @@ class DeployController(AbstractBaseController):
         self.version = self.app.pargs.version
         self.label = self.app.pargs.label
         self.process = self.app.pargs.process
+        self.lambda_subdir = self.app.pargs.lambda_subdir
         group_name = self.app.pargs.env_group_suffix
 
         if self.modules and len(self.modules) > 0:
@@ -91,7 +93,7 @@ class DeployController(AbstractBaseController):
 
         deployops.deploy(self.app_name, self.env_name, self.version, self.label,
                          self.message, group_name=group_name, process_app_versions=process_app_versions,
-                         staged=self.staged, timeout=self.timeout, source=self.source)
+                         staged=self.staged, timeout=self.timeout, source=self.source, lambda_subdir=self.lambda_subdir)
 
     def complete_command(self, commands):
         # TODO: edit this if we ever support multiple env deploys
@@ -168,7 +170,7 @@ class DeployController(AbstractBaseController):
                 app_name = self.get_app_name()
 
             process_app_version = fileoperations.env_yaml_exists()
-            version_label = commonops.create_app_version(app_name, process=process_app_version)
+            version_label = commonops.create_app_version(app_name, process=process_app_version, lambda_subdir=self.lambda_subdir)
 
             stages_version_labels[group_name].append(version_label)
 

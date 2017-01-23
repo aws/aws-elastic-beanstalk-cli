@@ -55,7 +55,7 @@ class TestNoSourceControl(unittest.TestCase):
     @mock.patch('ebcli.objects.sourcecontrol.fileoperations')
     def test_do_zip(self, mock_file):
         sourcecontrol.NoSC().do_zip('file.zip')
-        mock_file.zip_up_project.assert_called_with('file.zip')
+        mock_file.zip_up_project.assert_called_with('file.zip', lambda_subdir=None)
 
     def test_get_message(self):
         # Just a hardcoded string, dont really need to test

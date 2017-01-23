@@ -13,11 +13,9 @@
 
 from cement.utils.misc import minimal_logger
 
-from ..lib import aws
-from ..objects.exceptions import ServiceError, AlreadyExistsError
+from ebcli.lib import aws
 
 LOG = minimal_logger(__name__)
-
 
 def _make_api_call(operation_name, **operation_options):
     return aws.make_api_call('iam', operation_name, **operation_options)

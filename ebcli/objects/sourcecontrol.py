@@ -87,9 +87,9 @@ class NoSC(SourceControl):
     def get_current_branch(self):
         return 'default'
 
-    def do_zip(self, location, staged=False):
+    def do_zip(self, location, staged=False, lambda_subdir=None):
         io.log_info('Creating zip using systems zip')
-        fileoperations.zip_up_project(location)
+        fileoperations.zip_up_project(location, lambda_subdir=lambda_subdir)
 
     def get_message(self):
         return NoSC.DEFAULT_MESSAGE
