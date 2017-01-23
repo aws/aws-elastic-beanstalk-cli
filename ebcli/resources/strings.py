@@ -181,6 +181,11 @@ strings = {
     'deploy.modulemissingenvyaml': 'All specified modules require an env.yaml file.\n'
                                    'The following modules are missing this file: {modules}',
     'deploy.noenvname': 'No environment name was specified in env.yaml for module {module}. Unable to deploy.',
+    'lambda.foundlambdabase': 'Found {lambdabase}, scanning for lambda functions',
+    'lambda.nolambdabase': 'No {lambdabase} found',
+    'lambda.foundlambdafunctions': 'Found lambda function directories: {0}',
+    'lambda.ziplambda': 'Zipping Lambda folder: {directory} ----> {zip}',
+    'lambda.zipalreadyexists': 'Cannot zip up lambda directory {directory}, because {zip} already exists.',
     'compose.noenvyaml': 'The module {module} does not contain an env.yaml file. This module will be skipped.',
     'compose.novalidmodules': 'No valid modules were found. No environments will be created.',
     'appversion.processfailed': 'Pre-processing of application version {app_version} has failed.',
@@ -422,6 +427,7 @@ flag_text = {
     'deploy.staged': 'deploy files staged in git rather than the HEAD commit',
     'deploy.group_suffix': 'group suffix',
     'deploy.source': 'source of code to deploy directly; example source_location/repo/branch',
+    'deploy.lambdasub': 'look one level deeper when scanning for lambda functions',
 
     # Events
     'events.follow': 'wait and continue to print events as they come',

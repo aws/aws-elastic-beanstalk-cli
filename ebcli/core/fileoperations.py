@@ -35,7 +35,7 @@ except ImportError:
 from ebcli.core import io
 from ebcli.resources.strings import prompts, strings
 from ebcli.objects.exceptions import NotInitializedError, InvalidSyntaxError, \
-    NotFoundError
+    NotFoundError, AlreadyExistsError
 
 LOG = minimal_logger(__name__)
 
@@ -72,6 +72,7 @@ ebcli_section = 'profile eb-cli'
 app_version_folder = beanstalk_directory + 'app_versions'
 logs_folder = beanstalk_directory + 'logs' + os.path.sep
 env_yaml = 'env.yaml'
+lambda_base_directory = '_awseblambda'
 
 _marker = object()
 
@@ -405,30 +406,122 @@ def zip_up_folder(directory, location, ignore_list=None):
         os.chdir(cwd)
 
 
-def zip_up_project(location, ignore_list=None):
+def zip_up_project(location, ignore_list=None, lambda_subdir=None):
     cwd = os.getcwd()
+    lambda_dirs = []
 
+    try:
+        # zip up lambda sub folders, and ignore them when zipping the whole project
+        lambda_dirs = zip_lambda_dirs(lambda_subdir=lambda_subdir)
+        if ignore_list is None:
+            ignore_list = ['.gitignore']
+        ignore_list.append('.elasticbeanstalk')
+
+        if lambda_dirs:
+            io.log_info(lambda_dirs)
+            ignore_list.extend(lambda_dirs)
+
+        # zip up the whole project
+        _traverse_to_project_root()
+        zip_up_folder('./', location, ignore_list=ignore_list)
+
+    finally:
+        # remove lambda zips after they are zipped into project zip
+        delete_lambda_zips(lambda_dirs)
+        os.chdir(cwd)
+
+
+def list_child_dir(path):
+    directories_depth1 = glob.glob(os.path.join(path, '*'))
+    child_dir = filter(lambda f: os.path.isdir(f), directories_depth1)
+    return child_dir
+
+
+def zip_lambda_dirs(lambda_subdir=None):
+    cwd = os.getcwd()
+    if lambda_subdir is not None:
+        lambda_subdir = [os.path.join(lambda_base_directory, subdir) for subdir in lambda_subdir]
     try:
         _traverse_to_project_root()
 
-        zip_up_folder('./', location, ignore_list=ignore_list)
+        if os.path.isdir(lambda_base_directory):
+            io.echo(strings['lambda.foundlambdabase'].replace('{lambdabase}', lambda_base_directory))
+
+            # get_or_create default lambda role if lambda_base_directory exists
+            from ebcli.lib import iam_role
+            iam_role.get_default_lambda_role()
+
+            lambda_dir_list = []
+
+            # getting child directories
+            child_lamdba_dir = list_child_dir(lambda_base_directory)
+
+            grandchild_lambda_dir = []
+            if lambda_subdir is not None:
+                # go through the list of lambda sub directories user provided through the lambda-sub flag
+                # dive into these directories to get the grandchilds
+                for sub_directory in lambda_subdir:
+                    if sub_directory in child_lamdba_dir:
+                        # child is not a lambda directory if is in the lambda_subdir list
+                        child_lamdba_dir.remove(sub_directory)
+                        # add grandchild into the lambda_subdir list instead
+                        grandchild_lambda_dir.extend(list_child_dir(sub_directory))
+
+            lambda_dir_list.extend(child_lamdba_dir)
+            lambda_dir_list.extend(grandchild_lambda_dir)
+            io.log_info(strings['lambda.foundlambdafunctions'].format(lambda_dir_list))
+
+            # Pre check if we will be able to zip up all the lambda dirs; if not, stop
+            for lambda_dir in lambda_dir_list:
+                zip_location = '{0}.zip'.format(lambda_dir)
+                if os.path.exists(zip_location):
+                    raise AlreadyExistsError(strings['lambda.zipalreadyexists']
+                        .replace('{directory}', lambda_dir)
+                        .replace('{zip}', zip_location))
+
+            # zipping up lambda dirs
+            for lambda_dir in lambda_dir_list:
+                zip_location = '{0}.zip'.format(lambda_dir)
+                zip_name = os.path.basename(zip_location)
+                LOG.debug(strings['lambda.ziplambda']
+                        .replace('{directory}', lambda_dir)
+                        .replace('{zip}', zip_location))
+                # the zip file would always be in the same directory as the original folder
+                zip_up_folder(lambda_dir, os.path.join('..', zip_name))
+
+            return lambda_dir_list
+
+        else:
+            io.log_info(strings['lambda.nolambdabase'].replace('{lambdabase}', lambda_base_directory))
+            return []
 
     finally:
         os.chdir(cwd)
 
 
+def delete_lambda_zips(lambda_dirs):
+    for lambda_dir in lambda_dirs:
+        lambda_zip = '{0}.zip'.format(lambda_dir)
+        LOG.debug('Deleting lambda zip file {0}'.format(lambda_zip))
+        delete_file(lambda_zip)
+
+
 def _zipdir(path, zipf, ignore_list=None):
     if ignore_list is None:
-        ignore_list = ['.gitignore']
+        ignore_list = []
+    # the ignore list has to start with ./
     ignore_list = ['./' + i for i in ignore_list]
+    io.log_info('Zip Ignore List: {0}'.format(ignore_list))
     zipped_roots = []
-    for root, dirs, files in os.walk(path):
-        if '.elasticbeanstalk' in root:
-            io.log_info('  -skipping: {}'.format(root))
-            continue
+    for root, dirs, files in os.walk(path, topdown=True):
+        # new way of skipping directories:
+        dir_to_remove = []
         for d in dirs:
             cur_dir = os.path.join(root, d)
-            if os.path.islink(cur_dir):
+            if cur_dir in ignore_list:
+                io.log_info(' -skipping: {0}'.format(cur_dir))
+                dir_to_remove.append(d)
+            elif os.path.islink(cur_dir):
                 zipInfo = zipfile.ZipInfo()
                 zipInfo.filename = os.path.join(root, d)
 
@@ -441,19 +534,23 @@ def _zipdir(path, zipf, ignore_list=None):
                 else:
                     zipInfo.external_attr = long(2716663808)
                 zipf.writestr(zipInfo, os.readlink(cur_dir))
+
+        # Remove the directories that we should not dig into
+        dirs[:] = [d for d in dirs if d not in dir_to_remove]
+
         for f in files:
             cur_file = os.path.join(root, f)
             if cur_file.endswith('~') or cur_file in ignore_list:
                 # Ignore editor backup files (like file.txt~)
                 # Ignore anything in the .ebignore file
-                io.log_info('  -skipping: {}'.format(cur_file))
+                io.log_info('  -skipping: {0}'.format(cur_file))
             else:
                 if root not in zipped_roots:
                     # Windows requires us to index the folders.
-                    io.log_info(' +adding: {}/'.format(root))
+                    io.log_info(' +adding: {0}/'.format(root))
                     zipf.write(root)
                     zipped_roots.append(root)
-                io.log_info('  +adding: {}'.format(cur_file))
+                io.log_info('  +adding: {0}'.format(cur_file))
                 if os.path.islink(cur_file):
                     zipInfo = zipfile.ZipInfo()
                     zipInfo.filename = os.path.join(root, f)
