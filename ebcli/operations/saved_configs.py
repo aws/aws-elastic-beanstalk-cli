@@ -12,13 +12,14 @@
 # language governing permissions and limitations under the License.
 
 import os
+import time
 
-from ..lib import elasticbeanstalk, s3, utils
-from ..resources.strings import strings, responses
-from ..core import io, fileoperations
-from ..objects.exceptions import NotFoundError
-from ..lib.aws import InvalidParameterValueError
-from . import commonops
+from ebcli.lib import elasticbeanstalk, s3
+from ebcli.resources.strings import strings, responses
+from ebcli.core import io, fileoperations
+from ebcli.objects.exceptions import NotFoundError
+from ebcli.lib.aws import InvalidParameterValueError
+from ebcli.operations import commonops
 
 SAVED_CONFIG_FOLDER_NAME = 'saved_configs' + os.path.sep
 
@@ -76,6 +77,12 @@ def update_config(app_name, cfg_name):
     config_location = resolve_config_location(cfg_name)
     if config_location is None:
         raise NotFoundError('No local version of ' + cfg_name + ' found.')
+
+    # Update modified date
+    fileoperations.write_config_setting('EnvironmentConfigurationMetadata',
+                                        'DateModified',
+                                        (('%f' % (time.time() * 1000)).split('.')[0]),
+                                        file=config_location)
 
     # Get just the name of the file
     filename = fileoperations.get_filename_without_extension(config_location)
