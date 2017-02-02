@@ -85,9 +85,9 @@ class NoSC(SourceControl):
     def get_current_branch(self):
         return 'default'
 
-    def do_zip(self, location, staged=False, lambda_subdir=None):
+    def do_zip(self, location, staged=False):
         io.log_info('Creating zip using systems zip')
-        fileoperations.zip_up_project(location, lambda_subdir=lambda_subdir)
+        fileoperations.zip_up_project(location)
 
     def get_message(self):
         return 'EB-CLI deploy'

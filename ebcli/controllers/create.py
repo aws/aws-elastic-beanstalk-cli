@@ -95,7 +95,6 @@ class CreateController(AbstractBaseController):
                 dest='vpc_securitygroups', help=argparse.SUPPRESS)),
             (['--vpc.dbsubnets'], dict(
                 dest='vpc_dbsubnets', help=argparse.SUPPRESS)),
-            (['--lambda-subdir', '-ls'], dict(help=flag_text['deploy.lambdasub'], nargs='*')),
 
         ]
 
@@ -127,7 +126,6 @@ class CreateController(AbstractBaseController):
         elb_type = self.app.pargs.elb_type
         source = self.app.pargs.source
         interactive = False if env_name else True
-        lambda_subdir = self.app.pargs.lambda_subdir
 
         provided_env_name = env_name is not None
 
@@ -251,8 +249,7 @@ class CreateController(AbstractBaseController):
                                nohang=nohang,
                                interactive=interactive,
                                timeout=timeout,
-                               source=source,
-                               lambda_subdir=lambda_subdir)
+                               source=source)
 
     def complete_command(self, commands):
         app_name = fileoperations.get_application_name()
@@ -348,7 +345,6 @@ class CreateController(AbstractBaseController):
         group = self.app.pargs.env_group_suffix or 'dev'
         nohang = self.app.pargs.nohang
         timeout = self.app.pargs.timeout
-        lambda_subdir = self.app.pargs.lambda_subdir
 
         root_dir = os.getcwd()
 
@@ -380,7 +376,7 @@ class CreateController(AbstractBaseController):
             if not app_name:
                 app_name = self.get_app_name()
             process_app_version = fileoperations.env_yaml_exists()
-            version_label = commonops.create_app_version(app_name, process=process_app_version, lambda_subdir=lambda_subdir)
+            version_label = commonops.create_app_version(app_name, process=process_app_version)
 
             version_labels.append(version_label)
 

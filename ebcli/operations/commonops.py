@@ -693,10 +693,9 @@ def create_dummy_app_version(app_name):
                                        None, None, warning=False)
 
 
-def create_app_version(app_name, process=False, label=None, message=None, staged=False, build_config=None, lambda_subdir=None):
+def create_app_version(app_name, process=False, label=None, message=None, staged=False, build_config=None):
     cwd = os.getcwd()
     fileoperations._traverse_to_project_root()
-
     try:
         if heuristics.directory_is_empty():
             io.log_warning(strings['appversion.none'])
@@ -744,7 +743,7 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
         # Create zip file if the application version doesn't exist
         if s3_bucket is None and s3_key is None:
             file_name, file_path = _zip_up_project(
-                version_label, source_control, staged=staged, lambda_subdir=lambda_subdir)
+                version_label, source_control, staged=staged)
         else:
             file_name = None
             file_path = None
@@ -916,7 +915,7 @@ def _create_application_version(app_name, version_label, description,
                 raise
 
 
-def _zip_up_project(version_label, source_control, staged=False, lambda_subdir=None):
+def _zip_up_project(version_label, source_control, staged=False):
     # Create zip file
     file_name = version_label + '.zip'
     file_path = fileoperations.get_zip_location(file_name)
@@ -928,11 +927,10 @@ def _zip_up_project(version_label, source_control, staged=False, lambda_subdir=N
                                                      version_label))
         ignore_files = fileoperations.get_ebignore_list()
         if ignore_files is None:
-            source_control.do_zip(file_path, staged, lambda_subdir=lambda_subdir)
+            source_control.do_zip(file_path, staged)
         else:
             io.log_info('Found .ebignore, using system zip.')
-            fileoperations.zip_up_project(file_path, ignore_list=ignore_files, lambda_subdir=lambda_subdir)
-
+            fileoperations.zip_up_project(file_path, ignore_list=ignore_files)
     return file_name, file_path
 
 
