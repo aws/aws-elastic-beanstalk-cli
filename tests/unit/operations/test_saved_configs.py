@@ -23,6 +23,10 @@ from ebcli.operations import saved_configs
 
 class TestResolveConfigLocations(unittest.TestCase):
     module_name = 'test2'
+    app_name = 'app_name'
+    platform = 'python'
+    cfg_name = 'myfile.cfg.yml'
+
 
     def setUp(self):
         # set up test directory
@@ -175,17 +179,25 @@ class TestResolveConfigLocations(unittest.TestCase):
 
         mock_upload.assert_called_with('app', 'myfile', location)
 
-
     @mock.patch('ebcli.operations.saved_configs.upload_config_file')
     def test_update_config_resolve_path(self, mock_upload):
-        cfg_name = 'myfile.cfg.yml'
+        cfg_name = self.cfg_name
         location = fileoperations.get_project_file_full_location(cfg_name)
         fileoperations.write_to_data_file(location, self.data)
 
-
-        saved_configs.update_config('app',
-                                    './myfile.cfg.yml')
+        saved_configs.update_config('app', './{0}'.format(self.cfg_name))
 
         mock_upload.assert_called_with('app', 'myfile', location)
+
+    @mock.patch('ebcli.operations.saved_configs.fileoperations.get_filename_without_extension')
+    @mock.patch('ebcli.operations.saved_configs.elasticbeanstalk.validate_template')
+    def test_validate_config(self, mock_validate, mock_filename):
+        mock_filename.return_value = self.cfg_name
+        mock_validate.return_value = {'Messages': [{'Severity': 'error', 'Message': 'foo-error'},
+                                                    {'Severity': 'warning', 'Message': 'foo-warn'}]}
+        saved_configs.validate_config_file(self.app_name, self.cfg_name, self.platform)
+
+        mock_filename.assert_called_with(self.cfg_name)
+        mock_validate.assert_called_with(self.app_name, self.cfg_name)
 
 

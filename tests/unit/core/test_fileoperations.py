@@ -30,6 +30,9 @@ class TestFileOperations(unittest.TestCase):
     else:
         config_parser_import = 'ConfigParser.ConfigParser'
 
+    expected_file = 'foo.txt'
+    expected_file_without_ext = 'foo'
+
     @classmethod
     def setUpClass(self):
         self.test_root = os.getcwd()
@@ -489,3 +492,15 @@ class TestFileOperations(unittest.TestCase):
         self.assertTrue(fileoperations.build_spec_exists(),
                         "Expected to find build spec file with filename: {0}".format(file))
         os.remove(file)
+
+    def test_get_filename_without_extension_with_path(self):
+        filepath = '/tmp/dir/test/{0}'.format(self.expected_file)
+
+        actual_file = fileoperations.get_filename_without_extension(filepath)
+        self.assertEqual(self.expected_file_without_ext, actual_file, "Expected {0} but got: {1}"
+                         .format(self.expected_file_without_ext, actual_file))
+
+    def test_get_filename_without_extension_with_file(self):
+        actual_file = fileoperations.get_filename_without_extension(self.expected_file)
+        self.assertEqual(self.expected_file_without_ext, actual_file, "Expected {0} but got: {1}"
+                         .format(self.expected_file_without_ext, actual_file))

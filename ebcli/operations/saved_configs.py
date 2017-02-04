@@ -174,8 +174,10 @@ def get_configurations(app_name):
 
 
 def validate_config_file(app_name, cfg_name, platform):
+    # Get just the name of the file
+    filename = fileoperations.get_filename_without_extension(cfg_name)
     try:
-        result = elasticbeanstalk.validate_template(app_name, cfg_name)
+        result = elasticbeanstalk.validate_template(app_name, filename)
     except InvalidParameterValueError as e:
         # Platform not in Saved config. Try again with default platform
         if e.message == responses['create.noplatform']:
