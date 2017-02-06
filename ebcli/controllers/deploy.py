@@ -44,6 +44,8 @@ class DeployController(AbstractBaseController):
                 action='store_true', help=flag_text['deploy.staged'])),
             (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
             (['--source'], dict(type=utils.check_source, help=flag_text['deploy.source'])),
+            (['-p', '--process'], dict(
+                action='store_true', help=flag_text['deploy.process'])),
             ]
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 
@@ -58,6 +60,7 @@ class DeployController(AbstractBaseController):
         self.env_name = self.app.pargs.environment_name
         self.version = self.app.pargs.version
         self.label = self.app.pargs.label
+        self.process = self.app.pargs.process
         group_name = self.app.pargs.env_group_suffix
 
         if self.modules and len(self.modules) > 0:
@@ -84,7 +87,7 @@ class DeployController(AbstractBaseController):
         #     # deploy to every environment listed
         #     ## Right now you can only list one
 
-        process_app_versions = fileoperations.env_yaml_exists()
+        process_app_versions = fileoperations.env_yaml_exists() or self.process
 
         deployops.deploy(self.app_name, self.env_name, self.version, self.label,
                          self.message, group_name=group_name, process_app_versions=process_app_versions,

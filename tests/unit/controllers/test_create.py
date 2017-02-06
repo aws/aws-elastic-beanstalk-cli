@@ -28,6 +28,7 @@ class TestCreate(BaseControllerTest):
     solution = SolutionStack('64bit Amazon Linux 2014.03 '
                              'v1.0.6 running PHP 5.5')
     app_name = 'ebcli-intTest-app'
+    env_name = 'create-env'
     tier = Tier.get_all_tiers()[0]
 
     def setUp(self):
@@ -197,3 +198,31 @@ class TestCreate(BaseControllerTest):
         args, kwargs = self.mock_operations.make_new_env.call_args
         self.assertEqual(args[0], env_request)
         self.assertEqual(kwargs['branch_default'], True)
+
+    def test_create_with_process_flag(self):
+        self.mock_commonops.get_solution_stack.return_value = self.solution
+        self.mock_commonops.is_cname_available.return_value = True
+        self.mock_commonops.get_default_keyname = commonops.get_default_keyname
+
+        # run cmd
+        EB.Meta.exit_on_close = False
+        self.app = EB(argv=['create', '--process', self.env_name])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+        # make sure make_new_env was called correctly
+        env_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            env_name=self.env_name,
+            platform=self.solution,
+        )
+        args, kwargs = self.mock_operations.make_new_env.call_args
+        self.assertEqual(args[0], env_request)
+        self.mock_operations.make_new_env.assert_called_with(env_request,
+                                                             branch_default=False,
+                                                             process_app_version=True,
+                                                             nohang=False,
+                                                             interactive=False,
+                                                             timeout=None,
+                                                             source=None)

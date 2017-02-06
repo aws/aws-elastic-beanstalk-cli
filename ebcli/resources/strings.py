@@ -411,6 +411,7 @@ flag_text = {
     'create.modules': 'a list of modules',
     'create.elb_type': 'load balancer type',
     'create.source': 'source of code to create from directly; example source_location/repo/branch',
+    'create.process': 'enable preprocessing of the application version',
 
     # Deploy
     'deploy.env': 'environment name',
@@ -422,6 +423,7 @@ flag_text = {
     'deploy.staged': 'deploy files staged in git rather than the HEAD commit',
     'deploy.group_suffix': 'group suffix',
     'deploy.source': 'source of code to deploy directly; example source_location/repo/branch',
+    'deploy.process': 'enable preprocessing of the application version',
 
     # Events
     'events.follow': 'wait and continue to print events as they come',

@@ -95,7 +95,8 @@ class CreateController(AbstractBaseController):
                 dest='vpc_securitygroups', help=argparse.SUPPRESS)),
             (['--vpc.dbsubnets'], dict(
                 dest='vpc_dbsubnets', help=argparse.SUPPRESS)),
-
+            (['-pr', '--process'], dict(
+                action='store_true', help=flag_text['create.process'])),
         ]
 
     def do_command(self):
@@ -125,6 +126,7 @@ class CreateController(AbstractBaseController):
         cfg = self.app.pargs.cfg
         elb_type = self.app.pargs.elb_type
         source = self.app.pargs.source
+        process = self.app.pargs.process
         interactive = False if env_name else True
 
         provided_env_name = env_name is not None
@@ -242,7 +244,7 @@ class CreateController(AbstractBaseController):
 
         env_request.option_settings += envvars
 
-        process_app_version = fileoperations.env_yaml_exists()
+        process_app_version = fileoperations.env_yaml_exists() or process
         createops.make_new_env(env_request,
                                branch_default=branch_default,
                                process_app_version=process_app_version,
