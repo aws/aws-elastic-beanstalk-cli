@@ -2,9 +2,14 @@
 Changelog
 =========
 ------------------
-3.9.1 (2017-01-??)
+3.9.1 (2017-02-08)
 ------------------
-- Beanstalk CodeBuild integration is optional by not specifying the header in buildspec
+- Changed Beanstalk CodeBuild integration to be optional by not specifying the header in buildspec
+- Fixed 'eb config put' to update DateModified field
+- Fixed 'eb config put' full path failure
+- Fixed exit codes to return correctly
+- Removed CodeCommit failed prompt in eb init to avoid confusion
+- Added 'process' flag for eb create/deploy for preprocessing application versions
 
 ------------------
 3.9.0 (2016-12-22)
