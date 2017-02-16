@@ -86,7 +86,6 @@ strings = {
     'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
     'create.appdoesntexist': 'The specified app {app_name} does not exist. Skipping.',
     'create.missinggroupsuffix': 'The environment name specified in env.yaml ends with a \'+\', but no group suffix was provided. Please pass the --env-group-suffix argument.',
-    'appversion.create': 'Creating application version archive "{version}".',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',
     # Text shown if 'eb terminate' is called while no environment is selected as default
     'terminate.noenv': 'To delete the application and all application versions, type "eb terminate --all".',
@@ -104,8 +103,6 @@ strings = {
     # Default template description
     'template.description': 'Configuration created from the EB CLI using "eb config save".',
     'env.exists': 'An environment with that name already exists.',
-    # When create is called, if we cant find any files, we say this
-    'appversion.none': 'The current directory does not contain any source code. Elastic Beanstalk is launching the sample application instead.',
     # Error, no solution stacks returned. Almost always due to permissions
     'sstacks.notfound': 'Elastic Beanstalk could not find any platforms. Ensure you have the necessary permissions to access Elastic Beanstalk.',
     'sstacks.notaversion': 'Elastic Beanstalk could not find any supported platforms for the given version {version}.',
@@ -183,12 +180,7 @@ strings = {
     'deploy.noenvname': 'No environment name was specified in env.yaml for module {module}. Unable to deploy.',
     'compose.noenvyaml': 'The module {module} does not contain an env.yaml file. This module will be skipped.',
     'compose.novalidmodules': 'No valid modules were found. No environments will be created.',
-    'appversion.processfailed': 'Pre-processing of application version {app_version} has failed.',
-    'appversion.cannotdeploy': 'Some application versions failed to process. Unable to continue deployment.',
-    'appversion.processtimeout': 'All application versions have not reached a "Processed" state. Unable to continue with deployment.',
     'instance.processes.health': '{healthy}/{total} processes healthy.',
-    'appversion.attributefailed': 'Application Version {app_version} has failed to generate required attributes.',
-    'appversion.attributetimeout': 'Application Versions did not generated the required attributes. Unable to continue with deployment.',
 
     # codesource
     'codesource.info': 'Configures the code source for the EB CLI to use by default.',
@@ -247,10 +239,19 @@ strings = {
                                ' The lifecycle configuration will not be updated',
 
     # appversion
+    'appversion.create': 'Creating application version archive "{version}".',
+    # When create is called, if we cant find any files, we say this
+    'appversion.none': 'The current directory does not contain any source code. Elastic Beanstalk is launching the sample application instead.',
+    'appversion.processfailed': 'Pre-processing of application version {app_version} has failed.',
+    'appversion.cannotdeploy': 'Some application versions failed to process. Unable to continue deployment.',
+    'appversion.processtimeout': 'All application versions have not reached a "Processed" state. Unable to continue with deployment.',
     'appversion.info': 'Listing and managing application versions',
     'appversion.delete.notfound': 'Application {} does not have Application Version {}.',
     'appversion.delete.deployed': 'Cannot delete Application version {} as it is deployed to Environments: {}',
     'appversion.delete.none': 'You must specify an Application version label to delete an Application version',
+    'appversion.attribute.failed': 'Application Version {app_version} has failed to generate required attributes.',
+    'appversion.attribute.timeout': 'Application Versions did not generated the required attributes. Unable to continue with deployment.',
+    'appversion.attribute.success': 'Found attributes for application version {app_version}',
 
     # CodeCommit
     'codecommit.nosc': 'Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization',
@@ -263,6 +264,7 @@ strings = {
     # CodeBuild
     'codebuild.noheader': 'Beanstalk configuration header \'{header}\' is missing from Buildspec file; will not use Beanstalk Code Build integration',
     'codebuild.latestplatform': 'Buildspec file is present but no image is specified; using latest image for selected platform: {platform}',
+    'codebuild.buildlogs': 'You can find logs for the CodeBuild build here: {logs_link}',
 }
 
 prompts = {

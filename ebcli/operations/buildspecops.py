@@ -22,25 +22,26 @@ from ebcli.resources.strings import strings
 
 LOG = minimal_logger(__name__)
 
-# TODO: Write unit tests for these.
+
 def stream_build_configuration_app_version_creation(app_name, app_version_label):
-    # Get the cloudwatch logs link
-    successfully_generated = wait_for_app_version_attribute(app_name, [app_version_label], 'BuildArn')
-    app_version_response = elasticbeanstalk.get_application_versions(app_name, version_labels=[app_version_label])
+    # Get the CloudWatch logs link
+    successfully_generated = wait_for_app_version_attribute(app_name, [app_version_label], 'BuildArn', timeout=1)
+    app_version_response = elasticbeanstalk.get_application_versions(app_name, version_labels=[app_version_label])['ApplicationVersions']
 
     build_response = codebuild.batch_get_builds([app_version_response[0]['BuildArn']]) \
         if successfully_generated else None
 
     if build_response is not None and 'logs' in build_response['builds'][0]:
-        log_link_text = "You can find logs for the CodeBuild build here: {0}".format(build_response['builds'][0]['logs']['deepLink'])
+        log_link_text = strings['codebuild.buildlogs'].replace('{logs_link}',
+                                                               build_response['builds'][0]['logs']['deepLink'])
         io.echo(log_link_text)
     else:
         io.log_warning("Could not retrieve CloudWatch link for CodeBuild logs")
 
     # Wait for the success events
     try:
-        from ebcli.operations import commonops
-        commonops.wait_for_success_events(None, timeout_in_minutes=5,
+        from ebcli.operations.commonops import wait_for_success_events
+        wait_for_success_events(None, timeout_in_minutes=5,
                                       can_abort=False, version_label=app_version_label)
     except ServiceError as ex:
         LOG.debug("Caught service error while creating application version '{0}' "
@@ -85,23 +86,21 @@ def wait_for_app_version_attribute(app_name, version_labels, attribute, timeout=
     start_time = datetime.utcnow()
     while not all([(found[version] or failed[version]) for version in versions_to_check]):
         if datetime.utcnow() - start_time >= timedelta(minutes=timeout):
-            io.log_error(strings['appversion.attributefailed'])
+            io.log_error(strings['appversion.attribute.failed'].replace('{app_version}', version_labels))
             return False
         io.LOG.debug('Retrieving app versions.')
-        app_versions = elasticbeanstalk.get_application_versions(app_name, versions_to_check)
-
-        for v in app_versions:
-            if attribute in v:
-                if v[attribute] is not None:
-                    found[v['VersionLabel']] = True
-                    io.echo('Found needed attributes for application version {}'
-                            .format(v['VersionLabel']))
-                    versions_to_check.remove(v['VersionLabel'])
-            elif 'Status' in v and (v['Status'] == 'FAILED' or v['Status'] == 'FAILED'):
-                failed[v['VersionLabel']] = True
-                io.log_error(strings['appversion.attributefailed'].replace('{app_version}',
-                                                                         v['VersionLabel']))
-                versions_to_check.remove(v['VersionLabel'])
+        app_versions = elasticbeanstalk.get_application_versions(app_name, versions_to_check)['ApplicationVersions']
+        for version in app_versions:
+            if attribute in version:
+                if version[attribute] is not None:
+                    found[version['VersionLabel']] = True
+                    io.echo(strings['appversion.attribute.success'].replace('{app_version}', version['VersionLabel']))
+                    versions_to_check.remove(version['VersionLabel'])
+            elif 'Status' in version and (version['Status'] == 'FAILED' or version['Status'] == 'FAILED'):
+                failed[version['VersionLabel']] = True
+                io.log_error(strings['appversion.attribute.failed'].replace('{app_version}',
+                                                                         version['VersionLabel']))
+                versions_to_check.remove(version['VersionLabel'])
 
         if all(found.values()):
             return True
