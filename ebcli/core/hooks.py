@@ -34,6 +34,7 @@ def pre_run_hook(app):
 
     set_profile(app.pargs.profile)
     set_region(app.pargs.region)
+
     set_endpoint(app.pargs.endpoint_url)
     set_ssl(app.pargs.no_verify_ssl)
     set_debugboto(app.pargs.debugboto)

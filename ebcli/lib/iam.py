@@ -76,7 +76,7 @@ def create_role_with_policy(role_name, trust_document, policy_arns):
     :param trust_document: Policy for trusted entities assuming role
     :param policy: User policy that defines allowable actions
     """
-    _create_role(role_name, trust_document)
+    create_role(role_name, trust_document)
     for arn in policy_arns:
         attach_role_policy(role_name, arn)
 
@@ -94,7 +94,14 @@ def attach_role_policy(role_name, policy_arn):
                             PolicyArn=policy_arn)
 
 
-def _create_role(role, document):
+def put_role_policy(role_name, policy_name, policy_json):
+    result = _make_api_call('put_role_policy',
+                            RoleName=role_name,
+                            PolicyName=policy_name,
+                            PolicyDocument=policy_json)
+
+
+def create_role(role, document):
     _make_api_call('create_role',
                    RoleName=role,
                    AssumeRolePolicyDocument=document)

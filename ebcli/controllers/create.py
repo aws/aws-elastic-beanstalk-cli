@@ -17,6 +17,7 @@ import os
 
 from ..core import io, fileoperations, hooks
 from ..core.abstractcontroller import AbstractBaseController
+from ebcli.operations.commonops import is_platform_arn
 from ..lib import elasticbeanstalk, utils
 from ..objects.exceptions import NotFoundError, AlreadyExistsError, \
     InvalidOptionsError
@@ -29,6 +30,7 @@ from ..resources.strings import strings, prompts, flag_text
 class CreateController(AbstractBaseController):
     class Meta:
         label = 'create'
+        usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
         description = strings['create.info']
         epilog = strings['create.epilog']
         arguments = [
@@ -128,6 +130,8 @@ class CreateController(AbstractBaseController):
         source = self.app.pargs.source
         process = self.app.pargs.process
         interactive = False if env_name else True
+        platform_arn = None
+        solution = None
 
         provided_env_name = env_name is not None
 
@@ -148,11 +152,14 @@ class CreateController(AbstractBaseController):
 
         # Test out sstack and tier before we ask any questions (Fast Fail)
         if solution_string:
-            try:
-                solution = commonops.get_solution_stack(solution_string)
-            except NotFoundError:
-                raise NotFoundError('Solution stack ' + solution_string +
-                                    ' does not appear to be valid')
+            if is_platform_arn(solution_string):
+                platform_arn = solution_string
+            else:
+                try:
+                    solution = commonops.get_solution_stack(solution_string)
+                except NotFoundError:
+                    raise NotFoundError('Platform ' + solution_string +
+                                        ' does not appear to be valid')
 
         if tier:
             if 'worker' in tier.lower() and cname:
@@ -172,8 +179,12 @@ class CreateController(AbstractBaseController):
         if not solution_string:
             solution = commonops.prompt_for_solution_stack()
 
-        if solution.platform == 'Multi-container Docker' and iprofile is None:
-            io.log_warning(prompts['ecs.permissions'])
+        if solution is not None:
+            if is_platform_arn(solution.version):
+                platform_arn = solution.version
+                solution = None
+            elif solution.platform == 'Multi-container Docker' and iprofile is None:
+                io.log_warning(prompts['ecs.permissions'])
 
         if not env_name:
             # default is app-name plus '-dev'
@@ -199,7 +210,7 @@ class CreateController(AbstractBaseController):
         template_name = get_template_name(app_name, cfg)
         if template_name:
             template_contents = elasticbeanstalk.describe_template(
-                app_name, template_name, platform=solution.name)
+                app_name, template_name)
 
             if template_contents['Tier']['Name'] == 'Worker':
                 tier = Tier.parse_tier('worker')
@@ -220,7 +231,6 @@ class CreateController(AbstractBaseController):
         vpc = self.form_vpc_object()
         envvars = get_and_validate_envars(envvars)
 
-
         env_request = CreateEnvironmentRequest(
             app_name=app_name,
             env_name=env_name,
@@ -240,7 +250,8 @@ class CreateController(AbstractBaseController):
             scale=scale,
             database=database,
             vpc=vpc,
-            elb_type=elb_type)
+            elb_type=elb_type,
+            platform_arn=platform_arn)
 
         env_request.option_settings += envvars
 

@@ -15,6 +15,8 @@ import sys
 import os.path
 
 from cement.utils.misc import minimal_logger
+from ebcli.core.ebglobals import Constants
+from ebcli.operations.commonops import is_platform_arn
 
 from ebcli.core import fileoperations, io
 from ebcli.core.abstractcontroller import AbstractBaseController
@@ -74,9 +76,9 @@ class InitController(AbstractBaseController):
         fileoperations.touch_config_folder()
 
         if self.interactive:
-            self.region = self.get_region()
+            self.region = get_region(self.region, self.interactive, self.force_non_interactive)
         else:
-            self.region = self.get_region_from_inputs()
+            self.region = get_region_from_inputs(self.app.pargs.region)
         aws.set_region(self.region)
 
         # Warn the customer if they picked a region that CodeCommit is not supported
@@ -84,7 +86,7 @@ class InitController(AbstractBaseController):
         if self.source is not None and not codecommit_region_supported:
             io.log_warning(strings['codecommit.badregion'])
 
-        self.set_up_credentials()
+        self.region = set_up_credentials(self.app.pargs.profile, self.region, self.interactive)
 
         self.solution = self.get_solution_stack()
         self.app_name = self.get_app_name()
@@ -209,7 +211,7 @@ class InitController(AbstractBaseController):
                     LOG.debug("Denied option to use CodeCommit, continuing initialization")
 
         # Initialize the whole setup
-        initializeops.setup(self.app_name, self.region, self.solution, None, repository, branch)
+        initializeops.setup(self.app_name, self.region, self.solution, dir_path=None, repository=repository, branch=branch)
 
         if 'IIS' not in self.solution:
             self.keyname = self.get_keyname(default=key)
@@ -219,45 +221,6 @@ class InitController(AbstractBaseController):
 
             fileoperations.write_config_setting('global', 'default_ec2_keyname',
                                                 self.keyname)
-
-    def check_credentials(self, profile):
-        given_profile = self.app.pargs.profile
-        try:
-            # Note, region is None unless explicitly set
-            ## or read from old eb
-            initializeops.credentials_are_valid()
-            return profile
-        except NoRegionError:
-            self.region = self.get_region()
-            aws.set_region(self.region)
-            return profile
-        except InvalidProfileError:
-            if given_profile:
-                # Provided profile is invalid, raise exception
-                raise
-            else:
-                # eb-cli profile doesnt exist, revert to default
-                # try again
-                profile = None
-                aws.set_profile(profile)
-                return self.check_credentials(profile)
-
-    def set_up_credentials(self):
-        given_profile = self.app.pargs.profile
-        if given_profile:
-            ## Profile already set at abstractController
-            profile = given_profile
-        else:
-            profile = 'eb-cli'
-            aws.set_profile(profile)
-
-        profile = self.check_credentials(profile)
-
-        if not initializeops.credentials_are_valid():
-            initializeops.setup_credentials()
-        else:
-            fileoperations.write_config_setting('global', 'profile',
-                                                profile)
 
     def get_app_name(self):
         # Get app name from command line arguments
@@ -288,39 +251,6 @@ class InitController(AbstractBaseController):
 
         return app_name
 
-    def get_region_from_inputs(self):
-        # Get region from command line arguments
-        region = self.app.pargs.region
-
-        # Get region from config file
-        if not region:
-            try:
-                region = commonops.get_default_region()
-            except NotInitializedError:
-                region = None
-
-        return region
-
-    def get_region(self):
-        # Get region from command line arguments
-        region = self.get_region_from_inputs()
-
-        # Ask for region
-        if (not region) and self.force_non_interactive:
-            # Choose defaults
-            region_list = regions.get_all_regions()
-            region = region_list[2].name
-
-        if not region or \
-                (self.interactive and not self.app.pargs.region):
-            io.echo()
-            io.echo('Select a default region')
-            region_list = regions.get_all_regions()
-            result = utils.prompt_for_item_in_list(region_list, default=3)
-            region = result.name
-
-        return region
-
     def get_solution_stack(self):
         # Get solution stack from command line arguments
         solution_string = self.app.pargs.platform
@@ -332,8 +262,12 @@ class InitController(AbstractBaseController):
             except NotInitializedError:
                 solution_string = None
 
+        # Validate that the platform exists
         if solution_string:
-            commonops.get_solution_stack(solution_string)
+            if is_platform_arn(solution_string):
+                elasticbeanstalk.describe_platform_version(solution_string)
+            else:
+                commonops.get_solution_stack(solution_string)
 
         return solution_string
 
@@ -407,12 +341,12 @@ class InitController(AbstractBaseController):
                 # Region should be set once for all modules
                 if not self.region:
                     if self.interactive:
-                        self.region = self.get_region()
+                        self.region = get_region(self.region, self.interactive, self.force_non_interactive)
                     else:
-                        self.region = self.get_region_from_inputs()
+                        self.region = get_region_from_inputs(self.app.pargs.region)
                     aws.set_region(self.region)
 
-                self.set_up_credentials()
+                self.region = set_up_credentials(self.app.pargs.profile, self.region, self.interactive)
 
                 solution = self.get_solution_stack()
 
@@ -612,3 +546,73 @@ def get_branch_interactive(repository):
             return None
 
     return branch_name
+
+
+def check_credentials(profile, given_profile, given_region, interactive, force_non_interactive):
+    try:
+        # Note, region is None unless explicitly set or read from old eb
+        initializeops.credentials_are_valid()
+        return profile, given_region
+    except NoRegionError:
+        region = get_region(None, interactive, force_non_interactive)
+        aws.set_region(region)
+        return profile, region
+    except InvalidProfileError:
+        if given_profile:
+            # Provided profile is invalid, raise exception
+            raise
+        else:
+            # eb-cli profile doesnt exist, revert to default
+            # try again
+            profile = None
+            aws.set_profile(profile)
+            return check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
+
+
+def set_up_credentials(given_profile, given_region, interactive, force_non_interactive=False):
+    if given_profile:
+        # Profile already set at abstractController
+        profile = given_profile
+    else:
+        profile = 'eb-cli'
+        aws.set_profile(profile)
+
+    profile, region = check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
+
+    if not initializeops.credentials_are_valid():
+        initializeops.setup_credentials()
+    else:
+        fileoperations.write_config_setting('global', 'profile', profile)
+
+    return region
+
+
+def get_region_from_inputs(region):
+    # Get region from config file
+    if not region:
+        try:
+            region = commonops.get_default_region()
+        except NotInitializedError:
+            region = None
+
+    return region
+
+
+def get_region(region_argument, interactive, force_non_interactive=False):
+    # Get region from command line arguments
+    region = get_region_from_inputs(region_argument)
+
+    # Ask for region
+    if (not region) and force_non_interactive:
+        # Choose defaults
+        region_list = regions.get_all_regions()
+        region = region_list[2].name
+
+    if not region or (interactive and not region_argument):
+        io.echo()
+        io.echo('Select a default region')
+        region_list = regions.get_all_regions()
+        result = utils.prompt_for_item_in_list(region_list, default=3)
+        region = result.name
+
+    return region

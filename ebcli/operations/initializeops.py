@@ -20,13 +20,14 @@ from ..lib import elasticbeanstalk, heuristics, aws, codebuild
 from ..objects.exceptions import CredentialsError, NotAuthorizedError
 from ..objects.sourcecontrol import SourceControl
 from ..resources.strings import strings
+from ebcli.core.ebglobals import Constants
 
 LOG = minimal_logger(__name__)
 
 
 def credentials_are_valid():
     try:
-        elasticbeanstalk.get_available_solution_stacks()
+        elasticbeanstalk.get_available_solution_stacks(fail_on_empty_response=False)
         return True
     except CredentialsError:
         return False
@@ -36,11 +37,32 @@ def credentials_are_valid():
         return False
 
 
-def setup(app_name, region, solution, dir_path=None, repository=None, branch=None):
-    setup_directory(app_name, region, solution, dir_path=dir_path, repository=repository, branch=branch)
+def setup(
+        app_name,
+        region,
+        solution,
+        workspace_type=Constants.WorkSpaceTypes.APPLICATION,
+        platform_name=None,
+        platform_version=None,
+        instance_profile=None,
+        dir_path=None,
+        repository=None,
+        branch=None):
+
+    setup_directory(
+        app_name,
+        region,
+        solution,
+        workspace_type=workspace_type,
+        platform_name=platform_name,
+        platform_version=platform_version,
+        instance_profile=instance_profile,
+        dir_path=dir_path,
+        repository=repository,
+        branch=branch)
 
     # Handle tomcat special case
-    if 'tomcat' in solution.lower() and \
+    if solution is not None and 'tomcat' in solution.lower() and \
                 heuristics.has_tomcat_war_file():
         war_file = fileoperations.get_war_file_location()
         fileoperations.write_config_setting('deploy', 'artifact', war_file)
@@ -68,9 +90,30 @@ def setup_credentials(access_id=None, secret_key=None):
     aws.set_session_creds(access_id, secret_key)
 
 
-def setup_directory(app_name, region, solution, dir_path=None, repository=None, branch=None):
+def setup_directory(
+        app_name,
+        region,
+        solution,
+        workspace_type,
+        platform_name,
+        platform_version,
+        instance_profile,
+        dir_path=None,
+        repository=None,
+        branch=None):
+
     io.log_info('Setting up .elasticbeanstalk directory')
-    fileoperations.create_config_file(app_name, region, solution, dir_path=dir_path, repository=repository, branch=branch)
+    fileoperations.create_config_file(
+        app_name,
+        region,
+        solution,
+        workspace_type,
+        platform_name,
+        platform_version,
+        instance_profile,
+        dir_path=dir_path,
+        repository=repository,
+        branch=branch)
 
 
 def setup_ignore_file():

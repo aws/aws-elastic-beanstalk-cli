@@ -74,6 +74,8 @@ class NoSC(SourceControl):
     """
         No source control installed
     """
+    DEFAULT_MESSAGE = 'EB-CLI deploy'
+
     def get_name(self):
         return None
 
@@ -90,7 +92,7 @@ class NoSC(SourceControl):
         fileoperations.zip_up_project(location)
 
     def get_message(self):
-        return 'EB-CLI deploy'
+        return NoSC.DEFAULT_MESSAGE
 
     def is_setup(self):
         pass

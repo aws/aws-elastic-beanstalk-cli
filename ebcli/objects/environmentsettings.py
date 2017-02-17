@@ -101,7 +101,7 @@ class EnvironmentSettings(ConversionConfiguration):
         self._copy_api_entry('ApplicationName', usr_model)
         self._copy_api_entry('EnvironmentName', usr_model)
         self._copy_api_entry('DateUpdated', usr_model)
-        self._copy_api_entry('SolutionStackName', usr_model)
+        self._copy_api_entry('PlatformArn', usr_model)
         usr_model['settings'] = dict()
         usr_model_settings = usr_model['settings']
 

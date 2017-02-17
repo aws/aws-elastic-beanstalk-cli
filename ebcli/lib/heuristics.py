@@ -121,6 +121,13 @@ def has_tomcat_war_file():
     return _contains_file_types('build/libs/*.war')
 
 
+def has_platform_definition_file():
+    """
+    True if there is a file called 'platform.yaml' in the workspace root
+    """
+    return _contains_file_types('platform.yaml')
+
+
 def is_docker_installed():
     return program_is_installed('docker')
 

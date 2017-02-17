@@ -12,19 +12,22 @@
 # language governing permissions and limitations under the License.
 
 import datetime
+import time
 
 from cement.utils.misc import minimal_logger
+from ebcli.objects.platform import PlatformVersion
+from ebcli.resources.statics import namespaces, option_names
 
-from ..objects.solutionstack import SolutionStack
-from ..objects.exceptions import NotFoundError, InvalidStateError, \
+from ebcli.objects.solutionstack import SolutionStack
+from ebcli.objects.exceptions import NotFoundError, InvalidStateError, \
     AlreadyExistsError
-from ..objects.tier import Tier
-from ..lib import aws
-from ..lib.aws import InvalidParameterValueError
-from ..objects.event import Event
-from ..objects.environment import Environment
-from ..objects.application import Application
-from ..resources.strings import strings, responses
+from ebcli.objects.tier import Tier
+from ebcli.lib import aws
+from ebcli.lib.aws import InvalidParameterValueError
+from ebcli.objects.event import Event
+from ebcli.objects.environment import Environment
+from ebcli.objects.application import Application
+from ebcli.resources.strings import strings, responses
 
 LOG = minimal_logger(__name__)
 
@@ -35,6 +38,70 @@ def _make_api_call(operation_name, **operation_options):
     return aws.make_api_call('elasticbeanstalk',
                              operation_name,
                              **operation_options)
+
+
+def delete_platform(arn):
+    LOG.debug('Inside delete_platform api wrapper')
+    return _make_api_call('delete_platform_version',
+                          PlatformArn=arn,
+                          DeleteResources=True)
+
+def _make_equal_filter(filter_type, filter_value):
+    return { 'Type': filter_type, 'Operator': '=', 'Values': [filter_value] }    
+
+def list_platform_versions(platform_name=None, platform_version=None, status=None, owner=None):
+    kwargs = dict()
+    result_filters = []
+
+    if platform_name is not None:
+        result_filters.append(_make_equal_filter('PlatformName', platform_name))
+
+    if platform_version is not None:
+        result_filters.append(_make_equal_filter('PlatformVersion', platform_version))
+
+    if status:
+        result_filters.append(_make_equal_filter('PlatformStatus', status))
+
+    if owner:
+        result_filters.append(_make_equal_filter('PlatformOwner', owner))
+
+    kwargs['Filters'] = result_filters
+
+    LOG.debug('Inside list_platform_versions api wrapper')
+    platforms, nextToken = _list_platform_versions(kwargs)
+
+    while nextToken is not None:
+        time.sleep(0.1)  # To avoid throttling we sleep for 100ms before requesting the next page
+        next_platforms, nextToken = _list_platform_versions(kwargs, nextToken)
+        platforms = platforms + next_platforms
+
+    return platforms
+
+
+def describe_platform_version(arn):
+    LOG.debug('Inside describe_platform_version api wrapper')
+    return _make_api_call('describe_platform_version',
+                          PlatformArn=arn)
+
+
+def _list_platform_versions(kwargs, nextToken=None):
+    if nextToken is not None:
+        # Sleep for 100ms before pulling the next page
+        time.sleep(0.1)
+        kwargs['NextToken'] = nextToken
+
+    response = _make_api_call(
+        'list_platform_versions',
+        **kwargs
+    )
+
+    platforms = response['PlatformSummaryList']
+    try:
+        nextToken = response['NextToken']
+    except KeyError:
+        nextToken = None
+
+    return platforms, nextToken
 
 
 def create_application(app_name, descrip):
@@ -51,6 +118,74 @@ def create_application(app_name, descrip):
             raise e
 
     return result
+
+
+def create_platform_version(platform_name, version, s3_bucket, s3_key, instance_profile, key_name, instance_type, vpc = None):
+    kwargs = dict()
+
+    if s3_bucket and s3_key:
+        kwargs['PlatformDefinitionBundle'] = {'S3Bucket': s3_bucket, 'S3Key': s3_key}
+
+    option_settings = []
+
+    if instance_profile:
+        option_settings.append({
+            'Namespace': namespaces.LAUNCH_CONFIGURATION,
+            'OptionName': option_names.IAM_INSTANCE_PROFILE,
+            'Value': instance_profile
+        })
+    if key_name:
+        option_settings.append({
+            'Namespace': namespaces.LAUNCH_CONFIGURATION,
+            'OptionName': option_names.EC2_KEY_NAME,
+            'Value': key_name
+        })
+    if instance_type:
+        option_settings.append({
+            'Namespace': namespaces.LAUNCH_CONFIGURATION,
+            'OptionName': option_names.INSTANCE_TYPE,
+            'Value': instance_type
+        })
+    if vpc:
+        if vpc['id']:
+            option_settings.append({
+                'Namespace': namespaces.VPC,
+                'OptionName': option_names.VPC_ID,
+                'Value': vpc['id']
+            })
+        if vpc['subnets']:
+            option_settings.append({
+                'Namespace': namespaces.VPC,
+                'OptionName': option_names.SUBNETS,
+                'Value': vpc['subnets']
+            })
+        if vpc['publicip']:
+            option_settings.append({
+                'Namespace': namespaces.VPC,
+                'OptionName': option_names.PUBLIC_IP,
+                'Value': 'true'
+            })
+
+    # Always enable healthd for the Platform Builder environment
+    option_settings.append({
+        'Namespace': namespaces.HEALTH_SYSTEM,
+        'OptionName': option_names.SYSTEM_TYPE,
+        'Value': 'enhanced'
+    })
+
+    # Attach service role
+    option_settings.append({
+        'Namespace': namespaces.ENVIRONMENT,
+        'OptionName': option_names.SERVICE_ROLE,
+        'Value': 'aws-elasticbeanstalk-service-role'
+    })
+
+    LOG.debug('Inside create_platform_version api wrapper')
+    return _make_api_call('create_platform_version',
+                          PlatformName=platform_name,
+                          PlatformVersion=version,
+                          OptionSettings=option_settings,
+                          **kwargs)
 
 
 def create_application_version(app_name, vers_label, descrip, s3_bucket,
@@ -134,10 +269,18 @@ def clone_environment(clone):
     return env, request_id
 
 
-def _api_to_environment(api_dict):
-
+def _api_to_environment(api_dict, want_solution_stack = False):
     # Convert solution_stack and tier to objects
-    solution_stack = SolutionStack(api_dict['SolutionStackName'])
+    try:
+        if want_solution_stack:
+            solution_stack_name = api_dict['SolutionStackName']
+            platform = SolutionStack(solution_stack_name)
+        else:
+            platform_arn = api_dict['PlatformArn']
+            platform = PlatformVersion(platform_arn)
+    except KeyError:
+        platform = SolutionStack(api_dict['SolutionStackName'])
+
     tier = api_dict['Tier']
     tier = Tier(tier['Name'], tier['Type'], tier['Version'])
 
@@ -148,7 +291,7 @@ def _api_to_environment(api_dict):
         health=api_dict.get('Health'),
         id=api_dict.get('EnvironmentId'),
         date_updated=api_dict.get('DateUpdated'),
-        platform=solution_stack,
+        platform=platform,
         description=api_dict.get('Description'),
         name=api_dict.get('EnvironmentName'),
         date_created=api_dict.get('DateCreated'),
@@ -232,6 +375,15 @@ def describe_configuration_settings(app_name, env_name):
     return result['ConfigurationSettings'][0]
 
 
+def get_option_setting_from_environment(app_name, env_name, namespace, option):
+    env = describe_configuration_settings(app_name, env_name)
+    try:
+        option_settings = env['OptionSettings']
+        return get_option_setting(option_settings, namespace, option)
+    except KeyError:
+        return None
+
+
 def get_option_setting(option_settings, namespace, option):
     for setting in option_settings:
         if setting['Namespace'] == namespace and \
@@ -261,13 +413,14 @@ def get_specific_configuration_for_env(app_name, env_name, namespace, option):
     return get_specific_configuration(env_config, namespace, option)
 
 
-def get_available_solution_stacks():
+def get_available_solution_stacks(fail_on_empty_response=True):
     LOG.debug('Inside get_available_solution_stacks api wrapper')
     result = _make_api_call('list_available_solution_stacks')
     stack_strings = result['SolutionStacks']
 
     LOG.debug('Solution Stack result size = ' + str(len(stack_strings)))
-    if len(stack_strings) == 0:
+
+    if fail_on_empty_response and len(stack_strings) == 0:
         raise NotFoundError(strings['sstacks.notfound'])
 
     solution_stacks = [SolutionStack(s) for s in stack_strings]
@@ -283,6 +436,7 @@ def get_application_versions(app_name, version_labels=None, max_records=None, ne
     if max_records:
         kwargs['MaxRecords'] = max_records
     if next_token:
+        time.sleep(0.1) # To avoid throttling we sleep for 100ms before requesting the next page
         kwargs['NextToken'] = next_token
     result = _make_api_call('describe_application_versions',
                             ApplicationName=app_name,
@@ -360,7 +514,7 @@ def get_all_environments():
     return envs
 
 
-def get_environment(app_name=None, env_name=None, env_id=None, include_deleted=False, deleted_back_to=None):
+def get_environment(app_name, env_name, env_id=None, include_deleted=False, deleted_back_to=None, want_solution_stack=False):
     LOG.debug('Inside get_environment api wrapper')
 
     kwargs = {}
@@ -382,10 +536,10 @@ def get_environment(app_name=None, env_name=None, env_id=None, include_deleted=F
         env_str = env_id if env_name is None else env_name
         raise NotFoundError('Environment "' + env_str + '" not Found.')
     else:
-        return _api_to_environment(envs[0])
+        return _api_to_environment(envs[0], want_solution_stack)
 
 
-def get_environments(env_names):
+def get_environments(env_names=[]):
     LOG.debug('Inside get_environments api wrapper')
     result = _make_api_call('describe_environments',
                             EnvironmentNames=env_names,
@@ -415,7 +569,7 @@ def get_environment_resources(env_name):
 
 
 def get_new_events(app_name, env_name, request_id,
-                   last_event_time=None, version_label=None):
+                   last_event_time=None, version_label=None, platform_arn=None):
     LOG.debug('Inside get_new_events api wrapper')
     # make call
     if last_event_time is not None:
@@ -436,6 +590,8 @@ def get_new_events(app_name, env_name, request_id,
         kwargs['RequestId'] = request_id
     if new_time:
         kwargs['StartTime'] = str(new_time)
+    if platform_arn:
+        kwargs['PlatformArn'] = platform_arn
 
     result = _make_api_call('describe_events',
                             **kwargs)
@@ -453,13 +609,19 @@ def get_new_events(app_name, env_name, request_id,
         except KeyError:
             environment_name = None
 
+        try:
+            app_name = event['ApplicationName']
+        except KeyError:
+            app_name = None
+
         events.append(
             Event(message=event['Message'],
                   event_date=event['EventDate'],
                   version_label=version_label,
-                  app_name=event['ApplicationName'],
+                  app_name=app_name,
                   environment_name=environment_name,
                   severity=event['Severity'],
+                  platform=platform_arn
             )
         )
     return events
@@ -473,7 +635,8 @@ def get_storage_location():
 
 def update_environment(env_name, options, remove=None,
                        template=None, template_body=None,
-                       solution_stack_name=None):
+                       solution_stack_name=None,
+                       platform_arn=None):
     LOG.debug('Inside update_environment api wrapper')
     if remove is None:
         remove = []
@@ -493,6 +656,8 @@ def update_environment(env_name, options, remove=None,
                 {'SourceContents': template_body}}
     if solution_stack_name:
         kwargs['SolutionStackName'] = solution_stack_name
+    if platform_arn:
+        kwargs['PlatformArn'] = platform_arn
 
     try:
         response = _make_api_call('update_environment',
@@ -592,9 +757,17 @@ def delete_configuration_template(app_name, template_name):
 def validate_template(app_name, template_name, platform=None):
     kwargs = {}
     if platform:
-        kwargs['TemplateSpecification'] = \
-            {'TemplateSource':
-                {'SolutionStackName': platform}}
+        if PlatformVersion.is_valid_arn(platform):
+            kwargs['TemplateSpecification'] = \
+                {'TemplateSource':
+                     {'PlatformArn': platform}}
+        else:
+            kwargs['TemplateSpecification'] = \
+                {'TemplateSource':
+                    {'SolutionStackName': platform}}
+
+
+
     result = _make_api_call('validate_configuration_settings',
                             ApplicationName=app_name,
                             TemplateName=template_name,
@@ -602,12 +775,7 @@ def validate_template(app_name, template_name, platform=None):
     return result
 
 
-def describe_template(app_name, template_name, platform=None):
-    kwargs = {}
-    if platform:
-        kwargs['TemplateSpecification'] = \
-            {'TemplateSource':
-                {'SolutionStackName': platform}}
+def describe_template(app_name, template_name):
     LOG.debug('Inside describe_template api wrapper')
     result = _make_api_call('describe_configuration_settings',
                             ApplicationName=app_name,
@@ -648,6 +816,7 @@ def get_instance_health(env_name, next_token=None, attributes=None):
         ]
     kwargs = {}
     if next_token:
+        time.sleep(0.1)  # To avoid throttling we sleep for 100ms before requesting the next page
         kwargs['NextToken'] = next_token
     result = _make_api_call('describe_instances_health',
                             EnvironmentName=env_name,

@@ -27,7 +27,7 @@ class TestEnvironmentSettings(unittest.TestCase):
     api_model = {u'ApplicationName': 'lifecycle', u'EnvironmentName': 'lifecycle-dev',
                        u'Description': 'Environment created from the EB CLI using "eb create"',
                        u'DeploymentStatus': 'deployed',
-                       u'SolutionStackName': '64bit Amazon Linux 2016.09 v2.3.0 running Ruby 2.3 (Puma)',
+                       u'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/Platform Name/1.0.0',
                        u'OptionSettings': [{u'OptionName': 'Availability Zones', u'ResourceName': 'AWSEBAutoScalingGroup', u'Namespace': 'aws:autoscaling:asg', u'Value': 'Any'},
                                            {u'OptionName': 'Cooldown', u'ResourceName': 'AWSEBAutoScalingGroup', u'Namespace': 'aws:autoscaling:asg', u'Value': '360'},
                                            {u'OptionName': 'Custom Availability Zones', u'ResourceName': 'AWSEBAutoScalingGroup', u'Namespace': 'aws:autoscaling:asg', u'Value': ''},
@@ -49,7 +49,7 @@ class TestEnvironmentSettings(unittest.TestCase):
                                   {'UpdateLevel': None, 'InstanceRefreshEnabled': 'false'},
                               'aws:elasticbeanstalk:managedactions':
                                   {'PreferredStartTime': None, 'ManagedActionsEnabled': 'false'}},
-                 'SolutionStackName': '64bit Amazon Linux 2016.09 v2.3.0 running Ruby 2.3 (Puma)'}
+                 'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/Platform Name/1.0.0'}
 
     '''
         Testing collect_changes

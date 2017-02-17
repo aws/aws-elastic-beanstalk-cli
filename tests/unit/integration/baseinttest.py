@@ -18,11 +18,11 @@ import shutil
 from cement.utils import test
 from botocore.endpoint import Endpoint
 
-from ebcli.core import ebcore, fileoperations
+from ebcli.core import ebcore, ebrun, fileoperations
 from ebcli.lib import aws
 from . import mockservice
 
-ebcore.fix_path()
+ebrun.fix_path()
 
 
 class BaseIntegrationTest(test.CementTestCase):

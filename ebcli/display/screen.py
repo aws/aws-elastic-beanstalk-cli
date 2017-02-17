@@ -15,6 +15,7 @@ import time
 import sys
 
 from decimal import InvalidOperation
+from ebcli.objects.platform import PlatformVersion
 from . import term
 import errno
 import pprint
@@ -370,8 +371,15 @@ class Screen(object):
         if lines > 2:
             tier_type = self.env_data['Tier']['Name']
             tier = '{}'.format(tier_type)
-            solutionstack = SolutionStack(self.env_data['SolutionStackName'])
-            platform = ' {}'.format(solutionstack.version)
+
+            try:
+                platform_arn = self.env_data['PlatformArn']
+                platform_version = PlatformVersion(platform_arn)
+                platform = ' {}/{}'.format(platform_version.name, platform_version.platform_version)
+            except KeyError:
+                solutionstack = SolutionStack(self.env_data['SolutionStackName'])
+                platform = ' {}'.format(solutionstack.version)
+
             term.echo_line('{tier}{pad}{platform} '.format(
                 tier=tier,
                 platform=platform,
@@ -404,8 +412,14 @@ class Screen(object):
 
     def scroll_down(self, reverse=False):
         visible_tables = [t for t in self.tables if t.visible]
+
+        if len(visible_tables) < 1:
+            return
+
         # assumes the first table will always be the largest
-        assert len(visible_tables[0].data)
+        if not visible_tables[0].data:
+            return
+
         # Scroll first table
         scrolled = visible_tables[0].scroll_down(reverse=reverse)
         if scrolled:

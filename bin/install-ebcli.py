@@ -85,6 +85,7 @@ def setup_path():
         if not os.path.isdir('/usr/local/bin'):
             run_cmd('mkdir -p /usr/local/bin')
         run_cmd('ln -s ~/.ebvenv/bin/eb /usr/local/bin/eb')
+        run_cmd('ln -s ~/.ebvenv/bin/ebp /usr/local/bin/ebp')
     except Exception as e:
         sys.stdout.write('Error setting up link to /usr/local/bin. Add "alias eb=~/.ebvenv/bin/eb" to your profile.\n'
                          'Error: {e}\n'.format(e=e))

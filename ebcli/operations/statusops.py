@@ -82,8 +82,8 @@ def status(app_name, env_name, verbose):
             #No load balancer. Dont show instance status
             pass
 
-    # check platform version
     latest = commonops.get_latest_solution_stack(env.platform.version)
+
     if env.platform != latest:
         io.log_alert(alerts['platform.old'])
 

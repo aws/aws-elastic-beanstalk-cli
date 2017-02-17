@@ -13,6 +13,9 @@
 
 import os
 
+from ebcli.lib import elasticbeanstalk
+from ebcli.objects.platform import PlatformVersion
+from ebcli.operations import platformops
 from . import compat
 from . import containerops
 from . import dockerrun
@@ -109,11 +112,19 @@ def _get_solution_stack():
 
     # Test out sstack and tier before we ask any questions (Fast Fail)
     if solution_string:
-        try:
-            soln_stk = commonops.get_solution_stack(solution_string)
-        except NotFoundError:
-            raise NotFoundError('Solution stack ' + solution_string +
-                                ' does not appear to be valid')
+        if PlatformVersion.is_valid_arn(solution_string):
+            try:
+                elasticbeanstalk.describe_platform_version(solution_string)['PlatformDescription']
+            except NotFoundError:
+                raise NotFoundError('Platform arn %s does not appear to be valid' % solution_string)
+
+            soln_stk = PlatformVersion(solution_string)
+        else:
+            try:
+                soln_stk = commonops.get_solution_stack(solution_string)
+            except NotFoundError:
+                raise NotFoundError('Solution stack ' + solution_string +
+                                    ' does not appear to be valid')
 
     LOG.debug(soln_stk)
     if soln_stk is None:

@@ -2,6 +2,11 @@
 Changelog
 =========
 ------------------
+3.10.0 (2017-02-21)
+------------------
+- Support for custom elastic beanstalk platforms
+
+------------------
 3.9.1 (2017-02-08)
 ------------------
 - Changed Beanstalk CodeBuild integration to be optional by not specifying the header in buildspec

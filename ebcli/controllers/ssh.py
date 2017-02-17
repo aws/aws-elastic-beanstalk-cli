@@ -10,7 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
+from ebcli.core.ebglobals import Constants
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, prompts, flag_text
 from ..core import fileoperations, io
@@ -38,7 +38,6 @@ class SSHController(AbstractBaseController):
         ]
 
     def do_command(self):
-        app_name = self.get_app_name()
         number = self.app.pargs.number
         env_name = self.get_env_name()
         instance = self.app.pargs.instance
@@ -48,49 +47,15 @@ class SSHController(AbstractBaseController):
         force = self.app.pargs.force
         setup = self.app.pargs.setup
 
-        if setup:
-            self.setup_ssh(env_name)
-            return
-
-        if instance and number:
-            raise InvalidOptionsError(strings['ssh.instanceandnumber'])
-
-        if not instance:
-            instances = commonops.get_instance_ids(app_name, env_name)
-            if number is not None:
-                if number > len(instances) or number < 1:
-                    raise InvalidOptionsError(
-                        'Invalid index number (' + str(number) +
-                        ') for environment with ' + str(len(instances)) +
-                        ' instances')
-                else:
-                    instance = instances[number - 1]
-
-            elif len(instances) == 1:
-                instance = instances[0]
-            else:
-                io.echo()
-                io.echo('Select an instance to ssh into')
-                instance = utils.prompt_for_item_in_list(instances)
-
-        try:
-            sshops.ssh_into_instance(instance, keep_open=keep_open,
-                                     force_open=force, custom_ssh=custom_ssh, command=cmd)
-        except NoKeypairError:
-            io.log_error(prompts['ssh.nokey'])
-
-    def setup_ssh(self, env_name):
-        # Instance does not have a keypair
-        io.log_warning(prompts['ssh.setupwarn'].replace('{env-name}',
-                                                        env_name))
-        keyname = sshops.prompt_for_ec2_keyname(env_name=env_name)
-        if keyname:
-            options = [
-                {'Namespace': 'aws:autoscaling:launchconfiguration',
-                 'OptionName': 'EC2KeyName',
-                 'Value': keyname}
-            ]
-            commonops.update_environment(env_name, options, False)
+        sshops.prepare_for_ssh(
+                env_name=env_name,
+                instance=instance,
+                keep_open=keep_open,
+                force=force,
+                setup=setup,
+                number=number,
+                custom_ssh=custom_ssh,
+                command=cmd)
 
     def complete_command(self, commands):
         if not self.complete_region(commands):

@@ -23,7 +23,7 @@ class CreateEnvironmentRequest(object):
                  single_instance=False, key_name=None,
                  sample_application=False, tags=None, scale=None,
                  database=None, vpc=None, template_name=None, group_name=None,
-                 elb_type=None):
+                 elb_type=None, platform_arn=None):
         self.app_name = app_name
         self.cname = cname
         self.env_name = env_name
@@ -37,6 +37,7 @@ class CreateEnvironmentRequest(object):
         self.template_name = template_name
         self.tier = tier
         self.version_label = version_label
+        self.platform_arn = platform_arn
         self.group_name = group_name
         if tags is None:
             self.tags = []
@@ -103,6 +104,8 @@ class CreateEnvironmentRequest(object):
             }
         if self.platform:
             kwargs['SolutionStackName'] = self.platform.name
+        if self.platform_arn:
+            kwargs['PlatformArn'] = self.platform_arn
         if self.description:
             kwargs['Description'] = self.description
         if self.cname:
@@ -183,7 +186,7 @@ class CreateEnvironmentRequest(object):
                     option_names.INSTANCE_TYPE,
                     't2.micro'
                 )
-        if self.platform.has_healthd_support():
+        if self.platform is not None and self.platform.has_healthd_support():
             self.add_option_setting(
                 namespaces.HEALTH_SYSTEM,
                 option_names.SYSTEM_TYPE,
@@ -268,13 +271,13 @@ class CreateEnvironmentRequest(object):
 
 class CloneEnvironmentRequest(CreateEnvironmentRequest):
     def __init__(self, app_name=None, env_name=None, original_name=None,
-                 cname=None, platform=None, scale=None, tags=None):
+                 cname=None, platform=None, scale=None, tags=None, platform_arn=None):
         if not original_name:
             raise TypeError(self.__class__.__name__ + ' requires key-word argument clone_name')
         self.original_name = original_name
         super(CloneEnvironmentRequest, self).__init__(
             app_name=app_name, env_name=env_name, cname=cname,
-            platform=platform, scale=scale, tags=tags
+            platform=platform, scale=scale, tags=tags, platform_arn=platform_arn
         )
         self.description = strings['env.clonedescription']. \
             replace('{env-name}', self.env_name)

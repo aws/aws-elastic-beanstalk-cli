@@ -10,7 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
+from ebcli.objects.platform import PlatformVersion
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text, prompts
 from ..core import io
@@ -108,6 +108,8 @@ class CloneController(AbstractBaseController):
                     result = utils.prompt_for_item_in_list(lst)
                     if result == lst[0]:
                         platform = latest
+                else:
+                    platform = latest
             else:
                 # assume latest - get original platform
                 platform = commonops.get_latest_solution_stack(
@@ -115,16 +117,26 @@ class CloneController(AbstractBaseController):
                 if platform != env.platform:
                     io.log_warning(prompts['clone.latestwarn'])
 
-
-        clone_request = CloneEnvironmentRequest(
-            app_name=app_name,
-            env_name=clone_name,
-            original_name=env_name,
-            cname=cname,
-            platform=platform,
-            scale=scale,
-            tags=tags,
-        )
+        if platform and PlatformVersion.is_valid_arn(platform.version):
+            clone_request = CloneEnvironmentRequest(
+                app_name=app_name,
+                env_name=clone_name,
+                original_name=env_name,
+                cname=cname,
+                platform_arn=platform.version,
+                scale=scale,
+                tags=tags,
+            )
+        else:
+            clone_request = CloneEnvironmentRequest(
+                app_name=app_name,
+                env_name=clone_name,
+                original_name=env_name,
+                cname=cname,
+                platform=platform,
+                scale=scale,
+                tags=tags,
+            )
 
         clone_request.option_settings += envvars
 

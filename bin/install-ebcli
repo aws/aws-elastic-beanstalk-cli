@@ -40,6 +40,7 @@ if [ $status = "0" ]; then
     fi
     if [ $error = "true" ] && [ ! -L /usr/local/bin/eb ]; then
         sudo ln -s ~/.ebvenv/bin/eb /usr/local/bin/eb
+        sudo ln -s ~/.ebvenv/bin/ebp /usr/local/bin/ebp
         status="$?"
         if [ $status != "0" ]; then
             error="true"

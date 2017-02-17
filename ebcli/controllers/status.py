@@ -11,9 +11,10 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings
-from ..operations import statusops
+from ..operations import statusops, commonops
 
 
 class StatusController(AbstractBaseController):
@@ -25,6 +26,7 @@ class StatusController(AbstractBaseController):
     def do_command(self):
         app_name = self.get_app_name()
         env_name = self.get_env_name()
+
         verbose = self.app.pargs.verbose
 
         statusops.status(app_name, env_name, verbose)

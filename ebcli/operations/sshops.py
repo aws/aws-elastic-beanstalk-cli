@@ -17,7 +17,7 @@ import os
 from cement.utils.misc import minimal_logger
 
 from ..lib import ec2, utils
-from ..objects.exceptions import NoKeypairError, NotFoundError, CommandError
+from ..objects.exceptions import NoKeypairError, NotFoundError, CommandError, InvalidOptionsError
 from ..resources.strings import strings, prompts
 from ..core import io, fileoperations
 from . import commonops
@@ -26,8 +26,59 @@ from . import commonops
 LOG = minimal_logger(__name__)
 
 
-def ssh_into_instance(instance_id, keep_open=False, force_open=False,
-                      custom_ssh=False, command=False):
+def prepare_for_ssh(env_name, instance, keep_open, force, setup, number,
+                    keyname=None, no_keypair_error_message=None,
+                    custom_ssh=None, command=None):
+    if setup:
+        setup_ssh(env_name, keyname)
+        return
+
+    if instance and number:
+        raise InvalidOptionsError(strings['ssh.instanceandnumber'])
+
+    if not instance:
+        instances = commonops.get_instance_ids(None, env_name)
+        if number is not None:
+            if number > len(instances) or number < 1:
+                raise InvalidOptionsError(
+                    'Invalid index number (' + str(number) +
+                    ') for environment with ' + str(len(instances)) +
+                    ' instances')
+            else:
+                instance = instances[number - 1]
+
+        elif len(instances) == 1:
+            instance = instances[0]
+        else:
+            io.echo()
+            io.echo('Select an instance to ssh into')
+            instance = utils.prompt_for_item_in_list(instances)
+
+    try:
+        ssh_into_instance(instance, keep_open=keep_open, force_open=force, custom_ssh=custom_ssh, command=command)
+    except NoKeypairError:
+        if not no_keypair_error_message:
+            no_keypair_error_message = prompts['ssh.nokey']
+        io.log_error(no_keypair_error_message)
+
+
+def setup_ssh(env_name, keyname):
+    # Instance does not have a keypair
+    io.log_warning(prompts['ssh.setupwarn'].replace('{env-name}',
+                                                    env_name))
+
+    keyname = prompt_for_ec2_keyname(env_name=env_name, keyname=keyname)
+
+    if keyname:
+        options = [
+            {'Namespace': 'aws:autoscaling:launchconfiguration',
+             'OptionName': 'EC2KeyName',
+             'Value': keyname}
+        ]
+        commonops.update_environment(env_name, options, False)
+
+
+def ssh_into_instance(instance_id, keep_open=False, force_open=False, custom_ssh=None, command=None):
     instance = ec2.describe_instance(instance_id)
     try:
         keypair_name = instance['KeyName']
@@ -117,16 +168,26 @@ def _get_ssh_file(keypair_name):
     return key_file
 
 
-def prompt_for_ec2_keyname(env_name=None):
+def prompt_for_ec2_keyname(env_name=None, message=None, keyname=None):
+    if message is None:
+        message = prompts['ssh.setup']
+
     if env_name:
         io.validate_action(prompts['terminate.validate'], env_name)
     else:
-        io.echo(prompts['ssh.setup'])
+        io.echo(message)
         ssh = io.get_boolean_response()
         if not ssh:
             return None
 
     keys = [k['KeyName'] for k in ec2.get_key_pairs()]
+    default_option = len(keys)
+
+    if keyname:
+        for index, key in enumerate(keys):
+            if key == keyname:
+                # The selection is between 1 and len(keys)
+                default_option = index + 1
 
     if len(keys) < 1:
         keyname = _generate_and_upload_keypair(keys)
@@ -136,7 +197,7 @@ def prompt_for_ec2_keyname(env_name=None):
         keys.append(new_key_option)
         io.echo()
         io.echo(prompts['keypair.prompt'])
-        keyname = utils.prompt_for_item_in_list(keys, default=len(keys))
+        keyname = utils.prompt_for_item_in_list(keys, default=default_option)
 
         if keyname == new_key_option:
             keyname = _generate_and_upload_keypair(keys)

@@ -18,7 +18,8 @@ requires = ['pyyaml>=3.11',
             'docker-py >= 1.1.0, <= 1.7.2',
             'dockerpty >= 0.3.2, <= 0.4.1',
             'semantic_version == 2.5.0',
-            'tabulate == 0.7.5'
+            'tabulate == 0.7.5',
+            'termcolor == 1.1.0',
            ]
 
 testing_requires = ['pytest>=3.03',
@@ -70,7 +71,8 @@ setup_options = dict(
     ),
     entry_points={
         'console_scripts': [
-            'eb=ebcli.core.ebcore:main'
+            'eb=ebcli.core.ebcore:main',
+            'ebp=ebcli.core.ebpcore:main'
         ]
     },
 )
@@ -111,7 +113,7 @@ if 'py2exe' in sys.argv:
             'packages': ['ebcli'],
             }
     }
-    setup_options['console'] = ['bin/eb']
+    setup_options['console'] = ['bin/eb', 'bin/ebp']
 
 setup(**setup_options)
 

@@ -91,7 +91,7 @@ class TestInit(BaseControllerTest):
         # make sure setup was called correctly
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
-                                                      'PHP 5.5', None, None, None)
+                                                      'PHP 5.5', branch=None, dir_path=None, repository=None)
 
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
@@ -137,7 +137,7 @@ class TestInit(BaseControllerTest):
         # make sure setup was called correctly
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
-                                                      'PHP 5.5', None, None, None)
+                                                      'PHP 5.5', branch=None, dir_path=None, repository=None)
 
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
@@ -175,7 +175,7 @@ class TestInit(BaseControllerTest):
         self.mock_operations.setup_credentials.assert_called_with()
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
-                                                      'PHP 5.5', None, None, None)
+                                                      'PHP 5.5', branch=None, dir_path=None, repository=None)
 
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
@@ -195,7 +195,7 @@ class TestInit(BaseControllerTest):
             NotInitializedError,
         self.mock_commonops.create_app.return_value = None, None
         self.mock_commonops.get_default_keyname.return_value = ''
-        self.mock_commonops.get_default_region.return_value = ''
+        self.mock_commonops.get_default_region.return_value = 'us-west-2'
         self.mock_commonops.get_default_solution_stack.return_value = ''
 
         # Mock out source control so we don't depend on git
@@ -211,7 +211,7 @@ class TestInit(BaseControllerTest):
 
         self.mock_operations.setup.assert_called_with('testDir',
                                                       'us-west-2',
-                                                      'php', None, None, None)
+                                                      'php', branch=None, dir_path=None, repository=None)
 
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
@@ -248,7 +248,7 @@ class TestInit(BaseControllerTest):
         # assert we ran the methods we intended too
         self.mock_operations.setup.assert_called_with('testDir',
                                                       'us-east-1',
-                                                      'ruby', None, 'my-repo', 'prod')
+                                                      'ruby', dir_path=None, repository='my-repo', branch='prod')
 
         mock_sourcecontrol.setup_codecommit_cred_config.assert_not_called()
 
@@ -311,7 +311,7 @@ class TestInit(BaseControllerTest):
         # assert we ran the methods we intended too
         self.mock_operations.setup.assert_called_with('my-app',
                                                       'us-east-1',
-                                                      'PHP 5.5', None, 'new-repo', 'devo')
+                                                      'PHP 5.5', dir_path=None, repository='new-repo', branch='devo')
 
 
         mock_codecommit.create_repository.assert_called_once_with('new-repo','Created with EB CLI')
@@ -384,7 +384,7 @@ class TestInit(BaseControllerTest):
         # make sure setup was called correctly
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
-                                                      'PHP 5.5', None, None, None)
+                                                      'PHP 5.5', branch=None, dir_path=None, repository=None)
         self.mock_operations.get_codebuild_image_from_platform.assert_called_with('PHP 5.5')
 
         write_config_calls = [mock.call('global', 'profile', 'eb-cli'),
@@ -458,7 +458,7 @@ class TestInit(BaseControllerTest):
         # make sure setup was called correctly
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
-                                                      'PHP 5.5', None, None, None)
+                                                      'PHP 5.5', branch=None, dir_path=None, repository=None)
         self.mock_operations.get_codebuild_image_from_platform.assert_called_with('PHP 5.5')
 
         write_config_calls = [mock.call('global', 'profile', 'eb-cli'),
@@ -520,7 +520,7 @@ class TestInit(BaseControllerTest):
         # assert we ran the methods we intended too
         self.mock_operations.setup.assert_called_with('testDir',
                                                       'us-east-1',
-                                                      'PHP 5.5', None, 'my-repo', 'prod')
+                                                      'PHP 5.5', dir_path=None, repository='my-repo', branch='prod')
 
         mock_sourcecontrol.setup_codecommit_cred_config.assert_not_called()
         self.mock_operations.get_codebuild_image_from_platform.assert_called_with('PHP 5.5')

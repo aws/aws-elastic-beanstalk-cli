@@ -24,8 +24,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -34,8 +33,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -62,8 +60,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Required resources associated with specified parameters are missing.</p>"
+          "exception":true
         },
         {
           "shape":"ManagedActionInvalidStateException",
@@ -72,8 +69,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Managed update is not in a valid state to be modified</p>"
+          "exception":true
         }
       ]
     },
@@ -96,8 +92,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -106,8 +101,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -130,8 +124,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The caller has exceeded the limit of allowed environments associated with the account.</p>"
+          "exception":true
         },
         {
           "shape":"InsufficientPrivilegesException",
@@ -140,8 +133,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -150,8 +142,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         },
         {
           "shape":"TooManyBucketsException",
@@ -160,8 +151,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
+          "exception":true
         }
       ]
     },
@@ -184,8 +174,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The caller has exceeded the limit on the number of applications associated with their account.</p>"
+          "exception":true
         },
         {
           "shape":"InsufficientPrivilegesException",
@@ -194,8 +183,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -204,8 +192,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         },
         {
           "shape":"TooManyBucketsException",
@@ -214,8 +201,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
+          "exception":true
         }
       ]
     },
@@ -238,13 +224,11 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The caller has exceeded the limit on the number of applications associated with their account.</p>"
+          "exception":true
         },
         {
           "shape":"TooManyApplicationVersionsException",
-          "exception":true,
-          "documentation":"<p>The caller has exceeded the limit on the number of application versions associated with their account.</p>"
+          "exception":true
         },
         {
           "shape":"InsufficientPrivilegesException",
@@ -253,8 +237,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -263,8 +246,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         },
         {
           "shape":"S3LocationNotInServiceRegionException",
@@ -273,8 +255,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The specified S3 bucket does not belong to the S3 region in which the service is running.</p>"
+          "exception":true
         },
         {
           "shape":"CodeBuildNotInServiceRegionException",
@@ -283,8 +264,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The CodeBuild service is not supported in this region.</p>"
+          "exception":true
         },
         {
           "shape":"TooManyBucketsException",
@@ -293,8 +273,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
+          "exception":true
         }
       ]
     },
@@ -317,8 +296,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -327,8 +305,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         },
         {
           "shape":"TooManyBucketsException",
@@ -337,8 +314,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
+          "exception":true
         },
         {
           "shape":"TooManyConfigurationTemplatesException",
@@ -347,8 +323,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The caller has exceeded the limit on the number of configuration templates associated with their account.</p>"
+          "exception":true
         }
       ]
     },
@@ -371,8 +346,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The caller has exceeded the limit of allowed environments associated with the account.</p>"
+          "exception":true
         },
         {
           "shape":"InsufficientPrivilegesException",
@@ -381,8 +355,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -391,8 +364,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         },
         {
           "shape":"TooManyBucketsException",
@@ -401,8 +373,43 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
+          "exception":true
+        }
+      ]
+    },
+    "CreatePlatformVersion":{
+      "name":"CreatePlatformVersion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreatePlatformVersionRequest"},
+      "output":{
+        "shape":"CreatePlatformVersionResult",
+        "resultWrapper":"CreatePlatformVersionResult"
+      },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true
+        },
+        {
+          "shape":"ElasticBeanstalkServiceException",
+          "exception":true
+        },
+        {
+          "shape":"TooManyPlatformsException",
+          "error":{
+            "code":"TooManyPlatformsException",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true
         }
       ]
     },
@@ -424,8 +431,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
+          "exception":true
         },
         {
           "shape":"S3SubscriptionRequiredException",
@@ -434,8 +440,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The caller does not have a subscription to Amazon S3.</p>"
+          "exception":true
         },
         {
           "shape":"InsufficientPrivilegesException",
@@ -444,8 +449,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -454,8 +458,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -474,8 +477,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because another operation is already in progress affecting an element in this activity.</p>"
+          "exception":true
         },
         {
           "shape":"InsufficientPrivilegesException",
@@ -484,8 +486,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -494,8 +495,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -514,8 +514,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to delete the Amazon S3 source bundle associated with the application version, although the application version deleted successfully.</p>"
+          "exception":true
         },
         {
           "shape":"InsufficientPrivilegesException",
@@ -524,8 +523,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -534,8 +532,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         },
         {
           "shape":"OperationInProgressException",
@@ -544,8 +541,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because another operation is already in progress affecting an element in this activity.</p>"
+          "exception":true
         },
         {
           "shape":"S3LocationNotInServiceRegionException",
@@ -554,8 +550,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The specified S3 bucket does not belong to the S3 region in which the service is running.</p>"
+          "exception":true
         }
       ]
     },
@@ -574,8 +569,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because another operation is already in progress affecting an element in this activity.</p>"
+          "exception":true
         },
         {
           "shape":"InsufficientPrivilegesException",
@@ -584,8 +578,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -594,8 +587,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -606,6 +598,42 @@
         "requestUri":"/"
       },
       "input":{"shape":"DeleteEnvironmentConfigurationMessage"}
+    },
+    "DeletePlatformVersion":{
+      "name":"DeletePlatformVersion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeletePlatformVersionRequest"},
+      "output":{
+        "shape":"DeletePlatformVersionResult",
+        "resultWrapper":"DeletePlatformVersionResult"
+      },
+      "errors":[
+        {
+          "shape":"OperationInProgressException",
+          "error":{
+            "code":"OperationInProgressFailure",
+            "httpStatusCode":400,
+            "senderFault":true
+          },
+          "exception":true
+        },
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true
+        },
+        {
+          "shape":"ElasticBeanstalkServiceException",
+          "exception":true
+        }
+      ]
     },
     "DescribeApplicationVersions":{
       "name":"DescribeApplicationVersions",
@@ -626,8 +654,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -636,8 +663,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -660,8 +686,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -670,8 +695,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -694,8 +718,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -704,8 +727,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         },
         {
           "shape":"TooManyBucketsException",
@@ -714,8 +736,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
+          "exception":true
         }
       ]
     },
@@ -738,8 +759,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -748,8 +768,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         },
         {
           "shape":"TooManyBucketsException",
@@ -758,8 +777,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
+          "exception":true
         }
       ]
     },
@@ -782,8 +800,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The request is invalid, please check parameters and their values</p>"
+          "exception":true
         },
         {
           "shape":"ElasticBeanstalkServiceException",
@@ -814,8 +831,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Required resources associated with specified parameters are missing.</p>"
+          "exception":true
         }
       ]
     },
@@ -842,8 +858,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Required resources associated with specified parameters are missing.</p>"
+          "exception":true
         }
       ]
     },
@@ -866,8 +881,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -876,8 +890,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -900,8 +913,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -910,8 +922,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -934,8 +945,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -944,8 +954,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -968,8 +977,34 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The request is invalid, please check parameters and their values</p>"
+          "exception":true
+        },
+        {
+          "shape":"ElasticBeanstalkServiceException",
+          "exception":true
+        }
+      ]
+    },
+    "DescribePlatformVersion":{
+      "name":"DescribePlatformVersion",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribePlatformVersionRequest"},
+      "output":{
+        "shape":"DescribePlatformVersionResult",
+        "resultWrapper":"DescribePlatformVersionResult"
+      },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true
         },
         {
           "shape":"ElasticBeanstalkServiceException",
@@ -995,8 +1030,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -1005,8 +1039,34 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
+        }
+      ]
+    },
+    "ListPlatformVersions":{
+      "name":"ListPlatformVersions",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListPlatformVersionsRequest"},
+      "output":{
+        "shape":"ListPlatformVersionsResult",
+        "resultWrapper":"ListPlatformVersionsResult"
+      },
+      "errors":[
+        {
+          "shape":"InsufficientPrivilegesException",
+          "error":{
+            "code":"InsufficientPrivilegesException",
+            "httpStatusCode":403,
+            "senderFault":true
+          },
+          "exception":true
+        },
+        {
+          "shape":"ElasticBeanstalkServiceException",
+          "exception":true
         }
       ]
     },
@@ -1025,8 +1085,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -1035,8 +1094,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -1055,8 +1113,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -1065,8 +1122,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         },
         {
           "shape":"MissingRequiredResourceException",
@@ -1075,8 +1131,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Required resources associated with specified parameters are missing.</p>"
+          "exception":true
         }
       ]
     },
@@ -1095,8 +1150,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -1105,8 +1159,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -1129,8 +1182,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -1139,8 +1191,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -1159,8 +1210,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -1169,8 +1219,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -1193,8 +1242,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -1203,8 +1251,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -1227,8 +1274,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -1237,8 +1283,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -1261,8 +1306,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         }
       ]
     },
@@ -1285,8 +1329,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -1295,8 +1338,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         }
       ]
     },
@@ -1319,8 +1361,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -1329,8 +1370,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         },
         {
           "shape":"TooManyBucketsException",
@@ -1339,8 +1379,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
+          "exception":true
         }
       ]
     },
@@ -1363,8 +1402,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -1373,8 +1411,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         },
         {
           "shape":"TooManyBucketsException",
@@ -1383,8 +1420,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
+          "exception":true
         }
       ]
     },
@@ -1407,8 +1443,7 @@
             "httpStatusCode":403,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+          "exception":true
         },
         {
           "shape":"TemporaryMaintainanceException",
@@ -1417,8 +1452,7 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+          "exception":true
         },
         {
           "shape":"TooManyBucketsException",
@@ -1427,13 +1461,13 @@
             "httpStatusCode":400,
             "senderFault":true
           },
-          "exception":true,
-          "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
+          "exception":true
         }
       ]
     }
   },
   "shapes":{
+    "ARN":{"type":"string"},
     "AbortEnvironmentUpdateMessage":{
       "type":"structure",
       "members":{
@@ -1630,6 +1664,12 @@
         "TimeoutInMinutes":{"shape":"BoxedInt"}
       }
     },
+    "Builder":{
+      "type":"structure",
+      "members":{
+        "ARN":{"shape":"ARN"}
+      }
+    },
     "CPUUtilization":{
       "type":"structure",
       "members":{
@@ -1689,8 +1729,7 @@
         "httpStatusCode":400,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>The CodeBuild service is not supported in this region.</p>"
+      "exception":true
     },
     "ComposeEnvironmentsMessage":{
       "type":"structure",
@@ -1770,6 +1809,7 @@
       "type":"structure",
       "members":{
         "SolutionStackName":{"shape":"SolutionStackName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "Tier":{"shape":"EnvironmentTier"},
         "Options":{"shape":"ConfigurationOptionDescriptionsList"}
       }
@@ -1778,6 +1818,7 @@
       "type":"structure",
       "members":{
         "SolutionStackName":{"shape":"SolutionStackName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "ApplicationName":{"shape":"ApplicationName"},
         "TemplateName":{"shape":"ConfigurationTemplateName"},
         "Description":{"shape":"Description"},
@@ -1809,6 +1850,7 @@
       "type":"structure",
       "members":{
         "SolutionStackName":{"shape":"SolutionStackName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "ApplicationName":{"shape":"ApplicationName"},
         "TemplateName":{"shape":"ConfigurationTemplateName"},
         "Description":{"shape":"Description"},
@@ -1868,6 +1910,7 @@
         "Description":{"shape":"Description"},
         "Tier":{"shape":"EnvironmentTier"},
         "SolutionStackName":{"shape":"SolutionStackName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "SourceConfiguration":{"shape":"SourceConfiguration"},
         "EnvironmentId":{"shape":"EnvironmentId"},
         "OptionSettings":{"shape":"ConfigurationOptionSettingsList"},
@@ -1890,9 +1933,32 @@
         "VersionLabel":{"shape":"VersionLabel"},
         "TemplateName":{"shape":"ConfigurationTemplateName"},
         "SolutionStackName":{"shape":"SolutionStackName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "OptionSettings":{"shape":"ConfigurationOptionSettingsList"},
         "OptionsToRemove":{"shape":"OptionsSpecifierList"},
         "TemplateSpecification":{"shape":"EnvironmentTemplateSpecification"}
+      }
+    },
+    "CreatePlatformVersionRequest":{
+      "type":"structure",
+      "required":[
+        "PlatformName",
+        "PlatformVersion",
+        "PlatformDefinitionBundle"
+      ],
+      "members":{
+        "PlatformName":{"shape":"PlatformName"},
+        "PlatformVersion":{"shape":"PlatformVersion"},
+        "PlatformDefinitionBundle":{"shape":"S3Location"},
+        "EnvironmentName":{"shape":"EnvironmentName"},
+        "OptionSettings":{"shape":"ConfigurationOptionSettingsList"}
+      }
+    },
+    "CreatePlatformVersionResult":{
+      "type":"structure",
+      "members":{
+        "PlatformSummary":{"shape":"PlatformSummary"},
+        "Builder":{"shape":"Builder"}
       }
     },
     "CreateStorageLocationResultMessage":{
@@ -1902,6 +1968,17 @@
       }
     },
     "CreationDate":{"type":"timestamp"},
+    "CustomAmi":{
+      "type":"structure",
+      "members":{
+        "VirtualizationType":{"shape":"VirtualizationType"},
+        "ImageId":{"shape":"ImageId"}
+      }
+    },
+    "CustomAmiList":{
+      "type":"list",
+      "member":{"shape":"CustomAmi"}
+    },
     "DNSCname":{
       "type":"string",
       "min":1,
@@ -1959,6 +2036,20 @@
         "EnvironmentName":{"shape":"EnvironmentName"}
       }
     },
+    "DeletePlatformVersionRequest":{
+      "type":"structure",
+      "members":{
+        "PlatformArn":{"shape":"PlatformArn"},
+        "DeleteResources":{"shape":"DeleteResources"}
+      }
+    },
+    "DeletePlatformVersionResult":{
+      "type":"structure",
+      "members":{
+        "PlatformSummary":{"shape":"PlatformSummary"}
+      }
+    },
+    "DeleteResources":{"type":"boolean"},
     "DeleteSourceBundle":{"type":"boolean"},
     "Deployment":{
       "type":"structure",
@@ -1994,6 +2085,7 @@
         "EnvironmentName":{"shape":"EnvironmentName"},
         "Tier":{"shape":"EnvironmentTier"},
         "SolutionStackName":{"shape":"SolutionStackName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "OptionSettings":{"shape":"ConfigurationOptionSettingsList"},
         "OptionsToRemove":{"shape":"OptionsSpecifierList"},
         "VersionLabel":{"shape":"VersionLabel"},
@@ -2010,6 +2102,7 @@
         "EnvironmentName":{"shape":"EnvironmentName"},
         "Tier":{"shape":"EnvironmentTier"},
         "SolutionStackName":{"shape":"SolutionStackName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "OptionSettings":{"shape":"ConfigurationOptionSettingsList"},
         "OptionsToRemove":{"shape":"OptionsSpecifierList"},
         "VersionLabel":{"shape":"VersionLabel"},
@@ -2093,6 +2186,7 @@
         "TemplateName":{"shape":"ConfigurationTemplateName"},
         "EnvironmentId":{"shape":"EnvironmentId"},
         "EnvironmentName":{"shape":"EnvironmentName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "RequestId":{"shape":"RequestId"},
         "Severity":{"shape":"EventSeverity"},
         "StartTime":{"shape":"TimeFilterStart"},
@@ -2116,6 +2210,18 @@
         "InstanceHealthList":{"shape":"InstanceHealthList"},
         "RefreshedAt":{"shape":"RefreshedAt"},
         "NextToken":{"shape":"NextToken"}
+      }
+    },
+    "DescribePlatformVersionRequest":{
+      "type":"structure",
+      "members":{
+        "PlatformArn":{"shape":"PlatformArn"}
+      }
+    },
+    "DescribePlatformVersionResult":{
+      "type":"structure",
+      "members":{
+        "PlatformDescription":{"shape":"PlatformDescription"}
       }
     },
     "Description":{
@@ -2149,6 +2255,7 @@
         "ApplicationName":{"shape":"ApplicationName"},
         "VersionLabel":{"shape":"VersionLabel"},
         "SolutionStackName":{"shape":"SolutionStackName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "TemplateName":{"shape":"ConfigurationTemplateName"},
         "Description":{"shape":"Description"},
         "EndpointURL":{"shape":"EndpointURL"},
@@ -2315,6 +2422,7 @@
         "VersionLabel":{"shape":"VersionLabel"},
         "TemplateName":{"shape":"ConfigurationTemplateName"},
         "EnvironmentName":{"shape":"EnvironmentName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "RequestId":{"shape":"RequestId"},
         "Severity":{"shape":"EventSeverity"}
       }
@@ -2366,6 +2474,7 @@
       "min":1,
       "max":19
     },
+    "ImageId":{"type":"string"},
     "IncludeDeleted":{"type":"boolean"},
     "IncludeDeletedBackTo":{"type":"timestamp"},
     "Instance":{
@@ -2429,8 +2538,7 @@
         "httpStatusCode":403,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>Unable to perform the specified operation because the user does not have enough privileges for one of more downstream aws services</p>"
+      "exception":true
     },
     "Integer":{"type":"integer"},
     "InvalidRequestException":{
@@ -2442,8 +2550,7 @@
         "httpStatusCode":400,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>The request is invalid, please check parameters and their values</p>"
+      "exception":true
     },
     "Latency":{
       "type":"structure",
@@ -2474,6 +2581,21 @@
       "members":{
         "SolutionStacks":{"shape":"AvailableSolutionStackNamesList"},
         "SolutionStackDetails":{"shape":"AvailableSolutionStackDetailsList"}
+      }
+    },
+    "ListPlatformVersionsRequest":{
+      "type":"structure",
+      "members":{
+        "Filters":{"shape":"PlatformFilters"},
+        "MaxRecords":{"shape":"PlatformMaxRecords"},
+        "NextToken":{"shape":"Token"}
+      }
+    },
+    "ListPlatformVersionsResult":{
+      "type":"structure",
+      "members":{
+        "PlatformSummaryList":{"shape":"PlatformSummaryList"},
+        "NextToken":{"shape":"Token"}
       }
     },
     "Listener":{
@@ -2510,6 +2632,7 @@
       "type":"list",
       "member":{"shape":"Listener"}
     },
+    "Maintainer":{"type":"string"},
     "ManagedAction":{
       "type":"structure",
       "members":{
@@ -2548,8 +2671,7 @@
         "httpStatusCode":400,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>Managed update is not in a valid state to be modified</p>"
+      "exception":true
     },
     "ManagedActions":{
       "type":"list",
@@ -2590,8 +2712,7 @@
         "httpStatusCode":400,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>Required resources associated with specified parameters are missing.</p>"
+      "exception":true
     },
     "NextToken":{
       "type":"string",
@@ -2605,6 +2726,8 @@
     "NullableDouble":{"type":"double"},
     "NullableInteger":{"type":"integer"},
     "NullableLong":{"type":"long"},
+    "OperatingSystemName":{"type":"string"},
+    "OperatingSystemVersion":{"type":"string"},
     "OperationInProgressException":{
       "type":"structure",
       "members":{
@@ -2614,8 +2737,7 @@
         "httpStatusCode":400,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>Unable to perform the specified operation because another operation is already in progress affecting an element in this activity.</p>"
+      "exception":true
     },
     "OptionNamespace":{"type":"string"},
     "OptionRestrictionMaxLength":{"type":"integer"},
@@ -2640,6 +2762,107 @@
       "type":"list",
       "member":{"shape":"OptionSpecification"}
     },
+    "PlatformArn":{"type":"string"},
+    "PlatformCategory":{"type":"string"},
+    "PlatformDescription":{
+      "type":"structure",
+      "members":{
+        "PlatformArn":{"shape":"PlatformArn"},
+        "PlatformOwner":{"shape":"PlatformOwner"},
+        "PlatformName":{"shape":"PlatformName"},
+        "PlatformVersion":{"shape":"PlatformVersion"},
+        "SolutionStackName":{"shape":"SolutionStackName"},
+        "PlatformStatus":{"shape":"PlatformStatus"},
+        "DateCreated":{"shape":"CreationDate"},
+        "DateUpdated":{"shape":"UpdateDate"},
+        "PlatformCategory":{"shape":"PlatformCategory"},
+        "Description":{"shape":"Description"},
+        "Maintainer":{"shape":"Maintainer"},
+        "OperatingSystemName":{"shape":"OperatingSystemName"},
+        "OperatingSystemVersion":{"shape":"OperatingSystemVersion"},
+        "ProgrammingLanguages":{"shape":"PlatformProgrammingLanguages"},
+        "Frameworks":{"shape":"PlatformFrameworks"},
+        "CustomAmiList":{"shape":"CustomAmiList"},
+        "SupportedTierList":{"shape":"SupportedTierList"},
+        "SupportedAddonList":{"shape":"SupportedAddonList"}
+      }
+    },
+    "PlatformFilter":{
+      "type":"structure",
+      "members":{
+        "Type":{"shape":"PlatformFilterType"},
+        "Operator":{"shape":"PlatformFilterOperator"},
+        "Values":{"shape":"PlatformFilterValueList"}
+      }
+    },
+    "PlatformFilterOperator":{"type":"string"},
+    "PlatformFilterType":{"type":"string"},
+    "PlatformFilterValue":{"type":"string"},
+    "PlatformFilterValueList":{
+      "type":"list",
+      "member":{"shape":"PlatformFilterValue"}
+    },
+    "PlatformFilters":{
+      "type":"list",
+      "member":{"shape":"PlatformFilter"}
+    },
+    "PlatformFramework":{
+      "type":"structure",
+      "members":{
+        "Name":{"shape":"String"},
+        "Version":{"shape":"String"}
+      }
+    },
+    "PlatformFrameworks":{
+      "type":"list",
+      "member":{"shape":"PlatformFramework"}
+    },
+    "PlatformMaxRecords":{
+      "type":"integer",
+      "min":1
+    },
+    "PlatformName":{"type":"string"},
+    "PlatformOwner":{"type":"string"},
+    "PlatformProgrammingLanguage":{
+      "type":"structure",
+      "members":{
+        "Name":{"shape":"String"},
+        "Version":{"shape":"String"}
+      }
+    },
+    "PlatformProgrammingLanguages":{
+      "type":"list",
+      "member":{"shape":"PlatformProgrammingLanguage"}
+    },
+    "PlatformStatus":{
+      "type":"string",
+      "enum":[
+        "Creating",
+        "Failed",
+        "Updating",
+        "Ready",
+        "Deleting",
+        "Deleted"
+      ]
+    },
+    "PlatformSummary":{
+      "type":"structure",
+      "members":{
+        "PlatformArn":{"shape":"PlatformArn"},
+        "PlatformOwner":{"shape":"PlatformOwner"},
+        "PlatformStatus":{"shape":"PlatformStatus"},
+        "PlatformCategory":{"shape":"PlatformCategory"},
+        "OperatingSystemName":{"shape":"OperatingSystemName"},
+        "OperatingSystemVersion":{"shape":"OperatingSystemVersion"},
+        "SupportedTierList":{"shape":"SupportedTierList"},
+        "SupportedAddonList":{"shape":"SupportedAddonList"}
+      }
+    },
+    "PlatformSummaryList":{
+      "type":"list",
+      "member":{"shape":"PlatformSummary"}
+    },
+    "PlatformVersion":{"type":"string"},
     "Queue":{
       "type":"structure",
       "members":{
@@ -2735,8 +2958,7 @@
         "httpStatusCode":400,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>The specified S3 bucket does not belong to the S3 region in which the service is running.</p>"
+      "exception":true
     },
     "S3LocationUrl":{
       "type":"string",
@@ -2751,8 +2973,7 @@
         "httpStatusCode":400,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>The caller does not have a subscription to Amazon S3.</p>"
+      "exception":true
     },
     "SampleTimestamp":{"type":"timestamp"},
     "SingleInstanceHealth":{
@@ -2783,10 +3004,7 @@
       "type":"list",
       "member":{"shape":"FileTypeExtension"}
     },
-    "SolutionStackName":{
-      "type":"string",
-      "max":100
-    },
+    "SolutionStackName":{"type":"string"},
     "SourceBuildInformation":{
       "type":"structure",
       "required":[
@@ -2809,8 +3027,7 @@
         "httpStatusCode":400,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>Unable to delete the Amazon S3 source bundle associated with the application version, although the application version deleted successfully.</p>"
+      "exception":true
     },
     "SourceConfiguration":{
       "type":"structure",
@@ -2849,6 +3066,16 @@
       }
     },
     "String":{"type":"string"},
+    "SupportedAddon":{"type":"string"},
+    "SupportedAddonList":{
+      "type":"list",
+      "member":{"shape":"SupportedAddon"}
+    },
+    "SupportedTier":{"type":"string"},
+    "SupportedTierList":{
+      "type":"list",
+      "member":{"shape":"SupportedTier"}
+    },
     "SwapEnvironmentCNAMEsMessage":{
       "type":"structure",
       "members":{
@@ -2914,6 +3141,7 @@
       "type":"structure",
       "members":{
         "SolutionStackName":{"shape":"SolutionStackName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "EnvironmentName":{"shape":"EnvironmentName"},
         "SourceContents":{"shape":"String"}
       }
@@ -2939,8 +3167,7 @@
         "httpStatusCode":400,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>Unable to perform the specified operation because of temporary maintenance activity</p>"
+      "exception":true
     },
     "TerminateEnvForce":{"type":"boolean"},
     "TerminateEnvironmentMessage":{
@@ -2961,8 +3188,7 @@
       "type":"structure",
       "members":{
       },
-      "exception":true,
-      "documentation":"<p>The caller has exceeded the limit on the number of application versions associated with their account.</p>"
+      "exception":true
     },
     "TooManyApplicationsException":{
       "type":"structure",
@@ -2973,8 +3199,7 @@
         "httpStatusCode":400,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>The caller has exceeded the limit on the number of applications associated with their account.</p>"
+      "exception":true
     },
     "TooManyBucketsException":{
       "type":"structure",
@@ -2985,8 +3210,7 @@
         "httpStatusCode":400,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>The web service attempted to create a bucket in an Amazon S3 account that already has 100 buckets.</p>"
+      "exception":true
     },
     "TooManyConfigurationTemplatesException":{
       "type":"structure",
@@ -2997,8 +3221,7 @@
         "httpStatusCode":400,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>The caller has exceeded the limit on the number of configuration templates associated with their account.</p>"
+      "exception":true
     },
     "TooManyEnvironmentsException":{
       "type":"structure",
@@ -3009,8 +3232,18 @@
         "httpStatusCode":400,
         "senderFault":true
       },
-      "exception":true,
-      "documentation":"<p>The caller has exceeded the limit of allowed environments associated with the account.</p>"
+      "exception":true
+    },
+    "TooManyPlatformsException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"TooManyPlatformsException",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
     },
     "Trigger":{
       "type":"structure",
@@ -3064,6 +3297,7 @@
         "TemplateName":{"shape":"ConfigurationTemplateName"},
         "Description":{"shape":"Description"},
         "SolutionStackName":{"shape":"SolutionStackName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "SourceConfiguration":{"shape":"SourceConfiguration"},
         "EnvironmentId":{"shape":"EnvironmentId"},
         "OptionSettings":{"shape":"ConfigurationOptionSettingsList"},
@@ -3086,6 +3320,7 @@
         "VersionLabel":{"shape":"VersionLabel"},
         "TemplateName":{"shape":"ConfigurationTemplateName"},
         "SolutionStackName":{"shape":"SolutionStackName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "OptionSettings":{"shape":"ConfigurationOptionSettingsList"},
         "OptionsToRemove":{"shape":"OptionsSpecifierList"},
         "TemplateSpecification":{"shape":"EnvironmentTemplateSpecification"}
@@ -3102,6 +3337,7 @@
         "EnvironmentName":{"shape":"EnvironmentName"},
         "Tier":{"shape":"EnvironmentTier"},
         "SolutionStackName":{"shape":"SolutionStackName"},
+        "PlatformArn":{"shape":"PlatformArn"},
         "OptionSettings":{"shape":"ConfigurationOptionSettingsList"},
         "OptionsToRemove":{"shape":"OptionsSpecifierList"},
         "VersionLabel":{"shape":"VersionLabel"},
@@ -3142,8 +3378,7 @@
     "VersionLabelsList":{
       "type":"list",
       "member":{"shape":"VersionLabel"}
-    }
-  },
-  "examples":{
+    },
+    "VirtualizationType":{"type":"string"}
   }
 }

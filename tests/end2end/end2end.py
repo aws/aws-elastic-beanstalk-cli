@@ -19,8 +19,12 @@ import mock
 
 from cement.utils import test
 
+from ebcli.core.ebpcore import EBP
+
 
 class End2EndTest(test.CementTestCase):
+    app_class = EBP
+
     def setUp(self):
         super(End2EndTest, self).setUp()
 

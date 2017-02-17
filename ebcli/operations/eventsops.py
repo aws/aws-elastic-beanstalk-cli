@@ -20,13 +20,12 @@ from ..resources.strings import prompts
 from . import commonops
 
 
-def print_events(app_name, env_name, follow):
+def print_events(app_name, env_name, follow, platform_arn=None):
     if follow:
-        follow_events(app_name, env_name)
+        follow_events(app_name, env_name, platform_arn)
     else:
-
         events = elasticbeanstalk.get_new_events(
-            app_name, env_name, None)
+            app_name, env_name, None, platform_arn=platform_arn)
 
         data = []
         for event in reversed(events):
@@ -34,13 +33,13 @@ def print_events(app_name, env_name, follow):
         io.echo_with_pager(os.linesep.join(data))
 
 
-def follow_events(app_name, env_name):
+def follow_events(app_name, env_name, platform_arn=None):
     last_time = None
     streamer = io.get_event_streamer()
     try:
         while True:
             events = elasticbeanstalk.get_new_events(
-                app_name, env_name, None, last_event_time=last_time
+                app_name, env_name, None, platform_arn=platform_arn, last_event_time=last_time
             )
 
             for event in reversed(events):

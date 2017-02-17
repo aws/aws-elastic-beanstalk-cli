@@ -10,8 +10,14 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+from ebcli.resources.statics import iam_attributes
 
 strings = {
+    # Inform customers that this has created the platform builder environment
+    'platformbuildercreation.info': "Note: An environment called '{0}' has been created in order to build your application. "
+        "This environment will not automatically be terminated and it does have a cost associated with it. "
+        "Once your platform creation has completed you can terminate this builder environment using the command "
+        "'eb terminate'.",
     # Version message got 'eb --version'
     'app.version_message': 'EB CLI',
     # When an update is available on PyPi
@@ -22,12 +28,16 @@ strings = {
                  'For more information on a specific command, type "eb {cmd} --help".',
     # Initial epilog (last line) that you see on 'eb --help'
     'base.epilog': 'To get started type "eb init". Then type "eb create" and "eb open"',
+    'ebpbase.info': 'Welcome to the Elastic Beanstalk Command Line Interface (EB CLI). \n'
+                 'For more information on a specific command, type "ebp {cmd} --help".',
+    'ebpbase.epilog': 'To get started type "ebp init". Then type "ebp create"',
 
     # All .infos are for --help text. All .epilogs are the epilogs shown on the given command
     'init.info': 'Initializes your directory with the EB CLI. Creates the application.',
     'init.epilog': 'This command is safe when run in a previously initialized'
                    ' directory. To re-initialize with different options, '
-                   'use the -i option.',
+                   'use the -i option. Note this command cannot change the workspace type'
+                   ' of a directory that was already initialized.',
     'init.dir.notexists': 'The specified directory {dir} does not exist. Please ensure that you are specifying the proper directory.',
     'init.usingenvyamlplatform': 'Using platform specified in env.yaml: {platform}',
     'create.info': 'Creates a new environment.',
@@ -43,13 +53,63 @@ strings = {
     'use.info': 'Sets default environment.',
     'health.info': 'Shows detailed environment health.',
     'deploy.info': 'Deploys your source code to the environment.',
-    'platform.info': 'Manages platforms.',
+    'platforminit.info': 'Prepares your workspace to build and manage custom platforms.',
+    'platformcleanup.info': 'Terminates your platform builder environment.',
+    'platformset.version': 'Setting workspace platform version to:',
+    'platformset.newplatform': 'New platform "%s"',
+
+    'platformworkspaceshow.info': 'Displays details about platform resources.',
+    'platformshowversion.info': 'Displays metadata about your current custom platform version.',
+    'platformbuilderlogs.info': 'Retrieves logs from your platform builder environment.',
+    'platformlogs.info': 'Retrieves logs for your custom platform build event.',
+    'platformssh.info': 'SSH into your platform builder environment.',
+    'platformshowversion.epilog': 'Will display details about the current version if no version is specified.',
+
+    'platformworkspacelist.info': 'Lists platform resources.',
+    'platformlistversions.info': 'Lists versions of the custom platform associated with this workspace.',
+    'platformlistversions.epilog': 'You can reduce the result set by using filters.',
+
+    'platformcreate.info': 'Creates platform resources.',
+    'platformcreateversion.info': 'Creates a new custom platform version.',
+    'platformcreateversion.epilog': 'Creates a new platform version. If no version is specified then it will do a ' \
+                             'patch-increment based on the most recent platform version. The version and increment '
+                             'options are mutually exclusive.',
+
+    'platformcreateiamdescribeerror.info': "Insufficient IAM privileges. Unable to determine if instance profile '{0}'exists.".format(iam_attributes.DEFAULT_PLATFORM_BUILDER_ROLE),
+    'platformcreateiamcreated.info': "Created instance profile '{0}'".format(iam_attributes.DEFAULT_PLATFORM_BUILDER_ROLE),
+    'platformcreateiamcreateerror.info': "Insufficient IAM privileges. Unable to create instance profile '{0}', assuming that it exists.".format(
+                    iam_attributes.DEFAULT_PLATFORM_BUILDER_ROLE),
+
+    'platformcreateiampolicyadded.info': "Added required permissions to instance profile '{0}'".format(
+        iam_attributes.DEFAULT_PLATFORM_BUILDER_ROLE),
+
+
+    'platformdelete.info': 'Deletes platform resources.',
+    'platformdeleteversion.info': 'Deletes a custom platform version.',
+    'platformdeleteversion.epilog': 'You must explicitly select the version to delete.',
+    'platformdeletevalidation.error': 'Unable to delete platform version ({0}/{1}) because it is being used by the following environments:\n {2}\n'
+                                      'Please terminate or upgrade these environments before trying to delete this platform.',
+
+    'platformdelete.events': 'Shows events for the current platform',
+
+    'platforminit.info': 'Initializes your directory with the EB CLI to create and manage Platforms.',
+    'platforminit.epilog': 'This command is safe when run in a previously initialized'
+                   ' directory. To re-initialize with different options, '
+                   'use the -i option. Note this command cannot change the workspace type'
+                   ' of a directory that was already initialized.',
+    'platforminit.noinstanceprofile': 'You are creating a workspace without an instance profile. Without an '
+                                      'instance profile you cannot create a platform with a customized AMI. '
+                                      'Use eb platform init -i or -I to configure your instance profile.',
+    'platform.info': 'Commands for managing platforms.',
     'platformshow.info': 'Shows information about current platform.',
     'platformlist.info': 'Lists available platforms.',
+    'platformworkspaceselect.info': 'Selects platform resources to use for this workspace.',
+    'platformworkspaceselectversion.info': 'Selects the active custom platform version to use for this workspace.',
     'platformselect.info': 'Selects a default platform.',
     'platformselect.epilog': 'This command is an alternative to "eb init -i" and "eb init -p". It does not change the platform on any existing environments.\n'
                              'To upgrade an environment\'s platform, type:\n'
                              '    eb upgrade',
+    'platformevents.info': 'Displays events for the custom platform associated with this workspace.',
     'platformlist.epilog': 'Shows a list of platforms for use with "eb init -p". Type "--verbose" to get the full platform name.',
     'upgrade.info': 'Updates the environment to the most recent platform version.',
     'scale.info': 'Changes the number of running instances.',
@@ -71,6 +131,7 @@ strings = {
     'terminate.info': 'Terminates the environment.',
     'terminate.epilog': 'This command terminates the environment. To terminate the application and everything in it, use the "--all" option.',
     'config.info': "Modify an environment's configuration. Use subcommands to manage saved configurations.",
+    'platformconfig.info': "Modify an platform's configuration. Use subcommands to manage saved configurations.",
     'ssh.info': 'Opens the SSH client to connect to an instance.',
     'printenv.info': 'Shows the environment variables.',
     'local.info': 'Runs commands on your local machine.',
@@ -108,12 +169,19 @@ strings = {
     'sstacks.notaversion': 'Elastic Beanstalk could not find any supported platforms for the given version {version}.',
     'timeout.error': 'The operation timed out. The state of the environment is unknown. The timeout can be set using the --timeout option.',
     'sc.notfound': 'Git is not set up for this project. EB CLI will deploy a .zip file of the entire directory.',
+    'exit.platformworkspacenotsupported': 'This command is not supported for Platform workspaces.',
+    'exit.applicationworkspacenotsupported': 'This command is not supported for Application workspaces.',
     'exit.notsetup': 'This directory has not been set up with the EB CLI\n'
                      'You must first run "eb init".',
     'exit.noregion': 'The EB CLI cannot find a default region. Run "eb init" or use a specific region by including the "--region" option with the command.',
+    'exit.platformworkspaceempty': 'The current directory does not contain any Platform configuration files. Unable to create new Platform.',
     # Typical response when an environment is in pending state
     'exit.invalidstate': 'The operation cannot be completed at this time due to a pending operation. Try again later.',
     'exit.argerror': 'There was an argument error in the given command',
+    'exit.invalidversion': 'Invalid version format. Only ARNs, version numbers, or platform_name/version formats are accepted.',
+    'exit.no_pdf_file': 'Unable to create platform version. Your workspace does not have a Platform Definition File, \'platform.yaml\', in the root directory.',
+    'exit.nosuchplatformversion': 'No such version exists for the current platform.',
+    'exit.nosuchplatform': 'No such platform exists.',
     'branch.noenv': 'This branch does not have a default environment. You must either specify an environment by typing '
                     '"eb {cmd} my-env-name" or set a default environment by typing "eb use my-env-name".',
     'ssh.notpresent': 'SSH is not installed. You must install SSH before continuing.',
@@ -143,6 +211,7 @@ strings = {
     'ssh.uploaded': 'Uploaded SSH public key for "{keyname}" into EC2 for region {region}.',
     'swap.unsupported': 'You must have at least 2 running environments to swap CNAMEs.',
     'connection.error': 'Having trouble communicating with AWS. Please ensure the provided region is correct and you have a working internet connection.',
+    'toomanyplatforms.error': 'You have reached your platform limit. Please consider deleting failed platform versions, or versions that you no longer require.',
     'sc.unstagedchanges': 'You have uncommitted changes.',
     'sc.gitnotinstalled': 'Your project is using git, but git doesn\'t appear to be installed.\n'
                           'Have you added git to your PATH?',
@@ -264,14 +333,17 @@ strings = {
     # CodeBuild
     'codebuild.noheader': 'Beanstalk configuration header \'{header}\' is missing from Buildspec file; will not use Beanstalk Code Build integration',
     'codebuild.latestplatform': 'Buildspec file is present but no image is specified; using latest image for selected platform: {platform}',
+    'exit.noplatform': 'This workspace is not configured with a platform. Please select one using "eb platform use"',
+    'platformstatus.upgrade': 'A more recent version of this platform is available. Type \'eb upgrade\' to uprade the platform version used by this environment.',
+    'platform.nobuilderenv': 'This workspace has not yet been associated with a builder environment. One will be configured once you create a platform version.',
     'codebuild.buildlogs': 'You can find logs for the CodeBuild build here: {logs_link}',
 }
-
 prompts = {
     'events.hanging': 'Streaming new events. Use CTRL+C to exit.',
     'platform.validate': 'It appears you are using {platform}. Is this correct?',
     'platform.prompt': 'Select a platform.',
     'platform.prompt.withmodule': 'Select a platform for module: {module_name}.',
+    'platformssh.nokey': 'This platform builder is not set up for SSH. Use "eb platform ssh --setup" to set up SSH for that environment.',
     'sstack.version': 'Select a platform version.',
     'init.selectdefaultenv': 'Select the default environment. \n'
                              'You can change this later by typing "eb use [environment_name]".',
@@ -279,9 +351,18 @@ prompts = {
                                  ' to change to a load-balancing environment?',
     'scale.switchtoloadbalancewarn': 'If you choose yes, the environment and your application will be temporarily unavailable.',
     'cname.unavailable': 'The CNAME you provided is already in use.\n',
+    'cleanupbuilder.confirm': 'The platform builder environment "{env-name}" and all associated instances will be terminated.',
+    'cleanupbuilder.validate': 'To confirm, type the environment name',
+    'cleanupplatform.confirm': 'Failed platform versions for "{platform-name}" will be removed.',
+    'cleanupplatform.validate': 'To confirm, type the platform name',
+    'cleanupplatform.validate-all': 'To confirm, type "all"',
+
     'terminate.confirm': 'The environment "{env-name}" and all associated instances will be terminated.',
     'terminate.validate': 'To confirm, type the environment name',
     'upgrade.validate': 'To continue, type the environment name',
+    'platformdelete.confirm': 'The platform "{platform-arn}" and all associated resources will be deleted.',
+    'platformdelete.validate': 'To confirm, type the platform arn',
+
     'delete.confirm': 'The application "{app-name}" and all its resources will be deleted.\n'
                       'This application currently has the following:\n'
                       'Running environments: {env-num}\n'
@@ -359,6 +440,7 @@ prompts = {
 
     # CodeBuild
     'codebuild.getplatform': 'Could not determine best image for buildspec file please select from list.\n Current chosen platform: {platform}',
+    'platforminit.ssh': 'Would you like to be able to log into your platform packer environment?',
 }
 
 alerts = {
@@ -428,6 +510,7 @@ flag_text = {
     'deploy.process': 'enable preprocessing of the application version',
 
     # Events
+    'platformevents.version': 'version to retrieve events for',
     'events.follow': 'wait and continue to print events as they come',
 
     # Init
@@ -435,6 +518,12 @@ flag_text = {
     'init.platform': 'default Platform',
     'init.keyname': 'default EC2 key name',
     'init.interactive': 'force interactive mode',
+
+    # Platform create
+    'platformcreate.instanceprofile': 'the instance profile to use when creating AMIs for custom platforms',
+
+    # SSH
+    'ssh.keyname': 'EC2 key to use with ssh',
     'init.module': 'module directory',
     'init.source': 'source of code to set as default; example source_location/repo/branch',
 
@@ -456,6 +545,7 @@ flag_text = {
     'logs.instance': 'instance id',
     'logs.log-group': 'entire log group or just the path to the file, ex: "var/log/httpd/error_log"',
     'logs.stream': 'stream deployment logs that were set up with cloudwatch',
+    'logs.environment': 'environment from which to download logs',
 
     # Restore
     'restore.env': 'The ID of the environment to restore',
@@ -477,11 +567,46 @@ flag_text = {
     'ssh.force': 'force port 22 open to 0.0.0.0',
     'ssh.setup': 'setup SSH for the environment',
 
+    # Cleanup
+    'cleanup.resources': 'Valid values include (builder, versions, all). You can specify "builder" to terminate the environment used to create this platform. You can use "versions" to clean up platform versions in the Failed state',
+    'cleanup.force': 'skip confirmation prompt',
+
+    # Delete
+    'platformdelete.force': 'skip confirmation prompt',
+    'platformdelete.cleanup': 'remove all platform versions in the "Failed" state',
+    'platformdelete.allplatforms': 'enables cleanup for all of your platforms.',
+
     # terminate
     'terminate.force': 'skip confirmation prompt',
     'terminate.all': 'terminate everything',
     'terminate.nohang': 'return immediately, do not wait for terminate to be completed',
     'terminate.ignorelinks': 'terminate even if environment is linked',
+
+    # Platform
+    'platforminit.name': 'platform name',
+
+    # Platform: Create Version
+    'platformcreateversion.version': 'platform version',
+    'platformcreateversion.major': 'major version increment',
+    'platformcreateversion.minor': 'minor version increment',
+    'platformcreateversion.patch': 'patch version increment',
+    'platformcreateversion.vpc.id': 'specify id of VPC to launch Packer builder into',
+    'platformcreateversion.vpc.subnets': 'specify subnets to launch Packer builder into',
+    'platformcreateversion.vpc.publicip': 'associate public IPs to EC2 instances launched if specified',
+
+    # logs
+    'platformlogs.version': 'platform version to retrieve logs for',
+
+    # Platform: Delete Version
+    'platformdeleteversion.version': 'platform version',
+
+    # Platform: Show Version
+    'platformshowversion.version': 'platform version',
+
+    'platformlist.all': 'lists the versions of all platforms owned by your account',
+    'platformlist.status': 'the status that you wish to filter on (Ready, Failed, Deleting, Creating)',
+
+    'platformworkspace.platform': 'platform name',
 
     # Upgrade
     'upgrade.noroll': 'do not enable rolling updates before upgrade',
@@ -510,6 +635,11 @@ flag_text = {
 
 ### The below are programmatic and are not intended to be edited unless the service response changes
 responses = {
+    'event.completewitherrors': 'Create environment operation is complete, but with errors.',
+    'event.platformdeletesuccess': 'Successfully deleted platform version',
+    'event.platformdeletefailed': 'Failed to delete platform version',
+    'event.platformcreatefailed': 'Failed to create platform version',
+    'event.platformcreatesuccess': 'Successfully created platform version',
     'event.redmessage': 'Environment health has been set to RED',
     'event.redtoyellowmessage': 'Environment health has transitioned '
                                'from YELLOW to RED',
@@ -520,7 +650,8 @@ responses = {
                        'but with errors',
     'event.failedlaunch': 'Failed to launch environment.',
     'event.faileddeploy': 'Failed to deploy application.',
-    'event.failedupdate': 'Failed to deploy configuration.',
+    # Event fails with 'Failed to deploy configuration.' but the the terminal event is below
+    'event.failedupdate': 'The environment was reverted to the previous configuration setting.',
     'event.updatebad': 'Update environment operation is complete, but with errors.',
     'event.updatefailed': 'Failed to deploy configuration.',
     'git.norepository': 'Error: Not a git repository '

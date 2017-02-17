@@ -30,7 +30,7 @@ def _get_s3_keyname_for_template(app_name, cfg_name):
 
 def create_config(app_name, env_name, cfg_name):
     description = strings['template.description']
-    result = elasticbeanstalk.create_configuration_template(
+    elasticbeanstalk.create_configuration_template(
         app_name, env_name, cfg_name, description
     )
 

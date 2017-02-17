@@ -14,15 +14,16 @@ import time
 import re
 
 from cement.utils.misc import minimal_logger
-from ..operations import gitops, buildspecops
 
-from ..lib import elasticbeanstalk, iam, utils
-from ..lib.aws import InvalidParameterValueError
-from ..core import io, fileoperations
-from ..objects.exceptions import TimeoutError, AlreadyExistsError, \
+from ebcli.resources.statics import iam_documents
+from ebcli.operations import gitops, buildspecops, commonops
+
+from ebcli.lib import elasticbeanstalk, iam, utils
+from ebcli.lib.aws import InvalidParameterValueError
+from ebcli.core import io, fileoperations
+from ebcli.objects.exceptions import TimeoutError, AlreadyExistsError, \
     NotAuthorizedError
-from ..resources.strings import strings, responses, prompts
-from . import commonops
+from ebcli.resources.strings import strings, responses, prompts
 import json
 
 LOG = minimal_logger(__name__)
@@ -192,9 +193,7 @@ def get_default_profile():
 
 def get_default_role():
     role = DEFAULT_ROLE_NAME
-    document = '{"Version": "2008-10-17","Statement": [{"Action":' \
-               ' "sts:AssumeRole","Principal": {"Service": ' \
-               '"ec2.amazonaws.com"},"Effect": "Allow","Sid": ""}]}'
+    document = iam_documents.EC2_ASSUME_ROLE_PERMISSION
     try:
         iam.create_role_with_policy(role, document, DEFAULT_ROLE_POLICIES)
     except AlreadyExistsError:
@@ -250,7 +249,7 @@ def resolve_roles(env_request, interactive):
         env_request.instance_profile = get_default_profile()
 
 
-    if (env_request.platform.has_healthd_support() and  # HealthD enabled
+    if (env_request.platform is not None and env_request.platform.has_healthd_support() and  # HealthD enabled
             (env_request.service_role is None) and
             (env_request.template_name is None)):
         role = get_service_role()

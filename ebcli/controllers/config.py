@@ -15,6 +15,7 @@ import sys
 
 from cement.core.controller import expose
 
+from ebcli.objects.platform import PlatformVersion
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
 from ..core import io, fileoperations
@@ -85,11 +86,14 @@ class ConfigController(AbstractBaseController):
         app_name = self.get_app_name()
         name = self._get_cfg_name('put')
         platform = commonops.get_default_solution_stack()
-        platform = commonops.get_solution_stack(platform)
-        platform = platform.name
+
+        if not PlatformVersion.is_valid_arn(platform):
+            platform = commonops.get_solution_stack(platform)
+            platform = platform.name
 
         saved_configs.update_config(app_name, name)
-        saved_configs.validate_config_file(app_name, name, platform)
+        filename = fileoperations.get_filename_without_extension(name)
+        saved_configs.validate_config_file(app_name, filename, platform)
 
     @expose(help='Download a configuration from S3.')
     def get(self):

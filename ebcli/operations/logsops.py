@@ -18,6 +18,7 @@ import threading
 import time
 
 from cement.utils.misc import minimal_logger
+from cement.core.exc import CaughtSignal
 from six import iteritems
 
 from ebcli.core import fileoperations, io
@@ -25,7 +26,7 @@ from ebcli.lib import elasticbeanstalk, utils, cloudwatch
 from ebcli.lib.aws import MaxRetriesError
 from ebcli.resources.strings import strings, prompts
 from ebcli.resources.statics import namespaces, option_names
-from ebcli.objects.exceptions import ServiceError, NotFoundError
+from ebcli.objects.exceptions import ServiceError, NotFoundError, NotAuthorizedError
 from ebcli.operations import commonops
 
 LOG = minimal_logger(__name__)
@@ -146,7 +147,7 @@ def stream_cloudwatch_logs(env_name, sleep_time=2, log_group=None, instance_id=N
                 stream_names.append(name)
 
                 p = threading.Thread(
-                    target=_stream_single_stream,
+                    target=stream_single_stream,
                     args=(log_group, name, streamer, sleep_time))
                 p.daemon = True
                 jobs.append(p)
@@ -156,32 +157,98 @@ def stream_cloudwatch_logs(env_name, sleep_time=2, log_group=None, instance_id=N
         time.sleep(10)
 
 
-def _stream_single_stream(log_group_name, stream_name, streamer, sleep_time=4):
+def stream_single_stream(log_group_name, stream_name, streamer, sleep_time=4, formatter=None):
     next_token = None
+
     while True:
         try:
-            response = cloudwatch.get_log_events(log_group_name, stream_name,
-                                                 next_token=next_token)
-
-            if response and response.get('events'):
-                for event in response.get('events'):
-                    message = event.get('message')
-
-                    streamer.stream_event('[{}] {}'.format(stream_name, message))
-
-                # Set the next token
-                next_token = response.get('nextForwardToken')
-
-            else:
-                time.sleep(sleep_time)
-        except MaxRetriesError:
-            LOG.debug('Received max retries')
-            io.echo('Received Max retries. You are being heavily throttled.')
+            messages = None
+            messages, next_token = get_cloudwatch_messages(log_group_name, stream_name, formatter, next_token)
         except ServiceError as e:
             # Something went wrong getting the stream
             # It probably doesnt exist anymore.
-            LOG.debug('Received service error {}'.format(e))
+            io.log_error(e)
             return
+        except CaughtSignal:
+            break
+        except Exception as e:
+            # Wait a bit before retrying
+            time.sleep(0.5)
+            # We want to swallow all exceptions or else they will be
+            # printed as a stack trace to the Console
+            # Exceptions are typically connections reset and
+            # Various things
+            LOG.debug('Exception raised: ' + str(e))
+            # Loop will cause a retry
+
+        if messages:
+            for message in messages:
+                streamer.stream_event(message)
+            time.sleep(0.1)
+        else:
+            time.sleep(sleep_time)
+
+
+def get_cloudwatch_messages(log_group_name, stream_name, formatter=None, next_token=None):
+    messages = []
+    response = None
+
+    try:
+        response = cloudwatch.get_log_events(log_group_name, stream_name, next_token=next_token)
+    except MaxRetriesError as e:
+        LOG.debug('Received max retries')
+        io.echo(e.message())
+        time.sleep(1)
+
+    if response and response.get('events'):
+        for event in response.get('events'):
+            message = event.get('message').encode('utf8', 'replace')
+
+            if formatter:
+                timestamp = event.get('timestamp')
+                formatted_message = formatter.format(stream_name, message, timestamp)
+            else:
+                formatted_message = '[{}] {}'.format(stream_name, message)
+
+            messages.append(formatted_message)
+        # Set the next token
+        next_token = response.get('nextForwardToken')
+
+    return messages, next_token
+
+
+def _get_platform_builder_group_name(platform_name):
+    return "/aws/elasticbeanstalk/platform/%s" % platform_name
+
+
+def stream_platform_logs(platform_name, version, streamer=None, sleep_time=4, log_name=None, formatter=None):
+    log_group_name = _get_platform_builder_group_name(platform_name)
+
+    if streamer is None:
+        streamer = io.get_event_streamer()
+
+    if log_name is not None:
+        streamer.prompt = ' -- Streaming logs for %s -- (Ctrl+C to exit)' % log_name
+
+    stream_single_stream(log_group_name, version, streamer, sleep_time, formatter)
+
+
+def paginate_cloudwatch_logs(platform_name, version, formatter=None):
+    log_group_name = _get_platform_builder_group_name(platform_name)
+    next_token = None
+
+    while True:
+        try:
+            messages, next_token = get_cloudwatch_messages(log_group_name, version, formatter, next_token)
+            if messages:
+                io.echo_with_pager("\n".join(messages))
+            else:
+                break
+        except ServiceError as e:
+            # Something went wrong getting the stream
+            # It probably doesnt exist anymore.
+            io.log_error(e)
+            break
         except Exception as e:
             # We want to swallow all exceptions or else they will be
             # printed as a stack trace to the Console

@@ -35,7 +35,8 @@ except ImportError:
 from ebcli.core import io
 from ebcli.resources.strings import prompts, strings
 from ebcli.objects.exceptions import NotInitializedError, InvalidSyntaxError, \
-    NotFoundError
+    NotFoundError, ValidationError
+from ebcli.core.ebglobals import Constants
 
 LOG = minimal_logger(__name__)
 
@@ -74,6 +75,7 @@ logs_folder = beanstalk_directory + 'logs' + os.path.sep
 env_yaml = 'env.yaml'
 
 _marker = object()
+
 
 def _get_option(config, section, key, default):
     try:
@@ -258,8 +260,39 @@ def get_current_directory_name():
     return filename
 
 
+def get_platform_version(default=_marker):
+    try:
+        return get_global_value('platform_version')
+    except NotInitializedError:
+        return None
+
+
+def get_instance_profile(default=None):
+    try:
+        return get_global_value('instance_profile', default)
+    except NotInitializedError:
+        return default
+
+
 def get_application_name(default=_marker):
-    result = get_config_setting('global', 'application_name')
+    return get_global_value('application_name')
+
+
+def get_platform_name(default=_marker):
+    return get_global_value('platform_name')
+
+
+def get_workspace_type(default=_marker):
+    try:
+        return get_global_value('workspace_type', default)
+    except NotInitializedError:
+        if default == _marker:
+            raise NotInitializedError
+        return default
+
+
+def get_global_value(key, default=_marker):
+    result = get_config_setting('global', key)
     if result is not None:
         return result
 
@@ -279,7 +312,17 @@ def touch_config_folder(dir_path=None):
                     else beanstalk_directory)
 
 
-def create_config_file(app_name, region, solution_stack, dir_path=None, repository=None, branch=None):
+def create_config_file(
+        app_name,
+        region,
+        solution_stack,
+        workspace_type=Constants.WorkSpaceTypes.APPLICATION,
+        platform_name=None,
+        platform_version=None,
+        instance_profile=None,
+        dir_path=None,
+        repository=None,
+        branch=None):
     """
         We want to make sure we do not override the file if it already exists,
          but we do want to fill in all missing pieces
@@ -299,6 +342,10 @@ def create_config_file(app_name, region, solution_stack, dir_path=None, reposito
     write_config_setting('global', 'application_name', app_name, dir_path=dir_path)
     write_config_setting('global', 'default_region', region, dir_path=dir_path)
     write_config_setting('global', 'default_platform', solution_stack, dir_path=dir_path)
+    write_config_setting('global', 'workspace_type', workspace_type, dir_path=dir_path)
+    write_config_setting('global', 'platform_name', platform_name, dir_path=dir_path)
+    write_config_setting('global', 'platform_version', platform_version, dir_path=dir_path)
+    write_config_setting('global', 'instance_profile', instance_profile, dir_path=dir_path)
     from ebcli.operations import gitops
     gitops.set_repo_default_for_current_environment(repository)
     gitops.set_branch_default_for_current_environment(branch)
@@ -622,6 +669,24 @@ def get_application_from_file(app_name):
         os.chdir(cwd)
 
     return app
+
+
+def update_platform_version(version):
+    if version:
+        write_config_setting('global', 'platform_version', version)
+
+
+def update_platform_name(platform_name):
+    if platform_name:
+        write_config_setting('global', 'platform_name', platform_name)
+
+
+def write_keyname(keyname):
+    write_config_setting('global', 'default_ec2_keyname', keyname)
+
+
+def get_keyname():
+    return get_config_setting('global', 'default_ec2_keyname', None)
 
 
 def write_config_setting(section, key_name, value, dir_path=None, file=local_config_file):

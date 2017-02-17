@@ -27,9 +27,7 @@ urllib = six.moves.urllib
 from ebcli.objects.exceptions import CommandError, InvalidOptionsError
 from ebcli.core import io, fileoperations
 
-
 LOG = minimal_logger(__name__)
-
 
 def prompt_for_item_in_list(lst, default=1):
     ind = prompt_for_index_in_list(lst, default)

@@ -77,25 +77,32 @@ def delete_objects(bucket, keys):
     return result
 
 
-def upload_application_version(bucket, key, file_path):
+def upload_workspace_version(bucket, key, file_path, workspace_type='Application'):
     try:
         size = os.path.getsize(file_path)
     except OSError as err:
         if err.errno == 2:
-            raise NotFoundError('Application Version does not exist locally ({0}).'
-                                ' Try uploading the Application Version again.'.format(err.filename))
+            raise NotFoundError('{0} Version does not exist locally ({1}).'
+                                ' Try uploading the Application Version again.'.format(workspace_type, err.filename))
         raise err
 
-    LOG.debug('Upload Application Version. File size = ' + str(size))
+    LOG.debug('Upload {0} Version. File size = {1}'.format(workspace_type, str(size)))
     if size > 536870912:
-        raise FileTooLargeError('Application version cannot be any '
-                                'larger than 512MB')
+        raise FileTooLargeError('Archive cannot be any larger than 512MB')
     if size < 7340032:
         result = simple_upload(bucket, key, file_path)
 
     else:
         result = multithreaded_upload(bucket, key, file_path)
     return result
+
+
+def upload_application_version(bucket, key, file_path):
+    upload_workspace_version(bucket, key, file_path, 'Application')
+
+
+def upload_platform_version(bucket, key, file_path):
+    upload_workspace_version(bucket, key, file_path, 'Platform')
 
 
 def simple_upload(bucket, key, file_path):

@@ -12,3 +12,12 @@
 # language governing permissions and limitations under the License.
 
 # app gets set in ebcore
+
+
+class Constants:
+    class WorkSpaceTypes:
+        APPLICATION = 'Application'
+        PLATFORM = 'Platform'
+
+    AWS_ELASTIC_BEANSTALK_ACCOUNT = "AWSElasticBeanstalk"
+    OWNED_BY_SELF = "self"

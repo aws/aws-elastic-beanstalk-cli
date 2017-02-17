@@ -1,9 +1,11 @@
 import os, sys
 
 import logging
-from argparse import SUPPRESS
+from argparse import SUPPRESS, ArgumentTypeError
 
 from botocore.compat import six
+
+from ebcli.lib.aws import TooManyPlatformsError
 
 iteritems = six.iteritems
 
@@ -61,6 +63,12 @@ def run_app(app):
     except ConnectionError:
         io.log_error(strings['connection.error'])
         app.close(code=2)
+    except ArgumentTypeError:
+        io.log_error(strings['exit.argerror'])
+        app.close(code=4)
+    except TooManyPlatformsError:
+        io.log_error(strings['toomanyplatforms.error'])
+        app.close(code=4)
     except EBCLIException as e:
         if app.pargs and app.pargs.debug:
             raise

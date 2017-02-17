@@ -14,10 +14,11 @@
 
 class Event():
     def __init__(self, message=None, event_date=None, version_label=None,
-                 app_name=None, environment_name=None, severity=None):
+                 app_name=None, environment_name=None, severity=None, platform=None):
         self.message = message
         self.event_date = event_date
         self.version_label = version_label
         self.app_name = app_name
         self.environment_name = environment_name
         self.severity = severity
+        self.platform = platform

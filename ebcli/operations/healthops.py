@@ -21,6 +21,7 @@ from ..display.help import HelpTable, ViewlessHelpTable
 from ..display import term
 from ..display.table import Column, Table
 from ..display.specialtables import RequestTable, StatusTable
+from ebcli.objects.platform import PlatformVersion
 from ..objects.exceptions import NotSupportedError
 from ..objects.solutionstack import SolutionStack
 from ..resources.statics import namespaces, option_names
@@ -93,7 +94,16 @@ def create_health_tables(screen, env):
         Column('idle%', 6, 'Idle', 'right'),
         Column('iowait%', 9, 'IOWait', 'right'),
     ]))
-    if SolutionStack(env['SolutionStackName']).has_healthd_group_version_2_support():
+
+    has_healthd_V2_support = False
+
+    try:
+        platform_arn = env['PlatformArn']
+        has_healthd_V2_support = PlatformVersion(platform_arn).has_healthd_group_version_2_support()
+    except KeyError:
+        has_healthd_V2_support = SolutionStack(env['SolutionStackName']).has_healthd_group_version_2_support()
+
+    if has_healthd_V2_support:
         screen.add_table(Table('deployments', columns=[
             Column('instance-id', None, 'InstanceId', 'left'),
             Column('status', None, 'DeploymentStatus', 'left'),

@@ -10,7 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
+from ebcli.objects.platform import PlatformVersion
 from ..resources.strings import prompts
 from ..resources.statics import namespaces, option_names
 from ..core import io
@@ -81,11 +81,11 @@ def upgrade_env(app_name, env_name, timeout, confirm, noroll):
         add_rolling = _should_add_rolling(single, rolling_enabled, noroll)
 
         do_upgrade(env_name, add_rolling, timeout, latest.name,
-                   health_based=webserver)
+                   health_based=webserver, platform_arn = latest.version)
 
 
 def do_upgrade(env_name, add_rolling, timeout, solution_stack_name,
-               health_based=False):
+               health_based=False, platform_arn=None):
     if add_rolling:
         if health_based:
             roll_type = 'Health'
@@ -104,6 +104,12 @@ def do_upgrade(env_name, add_rolling, timeout, solution_stack_name,
         io.log_warning(prompts['upgrade.applyrolling'].format(roll_type))
     else:
         changes = None
-    commonops.update_environment(
-        env_name, changes, None, timeout=timeout,
-        solution_stack_name=solution_stack_name)
+
+    if PlatformVersion.is_valid_arn(platform_arn):
+        commonops.update_environment(
+            env_name, changes, None, timeout=timeout,
+            platform_arn=platform_arn)
+    else:
+        commonops.update_environment(
+            env_name, changes, None, timeout=timeout,
+            solution_stack_name=solution_stack_name)

@@ -13,6 +13,7 @@
 
 import unittest
 import mock
+from mock import ANY
 
 from ebcli.operations import logsops
 from ebcli.lib.aws import MaxRetriesError
@@ -141,7 +142,7 @@ class TestLogsOperations(unittest.TestCase):
         self.mock_io.echo_with_pager.assert_called_with(self.log_msg)
 
     # TESTING logsops.stream_logs()
-    @mock.patch('ebcli.operations.logsops._stream_single_stream')
+    @mock.patch('ebcli.operations.logsops.stream_single_stream')
     @mock.patch('ebcli.operations.logsops.get_log_name')
     @mock.patch('ebcli.operations.logsops.threading')
     @mock.patch('ebcli.operations.logsops.threading.Thread')
@@ -162,7 +163,7 @@ class TestLogsOperations(unittest.TestCase):
         self.mock_cloudwatch.get_all_stream_names.assert_called_with(self.default_log_group, None)
         mock_threading.Thread.assert_called_with(target=mock_single_stream, args=(self.default_log_group, self.instance_id, mock_event_streamer, 2))
 
-    @mock.patch('ebcli.operations.logsops._stream_single_stream')
+    @mock.patch('ebcli.operations.logsops.stream_single_stream')
     @mock.patch('ebcli.operations.logsops.threading')
     @mock.patch('ebcli.operations.logsops.threading.Thread')
     @mock.patch('ebcli.core.io.EventStreamer')
@@ -181,7 +182,7 @@ class TestLogsOperations(unittest.TestCase):
         self.mock_cloudwatch.get_all_stream_names.assert_called_with(self.old_default_log_group, None)
         mock_threading.Thread.assert_called_with(target=mock_single_stream, args=(self.old_default_log_group, self.instance_id, mock_event_streamer, 2))
 
-    # TESTING logops._stream_single_stream
+    # TESTING logops.stream_single_stream
     @mock.patch('ebcli.core.io.EventStreamer')
     def test_stream_single_stream_call(self, mock_streamer):
         # Mock out methods
@@ -189,7 +190,7 @@ class TestLogsOperations(unittest.TestCase):
                                                            MaxRetriesError("Retry Me!"), ServiceError("Fail!")]
 
         # Make actual call
-        logsops._stream_single_stream(self.specified_log_group, self.instance_id, mock_streamer)
+        logsops.stream_single_stream(self.specified_log_group, self.instance_id, mock_streamer)
 
         # Assert correct methods were called
         self.mock_cloudwatch.get_log_events.assert_called_with(self.specified_log_group, self.instance_id, next_token='fooToken')
@@ -250,7 +251,7 @@ class TestLogsOperations(unittest.TestCase):
         get_logs_cloudwatch_calls = [mock.call(self.default_log_group, self.instance_id, num_log_events=logsops.TAIL_LOG_SIZE),
                                      mock.call(self.default_log_group, self.instance_id_alt, num_log_events=logsops.TAIL_LOG_SIZE)]
         mock_get_stream_logs.assert_has_calls(get_logs_cloudwatch_calls)
-        self.mock_io.echo_with_pager.assert_called_once()
+        self.mock_io.echo_with_pager.assert_called_once_with(ANY)
 
     # TESTING logsops.log_streaming_enabled()
     def test_get_logs_cloudwatch_call(self):

@@ -61,6 +61,52 @@ class NotAuthorizedInRegionError(EBCLIException):
     pass
 
 
+class InvalidPlatformVersionError(EBCLIException):
+    """
+    The provided version does not match '\d+\.\d+\.\d+'
+    """
+    pass
+
+
+class PlatformWorkspaceEmptyError(EBCLIException):
+    """
+    The customer attempted to create a Platform version but the workspace is empty.
+    """
+    pass
+
+
+class PlatformWorkspaceNotSupportedError(EBCLIException):
+    """
+    The EB directory has been initialized as a Platform workspace. This command does
+    not support Platform workspaces.
+    """
+    pass
+
+
+class ApplicationWorkspaceNotSupportedError(EBCLIException):
+    """
+    The EB directory has been initialized as an Application workspace. This command does
+    not support Application workspaces.
+    """
+    pass
+
+
+class AlreadyInitializedAsPlatformWorkspaceError(EBCLIException):
+    """
+    The EB directory has already been initialized as a Platform workspace, and the
+    customer is now trying to reinitialize it as an Application workspace.
+    """
+    pass
+
+
+class AlreadyInitializedAsApplicationWorkspaceError(EBCLIException):
+    """
+    The EB directory has already been initialized as a Application workspace, and the
+    customer is now trying to reinitialize it as an Platform workspace.
+    """
+    pass
+
+
 class NotInitializedError(EBCLIException):
     """  The eb directory can not be found.  """
     pass

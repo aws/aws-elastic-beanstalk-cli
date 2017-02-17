@@ -18,26 +18,30 @@ from datetime import datetime, timedelta
 import platform
 
 from ..core.fileoperations import _marker
+from semantic_version import Version
+
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
 from botocore.compat import six
 
 from ebcli.operations import buildspecops
+from ebcli.core.ebglobals import Constants
 from ..core import fileoperations, io
 from ..containers import dockerrun
 from ..lib import aws, ec2, elasticbeanstalk, heuristics, s3, utils, codecommit
+from ebcli.objects.platform import PlatformVersion
 from ..lib.aws import InvalidParameterValueError
 from ..objects.exceptions import *
 from ..objects.solutionstack import SolutionStack
-from ..objects.sourcecontrol import SourceControl
+from ..objects.sourcecontrol import SourceControl, NoSC
 from ..resources.strings import strings, responses, prompts
 
 LOG = minimal_logger(__name__)
 
-
 def wait_for_success_events(request_id, timeout_in_minutes=None,
                             sleep_time=5, stream_events=True, can_abort=False,
-                            streamer=None, app_name=None, env_name=None, version_label=None):
+                            streamer=None, app_name=None, env_name=None, version_label=None,
+                            platform_arn=None):
     if timeout_in_minutes == 0:
         return
     if timeout_in_minutes is None:
@@ -65,31 +69,32 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
 
     try:
         # Get first event in order to get start time
-        while not events:
-            events = elasticbeanstalk.get_new_events(
-                None, None, request_id, last_event_time=None, version_label=version_label
-            )
+        if request_id:
+            while not events:
+                events = elasticbeanstalk.get_new_events(
+                    None, None, request_id, last_event_time=None, version_label=version_label
+                )
 
-            if len(events) > 0:
-                event = events[-1]
-                app_name = event.app_name
-                env_name = event.environment_name
+                if len(events) > 0:
+                    event = events[-1]
+                    app_name = event.app_name
+                    env_name = event.environment_name
 
-                if stream_events:
-                    streamer.stream_event(get_event_string(event), safe_to_quit=safe_to_quit)
-                # Test event message for success string
-                if _is_success_string(event.message):
-                    return
-                last_time = event.event_date
-            else:
-                time.sleep(sleep_time)
+                    if stream_events:
+                        streamer.stream_event(get_event_string(event), safe_to_quit=safe_to_quit)
+                    # Test event message for success string
+                    if _is_success_string(event.message):
+                        return
+                    last_time = event.event_date
+                else:
+                    time.sleep(sleep_time)
 
         # Get remaining events without request id
         while (datetime.now() - start) < timediff:
             time.sleep(sleep_time)
 
             events = elasticbeanstalk.get_new_events(
-                app_name, env_name, None, last_event_time=last_time
+                app_name, env_name, None, last_event_time=last_time, platform_arn=platform_arn
             )
 
             for event in reversed(events):
@@ -260,6 +265,16 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
 
 
 def _is_success_string(message):
+    if message.startswith(responses['event.completewitherrors']):
+        return True
+    if message.startswith(responses['event.platformdeletesuccess']):
+        return True
+    if message.startswith(responses['event.platformdeletefailed']):
+        return True
+    if message.startswith(responses['event.platformcreatefailed']):
+        return True
+    if message.startswith(responses['event.platformcreatesuccess']):
+        return True
     if message == responses['event.greenmessage']:
         return True
     if message.startswith(responses['event.launchsuccess']):
@@ -385,15 +400,104 @@ def get_app_version_s3_location(app_name, version_label):
     return s3_bucket, s3_key
 
 
-def prompt_for_solution_stack(module_name=None):
+def list_platform_versions_sorted_by_name(platform_name=None, status=None, owner=None, show_status=False, excludeEBOwned=True):
+    platform_list = elasticbeanstalk.list_platform_versions(
+        platform_name=platform_name, status=status, owner=owner)
+    platform_tuples = list()
+    platforms = list()
+    arn_index = 0
+    status_index = 1
 
+    for platform in platform_list:
+        arn = platform['PlatformArn']
+        owner = platform['PlatformOwner']
+
+        if excludeEBOwned and owner == Constants.AWS_ELASTIC_BEANSTALK_ACCOUNT:
+            continue
+
+        _, platform_name, _ = PlatformVersion.arn_to_platform(arn)
+
+        platform_tuples.append((arn, platform['PlatformStatus']))
+
+    # Sort by name, then by version
+    platform_tuples.sort(key=lambda platform: (PlatformVersion.get_platform_name(platform[arn_index]), Version(PlatformVersion.get_platform_version(platform[arn_index]))), reverse=True)
+
+    for platform in platform_tuples:
+        if show_status:
+            platforms.append("%s  Status: %s" % (platform[arn_index], platform[status_index]))
+        else:
+            platforms.append(platform[arn_index])
+
+    return platforms
+
+
+def get_custom_platform(custom_platforms):
+    accounts = dict()
+    platform_names = []
+
+    for platform_arn in custom_platforms:
+        account_id, platform_name, platform_version = PlatformVersion.arn_to_platform(platform_arn)
+
+        try:
+            platforms = accounts[account_id]
+        except KeyError:
+            platforms = dict()
+
+        try:
+            platform = platforms[platform_name]
+        except KeyError:
+            platform = dict()
+
+        platform[platform_version] = platform_arn
+        platforms[platform_name] = platform
+        accounts[account_id] = platforms
+        platform_names.append(platform_name)
+
+    longest_platform_name = len(max(platform_names, key=len))
+
+    platforms = []
+    for account in accounts:
+        for platform in accounts[account]:
+            platforms.append("%-*s (Owned by: %s)" % (longest_platform_name, platform, account))
+
+    io.echo()
+    io.echo(prompts['platform.prompt'])
+    selected_platform = utils.prompt_for_item_in_list(platforms)
+
+    option_pattern = re.compile('^(.+)\s+\(Owned by: (.+)\)$')
+    match = option_pattern.match(selected_platform)
+
+    selected_platform_name, selected_account = match.group(1, 2)
+    selected_platform_name = selected_platform_name.strip()
+
+    versions = []
+    for version in accounts[selected_account][selected_platform_name]:
+        versions.append(version)
+
+    if len(versions) > 1:
+        versions.sort(key=lambda arn: Version(arn), reverse=True)
+        io.echo()
+        io.echo(prompts['sstack.version'])
+        version = utils.prompt_for_item_in_list(versions)
+    else:
+        version = versions[0]
+
+    return PlatformVersion(accounts[selected_account][selected_platform_name][version])
+
+
+def prompt_for_solution_stack(module_name=None):
     solution_stacks = elasticbeanstalk.get_available_solution_stacks()
+    custom_platforms = list_platform_versions_sorted_by_name()
+    custom_platform_option = "Custom Platform"
 
     # get list of platforms
     platforms = []
     for stack in solution_stacks:
         if stack.platform not in platforms:
             platforms.append(stack.platform)
+
+    if custom_platforms is not None and len(custom_platforms) > 0:
+        platforms.append(custom_platform_option)
 
     cwd = os.getcwd()
     # First check to see if we know what language the project is in
@@ -427,6 +531,9 @@ def prompt_for_solution_stack(module_name=None):
                                                                    module_name))
         platform = utils.prompt_for_item_in_list(platforms)
 
+    if platform == custom_platform_option:
+        return get_custom_platform(custom_platforms)
+
     # filter
     solution_stacks = [x for x in solution_stacks if x.platform == platform]
 
@@ -447,7 +554,22 @@ def prompt_for_solution_stack(module_name=None):
     return get_latest_solution_stack(version, stack_list=solution_stacks)
 
 
+def get_latest_platform(platform_arn):
+    account_id, platform_name, platform_version = PlatformVersion.arn_to_platform(platform_arn)
+
+    platforms = elasticbeanstalk.list_platform_versions(platform_name, 'latest', 'Ready', account_id)
+
+    if len(platforms) == 1:
+        return PlatformVersion(platforms[0]['PlatformArn'])
+
+    # The customer doesn't have access to the platform anymore?
+    return PlatformVersion(platform_arn)
+
+
 def get_latest_solution_stack(platform_version, stack_list=None):
+    if PlatformVersion.is_valid_arn(platform_version):
+        return get_latest_platform(platform_version)
+
     if stack_list:
         solution_stacks = stack_list
     else:
@@ -536,7 +658,7 @@ def pull_down_app_info(app_name, default_env=None):
     if keyname is None:
         keyname = -1
 
-    return env.platform.name, keyname
+    return env.platform.version, keyname
 
 
 def open_webpage_in_browser(url, ssl=False):
@@ -726,7 +848,6 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
 
     if len(description) > 200:
         description = description[:195] + '...'
-
 
     # Check for zip or artifact deploy
     artifact = fileoperations.get_config_setting('deploy', 'artifact')
@@ -936,12 +1057,12 @@ def _zip_up_project(version_label, source_control, staged=False):
 
 def update_environment(env_name, changes, nohang, remove=None,
                        template=None, timeout=None, template_body=None,
-                       solution_stack_name=None):
+                       solution_stack_name=None, platform_arn=None):
     try:
         request_id = elasticbeanstalk.update_environment(
             env_name, changes, remove=remove, template=template,
             template_body=template_body,
-            solution_stack_name=solution_stack_name)
+            solution_stack_name=solution_stack_name, platform_arn=platform_arn)
     except InvalidStateError:
         io.log_error(prompts['update.invalidstate'])
         return
@@ -1040,6 +1161,13 @@ def get_config_setting_from_branch_or_default(key_name, default=_marker):
         return setting
     else:
         return fileoperations.get_config_setting('global', key_name, default=default)
+
+
+def is_platform_arn(solution_string):
+    if solution_string is None:
+        return False
+
+    return PlatformVersion.ARN_PATTERN.match(str(solution_string)) is not None
 
 
 def get_solution_stack(solution_string):

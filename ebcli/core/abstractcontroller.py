@@ -14,15 +14,18 @@
 import textwrap
 import json
 
+import sys
 from cement.core import controller
 
 from ebcli import __version__
-from ..lib import utils
-from ..core import io, fileoperations
-from ..objects.exceptions import NoEnvironmentForBranchError
-from ..resources.strings import strings, flag_text
-from ..objects import region
-from ..operations import commonops
+from ebcli.core.ebglobals import Constants
+from ebcli.lib import utils
+from ebcli.core import io, fileoperations
+from ebcli.objects.exceptions import NoEnvironmentForBranchError, PlatformWorkspaceNotSupportedError, \
+    ApplicationWorkspaceNotSupportedError, EBCLIException
+from ebcli.resources.strings import strings, flag_text
+from ebcli.objects import region
+from ebcli.operations import commonops
 
 
 class AbstractBaseController(controller.CementBaseController):
@@ -57,6 +60,14 @@ class AbstractBaseController(controller.CementBaseController):
         self.do_command()
         self.check_for_cli_update(__version__)
 
+    def check_workspace_type(self, expected_type):
+        workspace_type = fileoperations.get_workspace_type()
+        if workspace_type != expected_type:
+            if Constants.WorkSpaceTypes.PLATFORM == workspace_type:
+                raise PlatformWorkspaceNotSupportedError(strings['exit.platformworkspacenotsupported'])
+            if Constants.WorkSpaceTypes.APPLICATION == workspace_type:
+                raise ApplicationWorkspaceNotSupportedError(strings['exit.applicationworkspacenotsupported'])
+
     def check_for_cli_update(self, version):
         label = self.Meta.label
         if label in ('create', 'deploy', 'status', 'clone', 'config'):
@@ -75,7 +86,12 @@ class AbstractBaseController(controller.CementBaseController):
             env_name = commonops. \
                 get_current_branch_environment()
 
+        workspace_type = fileoperations.get_workspace_type(Constants.WorkSpaceTypes.APPLICATION)
+
         if not env_name:
+            if Constants.WorkSpaceTypes.PLATFORM == workspace_type:
+                raise EBCLIException(strings['platform.nobuilderenv'])
+
             # No default env, lets ask for one
             if noerror:
                 return None

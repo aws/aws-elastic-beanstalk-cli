@@ -22,8 +22,8 @@ from ebcli.objects.exceptions import InvalidSyntaxError
 class TestConfigOperations(unittest.TestCase):
     app_name = 'ebcli-app'
     env_name = 'ebcli-env'
-    solution_stack_name = 'Solution Stack Name'
-    new_solution_stack_name = 'New Solution Stack Name'
+    platform_arn = 'arn:aws:elasticbeanstalk:us-east-1::platform/Platform1/1.0.0'
+    new_platform_arn = 'arn:aws:elasticbeanstalk:us-east-1::platform/Platform2/1.0.0'
 
     file_location = '/wow/eb/white space/.intere-sting'
     editor = 'emacs'
@@ -31,8 +31,8 @@ class TestConfigOperations(unittest.TestCase):
     changes = "foo-change"
     remove = "remove-me"
 
-    api_model = {'SolutionStackName': solution_stack_name}
-    usr_model = {'SolutionStackName': new_solution_stack_name}
+    api_model = {'PlatformArn': platform_arn}
+    usr_model = {'PlatformArn': new_platform_arn}
 
     @mock.patch('ebcli.operations.configops.commonops')
     @mock.patch('ebcli.operations.configops.EnvironmentSettings')
@@ -53,8 +53,9 @@ class TestConfigOperations(unittest.TestCase):
         configops.update_environment_configuration(self.app_name, self.env_name, self.nohang)
         # verify that changes will be made
         mock_commonops.update_environment.assert_called_with(self.env_name, self.changes, self.nohang,
-                                                             solution_stack_name=self.new_solution_stack_name,
-                                                             remove=self.remove, timeout=None)
+                                                             platform_arn=self.new_platform_arn,
+                                                             remove=self.remove, timeout=None,
+                                                             solution_stack_name=None)
 
     @mock.patch('ebcli.operations.configops.commonops')
     @mock.patch('ebcli.operations.configops.EnvironmentSettings')
