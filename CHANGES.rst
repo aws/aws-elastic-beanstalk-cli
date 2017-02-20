@@ -1,10 +1,11 @@
 =========
 Changelog
 =========
-------------------
+-------------------
 3.10.0 (2017-02-21)
-------------------
+-------------------
 - Support for custom elastic beanstalk platforms
+- Fixed CodeBuild integration pulling CloudWatch URL link
 
 ------------------
 3.9.1 (2017-02-08)
