@@ -98,6 +98,7 @@ class GenericPlatformInitController(AbstractBaseController):
     def get_platform_name_and_version(self):
         # Get app name from command line arguments
         platform_name = self.app.pargs.platform_name
+        interactive = self.app.pargs.interactive
         version = None
 
         # Get app name from config file, if exists
@@ -109,7 +110,7 @@ class GenericPlatformInitController(AbstractBaseController):
                 platform_name = None
 
         # Ask for app name
-        if not platform_name:
+        if not platform_name or interactive:
             platform_name, version = platformops.get_platform_name_and_version_interactive()
 
         if sys.version_info[0] < 3 and isinstance(platform_name, unicode):
