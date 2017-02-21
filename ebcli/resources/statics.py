@@ -14,21 +14,79 @@
 # TODO: Merge into ebcli/lib/iam_role.py when the code has been merged in
 class iam_documents(object):
     EC2_ASSUME_ROLE_PERMISSION = '{"Version": "2008-10-17","Statement": [{"Action":' \
-            ' "sts:AssumeRole","Principal": {"Service": ' \
-            '"ec2.amazonaws.com"},"Effect": "Allow","Sid": ""}]}'
-    CUSTOM_PLATFORM_BUILDER_INLINE_POLICY = '{"Version":"2012-10-17","Statement":[{"Effect":' \
-                                            '"Allow","Action":["ec2:AttachVolume","ec2:AuthorizeSecurityGroupIngress",' \
-                                            '"ec2:CopyImage","ec2:CreateImage","ec2:CreateKeypair",' \
-                                            '"ec2:CreateSecurityGroup","ec2:CreateSnapshot","ec2:CreateTags",' \
-                                            '"ec2:CreateVolume","ec2:DeleteKeypair","ec2:DeleteSecurityGroup",' \
-                                            '"ec2:DeleteSnapshot","ec2:DeleteVolume","ec2:DeregisterImage",' \
-                                            '"ec2:DescribeImageAttribute","ec2:DescribeImages","ec2:DescribeInstances",' \
-                                            '"ec2:DescribeRegions","ec2:DescribeSecurityGroups","ec2:DescribeSnapshots",' \
-                                            '"ec2:DescribeSubnets","ec2:DescribeTags","ec2:DescribeVolumes",' \
-                                            '"ec2:DetachVolume","ec2:GetPasswordData","ec2:ModifyImageAttribute",' \
-                                            '"ec2:ModifyInstanceAttribute","ec2:ModifySnapshotAttribute",' \
-                                            '"ec2:RegisterImage","ec2:RunInstances","ec2:StopInstances",' \
-                                            '"ec2:TerminateInstances"],"Resource":"*"}]}'
+                                 ' "sts:AssumeRole","Principal": {"Service": ' \
+                                 '"ec2.amazonaws.com"},"Effect": "Allow","Sid": ""}]}'
+
+    # TODO: Replace this raw string with Custom Platform managed policy after live release: AWSElasticBeanstalkCustomPlatformforEC2Role
+    CUSTOM_PLATFORM_BUILDER_INLINE_POLICY = """{
+                                          "Version": "2012-10-17",
+                                          "Statement": [
+                                            {
+                                              "Sid": "PackerEC2Access",
+                                              "Action": [
+                                                "ec2:AttachVolume",
+                                                "ec2:AuthorizeSecurityGroupIngress",
+                                                "ec2:CopyImage",
+                                                "ec2:CreateImage",
+                                                "ec2:CreateKeypair",
+                                                "ec2:CreateSecurityGroup",
+                                                "ec2:CreateSnapshot",
+                                                "ec2:CreateTags",
+                                                "ec2:CreateVolume",
+                                                "ec2:DeleteKeypair",
+                                                "ec2:DeleteSecurityGroup",
+                                                "ec2:DeleteSnapshot",
+                                                "ec2:DeleteVolume",
+                                                "ec2:DeregisterImage",
+                                                "ec2:DescribeImageAttribute",
+                                                "ec2:DescribeImages",
+                                                "ec2:DescribeInstances",
+                                                "ec2:DescribeRegions",
+                                                "ec2:DescribeSecurityGroups",
+                                                "ec2:DescribeSnapshots",
+                                                "ec2:DescribeSubnets",
+                                                "ec2:DescribeTags",
+                                                "ec2:DescribeVolumes",
+                                                "ec2:DetachVolume",
+                                                "ec2:GetPasswordData",
+                                                "ec2:ModifyImageAttribute",
+                                                "ec2:ModifyInstanceAttribute",
+                                                "ec2:ModifySnapshotAttribute",
+                                                "ec2:RegisterImage",
+                                                "ec2:RunInstances",
+                                                "ec2:StopInstances",
+                                                "ec2:TerminateInstances"
+                                              ],
+                                              "Effect": "Allow",
+                                              "Resource": "*"
+                                            },
+                                            {
+                                              "Sid": "BucketAccess",
+                                              "Action": [
+                                                "s3:Get*",
+                                                "s3:List*",
+                                                "s3:PutObject"
+                                              ],
+                                              "Effect": "Allow",
+                                              "Resource": [
+                                                "arn:aws:s3:::elasticbeanstalk-*",
+                                                "arn:aws:s3:::elasticbeanstalk-*/*"
+                                              ]
+                                            },
+                                            {
+                                              "Sid": "CloudWatchLogsAccess",
+                                              "Action": [
+                                                "logs:CreateLogGroup",
+                                                "logs:CreateLogStream",
+                                                "logs:PutLogEvents",
+                                                "logs:DescribeLogStreams"
+                                              ],
+                                              "Effect": "Allow",
+                                              "Resource": "arn:aws:logs:*:*:log-group:/aws/elasticbeanstalk/platform/*"
+                                            }
+                                          ]
+                                        }"""
+
 
 class iam_attributes(object):
     DEFAULT_PLATFORM_BUILDER_ROLE = 'aws-elasticbeanstalk-custom-platform-ec2-role'
