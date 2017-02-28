@@ -1,7 +1,12 @@
 import json
 import os
 import codecs
+import sys
 
+ESC_CHAR = 27
+ERASE_LINE_CTRL_CODE = '[2K'
+CURSOR_UP_CTRL_CODE = '[%dA'
+CURSOR_DOWN_CTRL_CODE = '[%dB'
 
 class StreamOutputError(Exception):
     pass
@@ -9,12 +14,15 @@ class StreamOutputError(Exception):
 
 def stream_output(output, stream):
     is_terminal = hasattr(stream, 'fileno') and os.isatty(stream.fileno())
-    stream = codecs.getwriter('utf-8')(stream)
+    if sys.version_info[0] < 3:
+        stream = codecs.getwriter('utf-8')(stream)
     all_events = []
     lines = {}
     diff = 0
 
+    print(output)
     for chunk in output:
+        print(chunk)
         event = json.loads(chunk)
         all_events.append(event)
 
@@ -32,13 +40,13 @@ def stream_output(output, stream):
 
             if is_terminal:
                 # move cursor up `diff` rows
-                stream.write("%c[%dA" % (27, diff))
+                stream.write("%c%s" % (ESC_CHAR, (CURSOR_UP_CTRL_CODE % diff)))
 
         print_output_event(event, stream, is_terminal)
 
         if 'id' in event and is_terminal:
             # move cursor back down
-            stream.write("%c[%dB" % (27, diff))
+            stream.write("%c%s" % (ESC_CHAR, (CURSOR_DOWN_CTRL_CODE % diff)))
 
         stream.flush()
 
@@ -53,7 +61,7 @@ def print_output_event(event, stream, is_terminal):
 
     if is_terminal and 'stream' not in event:
         # erase current line
-        stream.write("%c[2K\r" % 27)
+        stream.write("%c%s\r" % (ESC_CHAR, ERASE_LINE_CTRL_CODE))
         terminator = "\r"
         pass
     elif 'progressDetail' in event:
