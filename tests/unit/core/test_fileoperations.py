@@ -17,11 +17,12 @@ import unittest
 
 import sys
 import yaml
+import zipfile
 
 from ebcli.core import fileoperations
 from ebcli.objects.exceptions import NotInitializedError, AlreadyExistsError
 from ebcli.objects.buildconfiguration import BuildConfiguration
-from mock import patch
+from mock import patch, Mock
 
 
 class TestFileOperations(unittest.TestCase):
@@ -659,3 +660,32 @@ class TestFileOperations(unittest.TestCase):
             mock_get_default_lambda_role.assert_not_called()
         finally:
             os.chdir(pwd)
+
+    @patch('ebcli.core.fileoperations.zipfile')
+    def test_dir_exist_in_zip_exists_with_slash(self, mock_zipfile_lib):
+        # setup mock zipfile
+        mock_zip = Mock()
+        mock_zipfile_lib.ZipFile.return_value = mock_zip
+        mock_zip.namelist.return_value = ['wow/', 'such-dir/']
+
+        self.assertTrue(fileoperations.dir_exist_in_zip('', 'such-dir/'))
+
+
+    @patch('ebcli.core.fileoperations.zipfile')
+    def test_dir_exist_in_zip_exists_without_slash(self, mock_zipfile_lib):
+        # setup mock zipfile
+        mock_zip = Mock()
+        mock_zipfile_lib.ZipFile.return_value = mock_zip
+        mock_zip.namelist.return_value = ['wow/', 'such-dir/']
+
+        self.assertTrue(fileoperations.dir_exist_in_zip('', 'such-dir'))
+
+
+    @patch('ebcli.core.fileoperations.zipfile')
+    def test_dir_exist_in_zip_does_not_exist(self, mock_zipfile_lib):
+        # setup mock zipfile
+        mock_zip = Mock()
+        mock_zipfile_lib.ZipFile.return_value = mock_zip
+        mock_zip.namelist.return_value = ['wow/', 'such-dir/']
+
+        self.assertFalse(fileoperations.dir_exist_in_zip('', 'such-directory'))

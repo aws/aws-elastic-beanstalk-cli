@@ -72,7 +72,7 @@ class TestDeploy(BaseControllerTest):
         args, kwargs = self.mock_operations.deploy.call_args
         self.mock_operations.deploy.assert_called_with(self.app_name, self.env_name, None, None, None, group_name=None,
                                                        process_app_versions=True, source=None, staged=False,
-                                                       timeout=None)
+                                                       timeout=None, lambda_subdir=None)
 
     def get_multi_app_args(self):
         pargs = mock.MagicMock(

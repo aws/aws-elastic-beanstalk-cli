@@ -453,13 +453,13 @@ def zip_up_folder(directory, location, ignore_list=None):
         os.chdir(cwd)
 
 
-def zip_up_project(location, ignore_list=None, lambda_subdir=None):
+def zip_up_project(location, ignore_list=None, lambda_subdir=None, project_directory=None):
     cwd = os.getcwd()
     lambda_dirs = []
 
     try:
         # zip up lambda sub folders, and ignore them when zipping the whole project
-        lambda_dirs = zip_lambda_dirs(lambda_subdir=lambda_subdir)
+        lambda_dirs = zip_lambda_dirs(lambda_subdir=lambda_subdir, project_directory=project_directory)
         if ignore_list is None:
             ignore_list = ['.gitignore']
         ignore_list.append('.elasticbeanstalk')
@@ -468,8 +468,12 @@ def zip_up_project(location, ignore_list=None, lambda_subdir=None):
             io.log_info(lambda_dirs)
             ignore_list.extend(lambda_dirs)
 
-        # zip up the whole project
-        _traverse_to_project_root()
+        # zip up the whole project, if no specified project directory, then traverse to find
+        if project_directory is None:
+            _traverse_to_project_root()
+        else:
+            os.chdir(project_directory)
+
         zip_up_folder('./', location, ignore_list=ignore_list)
 
     finally:
@@ -484,63 +488,67 @@ def list_child_dir(path):
     return child_dir
 
 
-def zip_lambda_dirs(lambda_subdir=None):
+def zip_lambda_dirs(lambda_subdir=None, project_directory=None):
     cwd = os.getcwd()
     if lambda_subdir is not None:
         lambda_subdir = [os.path.join(lambda_base_directory, subdir) for subdir in lambda_subdir]
     try:
-        _traverse_to_project_root()
-
-        if os.path.isdir(lambda_base_directory):
-            io.echo(strings['lambda.foundlambdabase'].replace('{lambdabase}', lambda_base_directory))
-
-            # get_or_create default lambda role if lambda_base_directory exists
-            from ebcli.lib import iam_role
-            iam_role.get_default_lambda_role()
-
-            lambda_dir_list = []
-
-            # getting child directories
-            child_lamdba_dir = list_child_dir(lambda_base_directory)
-
-            grandchild_lambda_dir = []
-            if lambda_subdir is not None:
-                # go through the list of lambda sub directories user provided through the lambda-sub flag
-                # dive into these directories to get the grandchilds
-                for sub_directory in lambda_subdir:
-                    if sub_directory in child_lamdba_dir:
-                        # child is not a lambda directory if is in the lambda_subdir list
-                        child_lamdba_dir.remove(sub_directory)
-                        # add grandchild into the lambda_subdir list instead
-                        grandchild_lambda_dir.extend(list_child_dir(sub_directory))
-
-            lambda_dir_list.extend(child_lamdba_dir)
-            lambda_dir_list.extend(grandchild_lambda_dir)
-            io.log_info(strings['lambda.foundlambdafunctions'].format(lambda_dir_list))
-
-            # Pre check if we will be able to zip up all the lambda dirs; if not, stop
-            for lambda_dir in lambda_dir_list:
-                zip_location = '{0}.zip'.format(lambda_dir)
-                if os.path.exists(zip_location):
-                    raise AlreadyExistsError(strings['lambda.zipalreadyexists']
-                        .replace('{directory}', lambda_dir)
-                        .replace('{zip}', zip_location))
-
-            # zipping up lambda dirs
-            for lambda_dir in lambda_dir_list:
-                zip_location = '{0}.zip'.format(lambda_dir)
-                zip_name = os.path.basename(zip_location)
-                LOG.debug(strings['lambda.ziplambda']
-                        .replace('{directory}', lambda_dir)
-                        .replace('{zip}', zip_location))
-                # the zip file would always be in the same directory as the original folder
-                zip_up_folder(lambda_dir, os.path.join('..', zip_name))
-
-            return lambda_dir_list
-
+        # if no specified project directory, then traverse to find
+        if project_directory is None:
+            _traverse_to_project_root()
         else:
+            os.chdir(project_directory)
+
+        if not os.path.isdir(lambda_base_directory):
+            # no lambda_base_directory in project
             io.log_info(strings['lambda.nolambdabase'].replace('{lambdabase}', lambda_base_directory))
             return []
+
+        # do lambda processing since we found lambda_base_directory in project
+        io.echo(strings['lambda.foundlambdabase'].replace('{lambdabase}', lambda_base_directory))
+        # get_or_create default lambda role if lambda_base_directory exists
+        from ebcli.lib import iam_role
+        iam_role.get_default_lambda_role()
+
+        lambda_dir_list = []
+
+        # getting child directories
+        child_lamdba_dir = list_child_dir(lambda_base_directory)
+
+        grandchild_lambda_dir = []
+        if lambda_subdir is not None:
+            # go through the list of lambda sub directories user provided through the lambda-sub flag
+            # dive into these directories to get the grandchilds
+            for sub_directory in lambda_subdir:
+                if sub_directory in child_lamdba_dir:
+                    # child is not a lambda directory if is in the lambda_subdir list
+                    child_lamdba_dir.remove(sub_directory)
+                    # add grandchild into the lambda_subdir list instead
+                    grandchild_lambda_dir.extend(list_child_dir(sub_directory))
+
+        lambda_dir_list.extend(child_lamdba_dir)
+        lambda_dir_list.extend(grandchild_lambda_dir)
+        io.log_info(strings['lambda.foundlambdafunctions'].format(lambda_dir_list))
+
+        # Pre check if we will be able to zip up all the lambda dirs; if not, stop
+        for lambda_dir in lambda_dir_list:
+            zip_location = '{0}.zip'.format(lambda_dir)
+            if os.path.exists(zip_location):
+                raise AlreadyExistsError(strings['lambda.zipalreadyexists']
+                    .replace('{directory}', lambda_dir)
+                    .replace('{zip}', zip_location))
+
+        # zipping up lambda dirs
+        for lambda_dir in lambda_dir_list:
+            zip_location = '{0}.zip'.format(lambda_dir)
+            zip_name = os.path.basename(zip_location)
+            io.echo(strings['lambda.ziplambda']
+                    .replace('{directory}', lambda_dir)
+                    .replace('{zip}', zip_location))
+            # the zip file would always be in the same directory as the original folder
+            zip_up_folder(lambda_dir, os.path.join('..', zip_name))
+
+        return lambda_dir_list
 
     finally:
         os.chdir(cwd)
@@ -627,6 +635,21 @@ def unzip_folder(file_location, directory):
             if not os.path.isdir(path):
                 os.makedirs(path)
             open(os.path.join(path, name), 'wb').write(zip.read(cur_file))
+
+
+def dir_exist_in_zip(zip_location, directory):
+    zip_file = zipfile.ZipFile(zip_location)
+
+    # add the trailing slash if it's not already there, os independent
+    directory = os.path.join(directory, '')
+
+    # namelist method would always return directories ends with slash
+    if directory in zip_file.namelist():
+        io.log_info("Found {0} in {1}".format(directory, zip_location))
+        return True
+
+    io.log_info("Failed to find {0} in {1}".format(directory, zip_location))
+    return False
 
 
 def save_to_file(data, location, filename):
