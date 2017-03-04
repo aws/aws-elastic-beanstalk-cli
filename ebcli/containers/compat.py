@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import sys
 from semantic_version import Version
@@ -30,7 +31,8 @@ def supported_docker_installed():
     """
 
     try:
-        return Version(commands.version()) >= Version(SUPPORTED_DOCKER_V)
+        clean_version = remove_leading_zeros_from_version(commands.version())
+        return Version(clean_version) >= Version(SUPPORTED_DOCKER_V)
     # OSError = Not installed
     # CommandError = docker versions less than 1.5 give exit code 1
     # with 'docker --version'.
@@ -120,3 +122,11 @@ def _start_boot2docker():
 
 def _init_boot2docker():
     utils.exec_cmd_quiet(['boot2docker', 'init'])
+
+
+def remove_leading_zeros_from_version(version_string):
+    # regex explaination: remove zeroes if both:
+    # 1. the start of string (major version) or following a '.'
+    # 2. followed by some other digit
+    return re.sub(r'((?<=\.)|^)[0]+(?=\d+)', r'', version_string)
+

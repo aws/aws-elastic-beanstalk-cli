@@ -152,3 +152,16 @@ class TestCompat(TestCase):
         compat.setup(os.environ)
         validate_docker_installed.assert_called_once_with()
         boot2docker_setup.assert_called_once_with(os.environ)
+
+    def test_remove_leading_zeros_from_version(self):
+        versions_tests = []
+        # tuples of (input, expected_result)
+        versions_tests.append(('0001.000.000', '1.0.0'))
+        versions_tests.append(('1.0001.0000-rc.1', '1.1.0-rc.1'))
+        versions_tests.append(('1.3.0', '1.3.0'))
+        versions_tests.append(('17.03.0-ce', '17.3.0-ce'))
+        versions_tests.append(('107.3.30-ce', '107.3.30-ce'))
+        versions_tests.append(('017.030.07-ce', '17.30.7-ce'))
+        versions_tests.append(('17.03.08-ce', '17.3.8-ce'))
+        for test in versions_tests:
+            self.assertEqual(compat.remove_leading_zeros_from_version(test[0]), test[1])
