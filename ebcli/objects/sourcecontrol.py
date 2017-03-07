@@ -41,7 +41,7 @@ class SourceControl():
     def get_current_branch(self):
         pass
 
-    def do_zip(self, location, staged=False, lambda_subdir=None):
+    def do_zip(self, location, staged=False):
         pass
 
     def set_up_ignore_file(self):
@@ -87,9 +87,9 @@ class NoSC(SourceControl):
     def get_current_branch(self):
         return 'default'
 
-    def do_zip(self, location, staged=False, lambda_subdir=None):
+    def do_zip(self, location, staged=False):
         io.log_info('Creating zip using systems zip')
-        fileoperations.zip_up_project(location, lambda_subdir=lambda_subdir)
+        fileoperations.zip_up_project(location)
 
     def get_message(self):
         return NoSC.DEFAULT_MESSAGE
@@ -222,7 +222,7 @@ class Git(SourceControl):
         LOG.debug('git rev-parse --verify HEAD result: ' + stdout)
         return stdout
 
-    def do_zip(self, location, staged=False, lambda_subdir=None):
+    def do_zip(self, location, staged=False):
         cwd = os.getcwd()
         try:
             # must be in project root for git archive to work.
@@ -237,25 +237,7 @@ class Git(SourceControl):
             stdout, stderr, exitcode = self._run_cmd(
                 ['git', 'archive', '-v', '--format=zip',
                  '-o', location, commit_id])
-
             io.log_info('git archive output: ' + stderr)
-
-            # check if the zipped project file contains lambda directory: if so,
-            # 1. we unzip the git-archived zip to temporary project directory (by fileoperations.unzip_folder);
-            # 2. do lambda function zipping in temporary project directory (in fileoperations.zip_up_project);
-            # 3. and zip up the processed temporary project again to replace the git-archived zip
-            if fileoperations.dir_exist_in_zip(location, fileoperations.lambda_base_directory):
-                # first, unzip the project zip to temporary directory
-                unzipped_directory = os.path.splitext(location)[0]
-                io.log_info('Found lambda directory in project, starting lambda operations in temporary directory {}.'
-                        .format(unzipped_directory))
-                fileoperations.unzip_folder(location, unzipped_directory)
-
-                # now process and zip the project with lambda operations, and replace the git-archived zip
-                fileoperations.zip_up_project(location, lambda_subdir=lambda_subdir, project_directory=unzipped_directory)
-                io.log_info('Lambda operations done for temporary directory {}, zipped up project to {}'
-                            .format(unzipped_directory, location))
-
         finally:
             os.chdir(cwd)
 

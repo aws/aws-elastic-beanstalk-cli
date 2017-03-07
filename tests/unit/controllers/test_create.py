@@ -224,6 +224,5 @@ class TestCreate(BaseControllerTest):
                                                              process_app_version=True,
                                                              nohang=False,
                                                              interactive=False,
-                                                             lambda_subdir=None,
                                                              timeout=None,
                                                              source=None)

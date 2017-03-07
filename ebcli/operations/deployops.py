@@ -21,7 +21,7 @@ LOG = minimal_logger(__name__)
 
 
 def deploy(app_name, env_name, version, label, message, group_name=None,
-           process_app_versions=False, staged=False, timeout=5, source=None, lambda_subdir=None):
+           process_app_versions=False, staged=False, timeout=5, source=None):
     region_name = aws.get_region_name()
 
     # Parse and get Build Configuration from BuildSpec if it exists
@@ -47,8 +47,7 @@ def deploy(app_name, env_name, version, label, message, group_name=None,
     else:
         # Create app version
         app_version_label = commonops.create_app_version(
-            app_name, process=process_app_versions, label=label, message=message, staged=staged,
-            build_config=build_config, lambda_subdir=lambda_subdir)
+            app_name, process=process_app_versions, label=label, message=message, staged=staged, build_config=build_config)
 
     if build_config is not None:
         buildspecops.stream_build_configuration_app_version_creation(app_name, app_version_label)
@@ -67,7 +66,7 @@ def deploy(app_name, env_name, version, label, message, group_name=None,
                                       can_abort=True)
 
 
-def deploy_no_events(app_name, env_name, version, label, message, process=False, staged=False, lambda_subdir=None):
+def deploy_no_events(app_name, env_name, version, label, message, process=False, staged=False):
     region_name = aws.get_region_name()
 
     io.log_info('Deploying code to ' + env_name + ' in region ' + region_name)
@@ -77,7 +76,7 @@ def deploy_no_events(app_name, env_name, version, label, message, process=False,
     else:
         # Create app version
         app_version_label = commonops.create_app_version(
-            app_name, process=process, label=label, message=message, staged=staged, lambda_subdir=lambda_subdir)
+            app_name, process=process, label=label, message=message, staged=staged)
 
     # swap env to new app version
     request_id = elasticbeanstalk.update_env_application_version(

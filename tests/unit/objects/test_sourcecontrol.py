@@ -55,7 +55,7 @@ class TestNoSourceControl(unittest.TestCase):
     @mock.patch('ebcli.objects.sourcecontrol.fileoperations')
     def test_do_zip(self, mock_file):
         sourcecontrol.NoSC().do_zip('file.zip')
-        mock_file.zip_up_project.assert_called_with('file.zip', lambda_subdir=None)
+        mock_file.zip_up_project.assert_called_with('file.zip')
 
     def test_get_message(self):
         # Just a hardcoded string, dont really need to test
@@ -117,36 +117,9 @@ class TestGitSourceControl(unittest.TestCase):
         self.assertEqual(sourcecontrol.Git().get_current_branch(), 'default')
 
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
-    @mock.patch('ebcli.objects.sourcecontrol.fileoperations.dir_exist_in_zip')
-    @mock.patch('ebcli.objects.sourcecontrol.fileoperations.unzip_folder')
-    @mock.patch('ebcli.objects.sourcecontrol.fileoperations.zip_up_project')
-    # make sure no lambda operation happens if lambda directory does not exist
-    def test_do_zip_without_lambda_dir(self, mock_zip_up_project, mock_unzip_folder, mock_dir_exist_in_zip):
-        location = os.getcwd() + os.path.sep + 'file.zip'
-        mock_dir_exist_in_zip.return_value = False
-
-        sourcecontrol.Git().do_zip(location)
-
-        mock_dir_exist_in_zip.assert_called_with(location, fileoperations.lambda_base_directory)
-        mock_unzip_folder.assert_not_called()
-        mock_zip_up_project.assert_not_called()
-
-
-    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
-    @mock.patch('ebcli.objects.sourcecontrol.fileoperations.dir_exist_in_zip')
-    @mock.patch('ebcli.objects.sourcecontrol.fileoperations.unzip_folder')
-    @mock.patch('ebcli.objects.sourcecontrol.fileoperations.zip_up_project')
-    # if lambda directory does exist, make sure the lambda operations takes place
-    def test_do_zip_with_lambda_dir(self, mock_zip_up_project, mock_unzip_folder, mock_dir_exist_in_zip):
-        location = os.getcwd() + os.path.sep + 'file.zip'
-        unzip_destination = os.getcwd() + os.path.sep + 'file'
-        mock_dir_exist_in_zip.return_value = True
-
-        sourcecontrol.Git().do_zip(location)
-
-        mock_dir_exist_in_zip.assert_called_with(location, fileoperations.lambda_base_directory)
-        mock_unzip_folder.assert_called_with(location, unzip_destination)
-        mock_zip_up_project.assert_called_with(location, lambda_subdir=None, project_directory=unzip_destination)
+    def test_do_zip(self):
+        #Just want to make sure no errors happen
+        sourcecontrol.Git().do_zip(os.getcwd() + os.path.sep + 'file.zip')
 
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_message(self):
