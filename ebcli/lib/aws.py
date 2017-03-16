@@ -181,10 +181,10 @@ def get_region_name():
 
 
 def get_credentials():
-    access_key, secret_key = fileoperations.read_credentials_from_aws_dir()
+    client_creds = _get_client('elasticbeanstalk')._request_signer._credentials
     return botocore.credentials.Credentials(
-        access_key=access_key,
-        secret_key=secret_key,
+        access_key=client_creds.access_key,
+        secret_key=client_creds.secret_key,
     )
 
 

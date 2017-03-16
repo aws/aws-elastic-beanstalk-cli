@@ -188,31 +188,6 @@ def save_to_aws_config(access_key, secret_key):
     set_user_only_permissions(aws_config_location)
 
 
-def read_credentials_from_aws_dir():
-    config = configparser.ConfigParser()
-    if not os.path.isdir(aws_config_folder):
-        os.makedirs(aws_config_folder)
-
-    # The credential file credentials take precedence over config credentials so we check those first.
-    from ..lib import aws
-    profile = aws.get_profile()
-    config.read(aws_credentials_location)
-
-    if profile not in config.sections():
-        LOG.debug("Credentials not found in aws credentials file; trying config file")
-        profile = ebcli_section
-        config.read(aws_config_location)
-
-        if profile not in config.sections():
-            LOG.debug("Credentials not found in aws config file")
-            return None, None
-
-    access_key = _get_option(config, profile, aws_access_key, None)
-    secret_key = _get_option(config, profile, aws_secret_key, None)
-
-    return access_key, secret_key
-
-
 def set_user_only_permissions(location):
     """
     Sets permissions so that only a user can read/write (chmod 400).

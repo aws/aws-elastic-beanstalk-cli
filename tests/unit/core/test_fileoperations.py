@@ -380,53 +380,6 @@ class TestFileOperations(unittest.TestCase):
         os.makedirs(dir)
         os.chdir(dir)
 
-    @patch('os.path.isdir', return_value=True)
-    @patch('ebcli.lib.aws.get_profile', return_value="default")
-    def test_get_credentials_with_no_config(self, aws, isdir):
-        # Setup Mocks
-        with patch(self.config_parser_import) as MockConfigParserClass:
-            instance = MockConfigParserClass.return_value
-            instance.sections.return_value = []
-
-            # Execute the method
-            credentials = fileoperations.read_credentials_from_aws_dir()
-            self.assertEqual((None, None), credentials, "Expected credentials to be (None, None) but were: {0}".format(credentials))
-
-    @patch('ebcli.core.fileoperations._get_option')
-    @patch('os.path.isdir', return_value=True)
-    @patch('ebcli.lib.aws.get_profile', return_value="default")
-    def test_get_credentials_with_no_config_but_creds_file(self, aws, isdir, get_option):
-        # Setup Mocks
-        with patch(self.config_parser_import) as MockConfigParserClass:
-            instance = MockConfigParserClass.return_value
-            instance.sections.return_value = ["default"]
-
-            credentials_expected = ('access_key', 'secret_key')
-            get_option.side_effect = credentials_expected
-
-            # Execute the method
-            credentials = fileoperations.read_credentials_from_aws_dir()
-            self.assertEqual(credentials, credentials_expected,
-                             "Expected credentials to be {0} but were: {1}".format(credentials_expected, credentials))
-
-
-    @patch('ebcli.core.fileoperations._get_option')
-    @patch('os.path.isdir', return_value=True)
-    def test_get_credentials_with_config(self, isdir, get_option):
-        # Setup Mocks
-        ebcli_section = 'profile eb-cli'
-        with patch(self.config_parser_import) as MockConfigParserClass:
-            instance = MockConfigParserClass.return_value
-            instance.sections.return_value = [ebcli_section]
-
-            credentials_expected = ('access_key', 'secret_key')
-            get_option.side_effect = credentials_expected
-
-            # Execute the method
-            credentials = fileoperations.read_credentials_from_aws_dir()
-            self.assertEqual(credentials, credentials_expected,
-                             "Expected credentials to be {0} but were: {1}".format(credentials_expected, credentials))
-
     @patch('ebcli.core.fileoperations.codecs')
     @patch('ebcli.core.fileoperations.load')
     def test_get_build_spec_info(self, mock_yaml_load, mock_codecs):
