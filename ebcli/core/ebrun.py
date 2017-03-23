@@ -1,6 +1,8 @@
 import os, sys
 
 import logging
+import traceback
+
 from argparse import SUPPRESS, ArgumentTypeError
 
 from botocore.compat import six
@@ -70,6 +72,7 @@ def run_app(app):
         io.log_error(strings['toomanyplatforms.error'])
         app.close(code=4)
     except EBCLIException as e:
+        io.log_info(traceback.format_exc())
         if app.pargs and app.pargs.debug:
             raise
 
@@ -82,6 +85,7 @@ def run_app(app):
         app.close(code=4)
     except Exception as e:
         # Generic catch all
+        io.log_info(traceback.format_exc())
         if app.pargs and app.pargs.debug:
             raise
 
