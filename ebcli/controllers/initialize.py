@@ -107,8 +107,8 @@ class InitController(AbstractBaseController):
             default_env = '/ni'
 
         # Create application
-        sstack, key = commonops.create_app(self.app_name, default_env=default_env) if elasticbeanstalk.application_exist(self.app_name) \
-            else commonops.pull_down_app_info(self.app_name, default_env=default_env)
+        sstack, key = commonops.pull_down_app_info(self.app_name, default_env=default_env) if elasticbeanstalk.application_exist(self.app_name) \
+            else commonops.create_app(self.app_name, default_env=default_env)
 
         if not self.solution:
             self.solution = sstack

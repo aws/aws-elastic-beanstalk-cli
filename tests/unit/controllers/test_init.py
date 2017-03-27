@@ -65,7 +65,7 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
         self.mock_eb.application_exist.return_value = False
-        self.mock_commonops.pull_down_app_info.return_value = None, None
+        self.mock_commonops.create_app.return_value = None, None
         self.mock_commonops.get_default_keyname.return_value = ''
         self.mock_commonops.get_default_region.return_value = ''
         self.mock_commonops.get_default_solution_stack.return_value = ''
@@ -110,10 +110,10 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.get_application_names.return_value = list()
         self.mock_operations.credentials_are_valid.return_value = True
         self.mock_eb.application_exist.return_value = False
+        self.mock_commonops.create_app.return_value = 'ss-stack', 'key'
         self.mock_commonops.prompt_for_solution_stack.return_value = \
             self.solution
         self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
-        self.mock_commonops.pull_down_app_info.return_value = 'something', 'smthing'
 
         self.mock_input.side_effect = [
             '3',  # region number
@@ -153,7 +153,8 @@ class TestInit(BaseControllerTest):
         self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
-        self.mock_commonops.create_app.return_value = None, None
+        self.mock_eb.application_exist.return_value = True
+        self.mock_commonops.pull_down_app_info.return_value = 'ss-stack', 'key'
         self.mock_commonops.get_default_keyname.return_value = ''
         self.mock_commonops.get_default_region.return_value = ''
         self.mock_commonops.get_default_solution_stack.return_value = ''
@@ -175,7 +176,7 @@ class TestInit(BaseControllerTest):
         self.mock_operations.setup_credentials.assert_called_with()
         self.mock_operations.setup.assert_called_with(self.app_name,
                                                       'us-west-2',
-                                                      'PHP 5.5', branch=None, dir_path=None, repository=None)
+                                                      'ss-stack', branch=None, dir_path=None, repository=None)
 
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
@@ -193,7 +194,8 @@ class TestInit(BaseControllerTest):
         self.mock_sshops.prompt_for_ec2_keyname.return_value = Exception
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
-        self.mock_commonops.create_app.return_value = None, None
+        self.mock_eb.application_exist.return_value = True
+        self.mock_commonops.pull_down_app_info.return_value = 'ss-stack', 'key'
         self.mock_commonops.get_default_keyname.return_value = ''
         self.mock_commonops.get_default_region.return_value = 'us-west-2'
         self.mock_commonops.get_default_solution_stack.return_value = ''
@@ -229,6 +231,7 @@ class TestInit(BaseControllerTest):
         self.mock_sshops.prompt_for_ec2_keyname.return_value = Exception
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
+        self.mock_eb.application_exist.return_value = False
         self.mock_commonops.create_app.return_value = None, None
         self.mock_commonops.get_default_keyname.return_value = ''
         self.mock_commonops.get_default_region.return_value = ''
@@ -269,9 +272,9 @@ class TestInit(BaseControllerTest):
         # 2. Get solution stacks again
         # 3. Create app
         self.mock_operations.credentials_are_valid.return_value = True
+        self.mock_commonops.pull_down_app_info.return_value = None, None
         self.mock_commonops.create_app.return_value = None, None
         self.mock_commonops.get_default_solution_stack.return_value = ''
-        self.mock_commonops.pull_down_app_info.return_value = 'something', 'smthing'
         self.mock_commonops.prompt_for_solution_stack.return_value = \
             self.solution
 
@@ -348,6 +351,7 @@ class TestInit(BaseControllerTest):
 
         # Mock out operations for Codebuild Integration
         self.mock_eb.application_exist.return_value = False
+        self.mock_commonops.create_app.return_value = None, None
         mock_fileops.build_spec_exists.return_value = True
         mock_fileops.get_build_configuration.return_value = build_config
         mock_fileops.buildspec_config_header = fileoperations.buildspec_config_header
@@ -424,7 +428,8 @@ class TestInit(BaseControllerTest):
         mock_fileops.env_yaml_exists.return_value = None
 
         # Mock out operations for Codebuild Integration
-        mock_fileops.build_spec_exists.return_value = True
+        self.mock_eb.application_exist.return_value = False
+        self.mock_commonops.create_app.return_value = None, None
         self.mock_eb.application_exist.return_value = False
         mock_fileops.get_build_configuration.return_value = build_config
         mock_fileops.buildspec_config_header = fileoperations.buildspec_config_header
@@ -505,6 +510,7 @@ class TestInit(BaseControllerTest):
         self.mock_sshops.prompt_for_ec2_keyname.return_value = Exception
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
+        self.mock_eb.application_exist.return_value = False
         self.mock_commonops.create_app.return_value = None, None
         self.mock_commonops.get_default_keyname.return_value = ''
         self.mock_commonops.get_default_region.return_value = ''
