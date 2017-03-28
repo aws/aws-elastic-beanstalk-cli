@@ -25,6 +25,7 @@ CONTAINER_DEF_LINKS_KEY = 'links'
 CONTAINER_DEF_NAME_KEY = 'name'
 CONTAINER_DEF_PORT_MAPPINGS_KEY = 'portMappings'
 CONTAINER_PATH_KEY = 'containerPath'
+CONTAINER_DEF_PRIVILEGED_KEY = 'privileged'
 LOCAL_CONTAINER_DEF_KEY = 'localContainerDefinitions'
 MOUNT_POINTS = 'mountPoints'
 READ_ONLY_KEY = 'readOnly'
@@ -77,6 +78,7 @@ def _add_service(services, definition, volume_map, host_log, high_priority_env):
     remote_mountpoints = definition.get(MOUNT_POINTS, [])
     definition_env = EnvvarCollector(_get_definition_envvars(definition))
     merged_envvars = definition_env.merge(high_priority_env).filtered().map
+    privileged = definition.get(CONTAINER_DEF_PRIVILEGED_KEY, None)
 
     service = {COMPOSE_IMG_KEY: img}
 
@@ -91,6 +93,9 @@ def _add_service(services, definition, volume_map, host_log, high_priority_env):
                                       for n in links]
     if merged_envvars:
         service[COMPOSE_ENV_KEY] = merged_envvars
+
+    if privileged is not None:
+        service[CONTAINER_DEF_PRIVILEGED_KEY] = privileged
 
     volumes = []
     for mp in remote_mountpoints:
@@ -144,8 +149,10 @@ def _get_volume_map(volumes, docker_proj_path):
         if source_path.startswith(VAR_APP_CURRENT):
             local_relative_path = source_path[len(VAR_APP_CURRENT):]
             local_source_path = os.path.join(docker_proj_path, local_relative_path)
+        else:
+            local_source_path = source_path
 
-            vmap[name] = local_source_path
+        vmap[name] = local_source_path
     return vmap
 
 
