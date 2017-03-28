@@ -2,6 +2,14 @@
 Changelog
 =========
 -------------------
+3.10.1 (2017-03-30)
+-------------------
+- Fixed python 3.x bug for eb local run
+- Fixed eb local docker version check failure for leading zeros
+- Fixed eb init to not create an application when picking an existing app
+- Fixed eb local run to accept volumes defined that are not prefixed with /var/app/current/
+
+-------------------
 3.10.0 (2017-02-21)
 -------------------
 - Support for custom elastic beanstalk platforms
