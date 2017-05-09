@@ -23,10 +23,12 @@ from botocore.compat import six
 from mock import Mock
 
 from ebcli.core import fileoperations
+from ebcli.objects.exceptions import NotAuthorizedError
 from ebcli.operations import commonops
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.buildconfiguration import BuildConfiguration
 from ebcli.resources.strings import strings, responses
+from ebcli.resources.statics import iam_documents, iam_attributes
 
 class TestCommonOperations(unittest.TestCase):
     app_name = 'ebcli-app'
@@ -321,3 +323,56 @@ class TestCommonOperations(unittest.TestCase):
         mock_beanstalk.create_application_version.assert_called_with(self.app_name, self.app_version_name,
                                                                      self.description, self.s3_bucket, self.s3_key,
                                                                      False, None, None, self.build_config)
+
+    @mock.patch('ebcli.operations.commonops.iam')
+    @mock.patch('ebcli.operations.commonops.io')
+    def test_create_default_instance_profile_successful(self, _, mock_iam):
+        commonops.create_default_instance_profile()
+
+        mock_iam.create_instance_profile.assert_called_once_with(iam_attributes.DEFAULT_ROLE_NAME)
+        mock_iam.create_role_with_policy.assert_called_once_with(iam_attributes.DEFAULT_ROLE_NAME, iam_documents.EC2_ASSUME_ROLE_PERMISSION, iam_attributes.DEFAULT_ROLE_POLICIES)
+        mock_iam.add_role_to_profile.assert_called_once_with(iam_attributes.DEFAULT_ROLE_NAME, iam_attributes.DEFAULT_ROLE_NAME)
+        mock_iam.put_role_policy.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.iam')
+    @mock.patch('ebcli.operations.commonops.io')
+    def test_create_instance_profile_successful(self, _, mock_iam):
+        commonops.create_instance_profile('pname', 'policies', 'rname')
+
+        mock_iam.create_instance_profile.assert_called_once_with('pname')
+        mock_iam.create_role_with_policy.assert_called_once_with('rname', iam_documents.EC2_ASSUME_ROLE_PERMISSION, 'policies')
+        mock_iam.add_role_to_profile.assert_called_once_with('pname', 'rname')
+        mock_iam.put_role_policy.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.iam')
+    @mock.patch('ebcli.operations.commonops.io')
+    def test_create_instance_profile_successful_with_inline_policy(self, _, mock_iam):
+        commonops.create_instance_profile('pname', 'policies', role_name='rname', inline_policy_name='inline_name', inline_policy_doc='{inline_json}')
+
+        mock_iam.create_instance_profile.assert_called_once_with('pname')
+        mock_iam.create_role_with_policy.assert_called_once_with('rname', iam_documents.EC2_ASSUME_ROLE_PERMISSION, 'policies')
+        mock_iam.put_role_policy.assert_called_once_with('rname', 'inline_name', '{inline_json}')
+        mock_iam.add_role_to_profile.assert_called_once_with('pname', 'rname')
+
+    @mock.patch('ebcli.operations.commonops.iam')
+    @mock.patch('ebcli.operations.commonops.io')
+    def test_create_instance_profile_successful_omitting_role_name(self, _, mock_iam):
+        commonops.create_instance_profile('pname', ['policies'])
+
+        mock_iam.create_instance_profile.assert_called_once_with('pname')
+        mock_iam.create_role_with_policy.assert_called_once_with('pname', iam_documents.EC2_ASSUME_ROLE_PERMISSION, ['policies'])
+        mock_iam.add_role_to_profile.assert_called_once_with('pname', 'pname')
+        mock_iam.put_role_policy.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.iam')
+    @mock.patch('ebcli.operations.commonops.io')
+    def test_create_instance_profile_without_permission(self, mock_io, mock_iam):
+        mock_iam.create_instance_profile.side_effect = NotAuthorizedError()
+        commonops.create_instance_profile('pname', 'policies', 'rname')
+
+        mock_iam.create_instance_profile.assert_called_once_with('pname')
+        mock_iam.create_role_with_policy.assert_not_called()
+        mock_iam.put_role_policy.assert_not_called()
+        mock_iam.add_role_to_profile.assert_not_called()
+
+        mock_io.log_warning.assert_called_once()

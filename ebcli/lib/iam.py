@@ -39,9 +39,19 @@ def get_role(role_name):
     return result['Role']
 
 
-def create_instance_profile(profile_name):
-    _make_api_call('create_instance_profile',
-                   InstanceProfileName=profile_name)
+def create_instance_profile(profile_name, allow_recreate=True):
+    """ Create IAM instance profile. 
+            Return profile_name if creation succeeds, None if allowing
+            recreate while profile already exists"""
+    try:
+        _make_api_call('create_instance_profile',
+                       InstanceProfileName=profile_name)
+        return profile_name
+    except AlreadyExistsError:
+        if allow_recreate:
+            return None
+        else:
+            raise
 
 
 def get_instance_profile_names():
@@ -62,23 +72,30 @@ def get_role_names():
     return lst
 
 
-def add_role_to_profile(profile, role):
-    _make_api_call('add_role_to_instance_profile',
-                   InstanceProfileName=profile,
-                   RoleName=role)
+def add_role_to_profile(profile, role, allow_recreate=True):
+    """ Add role to profile. Swallow AlreadyExistsError if allow_recreate set to True """
+    try:
+        _make_api_call('add_role_to_instance_profile',
+                       InstanceProfileName=profile,
+                       RoleName=role)
+    except AlreadyExistsError:
+        if not allow_recreate:
+            raise
 
 
-def create_role_with_policy(role_name, trust_document, policy_arns):
+def create_role_with_policy(role_name, trust_document, policy_arns, allow_recreate=True):
     """
     This is a higher level function that creates a role, a policy, and attaches
     everything together
     :param role_name: Name of role to create
     :param trust_document: Policy for trusted entities assuming role
     :param policy: User policy that defines allowable actions
+    :param allow_recreate: Set to True to ignore AlreadyExistsError
     """
-    create_role(role_name, trust_document)
+    ret = create_role(role_name, trust_document, allow_recreate=allow_recreate)
     for arn in policy_arns:
         attach_role_policy(role_name, arn)
+    return ret
 
 
 def create_policy(policy_name, policy):
@@ -101,10 +118,20 @@ def put_role_policy(role_name, policy_name, policy_json):
                             PolicyDocument=policy_json)
 
 
-def create_role(role, document):
-    _make_api_call('create_role',
-                   RoleName=role,
-                   AssumeRolePolicyDocument=document)
+def create_role(role_name, document, allow_recreate=True):
+    """ Create IAM role and attach assume role policy. 
+            Return role_name if creation succeeds, None if allowing
+            recreate while role already exists"""
+    try:
+        _make_api_call('create_role',
+                       RoleName=role_name,
+                       AssumeRolePolicyDocument=document)
+        return role_name
+    except AlreadyExistsError:
+        if allow_recreate:
+            return None
+        else:
+            raise
 
 
 def upload_server_certificate(cert_name, cert, private_key, chain=None):

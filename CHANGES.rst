@@ -2,6 +2,11 @@
 Changelog
 =========
 -------------------
+3.10.2 (2017-05-09)
+-------------------
+- Improved eb and ebp create default instance profile creation logic.
+
+-------------------
 3.10.1 (2017-03-30)
 -------------------
 - Fixed python 3.x bug for eb local run

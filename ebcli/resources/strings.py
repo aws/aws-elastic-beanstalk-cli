@@ -75,14 +75,7 @@ strings = {
                              'patch-increment based on the most recent platform version. The version and increment '
                              'options are mutually exclusive.',
 
-    'platformcreateiamdescribeerror.info': "Insufficient IAM privileges. Unable to determine if instance profile '{0}'exists.".format(iam_attributes.DEFAULT_PLATFORM_BUILDER_ROLE),
-    'platformcreateiamcreated.info': "Created instance profile '{0}'".format(iam_attributes.DEFAULT_PLATFORM_BUILDER_ROLE),
-    'platformcreateiamcreateerror.info': "Insufficient IAM privileges. Unable to create instance profile '{0}', assuming that it exists.".format(
-                    iam_attributes.DEFAULT_PLATFORM_BUILDER_ROLE),
-
-    'platformcreateiampolicyadded.info': "Added required permissions to instance profile '{0}'".format(
-        iam_attributes.DEFAULT_PLATFORM_BUILDER_ROLE),
-
+    'platformcreateiamdescribeerror.info': "Insufficient IAM privileges. Unable to determine if instance profile '{profile_name}' exists, assuming that it exists.",
 
     'platformdelete.info': 'Deletes platform resources.',
     'platformdeleteversion.info': 'Deletes a custom platform version.',

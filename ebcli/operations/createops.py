@@ -15,7 +15,6 @@ import re
 
 from cement.utils.misc import minimal_logger
 
-from ebcli.resources.statics import iam_documents
 from ebcli.operations import gitops, buildspecops, commonops
 
 from ebcli.lib import elasticbeanstalk, iam, utils
@@ -24,17 +23,13 @@ from ebcli.core import io, fileoperations
 from ebcli.objects.exceptions import TimeoutError, AlreadyExistsError, \
     NotAuthorizedError
 from ebcli.resources.strings import strings, responses, prompts
+from ..resources.statics import iam_attributes
 import json
 
 LOG = minimal_logger(__name__)
 DEFAULT_ROLE_NAME = 'aws-elasticbeanstalk-ec2-role'
 DEFAULT_SERVICE_ROLE_NAME = 'aws-elasticbeanstalk-service-role'
 
-DEFAULT_ROLE_POLICIES = [
-    'arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier',
-    'arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker',
-    'arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier'
-]
 DEFAULT_SERVICE_ROLE_POLICIES = [
     'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth',
     'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService'
@@ -168,39 +163,6 @@ def create_env(env_request, interactive=True):
         # Try again with new values
 
 
-def get_default_profile():
-    """  Get the default elasticbeanstalk IAM profile,
-            Create it if it doesn't exist """
-
-    # get list of profiles
-    try:
-        profile = DEFAULT_ROLE_NAME
-        try:
-            iam.create_instance_profile(profile)
-            io.log_info('Created default instance profile.')
-            role = get_default_role()
-            iam.add_role_to_profile(profile, role)
-        except AlreadyExistsError:
-            pass
-    except NotAuthorizedError:
-        # Not a root account. Just assume role exists
-        io.log_info('No IAM privileges: assuming default '
-                    'instance profile exists.')
-        return DEFAULT_ROLE_NAME
-
-    return profile
-
-
-def get_default_role():
-    role = DEFAULT_ROLE_NAME
-    document = iam_documents.EC2_ASSUME_ROLE_PERMISSION
-    try:
-        iam.create_role_with_policy(role, document, DEFAULT_ROLE_POLICIES)
-    except AlreadyExistsError:
-        pass
-    return role
-
-
 def get_service_role():
     try:
         roles = iam.get_role_names()
@@ -242,11 +204,11 @@ def resolve_roles(env_request, interactive):
     """
     LOG.debug('Resolving roles')
 
-    if env_request.instance_profile is None and \
-            env_request.template_name is None:
+    if (env_request.instance_profile is None or env_request.instance_profile == iam_attributes.DEFAULT_ROLE_NAME) \
+            and env_request.template_name is None:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
-        env_request.instance_profile = get_default_profile()
+        env_request.instance_profile = commonops.create_default_instance_profile()
 
 
     if (env_request.platform is not None and env_request.platform.has_healthd_support() and  # HealthD enabled

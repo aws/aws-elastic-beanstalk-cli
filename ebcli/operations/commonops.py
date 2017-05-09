@@ -28,15 +28,17 @@ from ebcli.operations import buildspecops
 from ebcli.core.ebglobals import Constants
 from ..core import fileoperations, io
 from ..containers import dockerrun
-from ..lib import aws, ec2, elasticbeanstalk, heuristics, s3, utils, codecommit
+from ..lib import aws, ec2, elasticbeanstalk, heuristics, iam, s3, utils, codecommit
 from ebcli.objects.platform import PlatformVersion
 from ..lib.aws import InvalidParameterValueError
 from ..objects.exceptions import *
 from ..objects.solutionstack import SolutionStack
 from ..objects.sourcecontrol import SourceControl, NoSC
 from ..resources.strings import strings, responses, prompts
+from ..resources.statics import iam_documents, iam_attributes
 
 LOG = minimal_logger(__name__)
+
 
 def wait_for_success_events(request_id, timeout_in_minutes=None,
                             sleep_time=5, stream_events=True, can_abort=False,
@@ -1301,3 +1303,42 @@ def wait_for_processed_app_versions(app_name, version_labels, timeout=5):
         io.log_error(strings['appversion.cannotdeploy'])
         return False
     return True
+
+
+def create_default_instance_profile(profile_name=iam_attributes.DEFAULT_ROLE_NAME):
+    """ Create default elasticbeanstalk IAM profile and return its name. """
+    create_instance_profile(profile_name, iam_attributes.DEFAULT_ROLE_POLICIES)
+    return profile_name
+
+
+def create_instance_profile(profile_name, policy_arns, role_name=None, inline_policy_name=None, inline_policy_doc=None):
+    """ Create instance profile and associated IAM role, and attach policy ARNs. 
+        If role_name is omitted profile_name will be used as role name.
+        Inline policy is optional. """
+    try:
+        name = iam.create_instance_profile(profile_name)
+        if name:
+            io.log_info('Created instance profile: {}.'.format(name))
+
+        if not role_name:
+            role_name = profile_name
+        name = _create_instance_role(role_name, policy_arns)
+        if name:
+            io.log_info('Created instance role: {}.'.format(name))
+
+        if inline_policy_name:
+            iam.put_role_policy(role_name, inline_policy_name, inline_policy_doc)
+
+        iam.add_role_to_profile(profile_name, role_name)
+
+    except NotAuthorizedError:
+        # Not a root account. Just assume role exists
+        io.log_warning(strings['platformcreateiamdescribeerror.info'].format(profile_name=profile_name))
+
+    return profile_name
+
+
+def _create_instance_role(role_name, policy_arns):
+    document = iam_documents.EC2_ASSUME_ROLE_PERMISSION
+    ret = iam.create_role_with_policy(role_name, document, policy_arns)
+    return ret

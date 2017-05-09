@@ -16,10 +16,10 @@ from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.core.fileoperations import write_config_setting
 from ebcli.lib import iam
 from ebcli.objects.exceptions import NotInitializedError, NotAuthorizedError, AlreadyExistsError
-from ebcli.operations import platformops
 from ebcli.operations.platformops import create_platform_version
 from ebcli.resources.strings import strings, flag_text, prompts
 from ebcli.resources.statics import iam_attributes, iam_documents
+from ...operations import commonops
 
 
 class GenericPlatformCreateController(AbstractBaseController):
@@ -53,59 +53,24 @@ class GenericPlatformCreateController(AbstractBaseController):
             self.app.pargs.instance_type,
             { 'id': self.app.pargs.vpc_id, 'subnets': self.app.pargs.vpc_subnets, 'publicip': self.app.pargs.vpc_publicip })
 
-    # TODO: Merge into ebcli/lib/iam_role.py when the code has been merged in
     def get_instance_profile(self):
         # Check to see if it was specified on the command line
-        profile = self.app.pargs.instance_profile
+        profile_name = self.app.pargs.instance_profile
 
-        if profile is None:
+        if profile_name is None:
             try:
                 # Check to see if it is associated with the workspace
-                profile = fileoperations.get_instance_profile()
+                profile_name = fileoperations.get_instance_profile()
             except NotInitializedError:
                 pass
 
-        if profile is None:
-            # Check to see if the default instance profile already exists
-            try:
-                existing_profiles = iam.get_instance_profile_names()
-                if iam_attributes.DEFAULT_PLATFORM_BUILDER_ROLE in existing_profiles:
-                    profile = iam_attributes.DEFAULT_PLATFORM_BUILDER_ROLE
-            except NotAuthorizedError:
-                io.log_warning(strings['platformcreateiamdescribeerror.info'])
-
-        if profile is None:
-            # We will now create the default role for the customer
-            try:
-                profile = iam_attributes.DEFAULT_PLATFORM_BUILDER_ROLE
-                try:
-                    iam.create_instance_profile(profile)
-                    io.log_info(strings['platformcreateiamcreated.info'])
-                except AlreadyExistsError:
-                    pass
-
-                document = iam_documents.EC2_ASSUME_ROLE_PERMISSION
-                try:
-                    # Create a role with the same name
-                    iam.create_role(profile, document)
-
-                    # Attach required custom platform builder permissions
-                    iam.put_role_policy(
-                        profile,
-                        iam_attributes.PLATFORM_BUILDER_INLINE_POLICY_NAME,
-                        iam_documents.CUSTOM_PLATFORM_BUILDER_INLINE_POLICY)
-                    # Associate instance profile with the required role
-                    iam.add_role_to_profile(profile, profile)
-                    io.log_info(strings['platformcreateiampolicyadded.info'])
-                except AlreadyExistsError:
-                    # If the role exists then we leave it as is, we do not try to add or modify its policies
-                    pass
-
-            except NotAuthorizedError:
-                io.log_warning(strings['platformcreateiamcreateerror.info'])
+        if profile_name is None\
+                or profile_name == iam_attributes.DEFAULT_PLATFORM_BUILDER_ROLE:
+            profile_name = commonops.create_instance_profile(iam_attributes.DEFAULT_PLATFORM_BUILDER_ROLE,
+                                              iam_attributes.DEFAULT_CUSTOM_PLATFORM_BUILDER_POLICIES)
 
         # Save to disk
-        write_config_setting('global', 'instance_profile', profile)
+        write_config_setting('global', 'instance_profile', profile_name)
 
 
 class PlatformCreateController(GenericPlatformCreateController):
