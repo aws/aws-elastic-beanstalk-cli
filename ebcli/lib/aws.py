@@ -189,27 +189,13 @@ def get_credentials():
 
 
 def make_api_call(service_name, operation_name, **operation_options):
-    try:
-        client = _get_client(service_name)
-    except botocore.exceptions.UnknownEndpointError as e:
-        raise NoRegionError(e)
-    except botocore.exceptions.PartialCredentialsError as e:
-        LOG.debug('Credentials incomplete')
-        raise CredentialsError('Your credentials are not complete. Error: {0}'
-                               .format(e))
-    except botocore.exceptions.NoRegionError:
-        raise NoRegionError()
-
-    if not _verify_ssl:
-        warnings.filterwarnings("ignore")
-
-    operation = getattr(client, operation_name)
+    operation = _set_operation(service_name, operation_name)
+    aggregated_error_message = []
 
     region = _region_name
     if not region:
         region = 'default'
 
-    MAX_ATTEMPTS = 10
     attempt = 0
     while True:
         attempt += 1
@@ -230,48 +216,8 @@ def make_api_call(service_name, operation_name, **operation_options):
             return response_data
 
         except botocore.exceptions.ClientError as e:
-            response_data = e.response
-            LOG.debug('Response: ' + str(response_data))
-            status = response_data['ResponseMetadata']['HTTPStatusCode']
-            LOG.debug('API call finished, status = ' + str(status))
-            try:
-                message = str(response_data['Error']['Message'])
-            except KeyError:
-                message = ""
-            if status == 400:
-                # Convert to correct 400 error
-                error = _get_400_error(response_data, message)
-                if isinstance(error, ThrottlingError):
-                    LOG.debug('Received throttling error')
-                    if attempt > MAX_ATTEMPTS:
-                        raise MaxRetriesError('Max retries exceeded for '
-                                              'throttling error')
-                else:
-                    raise error
-            elif status == 403:
-                LOG.debug('Received a 403')
-                if not message:
-                    message = 'Are your permissions correct?'
-                if _region_name == 'cn-north-1':
-                    raise NotAuthorizedInRegionError('Operation Denied. ' + message +
-                                                     '\n' +
-                                                     strings['region.china.credentials'])
-                else:
-                    raise NotAuthorizedError('Operation Denied. ' + message)
-            elif status == 404:
-                LOG.debug('Received a 404')
-                raise NotFoundError(message)
-            elif status == 409:
-                LOG.debug('Received a 409')
-                raise AlreadyExistsError(message)
-            elif status in (500, 503, 504):
-                LOG.debug('Received 5XX error')
-                if attempt > MAX_ATTEMPTS:
-                    raise MaxRetriesError('Max retries exceeded for '
-                                          'service error (5XX)')
-            else:
-                raise ServiceError('API Call unsuccessful. '
-                                   'Status code returned ' + str(status))
+            _handle_response_code(e.response, attempt, aggregated_error_message)
+
         except botocore.exceptions.NoCredentialsError:
             LOG.debug('No credentials found')
             raise CredentialsError('Operation Denied. You appear to have no'
@@ -296,6 +242,73 @@ def make_api_call(service_name, operation_name, **operation_options):
             LOG.error('Error while contacting Elastic Beanstalk Service')
             LOG.debug('error:' + str(error))
             raise ServiceError(error)
+
+
+def _handle_response_code(response_data, attempt, aggregated_error_message):
+    max_attempts = 10
+
+    LOG.debug('Response: ' + str(response_data))
+    status = response_data['ResponseMetadata']['HTTPStatusCode']
+    LOG.debug('API call finished, status = ' + str(status))
+    try:
+        message = str(response_data['Error']['Message'])
+    except KeyError:
+        message = ""
+    if status == 400:
+        # Convert to correct 400 error
+        error = _get_400_error(response_data, message)
+        if isinstance(error, ThrottlingError):
+            LOG.debug('Received throttling error')
+            if attempt > max_attempts:
+                raise MaxRetriesError('Max retries exceeded for '
+                                      'throttling error')
+        else:
+            raise error
+    elif status == 403:
+        LOG.debug('Received a 403')
+        if not message:
+            message = 'Are your permissions correct?'
+        if _region_name == 'cn-north-1':
+            raise NotAuthorizedInRegionError('Operation Denied. ' + message +
+                                             '\n' +
+                                             strings['region.china.credentials'])
+        else:
+            raise NotAuthorizedError('Operation Denied. ' + message)
+    elif status == 404:
+        LOG.debug('Received a 404')
+        raise NotFoundError(message)
+    elif status == 409:
+        LOG.debug('Received a 409')
+        raise AlreadyExistsError(message)
+    elif status in (500, 503, 504):
+        LOG.debug('Received 5XX error')
+        retry_failure_message = 'Received 5XX error during attempt #{0}\n   {1}\n'.format(str(attempt), message)
+
+        aggregated_error_message.insert(attempt, retry_failure_message)
+
+        if attempt > max_attempts:
+            _handle_500_error(('\n').join(aggregated_error_message))
+    else:
+        raise ServiceError('API Call unsuccessful. '
+                           'Status code returned ' + str(status))
+
+
+def _set_operation(service_name, operation_name):
+    try:
+        client = _get_client(service_name)
+    except botocore.exceptions.UnknownEndpointError as e:
+        raise NoRegionError(e)
+    except botocore.exceptions.PartialCredentialsError as e:
+        LOG.debug('Credentials incomplete')
+        raise CredentialsError('Your credentials are not complete. Error: {0}'
+                               .format(e))
+    except botocore.exceptions.NoRegionError:
+        raise NoRegionError()
+
+    if not _verify_ssl:
+        warnings.filterwarnings("ignore")
+
+    return getattr(client, operation_name)
 
 
 def _get_delay(attempt_number):
@@ -324,6 +337,11 @@ def _get_400_error(response_data, message):
     else:
         # Not tracking this error
         return ServiceError(message, code=code)
+
+def _handle_500_error(aggregated_error_message):
+    raise MaxRetriesError('Max retries exceeded for '
+                          'service error (5XX)\n' +
+                          aggregated_error_message)
 
 
 class InvalidParameterValueError(ServiceError):
