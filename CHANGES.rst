@@ -5,6 +5,7 @@ Changelog
 3.10.2 (2017-05-09)
 -------------------
 - Improved eb and ebp create default instance profile creation logic.
+- Added us-central-1 (Frankfurt), ap-northeast-1 (Tokyo), ap-southeast-1 (Singapore) and ap-southeast-2 (Sydney) CodeCommit support
 
 -------------------
 3.10.1 (2017-03-30)
