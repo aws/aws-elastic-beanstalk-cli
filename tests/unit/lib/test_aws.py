@@ -12,11 +12,15 @@
 # language governing permissions and limitations under the License.
 
 import unittest
-from unittest.mock import Mock, MagicMock, patch
 
 import botocore
 import botocore.exceptions
 
+import mock
+import pytest
+import sys
+
+from mock import patch, MagicMock
 from ebcli.lib import aws
 
 
@@ -51,16 +55,38 @@ class TestAws(unittest.TestCase):
                "Max retries exceeded for service error (5XX)\n" + ('\n').join(aggregated_response_message))
 
 
+    @pytest.mark.skipif(sys.version_info < (3,4),
+                        reason="requires python3.4 or higher")
     @patch('ebcli.lib.aws.LOG')
     def test_handle_response_code__500x_code__max_attempts_not_reached(self, LOG):
         aggregated_response_message = []
 
-        LOG.debug.assert_called_with_once(
-             "{'Error': {'Message': '500 Internal Server Error'}, 'ResponseMetadata': {'HTTPStatusCode': 500}}")
-        LOG.debug.assert_called_with_once('API call finished, status = 500')
-        LOG.debug.assert_called_with_once('Received 5xx error')
+        aws._handle_response_code(self.response_data, 10, aggregated_response_message)
+
+        calls = [
+            mock.call('Response: {\'Error\': {\'Message\': \'500 Internal Server Error\'}, \'ResponseMetadata\': {\'HTTPStatusCode\': 500}}'),
+            mock.call('API call finished, status = 500'),
+            mock.call('Received 5XX error')
+        ]
+
+        LOG.debug.assert_has_calls(calls)
+
+    @pytest.mark.skipif(sys.version_info > (2,7,11),
+                        reason="requires python2.7.11 or lower")
+    @patch('ebcli.lib.aws.LOG')
+    def test_handle_response_code__500x_code__max_attempts_not_reached(self, LOG):
+        aggregated_response_message = []
 
         aws._handle_response_code(self.response_data, 10, aggregated_response_message)
+
+        calls = [
+            mock.call("Response: {'Error': {'Message': '500 Internal Server Error'}, 'ResponseMetadata': {'HTTPStatusCode': 500}}"),
+            mock.call('API call finished, status = 500'),
+            mock.call('Received 5XX error')
+        ]
+
+        LOG.debug.assert_has_calls(calls)
+
 
     def test_make_api_call__failure__status_code_5xx(self):
         self.maxDiff = None
