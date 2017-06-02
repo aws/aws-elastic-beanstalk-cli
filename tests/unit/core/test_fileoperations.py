@@ -17,6 +17,7 @@ import unittest
 
 import sys
 import yaml
+import zipfile
 
 from ebcli.core import fileoperations
 from ebcli.objects.exceptions import NotInitializedError, ValidationError
@@ -457,3 +458,17 @@ class TestFileOperations(unittest.TestCase):
         actual_file = fileoperations.get_filename_without_extension(self.expected_file)
         self.assertEqual(self.expected_file_without_ext, actual_file, "Expected {0} but got: {1}"
                          .format(self.expected_file_without_ext, actual_file))
+
+    def test_zip_append_archive(self):
+        os.chdir(self.test_root)
+        os.chdir('testDir')
+
+        open('source_file.txt', 'w+').close()
+        open('target_file.txt', 'w+').close()
+        os.system('python -m zipfile -c source_file.zip source_file.txt')
+        os.system('python -m zipfile -c target_file.zip target_file.txt')
+
+        fileoperations.zip_append_archive('target_file.zip', 'source_file.zip')
+
+        target_file_zip = zipfile.ZipFile('target_file.zip', 'r')
+        self.assertEquals(['source_file.txt', 'target_file.txt'], sorted(target_file_zip.namelist()))

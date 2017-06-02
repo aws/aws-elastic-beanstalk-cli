@@ -20,6 +20,7 @@ import stat
 import sys
 import zipfile
 import yaml
+import warnings
 
 from cement.utils.misc import minimal_logger
 from ebcli.objects.buildconfiguration import BuildConfiguration
@@ -412,6 +413,19 @@ def delete_app_versions():
         delete_directory(app_version_folder)
     finally:
         os.chdir(cwd)
+
+
+def zip_append_archive(target_file, source_file):
+    zip_source = zipfile.ZipFile(source_file, 'r')
+    zip_target = zipfile.ZipFile(target_file, 'a')
+    with warnings.catch_warnings():
+        # Ignore UserWarning raised by zip module for zipping modules.
+        warnings.simplefilter('ignore', category=UserWarning)
+        for filename in zip_source.namelist():
+            zf = zip_source.read(filename)
+            zip_target.writestr(filename, zf)
+    zip_target.close()
+    zip_source.close()
 
 
 def zip_up_folder(directory, location, ignore_list=None):
