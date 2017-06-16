@@ -113,7 +113,7 @@ def region_supported(region):
         "ap-northeast-2",  # Asia Pacific (Seoul)
         "ap-southeast-1",  # Asia Pacific (Singapore)
         "ap-southeast-2",  # Asia Pacific (Sydney)
-        "sa-east-1"        # South America (São Paulo)
+        "sa-east-1"        # South America (Sao Paulo)
     ]
     if region is not None and region in supported_regions:
         return True
