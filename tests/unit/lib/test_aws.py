@@ -140,3 +140,29 @@ Received 5XX error during attempt #11
             exception_message,
             str(cm.exception)
         )
+
+    def test_handle_response_code__TooManyConfigurationTemplatesException_received(self):
+        self.response_data = {
+            'ResponseMetadata': {
+                'date': 'Tue, 20 Jun 2017 06:34:57 GMT',
+                'RetryAttempts': 0,
+                'HTTPStatusCode': 400,
+                'RequestId':
+                    '93836311-5582-11e7-8c17-c11b3f8f545e'
+            },
+            'Error': {
+                'Code': 'TooManyConfigurationTemplatesException',
+                'Type': 'Sender'
+            }
+        }
+
+        exception_message = ' '.join([
+            'Your request cannot be completed. You have reached the maximum',
+            'number of saved configuration templates. Learn more about service',
+            'limits: http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html'
+        ])
+
+        with self.assertRaises(aws.TooManyConfigurationTemplatesException) as context_manager:
+            aws._handle_response_code(self.response_data, 0, [])
+
+        self.assertEqual(context_manager.exception.message, exception_message)

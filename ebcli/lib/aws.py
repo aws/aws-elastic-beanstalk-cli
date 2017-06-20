@@ -334,6 +334,13 @@ def _get_400_error(response_data, message):
         return NotFoundError(message)
     elif code.startswith('TooManyPlatformsException'):
         return TooManyPlatformsError(message)
+    elif code.startswith('TooManyConfigurationTemplatesException'):
+        message = [
+            'Your request cannot be completed. You have reached the maximum',
+            'number of saved configuration templates. Learn more about service',
+            'limits: http://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html'
+        ]
+        return TooManyConfigurationTemplatesException(' '.join(message))
     else:
         # Not tracking this error
         return ServiceError(message, code=code)
@@ -361,4 +368,8 @@ class MaxRetriesError(ServiceError):
 
 
 class TooManyPlatformsError(ServiceError):
+    pass
+
+
+class TooManyConfigurationTemplatesException(ServiceError):
     pass

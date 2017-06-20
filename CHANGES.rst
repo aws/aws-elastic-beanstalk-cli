@@ -6,6 +6,7 @@ Changelog
 -------------------
 - Added ability to zip git submodules for application versions
 - Added us-west-1 (N. California), eu-west-2 (London), ap-northeast-2 (Seoul), and sa-east-1 (São Paulo) CodeCommit support
+- Added exception handling for TooManyConfigurationTemplatesException
 
 -------------------
 3.10.2 (2017-05-09)
