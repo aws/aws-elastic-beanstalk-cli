@@ -222,6 +222,9 @@ class InitController(AbstractBaseController):
             fileoperations.write_config_setting('global', 'default_ec2_keyname',
                                                 self.keyname)
 
+        # Default to including git submodules when creating zip files through `eb create`/`eb deploy`.
+        fileoperations.write_config_setting('global', 'include_git_submodules', True)
+
     def get_app_name(self):
         # Get app name from command line arguments
         app_name = self.app.pargs.application_name

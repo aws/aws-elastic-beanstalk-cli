@@ -259,13 +259,18 @@ class Git(SourceControl):
             io.log_info('git archive output: {0}'.format(stderr))
 
             project_root = os.getcwd()
-            # individually zip submodules if there are any
-            stdout, stderr, exitcode = self._run_cmd(['git', 'submodule', 'foreach', '--recursive'])
 
-            for index, line in enumerate(stdout.splitlines()):
-                submodule_dir = line.split(' ')[1].strip('\'')
-                os.chdir(os.path.join(project_root, submodule_dir))
-                self.do_zip_submodule(location, "{0}_{1}".format(location, str(index)), staged=staged, submodule_dir=submodule_dir)
+            must_zip_submodules = fileoperations.get_config_setting('global', 'include_git_submodules')
+
+            if must_zip_submodules:
+                # individually zip submodules if there are any
+                stdout, stderr, exitcode = self._run_cmd(['git', 'submodule', 'foreach', '--recursive'])
+
+                for index, line in enumerate(stdout.splitlines()):
+                    submodule_dir = line.split(' ')[1].strip('\'')
+                    os.chdir(os.path.join(project_root, submodule_dir))
+                    self.do_zip_submodule(location, "{0}_{1}".format(location, str(index)), staged=staged, submodule_dir=submodule_dir)
+
         finally:
             os.chdir(cwd)
 
