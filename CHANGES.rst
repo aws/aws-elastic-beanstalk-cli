@@ -5,6 +5,7 @@ Changelog
 3.10.5 (2017-07-28)
 -------------------
 - Added ca-central-1 (Canada-Central), and ap-south-1 (Mumbai) CodeCommit support
+- Made .elasticbeanstalk/logs/local directory writable by all thorough 'eb local run'
 
 -------------------
 3.10.4 (2017-07-14)

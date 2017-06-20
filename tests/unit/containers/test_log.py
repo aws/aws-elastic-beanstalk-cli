@@ -13,8 +13,11 @@
 
 from datetime import datetime
 from mock import patch
+import unittest
 from unittest import TestCase
 import os
+import shutil
+import sys
 import time
 
 from ebcli.containers import log, dockerrun
@@ -76,6 +79,30 @@ class TestLog(TestCase):
         set_all_unrestricted_permissions.assert_called_once_with(HOST_LOG)
         os.unlink.assert_called_with(LATEST_SYMLINK)
         os.symlink.assert_called_with(HOST_LOG, LATEST_SYMLINK)
+
+    @unittest.skipIf(sys.platform.startswith('win'), 'Test is not designed for Windows')
+    def test_make_logdirs__root_log_dir_and_host_log_dir_allow_full_write_access(self):
+        try:
+            enclosign_dir = '.elasticbeanstalk/logs'
+            root_log_dir = '.elasticbeanstalk/logs/local'
+            new_local_dir = '.elasticbeanstalk/logs/local/1234456'
+
+            log.make_logdirs(root_log_dir, new_local_dir)
+
+            if sys.version_info < (3, 0):
+                local_dir_permissions = '040777'
+                enclosing_dir_permissions = '040744'
+            else:
+                local_dir_permissions = '0o40777'
+                enclosing_dir_permissions = '0o40744'
+
+            self.assertEquals(enclosing_dir_permissions, oct(os.stat(enclosign_dir).st_mode))
+            self.assertEquals(local_dir_permissions, oct(os.stat(root_log_dir).st_mode))
+            self.assertEquals(local_dir_permissions, oct(os.stat(new_local_dir).st_mode))
+
+        finally:
+            shutil.rmtree(ROOT_LOG_DIR)
+
 
     @patch('ebcli.containers.log.os')
     @patch('ebcli.containers.log.io.echo')

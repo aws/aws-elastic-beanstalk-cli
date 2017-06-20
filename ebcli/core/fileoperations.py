@@ -226,6 +226,8 @@ def set_all_unrestricted_permissions(location):
     """
     os.chmod(location, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
 
+def remove_execute_access_from_group_and_other_users(location):
+    os.chmod(location, stat.S_IRWXU | stat.S_IRGRP | stat.S_IROTH)
 
 def get_current_directory_name():
     dirname, filename = os.path.split(os.getcwd())

@@ -49,6 +49,15 @@ def make_logdirs(root_log_dir, new_local_dir):
     :return: None
     """
 
+    if not os.path.exists(root_log_dir):
+        os.makedirs(root_log_dir)
+        fileoperations.set_all_unrestricted_permissions(root_log_dir)
+
+    # Remove write and execute permissions from GRP and OTH from
+    # the enclosing directory to prevent outside access.
+    enclosing_directory = os.path.dirname(root_log_dir)
+    fileoperations.remove_execute_access_from_group_and_other_users(enclosing_directory)
+
     os.makedirs(new_local_dir)
     fileoperations.set_all_unrestricted_permissions(new_local_dir)
     _symlink_new_log_dir(root_log_dir, new_local_dir)
