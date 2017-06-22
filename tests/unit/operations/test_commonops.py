@@ -15,6 +15,7 @@
 
 import os
 import shutil
+import json
 import mock
 import unittest
 from collections import Counter
@@ -29,6 +30,7 @@ from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.buildconfiguration import BuildConfiguration
 from ebcli.resources.strings import strings, responses
 from ebcli.resources.statics import iam_documents, iam_attributes
+from ebcli.objects.solutionstack import SolutionStack
 
 class TestCommonOperations(unittest.TestCase):
     app_name = 'ebcli-app'
@@ -376,3 +378,14 @@ class TestCommonOperations(unittest.TestCase):
         mock_iam.add_role_to_profile.assert_not_called()
 
         mock_io.log_warning.assert_called_once()
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk')
+    def test_get_solution_stack(self, mock_beanstalk):
+        with open('../tests/solution_stacks.json') as data_file:
+            solutions = json.load(data_file)
+
+        solution_stacks = [SolutionStack(solution_stack) for solution_stack in solutions['solution_stacks']]
+        mock_beanstalk.get_available_solution_stacks = Mock(return_value=solution_stacks)
+
+        for solution_string in solutions['solution_strings']:
+            commonops.get_solution_stack(solution_string)

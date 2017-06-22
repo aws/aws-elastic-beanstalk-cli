@@ -2,9 +2,10 @@
 Changelog
 =========
 -------------------
-3.11.0 (2017-07-25)
+3.10.4 (2017-07-13)
 -------------------
 - Added ca-central-1 (Canada-Central), and ap-south-1 (Mumbai) CodeCommit support
+- Fixed bug in solution stack determination logic for Multi-Container Docker 17.03.1-ce platform version
 
 -------------------
 3.10.3 (2017-06-27)

@@ -1194,11 +1194,8 @@ def get_solution_stack(solution_string):
         return None
 
     # No exact match, check for versions
-    string = solution_string.replace('-', ' ')
-    # put dash back in preconfigured types
-    string = re.sub('preconfigured\\s+docker', 'preconfigured - docker', string)
-    # put dash back in multi-container types
-    string = re.sub('multi\\s+container', 'multi-container', string)
+    string = solution_string
+
     string = re.sub(r'([a-z])([0-9])', '\\1 \\2', string)
     stacks = [x for x in solution_stacks if x.version.lower() == string]
 
