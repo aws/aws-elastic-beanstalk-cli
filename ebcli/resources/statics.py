@@ -93,3 +93,4 @@ class elb_names(object):
     DEFAULT_PROCESS_LOGICAL_ID = 'AWSEBV2LoadBalancerTargetGroup'
     CLASSIC_VERSION = 'classic'
     APPLICATION_VERSION = 'application'
+    NETWORK_VERSION = 'network'

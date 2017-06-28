@@ -2488,8 +2488,8 @@
     "LoadBalancerTypeEnum":{
       "type":"string",
       "enum":[
-        "standard",
-        "application"
+        "application",
+        "network"
       ]
     },
     "LoadBalancers":{

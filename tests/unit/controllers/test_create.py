@@ -15,6 +15,7 @@ import mock
 
 from .basecontrollertest import BaseControllerTest
 
+from ebcli.controllers.create import elb_types
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
 from ebcli.objects.exceptions import InvalidOptionsError
@@ -30,6 +31,23 @@ class TestCreate(BaseControllerTest):
     app_name = 'ebcli-intTest-app'
     env_name = 'create-env'
     tier = Tier.get_all_tiers()[0]
+
+    nlb_supported_regions = [
+        'us-east-1',
+        'us-west-1',
+        'us-west-2',
+        'eu-west-1',
+        'eu-central-1',
+        'ap-south-1',
+        'ap-southeast-1',
+        'ap-southeast-2',
+        'ap-northeast-1',
+        'ap-northeast-2',
+        'sa-east-1',
+        'us-east-2',
+        'ca-central-1',
+        'eu-west-2'
+    ]
 
     def setUp(self):
         self.module_name = 'create'
@@ -227,3 +245,23 @@ class TestCreate(BaseControllerTest):
                                                              interactive=False,
                                                              timeout=None,
                                                              source=None)
+
+    def test_elb_types__region_explicitly_passed_in__nlb_restricted_regions(self):
+        for region in ['cn-north-1', 'us-gov-west-1']:
+            self.assertEqual(['classic', 'application'], elb_types(region))
+
+    def test_elb_types__region_explicitly_passed_in__nlb_allowed_regions(self):
+        for region in self.nlb_supported_regions:
+            self.assertEqual(['classic', 'application', 'network'], elb_types(region))
+
+    def test_elb_types__region_not_passed_in_through_command_line__nlb_restricted_regions(self):
+        for region in ['cn-north-1', 'us-gov-west-1']:
+            self.mock_commonops.get_default_region.return_value = region
+
+            self.assertEqual(['classic', 'application'], elb_types(None))
+
+    def test_elb_types__region_not_passed_in_through_command_line__nlb_allowed_regions(self):
+        for region in self.nlb_supported_regions:
+            self.mock_commonops.get_default_region.return_value = region
+
+            self.assertEqual(['classic', 'application', 'network'], elb_types(None))

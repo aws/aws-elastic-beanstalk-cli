@@ -25,7 +25,7 @@ from ..objects.requests import CreateEnvironmentRequest
 from ..objects.tier import Tier
 from ..operations import saved_configs, commonops, createops, composeops
 from ..resources.strings import strings, prompts, flag_text
-
+from ..resources.statics import elb_names
 
 class CreateController(AbstractBaseController):
     class Meta:
@@ -129,6 +129,7 @@ class CreateController(AbstractBaseController):
         elb_type = self.app.pargs.elb_type
         source = self.app.pargs.source
         process = self.app.pargs.process
+        region = self.app.pargs.region
         interactive = False if env_name else True
         platform_arn = None
         solution = None
@@ -225,7 +226,7 @@ class CreateController(AbstractBaseController):
             key_name = commonops.get_default_keyname()
 
         if not elb_type and interactive and not single:
-            elb_type = get_elb_type()
+            elb_type = get_elb_type(region)
 
         database = self.form_database_object()
         vpc = self.form_vpc_object()
@@ -424,13 +425,26 @@ def get_cname(env_name):
             break
     return cname
 
-def get_elb_type():
+
+def get_elb_type(region):
     io.echo()
     io.echo('Select a load balancer type')
-    result = utils.prompt_for_item_in_list(["classic", "application"], default=1)
+    result = utils.prompt_for_item_in_list(elb_types(region), default=1)
     elb_type = result
 
     return elb_type
+
+
+def elb_types(region):
+    types = [elb_names.CLASSIC_VERSION, elb_names.APPLICATION_VERSION]
+
+    if not region:
+        region = commonops.get_default_region()
+
+    if region not in ['cn-north-1', 'us-gov-west-1']:
+        types.append(elb_names.NETWORK_VERSION)
+
+    return types
 
 
 def get_and_validate_envars(envvars):

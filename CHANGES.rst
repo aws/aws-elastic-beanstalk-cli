@@ -2,6 +2,12 @@
 Changelog
 =========
 -------------------
+3.11.0 (2017-09-26)
+-------------------
+- Added support for creation of environments with Network Load Balancers
+- Fixed bug that caused `eb restore` to fail to begin
+
+-------------------
 3.10.6 (2017-08-21)
 -------------------
 - Fixed 5-minute timeout bug involving CLI giving up on CodeBuild despite server-side success
