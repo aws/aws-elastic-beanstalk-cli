@@ -1,17 +1,18 @@
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from collections import namedtuple
 import logging
-import re
 from operator import attrgetter
-import sys
+import re
 import six
-
-from docker.errors import APIError
-from docker.utils import create_host_config
+import sys
 
 from .config import DOCKER_CONFIG_KEYS
 from .container import Container, get_container_name
+from docker.errors import APIError
+from docker.types import HostConfig
+from ebcli.bundled._compose.docker_py_handler import client as docker_py_client
 from .progress_stream import stream_output, StreamOutputError
 
 log = logging.getLogger(__name__)
@@ -248,7 +249,7 @@ class Service(object):
             entrypoint=['/bin/echo'],
             command=[],
             detach=True,
-            host_config=create_host_config(volumes_from=[container.id]),
+            host_config=HostConfig(volumes_from=[container.id]),
         )
         intermediate_container.start()
         intermediate_container.wait()
@@ -451,7 +452,8 @@ class Service(object):
 
         extra_hosts = build_extra_hosts(options.get('extra_hosts', None))
 
-        return create_host_config(
+        return HostConfig(
+            version=docker_py_client.api_version().base_version,
             links=self._get_links(link_to_self=one_off),
             port_bindings=port_bindings,
             binds=volume_bindings,

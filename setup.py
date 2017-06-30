@@ -15,12 +15,12 @@ requires = ['pyyaml>=3.11',
             'docopt >= 0.6.1, < 0.7',
             'requests >= 2.6.1, <= 2.9.1',
             'websocket-client >= 0.11.0, < 1.0',
-            'docker-py >= 1.1.0, <= 1.7.2',
             'dockerpty >= 0.3.2, <= 0.4.1',
             'semantic_version == 2.5.0',
             'tabulate == 0.7.5',
             'termcolor == 1.1.0',
            ]
+# When executing 'eb local run', if the platform is a multi-container Docker platform, 'docker' is installed
 
 testing_requires = ['pytest>=3.03',
                     'mock>=2.0.0',
