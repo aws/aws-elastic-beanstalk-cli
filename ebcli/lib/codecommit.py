@@ -102,6 +102,7 @@ def list_branches(repo_name, next_token=None):
 
 def region_supported(region):
     supported_regions = [
+        "ca-central-1",    # Canada (Central)
         "us-east-1",       # US East (N. Virginia)
         "us-east-2",       # US East (Ohio)
         "us-west-1",       # US West (N. California)
@@ -113,6 +114,7 @@ def region_supported(region):
         "ap-northeast-2",  # Asia Pacific (Seoul)
         "ap-southeast-1",  # Asia Pacific (Singapore)
         "ap-southeast-2",  # Asia Pacific (Sydney)
+        "ap-south-1",      # Asia Pacific (Mumbai)
         "sa-east-1"        # South America (Sao Paulo)
     ]
     if region is not None and region in supported_regions:
