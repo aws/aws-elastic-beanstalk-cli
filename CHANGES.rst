@@ -2,7 +2,7 @@
 Changelog
 =========
 -------------------
-3.10.4 (2017-07-13)
+3.10.4 (2017-07-14)
 -------------------
 - Fixed bug in solution stack determination logic for Multi-Container Docker 17.03.1-ce platform version
 

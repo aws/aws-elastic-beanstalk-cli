@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 
 import unittest
+import sys
 import os
 import shutil
 import subprocess
@@ -38,7 +39,10 @@ class TestNoSourceControl(unittest.TestCase):
 
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
-            shutil.rmtree('testDir')
+            if sys.platform.startswith('win'):
+                os.system('rmdir /S /Q testDir')
+            else:
+                shutil.rmtree('testDir')
 
     @unittest.skipIf(fileoperations.program_is_installed('git'), "Skipped because git is installed")
     def test_get_source_control(self):
@@ -95,7 +99,10 @@ class TestGitSourceControl(unittest.TestCase):
 
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
-            shutil.rmtree('testDir')
+            if sys.platform.startswith('win'):
+                os.system('rmdir /S /Q testDir')
+            else:
+                shutil.rmtree('testDir')
 
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_source_control(self):
@@ -138,15 +145,15 @@ class TestGitSourceControl(unittest.TestCase):
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_set_up_ignore_file_file_exists(self):
         with open('.gitignore', 'w') as f:
-            f.write('line1' + os.linesep)
-            f.write('line2' + os.linesep)
+            f.write('line1\n')
+            f.write('line2\n')
 
         sourcecontrol.Git().set_up_ignore_file()
 
         with open('.gitignore', 'r') as f:
             f = f.readlines()
-            self.assertEqual(f[0], 'line1' + os.linesep)
-            self.assertEqual(f[1], 'line2' + os.linesep)
+            self.assertEqual(f[0], 'line1\n')
+            self.assertEqual(f[1], 'line2\n')
 
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     @mock.patch('ebcli.objects.sourcecontrol.exec_cmd')

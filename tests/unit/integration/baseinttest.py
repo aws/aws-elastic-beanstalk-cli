@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 
 import mock
+import sys
 import os
 import shutil
 
@@ -86,5 +87,8 @@ class BaseIntegrationTest(test.CementTestCase):
 
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
-            shutil.rmtree('testDir')
+            if sys.platform.startswith('win'):
+                os.system('rmdir /S /Q testDir')
+            else:
+                shutil.rmtree('testDir')
         mockservice.reset()

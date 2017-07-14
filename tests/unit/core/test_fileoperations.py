@@ -60,7 +60,10 @@ class TestFileOperations(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.test_root)
         if os.path.exists('testDir'):
-            shutil.rmtree('testDir')
+            if sys.platform.startswith('win'):
+                os.system('rmdir /S /Q testDir')
+            else:
+                shutil.rmtree('testDir')
 
     def test_get_aws_home(self):
         # Just make sure no errors are thrown

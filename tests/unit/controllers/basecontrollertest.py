@@ -13,6 +13,7 @@
 
 import mock
 import os
+import sys
 import shutil
 
 from cement.utils import test
@@ -64,7 +65,10 @@ class BaseControllerTest(test.CementTestCase):
 
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
-            shutil.rmtree('testDir')
+            if sys.platform.startswith('win'):
+                os.system('rmdir /S /Q testDir')
+            else:
+                shutil.rmtree('testDir')
 
     def run_command(self, *args):
         ebcore.EB.Meta.exit_on_close = False

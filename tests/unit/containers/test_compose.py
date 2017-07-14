@@ -10,7 +10,9 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import sys
 
+import unittest
 from mock import patch
 from unittest import TestCase
 
@@ -45,6 +47,7 @@ class TestCompose(TestCase):
 
         self.assertDictEqual(expected_compose, actual_compose)
 
+    @unittest.skipIf(sys.platform.startswith('win'), 'Test is not designed for Windows presently')
     @patch('ebcli.containers.compose.os.makedirs')
     def test_compose_complex(self, makedirs):
         dockerrun = _get_mock_multicontainer_dockerrun_complex()

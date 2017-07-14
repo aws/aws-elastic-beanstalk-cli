@@ -1,3 +1,5 @@
+import sys
+
 from unittest import TestCase
 
 from mock import patch
@@ -9,8 +11,8 @@ from tests.unit.containers import dummy
 
 IMG_NAME = 'janedoe/image'
 PORT = '5000'
-NEW_DOCKERFILE_CONTENTS = '''{} {}
-{} {}'''.format(commands.FROM_CMD, IMG_NAME, commands.EXPOSE_CMD, PORT)
+NEW_DOCKERFILE_CONTENTS_UNIX = '{} {}\n{} {}'.format(commands.FROM_CMD, IMG_NAME, commands.EXPOSE_CMD, PORT)
+NEW_DOCKERFILE_CONTENTS_WINDOWS = '{} {}\r\n{} {}'.format(commands.FROM_CMD, IMG_NAME, commands.EXPOSE_CMD, PORT)
 DOCKERRUN = {dockerrun.IMG_KEY: {dockerrun.IMG_NAME_KEY: IMG_NAME},
              dockerrun.PORTS_KEY: [{dockerrun.CONTAINER_PORT_KEY: PORT}]}
 RUNTIME_DOCKERFILE_PATH = '/abcd/runtime'
@@ -35,8 +37,13 @@ class TestContainerFSHandler(TestCase):
     @patch('ebcli.containers.fshandler.fileoperations.write_to_text_file')
     def test_make_dockerfile(self, write_to_text_file):
         self.fs_handler.make_dockerfile()
-        write_to_text_file.assert_called_once_with(location=dummy.NEW_DOCKERFILE_PATH,
-                                                   data=NEW_DOCKERFILE_CONTENTS)
+
+        if sys.platform.startswith('win'):
+            write_to_text_file.assert_called_once_with(location=dummy.NEW_DOCKERFILE_PATH,
+                                                   data=NEW_DOCKERFILE_CONTENTS_WINDOWS)
+        else:
+            write_to_text_file.assert_called_once_with(location=dummy.NEW_DOCKERFILE_PATH,
+                                                   data=NEW_DOCKERFILE_CONTENTS_UNIX)
 
     @patch('ebcli.containers.fshandler.shutil.copyfile')
     @patch('ebcli.containers.fshandler.containerops')

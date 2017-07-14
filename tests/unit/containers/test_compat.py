@@ -85,12 +85,12 @@ class TestCompat(TestCase):
                                                fileoperations):
         env = {}
         expected_env = {'DOCKER_HOST': 'tcp://192.168.59.103:2376',
-                        'DOCKER_CERT_PATH': '/home/.boot2docker/certs/boot2docker-vm',
+                        'DOCKER_CERT_PATH': os.path.join('home','.boot2docker','certs', 'boot2docker-vm'),
                         'DOCKER_TLS_VERIFY': '1'}
 
         is_boot2docker_installed.return_value = True
         _boot2docker_ip.return_value = '192.168.59.103'
-        fileoperations.get_home.return_value = '/home'
+        fileoperations.get_home.return_value = os.path.join('home')
 
         compat.boot2docker_setup(env)
 

@@ -11,7 +11,9 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-import os
+import sys
+
+import unittest
 from unittest import TestCase
 
 from botocore.compat import six
@@ -30,10 +32,11 @@ MOCK_FILES = ['/a', '/b', '/c', '/d']
 
 
 class TestUtils(TestCase):
+    @unittest.skipIf(sys.platform.startswith('win'), 'Test is not equipped to run on Windows')
     @patch('ebcli.lib.utils.LOG')
     @patch('ebcli.lib.utils.sys.stdout', new_callable=StringIO)
     def test_exec_cmd_live_output_happy_case(self, out, LOG):
-        expected_output = HELLO_WORLD_MSG + os.linesep
+        expected_output = HELLO_WORLD_MSG + "\n"
 
         self.assertEquals(utils.exec_cmd(HAPPY_ARGS), expected_output)
         LOG.debug.assert_called_once_with(' '.join(HAPPY_ARGS))
@@ -45,6 +48,7 @@ class TestUtils(TestCase):
         self.assertRaises(OSError, utils.exec_cmd, OS_ERROR_ARGS)
         LOG.debug.assert_called_once_with(' '.join(OS_ERROR_ARGS))
 
+    @unittest.skipIf(sys.platform.startswith('win'), 'Test is not equipped to run on Windows')
     @patch('ebcli.lib.utils.LOG')
     def test_exec_cmd_live_output_commanderror_case(self, LOG):
         self.assertRaises(CommandError, utils.exec_cmd, COMMAND_ERROR_ARGS)

@@ -10,8 +10,9 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from tests.utilities.testutils import unittest, eb
+import sys
 
+from tests.utilities.testutils import unittest, eb
 
 class TestBaseCommandFunctionality(unittest.TestCase):
     """
@@ -22,16 +23,17 @@ class TestBaseCommandFunctionality(unittest.TestCase):
     def test_help_usage_top_level(self):
         p = eb('')
         self.assertEqual(p.rc, 0)
-        self.assertRegexpMatches(
-            p.stdout, 'usage: eb \(sub-commands ...\) \[options ...\] {arguments ...}\n\n'
-                      'Welcome\s+to\s+the\s+Elastic\s+Beanstalk\s+Command\s+Line\s+Interface\s+\(EB\s+CLI\).*')
 
-    def test_help_output(self):
-        p = eb('-h')
-        self.assertEqual(p.rc, 0)
+        expected_output = ''
+        if sys.platform.startswith('win'):
+            expected_output = ''.join(['usage: eb \(sub-commands ...\) \[options ...\] {arguments ...}\r\n\r\n',
+                                       'Welcome\s+to\s+the\s+Elastic\s+Beanstalk\s+Command\s+Line\s+Interface\s+\(EB\s+CLI\).*'])
+        else:
+            expected_output = ''.join(['usage: eb \(sub-commands ...\) \[options ...\] {arguments ...}\n\n',
+                                       'Welcome\s+to\s+the\s+Elastic\s+Beanstalk\s+Command\s+Line\s+Interface\s+\(EB\s+CLI\).*'])
+
         self.assertRegexpMatches(
-            p.stdout, 'usage: eb \(sub-commands ...\) \[options ...\] {arguments ...}\n\n'
-                      'Welcome\s+to\s+the\s+Elastic\s+Beanstalk\s+Command\s+Line\s+Interface\s+\(EB\s+CLI\).*')
+            p.stdout, expected_output)
 
     def test_top_level_options_debug(self):
         p = eb('--debug')

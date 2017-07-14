@@ -14,6 +14,7 @@
 # language governing permissions and limitations under the License.
 
 import os
+import sys
 import shutil
 import unittest
 
@@ -50,7 +51,10 @@ class TestInitializeOperations(unittest.TestCase):
     def tearDown(self):
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
-            shutil.rmtree('testDir')
+            if sys.platform.startswith('win'):
+                os.system('rmdir /S /Q testDir')
+            else:
+                shutil.rmtree('testDir')
 
 
     @mock.patch('ebcli.operations.initializeops.codebuild')

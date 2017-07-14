@@ -47,7 +47,10 @@ class TestResolveConfigLocations(unittest.TestCase):
     def tearDown(self):
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
-            shutil.rmtree('testDir')
+            if sys.platform.startswith('win'):
+                os.system('rmdir /S /Q testDir')
+            else:
+                shutil.rmtree('testDir')
 
     def test_resolve_config_location_full_path(self):
         location = os.path.expanduser(os.getcwd() +

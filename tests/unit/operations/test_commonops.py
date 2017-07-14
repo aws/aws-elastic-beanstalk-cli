@@ -14,6 +14,7 @@
 # language governing permissions and limitations under the License.
 
 import os
+import sys
 import shutil
 import json
 import mock
@@ -84,7 +85,10 @@ class TestCommonOperations(unittest.TestCase):
     def tearDown(self):
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
-            shutil.rmtree('testDir')
+            if sys.platform.startswith('win'):
+                os.system('rmdir /S /Q testDir')
+            else:
+                shutil.rmtree('testDir')
 
     def test_is_success_string(self):
         self.assertTrue(commonops._is_success_string('Environment health has been set to GREEN'))
