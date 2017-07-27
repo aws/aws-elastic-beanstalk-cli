@@ -144,7 +144,7 @@ class Table(object):
 
     def get_column_data(self, data, column):
         c_data = justify_and_trim(
-            str(data.get(column.key, '-')),
+            self.ascii_string(data.get(column.key, '-')),
             column.size or column.fit_size,
             column.justify,
             column.key, self.shift_col)
@@ -161,10 +161,23 @@ class Table(object):
     def get_widest_data_length_in_column(self, column):
         max_size = len(str(column.name))
         for r in range(self.first_row_index(), self.last_row_index()):
-            len_row_data = len(str(self.data[r].get(column.key)))
+            column_key = self.ascii_string(self.data[r].get(column.key))
+            len_row_data = self.ascii_length(column_key)
             if len_row_data > max_size:
                 max_size = len_row_data
         return max_size
+
+    def ascii_string(self, data):
+        try:
+            return str(data)
+        except UnicodeEncodeError:
+            return data
+
+    def ascii_length(self, data):
+        try:
+            return len(str(data))
+        except UnicodeEncodeError:
+            return int(len(data) * 1.5)
 
     def get_color_data(self, data):
         if self.screen.mono:

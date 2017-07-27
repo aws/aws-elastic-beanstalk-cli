@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from datetime import datetime
-from mock import patch
+from mock import patch, MagicMock
 import unittest
 from unittest import TestCase
 import os
@@ -21,6 +21,7 @@ import sys
 import time
 
 from ebcli.containers import log, dockerrun
+from ebcli.core import fileoperations
 from ebcli.resources.strings import strings
 
 
@@ -70,6 +71,7 @@ class TestLog(TestCase):
     @patch('ebcli.containers.log.os')
     def test_make_logdirs(self, os, set_all_unrestricted_permissions):
         os.path.join.return_value = LATEST_SYMLINK
+        fileoperations.remove_execute_access_from_group_and_other_users = MagicMock()
 
         log.make_logdirs(ROOT_LOG_DIR, HOST_LOG)
 
