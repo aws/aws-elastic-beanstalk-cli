@@ -43,11 +43,11 @@ def stream_build_configuration_app_version_creation(app_name, app_version_label)
         from ebcli.operations.commonops import wait_for_success_events
         wait_for_success_events(None, timeout_in_minutes=5,
                                       can_abort=False, version_label=app_version_label)
-    except ServiceError as ex:
+    except ServiceError as exception:
         LOG.debug("Caught service error while creating application version '{0}' "
-                  "deleting the created applicaiton version as it is useless now.")
+                  "deleting the created application version as it is useless now.".format(app_version_label))
         elasticbeanstalk.delete_application_version(app_name, app_version_label)
-        raise ex
+        raise exception
 
 
 def validate_build_config(build_config):
