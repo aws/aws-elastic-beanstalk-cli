@@ -23,7 +23,7 @@ from ebcli.resources.strings import strings
 LOG = minimal_logger(__name__)
 
 
-def stream_build_configuration_app_version_creation(app_name, app_version_label):
+def stream_build_configuration_app_version_creation(app_name, app_version_label, build_spec):
     # Get the CloudWatch logs link
     successfully_generated = wait_for_app_version_attribute(app_name, [app_version_label], 'BuildArn', timeout=1)
     app_version_response = elasticbeanstalk.get_application_versions(app_name, version_labels=[app_version_label])['ApplicationVersions']
@@ -31,17 +31,19 @@ def stream_build_configuration_app_version_creation(app_name, app_version_label)
     build_response = codebuild.batch_get_builds([app_version_response[0]['BuildArn']]) \
         if successfully_generated else None
 
+    codebuild_timeout = build_spec.timeout or 60
     if build_response is not None and 'logs' in build_response['builds'][0]:
         log_link_text = strings['codebuild.buildlogs'].replace('{logs_link}',
                                                                build_response['builds'][0]['logs']['deepLink'])
         io.echo(log_link_text)
+        io.echo("NOTE: The CodeBuild timeout is set to {0} minutes, so this operation may take upto '{0}' minutes to complete.".format(codebuild_timeout))
     else:
         io.log_warning("Could not retrieve CloudWatch link for CodeBuild logs")
 
     # Wait for the success events
     try:
         from ebcli.operations.commonops import wait_for_success_events
-        wait_for_success_events(None, timeout_in_minutes=5,
+        wait_for_success_events(None, timeout_in_minutes=codebuild_timeout,
                                       can_abort=False, version_label=app_version_label)
     except ServiceError as exception:
         LOG.debug("Caught service error while creating application version '{0}' "

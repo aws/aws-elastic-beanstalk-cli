@@ -50,7 +50,7 @@ def deploy(app_name, env_name, version, label, message, group_name=None,
             app_name, process=process_app_versions, label=label, message=message, staged=staged, build_config=build_config)
 
     if build_config is not None:
-        buildspecops.stream_build_configuration_app_version_creation(app_name, app_version_label)
+        buildspecops.stream_build_configuration_app_version_creation(app_name, app_version_label, build_config)
     elif process_app_versions is True:
         success = commonops.wait_for_processed_app_versions(app_name,
                                                             [app_version_label])
