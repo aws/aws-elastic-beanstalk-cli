@@ -126,15 +126,19 @@ class EB(foundation.CementApp):
             UpgradeController,
         ]
 
-        workspace_type = fileoperations.get_workspace_type(Constants.WorkSpaceTypes.APPLICATION)
-
-        if Constants.WorkSpaceTypes.APPLICATION == workspace_type:
+        if "modules" in self.argv:
             for c in environment_controllers:
                 c._add_to_handler(handler)
-        elif Constants.WorkSpaceTypes.PLATFORM == workspace_type:
-            for c in platform_controllers:
-                c._add_to_handler(handler)
-                pass
+
+        else:
+            workspace_type = fileoperations.get_workspace_type(Constants.WorkSpaceTypes.APPLICATION)
+
+            if Constants.WorkSpaceTypes.APPLICATION == workspace_type:
+                for c in environment_controllers:
+                    c._add_to_handler(handler)
+            elif Constants.WorkSpaceTypes.PLATFORM == workspace_type:
+                for c in platform_controllers:
+                    c._add_to_handler(handler)
 
         # Add special controllers
         handler.register(CompleterController)
