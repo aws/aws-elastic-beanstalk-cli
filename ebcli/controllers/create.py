@@ -144,7 +144,7 @@ class CreateController(AbstractBaseController):
         app_name = self.get_app_name()
 
         # get tags
-        tags = get_and_validate_tags(tags)
+        tags = createops.get_and_validate_tags(tags)
 
         #load solution stack
         if not solution_string:
@@ -431,30 +431,6 @@ def get_elb_type():
     elb_type = result
 
     return elb_type
-
-
-
-def get_and_validate_tags(tags):
-    if not tags:
-        return []
-
-    tags = tags.strip().strip('"').strip('\'')
-    tags = tags.split(',')
-    tag_list = []
-    if len(tags) > 7:
-        raise InvalidOptionsError(strings['tags.max'])
-    for t in tags:
-        # validate
-        if not re.match('^[\w\s.:/+%@-]{1,128}=[\w\s.:/+=@-]{0,256}$', t):
-            raise InvalidOptionsError(strings['tags.invalidformat'])
-        else:
-            # build tag
-            key, value = t.split('=', 1)
-            tag_list.append(
-                {'Key': key,
-                 'Value': value}
-            )
-    return tag_list
 
 
 def get_and_validate_envars(envvars):
