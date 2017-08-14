@@ -1181,6 +1181,11 @@ def get_solution_stack(solution_string):
     solution_string = solution_string.lower()
     solution_stacks = elasticbeanstalk.get_available_solution_stacks()
 
+    custom_platform_solution_stacks = [x for x in solution_stacks if PlatformVersion.ARN_PATTERN.match(x.name.lower())]
+    stacks = [x for x in custom_platform_solution_stacks if solution_string in x.name.lower()]
+    if len(stacks):
+        return stacks[0]
+
     # check for exact string
     stacks = [x for x in solution_stacks if x.name.lower() == solution_string]
 
@@ -1197,21 +1202,21 @@ def get_solution_stack(solution_string):
     string = solution_string
 
     string = re.sub(r'([a-z])([0-9])', '\\1 \\2', string)
-    stacks = [x for x in solution_stacks if x.version.lower() == string]
 
+    stacks = [x for x in solution_stacks if solution_strings_match(x.version.lower(), string)]
     if len(stacks) > 0:
-        # Give the latest version. Latest is always first in list
-        return stacks[0]
-
-    # No exact match, check for platforms
-    stacks = [x for x in solution_stacks if x.platform.lower() == string]
-
-    if len(stacks) > 0:
-        # Give the latest version. Latest is always first in list
         return stacks[0]
 
     raise NotFoundError(prompts['sstack.invalidkey'].replace('{string}',
                                                              solution_string))
+
+
+def solution_strings_match(str1, str2):
+    return(
+        str1 == re.sub(r'\s*-\s*', ' ', str2)
+        or re.sub(r'\s*-\s*', ' ', str1) == re.sub(r'-', ' ', str2)
+        or str1 == str2
+    )
 
 
 def is_cname_available(cname):

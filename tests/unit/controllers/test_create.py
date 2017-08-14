@@ -162,6 +162,7 @@ class TestCreate(BaseControllerTest):
         keyname ='mykey'
         self.mock_commonops.get_solution_stack.return_value = self.solution
         self.mock_commonops.is_cname_available.return_value = True
+        self.mock_operations.get_and_validate_tags.return_value = [{'Key': 'a', 'Value': '1'}, {'Key': 'b', 'Value': '2'}]
 
         self.mock_input.side_effect = [
             env_name,
