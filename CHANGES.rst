@@ -2,6 +2,14 @@
 Changelog
 =========
 -------------------
+3.10.6 (2017-08-21)
+-------------------
+- Fixed 5-minute timeout bug involving CLI giving up on CodeBuild despite server-side success
+- Fixed module-creation bug where `eb create` exits because it cannot find the .elasticbeanstalk directory
+- Increased limit on the number of tags that can be created during environment creation to 47
+- Fixed environment creation failures when platform names specified are from the list retrieved by `eb platform list`.
+
+-------------------
 3.10.5 (2017-07-28)
 -------------------
 - Added ca-central-1 (Canada-Central), and ap-south-1 (Mumbai) CodeCommit support
