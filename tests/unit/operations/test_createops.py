@@ -13,8 +13,10 @@
 
 import unittest
 
-from ebcli.objects.exceptions import InvalidOptionsError
 from ebcli.operations import createops
+from ebcli.operations.tagops.taglist import TagList
+from ebcli.operations.tagops.tagops import TagOps
+
 
 class TestCreateOps(unittest.TestCase):
 
@@ -23,33 +25,24 @@ class TestCreateOps(unittest.TestCase):
 
         self.assertEqual([], createops.get_and_validate_tags(tags))
 
-    def test_get_and_validate_tags__more_than_47_tags_provided__raises_invalid_options_error(self):
-        tags_strings = []
-        for i in range(0, 48):
-            tags_strings.append('key{0}=value{0}'.format(i))
+    def test_get_and_validate_tags__tags_is_empty__add_multiple_new_tags(self):
+        taglist = TagList([])
 
-        tags = ','.join(tags_strings)
-
-        with self.assertRaises(InvalidOptionsError) as context_manager:
-            createops.get_and_validate_tags(tags)
-
-        print(context_manager.exception.message)
-        self.assertEqual(
-            'Elastic Beanstalk supports a maximum of 50 tags.',
-            context_manager.exception.message
+        addition_string = ','.join(
+            [
+                'key1=value1',
+                'key2=value2',
+                'key3=value3'
+            ]
         )
 
-    def test_get_and_validate_tags__47_tags_provided__valid(self):
-        tags_strings = []
-        expected_tags = []
+        expected_additions_list = [
+            {'Key': 'key1', 'Value': 'value1'},
+            {'Key': 'key2', 'Value': 'value2'},
+            {'Key': 'key3', 'Value': 'value3'}
+        ]
 
-        for i in range(0, 46):
-            tags_strings.append('key{0}=value{0}'.format(i))
-            expected_tags.append({
-                'Key': 'key{0}'.format(i),
-                'Value': 'value{0}'.format(i)
-            })
-
-        tags = ','.join(tags_strings)
-
-        self.assertEqual(expected_tags, createops.get_and_validate_tags(tags))
+        self.assertEqual(
+            expected_additions_list,
+            createops.get_and_validate_tags(addition_string)
+        )

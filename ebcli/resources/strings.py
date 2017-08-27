@@ -331,6 +331,23 @@ strings = {
     'platformstatus.upgrade': 'A more recent version of this platform is available. Type \'eb upgrade\' to uprade the platform version used by this environment.',
     'platform.nobuilderenv': 'This workspace has not yet been associated with a builder environment. One will be configured once you create a platform version.',
     'codebuild.buildlogs': 'You can find logs for the CodeBuild build here: {logs_link}',
+
+    # Tags
+    'tags.duplicate_across_delete_and_update_lists': "A tag with the key '{0}' is specified for both '--delete' and '--update'. You can either delete or update each tag in a single operation.",
+    'tags.duplicate_key_in_add_list': "A tag with the key '{0}' is specified more than once for '--add'. You can add a tag key only once.",
+    'tags.duplicate_key_in_delete_list': "A tag with the key '{0}' is specified more than once for '--delete'. You can delete a tag key only once.",
+    'tags.duplicate_key_in_update_list': "A tag with the key '{0}' is specified more than once for '--update'. You can update a tag key only once.",
+    'tags.invalid_tag_key': "Tag key '{0}' has invalid characters. Only letters, numbers, white space, and these characters are allowed: _ . : / + - @.",
+    'tags.invalid_tag_value': "Tag value '{0}' has invalid characters. Only letters, numbers, white space, and these characters are allowed: _ . : / = + - @.",
+    'tags.list_with_other_arguments': "You can't specify the '--list' option with the '--add', '--delete', or '--update' option.",
+    'tags.resource_tags_missing': "The response of the 'list_tags_for_resource' API call is missing the 'ResourceTags' field.",
+    'tags.tag_keys_already_exist': "Tags with the following keys can't be added because they already exist:",
+    'tags.tag_key_cant_be_blank': 'Tag key must not be blank.',
+    'tags.tag_value_cant_be_blank': 'Tag value must not be blank.',
+    'tags.tag_keys_dont_exist_for_deletion': "Tags with the following keys can't be deleted because they don't exist:",
+    'tags.tag_keys_dont_exist_for_update': "Tags with the following keys can't be updated because they don't exist:",
+    'tags.tag_key_max_length_exceeded': "Tag key '{0}' exceeds key length limit. Tag keys can be up to 128 characters in length.",
+    'tags.tag_value_max_length_exceeded': "Tag value '{0}' exceeds value length limit. Tag values can be up to 256 characters in length.",
 }
 prompts = {
     'events.hanging': 'Streaming new events. Use CTRL+C to exit.',
@@ -623,7 +640,15 @@ flag_text = {
 
     # lifecycle
     'lifecycle.print': 'prints the current application version lifecycle policy',
-    'lifecycle.update': 'allows an inline update to a application version lifecycle policy'
+    'lifecycle.update': 'allows an inline update to a application version lifecycle policy',
+
+    # Tags
+    'tags.add': 'create new environment tags provided as a comma-separated list of key=value pairs',
+    'tags.delete': 'delete existing environment tags provided as a comma-separated list of keys',
+    'tags.env': 'environment on which to perform tags operation',
+    'tags.info': 'Allows adding, deleting, updating, and listing of environment tags.',
+    'tags.list': 'lists all environment resource tags',
+    'tags.update': 'update existing environment tags provided as a comma-separated list of keys=value pairs',
 }
 
 
@@ -672,9 +697,11 @@ responses = {
     'create.noplatform': 'Unable to determine base for template pack (no solution stack)',
     'create.ecsdockerrun1': 'ECS Application sourcebundle validation error: Unsupported AWSEBDockerrunVersion:',
     'appversion.finished': 'Finished processing application version',
+    'tags.tag_update_successful': 'Environment tag update completed successfully.',
+    'tags.no_tags_to_update': 'Environment tag update failed.',
 
     # Env Restore display table
-    'restore.norestore': 'Environment will not be restored'
+    'restore.norestore': 'Environment will not be restored',
 }
 git_ignore = [
     '# Elastic Beanstalk Files',        # comment line

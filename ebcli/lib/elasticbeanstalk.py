@@ -299,7 +299,8 @@ def _api_to_environment(api_dict, want_solution_stack = False):
         cname=api_dict.get('CNAME', 'UNKNOWN'),
         option_settings=api_dict.get('OptionSettings'),
         is_abortable=api_dict.get('AbortableOperationInProgress', False),
-        environment_links=api_dict.get('EnvironmentLinks')
+        environment_links=api_dict.get('EnvironmentLinks'),
+        environment_arn=api_dict.get('EnvironmentArn')
     )
     return env
 
@@ -850,3 +851,27 @@ def rebuild_environment(env_id=None, env_name=None):
 
     request_id = result['ResponseMetadata']['RequestId']
     return request_id
+
+
+def get_environment_arn(env_name):
+    return get_environments([env_name])[0].environment_arn
+
+
+def list_tags_for_resource(env_name):
+    response = _make_api_call(
+        'list_tags_for_resource',
+        ResourceArn=get_environment_arn(env_name)
+    )
+
+    return sorted(response['ResourceTags'], key=lambda tag: tag['Key'])
+
+
+def update_tags_for_resource(env_name, tags_to_add, tags_to_remove):
+    response = _make_api_call(
+        'update_tags_for_resource',
+        ResourceArn=get_environment_arn(env_name),
+        TagsToAdd=tags_to_add,
+        TagsToRemove=tags_to_remove
+    )
+
+    return response['ResponseMetadata']['RequestId']

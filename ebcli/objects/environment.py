@@ -18,7 +18,7 @@ class Environment(object):
                  platform=None, description=None,
                  name=None, date_created=None, tier=None,
                  cname=None, option_settings=None, is_abortable=False,
-                 environment_links=None):
+                 environment_links=None, environment_arn=None):
 
         self.version_label = version_label
         self.status = status
@@ -35,6 +35,7 @@ class Environment(object):
         self.option_settings = option_settings
         self.is_abortable = is_abortable
         self.environment_links = environment_links
+        self.environment_arn = environment_arn
 
     def __str__(self):
         return self.name

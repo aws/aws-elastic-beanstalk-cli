@@ -68,6 +68,7 @@ class TestCompleter(BaseControllerTest):
             'printenv',
             'local',
             'health',
+            'tags'
             }
 
         self.assertEqual(expected, output)

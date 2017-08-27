@@ -15,14 +15,14 @@ import re
 from cement.utils.misc import minimal_logger
 
 from ebcli.operations import gitops, buildspecops, commonops
-
+from ebcli.operations.tagops import tagops
+from ebcli.operations.tagops.taglist import TagList
 from ebcli.lib import elasticbeanstalk, iam, utils
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.core import io, fileoperations
 from ebcli.objects.exceptions import (
     TimeoutError,
-    NotAuthorizedError,
-    InvalidOptionsError
+    NotAuthorizedError
 )
 from ebcli.resources.strings import strings, responses, prompts
 from ..resources.statics import iam_attributes
@@ -260,24 +260,12 @@ def _get_default_service_trust_document():
 }'''
 
 
-def get_and_validate_tags(tags):
-    if not tags:
+def get_and_validate_tags(addition_string):
+    if not addition_string:
         return []
 
-    tags = tags.strip().strip('"').strip('\'')
-    tags = tags.split(',')
-    tag_list = []
-    if len(tags) > 47:
-        raise InvalidOptionsError(strings['tags.max'])
-    for t in tags:
-        # validate
-        if not re.match('^[\w\s.:/+%@-]{1,128}=[\w\s.:/+=@-]{0,256}$', t):
-            raise InvalidOptionsError(strings['tags.invalidformat'])
-        else:
-            # build tag
-            key, value = t.split('=', 1)
-            tag_list.append(
-                {'Key': key,
-                 'Value': value}
-            )
-    return tag_list
+    taglist = TagList([])
+    taglist.populate_add_list(addition_string)
+    tagops.validate_additions(taglist)
+
+    return taglist.additions

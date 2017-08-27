@@ -2,6 +2,11 @@
 Changelog
 =========
 -------------------
+3.12.0 (2017-10-10)
+-------------------
+ - Added support for tagging Environments
+
+-------------------
 3.11.0 (2017-09-26)
 -------------------
 - Added support for creation of environments with Network Load Balancers

@@ -63,6 +63,7 @@ from ..controllers.codesource import CodeSourceController
 from ..controllers.restore import RestoreController
 from ..controllers.appversion import AppVersionController
 from ..controllers.lifecycle import LifecycleController
+from ..controllers.tags import TagsController
 
 
 class EB(foundation.CementApp):
@@ -109,6 +110,7 @@ class EB(foundation.CementApp):
             RestoreController,
             AppVersionController,
             LifecycleController,
+            TagsController,
         ]
 
         # eb <foo> commands supported in platform workspaces

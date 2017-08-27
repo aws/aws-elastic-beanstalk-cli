@@ -319,6 +319,10 @@ def _is_success_string(message):
         raise ServiceError(message)
     if message.startswith(responses['appversion.finished']) and message.endswith('PROCESSED.'):
         return True
+    if responses['tags.tag_update_successful'] in message:
+        return True
+    if responses['tags.no_tags_to_update'] in message:
+        return True
 
     return False
 
