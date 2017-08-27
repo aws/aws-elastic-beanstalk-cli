@@ -28,6 +28,7 @@
         },
         {
           "shape":"TemporaryMaintainanceException",
+          "shape":"TemporaryMaintainanceException",
           "error":{
             "code":"TemporaryMaintainanceException",
             "httpStatusCode":400,
@@ -1070,6 +1071,23 @@
         }
       ]
     },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceMessage"},
+      "output":{
+        "shape":"ResourceTagsDescriptionMessage",
+        "resultWrapper":"ListTagsForResourceResult"
+      },
+      "errors":[
+        {"shape":"InsufficientPrivilegesException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceTypeNotSupportedException"}
+      ]
+    },
     "RebuildEnvironment":{
       "name":"RebuildEnvironment",
       "http":{
@@ -1422,6 +1440,21 @@
           },
           "exception":true
         }
+      ]
+    },
+    "UpdateTagsForResource":{
+      "name":"UpdateTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateTagsForResourceMessage"},
+      "errors":[
+        {"shape":"InsufficientPrivilegesException"},
+        {"shape":"OperationInProgressException"},
+        {"shape":"TooManyTagsException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ResourceTypeNotSupportedException"}
       ]
     },
     "ValidateConfigurationSettings":{
@@ -2237,6 +2270,7 @@
       "exception":true
     },
     "EndpointURL":{"type":"string"},
+    "EnvironmentArn":{"type":"string"},
     "EnvironmentAlert":{
       "type":"structure",
       "members":{
@@ -2269,7 +2303,8 @@
         "Resources":{"shape":"EnvironmentResourcesDescription"},
         "Alerts":{"shape":"EnvironmentAlertsList"},
         "Tier":{"shape":"EnvironmentTier"},
-        "EnvironmentLinks":{"shape":"EnvironmentLinks"}
+        "EnvironmentLinks":{"shape":"EnvironmentLinks"},
+        "EnvironmentArn":{"shape":"EnvironmentArn"}
       }
     },
     "EnvironmentDescriptionsList":{
@@ -2396,6 +2431,7 @@
         "Terminated"
       ]
     },
+    "EnvironmentArn":{"type":"string"},
     "EnvironmentTemplateSpecification":{
       "type":"structure",
       "members":{
@@ -2596,6 +2632,13 @@
       "members":{
         "PlatformSummaryList":{"shape":"PlatformSummaryList"},
         "NextToken":{"shape":"Token"}
+      }
+    },
+    "ListTagsForResourceMessage":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{"shape":"ResourceArn"}
       }
     },
     "Listener":{
@@ -2895,11 +2938,41 @@
       }
     },
     "RequestId":{"type":"string"},
+    "ResourceArn":{"type":"string"},
     "ResourceId":{"type":"string"},
     "ResourceName":{
       "type":"string",
       "min":1,
       "max":256
+    },
+    "ResourceNotFoundException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"ResourceNotFoundException",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
+    "ResourceTagsDescriptionMessage":{
+      "type":"structure",
+      "members":{
+        "ResourceArn":{"shape":"ResourceArn"},
+        "ResourceTags":{"shape":"TagList"}
+      }
+    },
+    "ResourceTypeNotSupportedException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"ResourceTypeNotSupportedException",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
     },
     "ResourceProperty":{
       "type":"structure",
@@ -3104,6 +3177,14 @@
       "min":1,
       "max":128
     },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"}
+    },
+    "TagList":{
+      "type":"list",
+      "member":{"shape":"Tag"}
+    },
     "TagValue":{
       "type":"string",
       "min":1,
@@ -3245,6 +3326,17 @@
       },
       "exception":true
     },
+    "TooManyTagsException":{
+      "type":"structure",
+      "members":{
+      },
+      "error":{
+        "code":"TooManyTagsException",
+        "httpStatusCode":400,
+        "senderFault":true
+      },
+      "exception":true
+    },
     "Trigger":{
       "type":"structure",
       "members":{
@@ -3324,6 +3416,15 @@
         "OptionSettings":{"shape":"ConfigurationOptionSettingsList"},
         "OptionsToRemove":{"shape":"OptionsSpecifierList"},
         "TemplateSpecification":{"shape":"EnvironmentTemplateSpecification"}
+      }
+    },
+    "UpdateTagsForResourceMessage":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{"shape":"ResourceArn"},
+        "TagsToAdd":{"shape":"TagList"},
+        "TagsToRemove":{"shape":"TagKeyList"}
       }
     },
     "UserDefinedOption":{"type":"boolean"},
