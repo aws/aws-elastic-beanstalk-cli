@@ -18,7 +18,7 @@ from . import commonops
 
 def open_app(app_name, env_name):
     # get cname
-    env = elasticbeanstalk.get_environment(app_name, env_name)
+    env = elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name)
     settings = elasticbeanstalk.describe_configuration_settings(
         app_name, env_name)
 

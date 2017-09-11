@@ -33,7 +33,7 @@ class TraditionalHealthDataPoller(DataPoller):
 
     def _get_health_data(self):
         timestamp = datetime.now(tz.tzutc())
-        env = elasticbeanstalk.get_environment(self.app_name, self.env_name)
+        env = elasticbeanstalk.get_environment(app_name=self.app_name, env_name=self.env_name)
         env_dict = elasticbeanstalk.get_environment_resources(self.env_name)
         env_dict = env_dict['EnvironmentResources']
         load_balancers = env_dict.get('LoadBalancers', None)

@@ -34,7 +34,7 @@ class BeanstalkUtilities():
 
         LOG.info("Polling Env '{0}' for status: {1} for {2} seconds".format(env_name, status, timeout))
         elasticbeanstalk.aws._region_name = self.region
-        env = elasticbeanstalk.get_environment(self.app_name, env_name)
+        env = elasticbeanstalk.get_environment(app_name=self.app_name, env_name=env_name)
 
         if env is None:
             LOG.error("Env {0} does not exist, cannot poll for status".format(env_name))
@@ -47,7 +47,7 @@ class BeanstalkUtilities():
                 LOG.error("Poll timeout exceed for Env {0} polling for status: {1}".format(env_name, status))
                 return False
             time.sleep(poll_rate)
-            env = elasticbeanstalk.get_environment(self.app_name, env_name)
+            env = elasticbeanstalk.get_environment(app_name=self.app_name, env_name=env_name)
         LOG.info("Successfully matched Env {0} for status {1}".format(env_name, status))
         return True
 

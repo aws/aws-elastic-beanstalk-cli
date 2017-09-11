@@ -18,7 +18,7 @@ from . import commonops, gitops
 
 def switch_default_environment(app_name, env_name):
     # check that environment exists
-    elasticbeanstalk.get_environment(app_name, env_name)
+    elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name)
     commonops.set_environment_for_current_branch(env_name)
 
 

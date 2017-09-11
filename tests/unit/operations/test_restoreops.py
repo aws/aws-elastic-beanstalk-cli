@@ -53,7 +53,7 @@ class TestRestoreEnvironment(unittest.TestCase):
         mock_date.return_value = self.current_time
         self.mock_beanstalk.get_environment.return_value = self.env_object
         restoreops.validate_restore(self.env_id)
-        self.mock_beanstalk.get_environment.assert_called_with(env_id=self.env_id, include_deleted=True,
+        self.mock_beanstalk.get_environment.assert_called_with(app_name=None, env_name=None, env_id=self.env_id, include_deleted=True,
                                                deleted_back_to=self.current_time)
 
     @mock.patch('ebcli.operations.restoreops.commonops')

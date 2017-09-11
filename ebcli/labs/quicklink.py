@@ -37,7 +37,7 @@ class QuicklinkController(AbstractBaseController):
 
 
 def get_quick_link(app_name, env_name):
-    env = elasticbeanstalk.get_environment(app_name, env_name)
+    env = elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name)
     settings = elasticbeanstalk.describe_configuration_settings(
         app_name, env_name)
     option_settings = settings['OptionSettings']

@@ -21,7 +21,7 @@ from . import commonops, gitops
 
 SPACER = ' ' * 5
 def status(app_name, env_name, verbose):
-    env = elasticbeanstalk.get_environment(app_name, env_name)
+    env = elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name)
     commonops.print_env_details(env, health=True)
 
     if verbose:

@@ -72,7 +72,7 @@ class EnvironmentEnd2End():
         self._run_app(['create', self.env_name, '-i', 't1.micro'])
 
         # Make sure app was created
-        elasticbeanstalk.get_environment(self.app_name, self.env_name)
+        elasticbeanstalk.get_environment(app_name=self.app_name, env_name=self.env_name)
         print_('created env ', self.env_name)
 
     def do_events(self):
@@ -139,7 +139,7 @@ class EnvironmentEnd2End():
         with open('index.html', 'w') as f:
             f.write(app2_response)
 
-        old_env = elasticbeanstalk.get_environment(self.app_name, self.env_name)
+        old_env = elasticbeanstalk.get_environment(app_name=self.app_name, env_name=self.env_name)
         settings = elasticbeanstalk.describe_configuration_settings(
             self.app_name, self.env_name)
 
@@ -168,7 +168,7 @@ class EnvironmentEnd2End():
             app_name=self.app_name,
             env_name=self.env_name)
 
-        new_env = elasticbeanstalk.get_environment(self.app_name, self.env_name)
+        new_env = elasticbeanstalk.get_environment(app_name=self.app_name, env_name=self.env_name)
         assert old_env.version_label != new_env.version_label
 
         # Check that the new app is up and running

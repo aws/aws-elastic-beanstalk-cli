@@ -57,7 +57,7 @@ class CloneController(AbstractBaseController):
         platform = None
 
         # Get original environment
-        env = elasticbeanstalk.get_environment(app_name, env_name)
+        env = elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name)
 
         # Get tier of original environment
         tier = env.tier

@@ -514,7 +514,7 @@ def get_all_environments():
     return envs
 
 
-def get_environment(app_name, env_name, env_id=None, include_deleted=False, deleted_back_to=None, want_solution_stack=False):
+def get_environment(app_name=None, env_name=None, env_id=None, include_deleted=False, deleted_back_to=None, want_solution_stack=False):
     LOG.debug('Inside get_environment api wrapper')
 
     kwargs = {}

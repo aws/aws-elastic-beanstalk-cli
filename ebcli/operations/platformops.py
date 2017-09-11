@@ -106,7 +106,7 @@ def get_all_platforms():
 
 
 def get_environment_platform(app_name, env_name, want_solution_stack=False):
-    env = elasticbeanstalk.get_environment(app_name, env_name, want_solution_stack=want_solution_stack)
+    env = elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name, want_solution_stack=want_solution_stack)
     return env.platform
 
 

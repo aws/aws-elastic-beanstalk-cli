@@ -246,7 +246,7 @@ class VersionDataPoller(DataPoller):
 
         if self.env_name is not None:
             # If we have a default environment, save current env status into env_data
-            self.env = elasticbeanstalk.get_environment(self.app_name, self.env_name)
+            self.env = elasticbeanstalk.get_environment(app_name=self.app_name, env_name=self.env_name)
             self.curr_deploy_num = self.get_curr_deploy_num()
             self.env_data = self.get_env_data()
 

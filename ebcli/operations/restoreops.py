@@ -25,6 +25,7 @@ from ebcli.lib import elasticbeanstalk
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.resources.strings import strings
 
+
 def validate_restore(env_id):
     """
     Do client side validation because rebuild will rebuild a running environments as well

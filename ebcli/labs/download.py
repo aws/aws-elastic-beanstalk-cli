@@ -37,7 +37,7 @@ class DownloadController(AbstractBaseController):
 
 
 def download_source_bundle(app_name, env_name):
-    env = elasticbeanstalk.get_environment(app_name, env_name)
+    env = elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name)
     if env.version_label and env.version_label != 'Sample Application':
         app_version = elasticbeanstalk.get_application_versions(
         app_name, version_labels=[env.version_label])['ApplicationVersions'][0]

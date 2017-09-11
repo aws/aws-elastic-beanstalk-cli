@@ -24,7 +24,7 @@ def open_console(app_name, env_name):
     #Get environment id
     env = None
     if env_name is not None:
-        env = elasticbeanstalk.get_environment(app_name, env_name)
+        env = elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name)
 
     region = aws.get_region_name()
     if env is not None:
