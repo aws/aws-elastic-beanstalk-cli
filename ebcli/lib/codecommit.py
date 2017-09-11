@@ -137,12 +137,14 @@ def _sign_codecommit_url(credentials, region, url_to_sign):
         request.method,
         split.path,
         hostname)
+
     LOG.debug("Calculating signature using v4 auth.")
-    LOG.debug('CanonicalRequest: %s', canonical_request)
+    LOG.debug('CanonicalRequest: {0}'.format(canonical_request))
     string_to_sign = signer.string_to_sign(request, canonical_request)
-    LOG.debug('StringToSign: %s', utils.retract_string(string_to_sign))
+    LOG.debug('StringToSign: {0}'.format(utils.retract_string(string_to_sign)))
     signature = signer.signature(string_to_sign, request)
-    LOG.debug('Signature: %s', utils.retract_string(signature))
+    LOG.debug('Signature: {0}'.format(utils.retract_string(signature)))
+
     return '{0}Z{1}'.format(request.context['timestamp'], signature)
 
 
