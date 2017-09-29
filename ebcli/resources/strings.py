@@ -138,6 +138,7 @@ strings = {
     # Error when --sample and --label flag are both used on create
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" options together.',
     'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
+    'create.single_and_elb_type': 'You cannot use the "--single" and "--elb-type" options together.',
     'create.appdoesntexist': 'The specified app {app_name} does not exist. Skipping.',
     'create.missinggroupsuffix': 'The environment name specified in env.yaml ends with a \'+\', but no group suffix was provided. Please pass the --env-group-suffix argument.',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',

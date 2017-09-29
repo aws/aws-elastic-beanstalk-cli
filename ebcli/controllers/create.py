@@ -142,6 +142,9 @@ class CreateController(AbstractBaseController):
         if single and scale:
             raise InvalidOptionsError(strings['create.singleandsize'])
 
+        if single and elb_type:
+            raise InvalidOptionsError(strings['create.single_and_elb_type'])
+
         app_name = self.get_app_name()
 
         # get tags
