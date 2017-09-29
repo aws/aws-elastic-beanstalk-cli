@@ -21,6 +21,7 @@ import sys
 import zipfile
 import yaml
 import warnings
+from pathspec import PathSpec
 
 from cement.utils.misc import minimal_logger
 from ebcli.objects.buildconfiguration import BuildConfiguration
@@ -844,60 +845,17 @@ def directory_empty(location):
 
 
 def get_ebignore_list():
-    EB_IGNORE_FILE_NAME = '.ebignore'
-    location = get_project_file_full_location(EB_IGNORE_FILE_NAME)
+    location = get_ebignore_location()
 
     if not os.path.isfile(location):
         return None
 
-    '''
-    This library will parse the ignore file, compare it to the current files
-    and give us a list of files to ignore
-    '''
-    # Patch iter_tree to not throw recursion error on non recursive links
-    from pathspec import pathspec, util
-    def iter_tree(root):
-        """
-        Walks the specified root path for all files.
-        *root* (``str``) is the root directory to search for files.
-        Raises ``RecursionError`` if recursion is detected.
-        Returns an ``Iterable`` yielding each file path (``str``) relative to
-        *root*.
-        .. _`recursion`: http://docs.python.org/2/library/os.html#os.walk
-        """
-        # Keep track of files encountered. Map real path to relative path.
-        memo = {}
-
-        root = os.path.abspath(root)
-        for parent, _dirs, files in os.walk(root, followlinks=True):
-            # Get parent path relative to root path.
-            parent = os.path.relpath(parent, root)
-
-            # Check for recursion.
-            real = os.path.realpath(parent)
-            if real in memo:
-                abspath = os.path.abspath(parent)
-                if real != abspath and real in abspath:
-                    # if real is a parent of current parent
-                    raise util.RecursionError(real_path=real, first_path=memo[real], second_path=parent)
-                else:
-                    # not recursion, just a sideways link
-                    continue
-
-            memo[real] = parent
-
-            # Yield files.
-            for path in files:
-                if parent != '.':
-                    path = os.path.join(parent, path)
-                yield path
-    util.iter_tree = iter_tree
-
-    with open(location, 'r') as f:
-        spec = pathspec.PathSpec.from_lines('gitignore', f)
+    with codecs.open(location, 'r', encoding='utf-8') as f:
+        spec = PathSpec.from_lines('gitwildmatch', f)
 
     ignore_list = [f for f in spec.match_tree(get_project_root())]
-    ignore_list.append(EB_IGNORE_FILE_NAME)
+    ignore_list.append('.ebignore')
+
     return ignore_list
 
 
@@ -970,6 +928,10 @@ def get_project_file_full_location(location):
         return full_path
     finally:
         os.chdir(cwd)
+
+
+def get_ebignore_location():
+    return get_project_file_full_location('.ebignore')
 
 
 def get_eb_file_full_location(location):

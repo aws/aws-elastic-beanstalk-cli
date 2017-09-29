@@ -9,7 +9,7 @@ requires = ['pyyaml>=3.11',
             'botocore>=1.0.1',
             'cement==2.8.2',
             'colorama==0.3.7',
-            'pathspec==0.5.0',
+            'pathspec==0.5.5',
             'setuptools >= 20.0',
             ## For docker-compose
             'docopt >= 0.6.1, < 0.7',
