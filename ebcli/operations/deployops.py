@@ -63,7 +63,8 @@ def deploy(app_name, env_name, version, label, message, group_name=None,
 
     commonops.wait_for_success_events(request_id,
                                       timeout_in_minutes=timeout,
-                                      can_abort=True)
+                                      can_abort=True,
+                                      env_name=env_name)
 
 
 def deploy_no_events(app_name, env_name, version, label, message, process=False, staged=False):

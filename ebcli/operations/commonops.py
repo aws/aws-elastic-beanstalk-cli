@@ -74,7 +74,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
         if request_id:
             while not events:
                 events = elasticbeanstalk.get_new_events(
-                    None, None, request_id, last_event_time=None, version_label=version_label
+                    app_name, env_name, request_id, last_event_time=None, version_label=version_label
                 )
 
                 if len(events) > 0:
@@ -91,13 +91,26 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                 else:
                     time.sleep(sleep_time)
 
-        # Get remaining events without request id
+        # Get remaining events
         while (datetime.now() - start) < timediff:
             time.sleep(sleep_time)
 
             events = elasticbeanstalk.get_new_events(
-                app_name, env_name, None, last_event_time=last_time, platform_arn=platform_arn
+                app_name,
+                env_name,
+                request_id,
+                last_event_time=last_time,
+                platform_arn=platform_arn,
+                version_label=version_label
             )
+
+            if events:
+                events = filter_events(
+                    events,
+                    env_name=env_name,
+                    request_id=request_id,
+                    version_label=version_label
+                )
 
             for event in reversed(events):
                 if stream_events:
@@ -113,6 +126,32 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
         streamer.end_stream()
     # We have timed out
     raise TimeoutError('Timed out while waiting for command to Complete. The timeout can be set using the --timeout option.')
+
+
+def filter_events(events, version_label=None, request_id=None, env_name=None):
+    """
+    Method filters events by their version_label, request_id, or env_name if supplied,
+    or any combination if multiple are specified.
+
+    :param events: A list of `events` returned by the `DescribeEvents` API
+    :param version_label: An optional `version_label` of the environment to filter by
+    :param request_id: An optional `request_id` of the operation being waited on to filter by
+    :param env_name: An optional `environment_name` of the environment that is being waited on
+    :return: A new list of events filtered as per the rules above.
+    """
+    filtered_events = []
+
+    for event in events:
+        if version_label and event.version_label and (event.version_label != version_label):
+            continue
+        if request_id and event.request_id and (event.request_id != request_id):
+            continue
+        if env_name and event.environment_name and (event.environment_name != env_name):
+            continue
+
+        filtered_events.append(event)
+
+    return filtered_events
 
 
 def wait_for_multiple_success_events(request_ids, timeout_in_minutes=None,

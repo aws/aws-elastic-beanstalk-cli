@@ -114,6 +114,7 @@ def make_new_env(env_request, branch_default=False, process_app_version=False,
     try:
         commonops.wait_for_success_events(request_id,
                                           timeout_in_minutes=timeout)
+
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 

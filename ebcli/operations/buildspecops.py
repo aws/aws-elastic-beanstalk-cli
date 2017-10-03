@@ -18,6 +18,7 @@ from cement.utils.misc import minimal_logger
 from ebcli.core import io
 from ebcli.lib import elasticbeanstalk, codebuild
 from ebcli.objects.exceptions import ServiceError, ValidationError
+from ebcli.operations import commonops
 from ebcli.resources.strings import strings
 
 LOG = minimal_logger(__name__)
@@ -42,9 +43,14 @@ def stream_build_configuration_app_version_creation(app_name, app_version_label,
 
     # Wait for the success events
     try:
-        from ebcli.operations.commonops import wait_for_success_events
-        wait_for_success_events(None, timeout_in_minutes=codebuild_timeout,
-                                      can_abort=False, version_label=app_version_label)
+        commonops.wait_for_success_events(
+            app_name=app_name,
+            can_abort=False,
+            request_id=None,
+            timeout_in_minutes=codebuild_timeout,
+            version_label=app_version_label
+        )
+
     except ServiceError as exception:
         LOG.debug("Caught service error while creating application version '{0}' "
                   "deleting the created application version as it is useless now.".format(app_version_label))

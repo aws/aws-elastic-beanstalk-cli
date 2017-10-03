@@ -383,7 +383,13 @@ def create_platform_version(
     try:
         # Watch events from builder logs
         builder_events.start()
-        commonops.wait_for_success_events(request_id, timeout_in_minutes=timeout, platform_arn=arn, streamer=streamer)
+        commonops.wait_for_success_events(
+            request_id,
+            platform_arn=arn,
+            streamer=streamer,
+            timeout_in_minutes=timeout,
+            version_label=version_label
+        )
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 

@@ -67,8 +67,12 @@ class TestDeployOperations(unittest.TestCase):
                                                              label=self.app_version_name, message=self.description,
                                                              staged=False, build_config=None)
         mock_beanstalk.update_env_application_version.assert_called_with(self.env_name, self.app_version_name, None)
-        mock_commonops.wait_for_success_events.assert_called_with(self.request_id,
-                                                                  timeout_in_minutes=5, can_abort=True)
+        mock_commonops.wait_for_success_events.assert_called_with(
+            self.request_id,
+            can_abort=True,
+            env_name='ebcli-env',
+            timeout_in_minutes=5,
+        )
 
     @mock.patch('ebcli.operations.deployops.elasticbeanstalk')
     @mock.patch('ebcli.operations.deployops.commonops')
@@ -91,8 +95,12 @@ class TestDeployOperations(unittest.TestCase):
         # TODO: Verify this is the correct assert
         mock_commonops.create_app_version.assert_not_called()
         mock_beanstalk.update_env_application_version.assert_called_with(self.env_name, self.app_version_name, None)
-        mock_commonops.wait_for_success_events.assert_called_with(self.request_id,
-                                                                  timeout_in_minutes=5, can_abort=True)
+        mock_commonops.wait_for_success_events.assert_called_with(
+            self.request_id,
+            can_abort=True,
+            env_name='ebcli-env',
+            timeout_in_minutes=5
+        )
 
     @mock.patch('ebcli.operations.deployops.elasticbeanstalk')
     @mock.patch('ebcli.operations.deployops.commonops')
@@ -125,8 +133,12 @@ class TestDeployOperations(unittest.TestCase):
                                                              build_config=None)
         mock_commonops.wait_for_processed_app_versions.assert_called_with(self.app_name, [self.app_version_name])
         mock_beanstalk.update_env_application_version.assert_called_with(self.env_name, self.app_version_name, None)
-        mock_commonops.wait_for_success_events.assert_called_with(self.request_id,
-                                                                  timeout_in_minutes=5, can_abort=True)
+        mock_commonops.wait_for_success_events.assert_called_with(
+            self.request_id,
+            can_abort=True,
+            env_name='ebcli-env',
+            timeout_in_minutes=5
+        )
 
     @mock.patch('ebcli.operations.deployops.elasticbeanstalk')
     @mock.patch('ebcli.operations.deployops.commonops')
@@ -157,8 +169,12 @@ class TestDeployOperations(unittest.TestCase):
                                                                         message=self.description, build_config=None)
         mock_commonops.wait_for_processed_app_versions.assert_called_with(self.app_name, [self.app_version_name])
         mock_beanstalk.update_env_application_version.assert_called_with(self.env_name, self.app_version_name, None)
-        mock_commonops.wait_for_success_events.assert_called_with(self.request_id,
-                                                                  timeout_in_minutes=5, can_abort=True)
+        mock_commonops.wait_for_success_events.assert_called_with(
+            self.request_id,
+            can_abort=True,
+            env_name='ebcli-env',
+            timeout_in_minutes=5
+        )
 
     @mock.patch('ebcli.operations.deployops.buildspecops')
     @mock.patch('ebcli.operations.deployops.elasticbeanstalk')
@@ -194,4 +210,9 @@ class TestDeployOperations(unittest.TestCase):
                                                              label=self.app_version_name, message=self.description,
                                                              staged=False, build_config=mock_build_config)
         mock_beanstalk.update_env_application_version.assert_called_with(self.env_name, self.app_version_name, None)
-        mock_commonops.wait_for_success_events.assert_called_with(self.request_id, timeout_in_minutes=5, can_abort=True)
+        mock_commonops.wait_for_success_events.assert_called_with(
+            self.request_id,
+            can_abort=True,
+            env_name='ebcli-env',
+            timeout_in_minutes=5
+        )

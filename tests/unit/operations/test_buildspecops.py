@@ -91,8 +91,13 @@ class TestBuildSpecOps(unittest.TestCase):
                                                                         version_labels=[self.version_label])
         self.mock_codebuild.batch_get_builds.assert_called_with(
             [self.app_version_raw_response['ApplicationVersions'][0]['BuildArn']])
-        mock_success_events.assert_called_with(None, timeout_in_minutes=364, can_abort=False,
-                                               version_label=self.version_label)
+        mock_success_events.assert_called_with(
+            app_name='foo-app',
+            can_abort=False,
+            request_id=None,
+            timeout_in_minutes=364,
+            version_label=self.version_label
+        )
 
     @mock.patch('ebcli.operations.commonops.wait_for_success_events')
     @mock.patch('ebcli.operations.buildspecops.wait_for_app_version_attribute')
@@ -114,8 +119,13 @@ class TestBuildSpecOps(unittest.TestCase):
                                                                         version_labels=[self.version_label])
         self.mock_codebuild.batch_get_builds.assert_called_with(
             [self.app_version_raw_response['ApplicationVersions'][0]['BuildArn']])
-        mock_success_events.assert_called_with(None, timeout_in_minutes=60, can_abort=False,
-                                               version_label=self.version_label)
+        mock_success_events.assert_called_with(
+            app_name='foo-app',
+            can_abort=False,
+            request_id=None,
+            timeout_in_minutes=60,
+            version_label=self.version_label
+        )
 
     @mock.patch('ebcli.operations.commonops.wait_for_success_events')
     @mock.patch('ebcli.operations.buildspecops.wait_for_app_version_attribute')
@@ -139,8 +149,13 @@ class TestBuildSpecOps(unittest.TestCase):
         self.mock_beanstalk.get_application_versions.assert_called_with(self.app_name,
                                                                         version_labels=[self.version_label])
         self.mock_codebuild.batch_get_builds.assert_not_called()
-        mock_success_events.assert_called_with(None, timeout_in_minutes=60, can_abort=False,
-                                               version_label=self.version_label)
+        mock_success_events.assert_called_with(
+            app_name='foo-app',
+            can_abort=False,
+            request_id=None,
+            timeout_in_minutes=60,
+            version_label=self.version_label
+        )
         self.mock_beanstalk.delete_application_version.assert_called_with(self.app_name, self.version_label)
 
     def test_validate_build_config_without_service_role(self):

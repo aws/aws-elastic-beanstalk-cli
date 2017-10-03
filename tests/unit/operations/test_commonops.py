@@ -16,7 +16,6 @@
 import os
 import sys
 import shutil
-import json
 import mock
 import unittest
 from collections import Counter
@@ -26,6 +25,7 @@ from mock import Mock
 
 from ebcli.core import fileoperations
 from ebcli.objects.exceptions import NotAuthorizedError
+from ebcli.objects.event import Event
 from ebcli.operations import commonops
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.buildconfiguration import BuildConfiguration
@@ -723,3 +723,149 @@ class TestCommonOperations(unittest.TestCase):
 
         for solution_string in solutions['solution_strings']:
             commonops.get_solution_stack(solution_string)
+
+    def test_filter_events__match_all_by_default__return_all_events_passed_in(self):
+        describe_events_response = {
+            "Events": [{}, {}]
+        }
+
+        events = self.__convert_to_event_objects(describe_events_response)
+        filtered_events = commonops.filter_events(events)
+
+        self.assertEqual(events, filtered_events)
+
+    def test_filter_events__match_by_environment_name(self):
+        describe_events_response = {
+            "Events": [
+                {"EnvironmentName": "env_1"},
+                {"EnvironmentName": "env_2"}
+            ]
+        }
+
+        events = self.__convert_to_event_objects(describe_events_response)
+        filtered_events = commonops.filter_events(events, env_name='env_1')
+
+        self.assertEqual(1, len(filtered_events))
+        self.assertEqual('env_1', filtered_events[0].environment_name)
+
+    def test_filter_events__match_by_request_id(self):
+        describe_events_response = {
+            "Events": [
+                {"RequestId": "request_id_1"},
+                {"RequestId": "request_id_2"}
+            ]
+        }
+
+        events = self.__convert_to_event_objects(describe_events_response)
+        filtered_events = commonops.filter_events(events, request_id='request_id_1')
+
+        self.assertEqual(1, len(filtered_events))
+        self.assertEqual('request_id_1', filtered_events[0].request_id)
+
+    def test_filter_events__match_by_version_label(self):
+        describe_events_response = {
+            "Events": [
+                {"VersionLabel": "version_label_1"},
+                {"VersionLabel": "version_label_2"}
+            ]
+        }
+
+        events = self.__convert_to_event_objects(describe_events_response)
+        filtered_events = commonops.filter_events(events, version_label='version_label_1')
+
+        self.assertEqual(1, len(filtered_events))
+        self.assertEqual('version_label_1', filtered_events[0].version_label)
+
+    def test_filter_events__match_by_environment_name_and_request_id(self):
+        describe_events_response = {
+            "Events": [
+                {
+                    "EnvironmentName": "env_1",
+                    "RequestId": "request_id_1",
+                },
+                {
+                    "EnvironmentName": "env_1",
+                    "RequestId": "request_id_1_1",
+                },
+                {
+                    "EnvironmentName": "env_2",
+                    "RequestId": "request_id_2",
+                }
+            ]
+        }
+
+        events = self.__convert_to_event_objects(describe_events_response)
+        filtered_events = commonops.filter_events(events, env_name='env_1', request_id='request_id_1')
+
+        self.assertEqual(1, len(filtered_events))
+        self.assertEqual('request_id_1', filtered_events[0].request_id)
+        self.assertEqual('env_1', filtered_events[0].environment_name)
+
+    def test_filter_events__match_by_environment_name_and_version_label(self):
+        describe_events_response = {
+            "Events": [
+                {
+                    "EnvironmentName": "env_1",
+                    "VersionLabel": "version_label_1",
+                },
+                {
+                    "EnvironmentName": "env_1",
+                    "VersionLabel": "version_label_1_1",
+                },
+                {
+                    "EnvironmentName": "env_2",
+                    "VersionLabel": "version_label_2",
+                }
+            ]
+        }
+
+        events = self.__convert_to_event_objects(describe_events_response)
+        filtered_events = commonops.filter_events(events, env_name='env_1', version_label='version_label_1')
+
+        self.assertEqual(1, len(filtered_events))
+        self.assertEqual('version_label_1', filtered_events[0].version_label)
+        self.assertEqual('env_1', filtered_events[0].environment_name)
+
+    def test_filter_events__match_by_request_id_and_version_label(self):
+        describe_events_response = {
+            "Events": [
+                {
+                    "RequestId": "request_id_1",
+                    "VersionLabel": "version_label_1",
+                },
+                {
+                    "RequestId": "request_id_1_1",
+                    "VersionLabel": "version_label_1_1",
+                },
+                {
+                    "RequestId": "request_id_2",
+                    "VersionLabel": "version_label_2",
+                }
+            ]
+        }
+
+        events = self.__convert_to_event_objects(describe_events_response)
+        filtered_events = commonops.filter_events(events, version_label='version_label_1', request_id='request_id_1')
+
+        self.assertEqual(1, len(filtered_events))
+        self.assertEqual('version_label_1', filtered_events[0].version_label)
+        self.assertEqual('request_id_1', filtered_events[0].request_id)
+
+    def __convert_to_event_objects(self, describe_events_response):
+        events = []
+        for event in describe_events_response['Events']:
+
+            events.append(
+                Event(
+                    app_name=event.get('ApplicationName'),
+                    environment_name=event.get('EnvironmentName'),
+                    event_date=event.get('EventDate'),
+                    message=event.get('Message'),
+                    platform=event.get('PlatformArn'),
+                    request_id=event.get('RequestId'),
+                    severity=event.get('Severity'),
+                    version_label=event.get('VersionLabel')
+                )
+            )
+
+        return events

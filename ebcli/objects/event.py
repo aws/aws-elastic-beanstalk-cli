@@ -12,13 +12,23 @@
 # language governing permissions and limitations under the License.
 
 
-class Event():
-    def __init__(self, message=None, event_date=None, version_label=None,
-                 app_name=None, environment_name=None, severity=None, platform=None):
-        self.message = message
-        self.event_date = event_date
-        self.version_label = version_label
+class Event(object):
+    def __init__(
+            self,
+            app_name=None,
+            environment_name=None,
+            event_date=None,
+            message=None,
+            platform=None,
+            request_id=None,
+            severity=None,
+            version_label=None,
+    ):
         self.app_name = app_name
         self.environment_name = environment_name
-        self.severity = severity
+        self.event_date = event_date
+        self.message = message
         self.platform = platform
+        self.request_id = request_id
+        self.severity = severity
+        self.version_label = version_label

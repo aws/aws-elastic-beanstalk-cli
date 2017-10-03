@@ -45,6 +45,7 @@ def make_cloned_env(clone_request, nohang=False, timeout=None):
     io.echo('Printing Status:')
     try:
         commonops.wait_for_success_events(request_id, timeout_in_minutes=timeout)
+
     except TimeoutError:
         io.log_error(strings['timeout.error'])
 

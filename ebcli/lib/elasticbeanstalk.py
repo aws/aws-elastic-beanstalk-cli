@@ -600,31 +600,19 @@ def get_new_events(app_name, env_name, request_id,
     # convert to object
     events = []
     for event in result['Events']:
-        try:
-            version_label = event['VersionLabel']
-        except KeyError:
-            version_label = None
-
-        try:
-            environment_name = event['EnvironmentName']
-        except KeyError:
-            environment_name = None
-
-        try:
-            app_name = event['ApplicationName']
-        except KeyError:
-            app_name = None
-
         events.append(
-            Event(message=event['Message'],
-                  event_date=event['EventDate'],
-                  version_label=version_label,
-                  app_name=app_name,
-                  environment_name=environment_name,
-                  severity=event['Severity'],
-                  platform=platform_arn
+            Event(
+                app_name=event.get('ApplicationName'),
+                environment_name=event.get('EnvironmentName'),
+                event_date=event.get('EventDate'),
+                message=event.get('Message'),
+                platform=platform_arn,
+                request_id=event.get('RequestId'),
+                severity=event.get('Severity'),
+                version_label=event.get('VersionLabel')
             )
         )
+
     return events
 
 
