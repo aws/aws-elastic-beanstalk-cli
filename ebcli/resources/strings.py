@@ -346,8 +346,8 @@ strings = {
     'tags.tag_value_cant_be_blank': 'Tag value must not be blank.',
     'tags.tag_keys_dont_exist_for_deletion': "Tags with the following keys can't be deleted because they don't exist:",
     'tags.tag_keys_dont_exist_for_update': "Tags with the following keys can't be updated because they don't exist:",
-    'tags.tag_key_max_length_exceeded': "Tag key '{0}' exceeds key length limit. Tag keys can be up to 128 characters in length.",
-    'tags.tag_value_max_length_exceeded': "Tag value '{0}' exceeds value length limit. Tag values can be up to 256 characters in length.",
+    'tags.tag_key_max_length_exceeded': "Tag with the following key exceed length limit. Tag keys can be up to 128 characters in length.",
+    'tags.tag_value_max_length_exceeded': "Tag with the following value exceed length limit. Tag values can be up to 256 characters in length.",
 }
 prompts = {
     'events.hanging': 'Streaming new events. Use CTRL+C to exit.',

@@ -79,7 +79,14 @@ class ArgumentSyntaxValidator(object):
         cls.validate_key(key)
 
         if len(value) > 256:
-            raise cls.InvalidTagValueError(strings['tags.tag_value_max_length_exceeded'].format(value))
+            raise cls.InvalidTagValueError(
+                (linesep * 2).join(
+                    [
+                        strings['tags.tag_value_max_length_exceeded'],
+                        value
+                    ]
+                )
+            )
 
         value_regex_matcher = cls.__tag_component_regex_matcher(value)
         if not cls.__tag_component_regex_search(value_regex_matcher, value):
@@ -94,7 +101,14 @@ class ArgumentSyntaxValidator(object):
         :param key: a string representation of a key
         """
         if len(key) > 128:
-            raise cls.InvalidTagKeyError(strings['tags.tag_key_max_length_exceeded'].format(key))
+            raise cls.InvalidTagKeyError(
+                (linesep * 2).join(
+                    [
+                        strings['tags.tag_key_max_length_exceeded'],
+                        key
+                    ]
+                )
+            )
 
         key_regex_matcher = cls.__tag_component_regex_matcher(key)
 
@@ -205,6 +219,7 @@ class TagList(object):
 
         ideal_column_length = column_length(self.current_list) + 3
         io.echo(''.join(key_value_string.ljust(ideal_column_length) for key_value_string in ['Key', 'Value']))
+        io.echo('')
 
         for tag in self.current_list:
             io.echo((''.join(key_value.ljust(ideal_column_length) for key_value in [tag['Key'], tag['Value']])).strip())

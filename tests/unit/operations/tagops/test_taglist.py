@@ -102,7 +102,12 @@ class ArgumentSyntaxValidatorTest(unittest.TestCase):
             argument_syntax_validator.validate_key_value_pair('{0}=value'.format(one_twenty_nine_ones))
 
         self.assertEqual(
-            "Tag key '{0}' exceeds key length limit. Tag keys can be up to 128 characters in length.".format(one_twenty_nine_ones),
+            (linesep * 2).join(
+                [
+                    "Tag with the following key exceed length limit. Tag keys can be up to 128 characters in length.",
+                    one_twenty_nine_ones
+                ]
+            ),
             context_manager.exception.message
         )
 
@@ -113,10 +118,15 @@ class ArgumentSyntaxValidatorTest(unittest.TestCase):
         with self.assertRaises(ArgumentSyntaxValidator.InvalidTagValueError) as context_manager:
             argument_syntax_validator.validate_key_value_pair('key={0}'.format(two_hundred_and_fifty_seven_ones))
 
-        self.assertEqual(
-            "Tag value '{0}' exceeds value length limit. Tag values can be up to 256 characters in length.".format(two_hundred_and_fifty_seven_ones),
-            context_manager.exception.message
-        )
+            self.assertEqual(
+                (linesep * 2).join(
+                    [
+                        "Tag with the following value exceed length limit. Tag values can be up to 128 characters in length.",
+                        two_hundred_and_fifty_seven_ones
+                    ]
+                ),
+                context_manager.exception.message
+            )
 
     @unittest.skipIf(python_version < (3, 0), 'Python 2.7 does not support non-ASCII characters')
     def test_validate_key_value_pair__unicode_characters(self):
