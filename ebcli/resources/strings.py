@@ -419,7 +419,7 @@ prompts = {
     'upgrade.applyrolling': 'Enabling {0}-based rolling updates to environment.',
     'create.dockerrunupgrade': 'Multicontainer Docker environments do not support the version number of the Dockerrun.aws.json file that you provided. Type "eb labs convert-dockerrun" to convert it to a newer format.',
     'ecs.permissions': 'The Multi-container Docker platform requires additional ECS permissions. Add the permissions to the aws-elasticbeanstalk-ec2-role or use your own instance profile by typing "-ip {profile-name}".\n'
-                       'For more information see: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker_ecstutorial.html#create_deploy_docker_ecstutorial_role',
+                       'For more information see: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker_ecs.html#create_deploy_docker_ecs_role',
     'create.servicerole.info': '2.0+ Platforms require a service role. We will attempt to create one for you. You can specify your own role using the --service-role option.',
     'create.servicerole.view': 'Type "view" to see the policy, or just press ENTER to continue',
     'create.servicerole.required': '2.0+ Platforms require a service role. You can provide one with --service-role option',
