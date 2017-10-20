@@ -20,7 +20,7 @@ class ListController(AbstractBaseController):
     class Meta:
         label = 'list'
         description = strings['list.info']
-        usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
+        usage = 'eb list [options ...]'
         arguments = [
             (['-a', '--all'], dict(action='store_true',
                                    help=flag_text['list.all']))
