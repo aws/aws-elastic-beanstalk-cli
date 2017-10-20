@@ -2208,7 +2208,9 @@
         "EnvironmentIds":{"shape":"EnvironmentIdList"},
         "EnvironmentNames":{"shape":"EnvironmentNamesList"},
         "IncludeDeleted":{"shape":"IncludeDeleted"},
-        "IncludedDeletedBackTo":{"shape":"IncludeDeletedBackTo"}
+        "IncludedDeletedBackTo":{"shape":"IncludeDeletedBackTo"},
+        "MaxRecords":{"shape":"MaxRecords"},
+        "NextToken":{"shape":"Token"}
       }
     },
     "DescribeEventsMessage":{
