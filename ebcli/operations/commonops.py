@@ -269,6 +269,8 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
 def _is_success_string(message):
     if message.startswith(responses['event.completewitherrors']):
         return True
+    if message.startswith(responses['event.launched_environment']):
+        return True
     if message.startswith(responses['event.platformdeletesuccess']):
         return True
     if message.startswith(responses['event.platformdeletefailed']):
