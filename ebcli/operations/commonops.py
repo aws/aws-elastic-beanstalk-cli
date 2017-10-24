@@ -869,7 +869,7 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
     fileoperations._traverse_to_project_root()
     try:
         if heuristics.directory_is_empty():
-            io.log_warning(strings['appversion.none'])
+            io.echo('NOTE: {}'.format(strings['appversion.none']))
             return None
     finally:
         os.chdir(cwd)
@@ -1000,7 +1000,7 @@ def create_app_version_from_source(app_name, source, process=False, label=None, 
     fileoperations._traverse_to_project_root()
     try:
         if heuristics.directory_is_empty():
-            io.log_warning(strings['appversion.none'])
+            io.echo('NOTE: {}'.format(strings['appversion.none']))
             return None
     finally:
         os.chdir(cwd)

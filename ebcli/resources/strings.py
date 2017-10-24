@@ -43,6 +43,10 @@ strings = {
     'create.info': 'Creates a new environment.',
     'create.epilog': 'Type "--vpc." or "--database." for more VPC and database options.',
     'create.missinggroup': 'A group name is required when creating multiple environments. Please use the --group option.',
+    'create.sample_application_download_option': 'Do you want to download the sample application into the current directory?',
+    'create.downloading_sample_application': 'Downloading sample application to the current directory.',
+    'create.sample_application_download_complete': 'Download complete.',
+    'create.download_sample_app_choice_error': "'{choice}' is not a valid choice.",
     'events.info': 'Gets recent events.',
     'open.info': 'Opens the application URL in a browser.',
     'console.info': 'Opens the environment in the AWS Elastic Beanstalk Management Console.',
@@ -348,6 +352,7 @@ strings = {
     'tags.tag_keys_dont_exist_for_update': "Tags with the following keys can't be updated because they don't exist:",
     'tags.tag_key_max_length_exceeded': "Tag with the following key exceed length limit. Tag keys can be up to 128 characters in length.",
     'tags.tag_value_max_length_exceeded': "Tag with the following value exceed length limit. Tag values can be up to 256 characters in length.",
+    'cloudformation.cannot_find_app_source_for_environment': 'Cannot find app source for environment'
 }
 prompts = {
     'events.hanging': 'Streaming new events. Use CTRL+C to exit.',

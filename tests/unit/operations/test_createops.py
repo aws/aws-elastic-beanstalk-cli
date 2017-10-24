@@ -10,12 +10,15 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
+import mock
 import unittest
 
+from ebcli.core import io
+from ebcli.lib import cloudformation, elasticbeanstalk
+from ebcli.objects.environment import Environment
+from ebcli.objects.exceptions import NotFoundError
 from ebcli.operations import createops
 from ebcli.operations.tagops.taglist import TagList
-from ebcli.operations.tagops.tagops import TagOps
 
 
 class TestCreateOps(unittest.TestCase):
@@ -46,3 +49,64 @@ class TestCreateOps(unittest.TestCase):
             expected_additions_list,
             createops.get_and_validate_tags(addition_string)
         )
+
+    def test_retrieve_application_version_url__successfully_returns_sample_app_url(self):
+        get_template_response = {
+            "TemplateBody": {
+                "Parameters": {
+                    "AppSource": {
+                        "NoEcho": "true",
+                        "Type": "String",
+                        "Description": "The url of the application source.",
+                        "Default": "http://sample-app-location/python-sample.zip"
+                    },
+                },
+                "Description": "AWS Elastic Beanstalk environment (Name: 'my_env_name'  Id: 'my_env_id')",
+            }
+        }
+        elasticbeanstalk.get_environment = mock.MagicMock(return_value=Environment(name='my_env_name', id='my_env_id'))
+        cloudformation.wait_until_stack_exists = mock.MagicMock()
+        cloudformation.get_template = mock.MagicMock(return_value=get_template_response)
+
+        self.assertEqual(
+            "http://sample-app-location/python-sample.zip",
+            createops.retrieve_application_version_url('my_env_name')
+        )
+
+    def test_retrieve_application_version_url__empty_response__raises_not_found_error(self):
+        # save original definition of io.log_warning
+        io._log_warning = io.log_warning
+        io.log_warning = mock.MagicMock()
+
+        self.__assert_app_source_not_found_warning_log(template_response={})
+
+    def test_retrieve_application_version_url__app_version_url_not_found_in_app_source__raises_not_found_error(self):
+        # save original definition of io.log_warning
+        io._log_warning = io.log_warning
+        io.log_warning = mock.MagicMock()
+
+        get_template_response = {
+            "TemplateBody": {
+                "Parameters": {
+                    "AppSource": {
+                        "NoEcho": "true",
+                        "Type": "String",
+                        "Description": "The url of the application source."
+                    }
+                },
+                "Description": "AWS Elastic Beanstalk environment (Name: 'my_env_name'  Id: 'my_env_id')",
+            }
+        }
+
+        self.__assert_app_source_not_found_warning_log(template_response=get_template_response)
+
+    def __assert_app_source_not_found_warning_log(self, template_response):
+        elasticbeanstalk.get_environment = mock.MagicMock(return_value=Environment(name='my_env_name', id='my_env_id'))
+        cloudformation.wait_until_stack_exists = mock.MagicMock()
+        cloudformation.get_template = mock.MagicMock(return_value=template_response)
+
+        createops.retrieve_application_version_url('my_env_name')
+
+        io.log_warning.assert_called_with('Cannot find app source for environment. ')
+
+        io.log_warning = io._log_warning

@@ -10,19 +10,22 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import os
 import re
+from zipfile import ZipFile
 
 from cement.utils.misc import minimal_logger
 
 from ebcli.operations import gitops, buildspecops, commonops
 from ebcli.operations.tagops import tagops
 from ebcli.operations.tagops.taglist import TagList
-from ebcli.lib import elasticbeanstalk, iam, utils
+from ebcli.lib import cloudformation, elasticbeanstalk, heuristics, iam, utils
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.core import io, fileoperations
 from ebcli.objects.exceptions import (
-    TimeoutError,
-    NotAuthorizedError
+    NotAuthorizedError,
+    NotFoundError,
+    TimeoutError
 )
 from ebcli.resources.strings import strings, responses, prompts
 from ..resources.statics import iam_attributes
@@ -38,8 +41,15 @@ DEFAULT_SERVICE_ROLE_POLICIES = [
 ]
 
 # TODO: Make unit tests for these changes
-def make_new_env(env_request, branch_default=False, process_app_version=False,
-                 nohang=False, interactive=True, timeout=None, source=None):
+def make_new_env(
+        env_request,
+        branch_default=False,
+        process_app_version=False,
+        nohang=False,
+        interactive=True,
+        timeout=None,
+        source=None,
+):
     resolve_roles(env_request, interactive)
 
     # Parse and get Build Configuration from BuildSpec if it exists
@@ -87,6 +97,10 @@ def make_new_env(env_request, branch_default=False, process_app_version=False,
     if env_request.key_name:
         commonops.upload_keypair_if_needed(env_request.key_name)
 
+    download_sample_app = None
+    if interactive:
+        download_sample_app = should_download_sample_app()
+
     io.log_info('Creating new environment')
     result, request_id = create_env(env_request,
                                     interactive=interactive)
@@ -104,6 +118,9 @@ def make_new_env(env_request, branch_default=False, process_app_version=False,
             gitops.set_branch_default_for_current_environment(gitops.get_default_branch())
             gitops.set_repo_default_for_current_environment(gitops.get_default_repository())
 
+    if download_sample_app:
+        download_and_extract_sample_app(env_name)
+
     # Print status of env
     commonops.print_env_details(result, health=False)
 
@@ -114,6 +131,96 @@ def make_new_env(env_request, branch_default=False, process_app_version=False,
 
     commonops.wait_for_success_events(request_id,
                                       timeout_in_minutes=timeout)
+
+
+def should_download_sample_app():
+    """
+    Method determines whether the present directory is empty. If yes, it allows the user
+    to choose to download the sample application that the environment will be launched
+    with.
+
+    :return: User's choice of whether the sample application should be downloaded
+    """
+    user_input = None
+    if heuristics.directory_is_empty():
+        io.echo(strings['create.sample_application_download_option'])
+        user_input = download_sample_app_user_choice()
+
+        while user_input not in ['y', 'n', 'Y', 'N']:
+            io.echo(strings['create.download_sample_app_choice_error'].format(choice=user_input))
+            user_input = download_sample_app_user_choice()
+
+    return True if user_input in ['y', 'Y'] else False
+
+
+def download_and_extract_sample_app(env_name):
+    """
+    Method orchestrates the retrieval, and extraction of application version.
+
+    :param env_name: The name of the environment whose application version will be downloaded.
+    :return: None
+    """
+    try:
+        url = retrieve_application_version_url(env_name)
+        zip_file_location = '.elasticbeanstalk/.sample_app_download.zip'
+        io.echo('INFO: {}'.format(strings['create.downloading_sample_application']))
+        download_application_version(url, zip_file_location)
+        ZipFile(zip_file_location, 'r').extractall()
+        os.remove(zip_file_location)
+        io.echo('INFO: {}'.format(strings['create.sample_application_download_complete']))
+    except NotAuthorizedError as e:
+        io.log_warning('{} Continuing environment creation.'.format(e.message))
+    except cloudformation.CFNTemplateNotFound as e:
+        io.log_warning('{} Continuing environment creation.'.format(e.message))
+
+
+def download_application_version(url, zip_file_location):
+    """
+    Method downloads the application version from the URL, 'url', and
+    writes them at the location specified by `zip_file_location`
+
+    :param url: the URL of the application version.
+    :param zip_file_location: path on the user's system to write the application version ZIP file to.
+    :return: None
+    """
+    data = utils.get_data_from_url(url, timeout=30)
+
+    fileoperations.write_to_data_file(zip_file_location, data)
+
+
+def retrieve_application_version_url(env_name):
+    """
+    Method retrieves the URL of the application version of the environment, 'env_name',
+    for the CLI to download from.
+
+    The method waits for the CloudFormation stack associated with `env_name` to come
+    into existence, after which, it retrieves the 'url' of the application version.
+
+    :param env_name: Name of the environment that launched with the sample application
+    :return: The URL of the application version.
+    """
+    env = elasticbeanstalk.get_environment(env_name=env_name)
+    cloudformation_stack_name = 'awseb-' + env.id + '-stack'
+    cloudformation.wait_until_stack_exists(cloudformation_stack_name)
+    template = cloudformation.get_template(cloudformation_stack_name)
+
+    url = None
+    try:
+        url = template['TemplateBody']['Parameters']['AppSource']['Default']
+    except KeyError:
+        io.log_warning('{}. '.format(strings['cloudformation.cannot_find_app_source_for_environment']))
+
+    return url
+
+
+def download_sample_app_user_choice():
+    """
+    Method accepts the user's choice of whether the sample application should be downloaded.
+    Defaults to 'Y' when none is provided.
+
+    :return: user's choice of whether the sample application should be downloaded
+    """
+    return io.get_input('(Y/n)', default='y')
 
 
 def create_env(env_request, interactive=True):

@@ -166,3 +166,34 @@ Received 5XX error during attempt #11
             aws._handle_response_code(self.response_data, 0, [])
 
         self.assertEqual(context_manager.exception.message, exception_message)
+
+    def test_handle_response_code__botocore_client_exception_AccessDenied(self):
+        self.response_data = {
+            'Error': {
+                'Type': 'Sender',
+                'Code': 'AccessDenied',
+                'Message': 'User: arn:aws:iam::123123123123:user/permissionless_user is not authorized to perform: cloudformation:GetTemplate on resource: arn:aws:cloudformation:us-west-2:123123123123:stack/aws-yolo-stack/*'
+            },
+            'ResponseMetadata': {
+                'RequestId': '123123123-ddfg-sdff-qwee-123123123dsfsdf',
+                'HTTPStatusCode': 403,
+                'HTTPHeaders': {
+                    'x-amzn-requestid': '123123123-ddfg-sdff-qwee-123123123dsfsdf',
+                    'content-type': 'text/xml',
+                    'content-length': '439',
+                    'date': 'Wed, 08 Nov 2017 04:16:52 GMT'
+                },
+                'RetryAttempts': 0
+            }
+        }
+
+        exception_message = (
+            'Operation Denied. User: arn:aws:iam::123123123123:user/permissionless_user '
+            'is not authorized to perform: cloudformation:GetTemplate on resource: '
+            'arn:aws:cloudformation:us-west-2:123123123123:stack/aws-yolo-stack/*'
+        )
+
+        with self.assertRaises(aws.NotAuthorizedError) as context_manager:
+            aws._handle_response_code(self.response_data, 0, [])
+
+        self.assertEqual(context_manager.exception.message, exception_message)
