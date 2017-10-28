@@ -161,7 +161,7 @@ strings = {
     # Error, no solution stacks returned. Almost always due to permissions
     'sstacks.notfound': 'Elastic Beanstalk could not find any platforms. Ensure you have the necessary permissions to access Elastic Beanstalk.',
     'sstacks.notaversion': 'Elastic Beanstalk could not find any supported platforms for the given version {version}.',
-    'timeout.error': 'The operation timed out. The state of the environment is unknown. The timeout can be set using the --timeout option.',
+    'timeout.error': "The EB CLI timed out after {timeout_in_minutes} minute(s). The operation might still be running. To keep viewing events, run 'eb events -f'. To set timeout duration, use '--timeout MINUTES'.",
     'sc.notfound': 'Git is not set up for this project. EB CLI will deploy a .zip file of the entire directory.',
     'exit.platformworkspacenotsupported': 'This command is not supported for Platform workspaces.',
     'exit.applicationworkspacenotsupported': 'This command is not supported for Application workspaces.',

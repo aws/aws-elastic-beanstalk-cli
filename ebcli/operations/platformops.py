@@ -380,18 +380,15 @@ def create_platform_version(
         args=(platform_name, version, streamer, 5, None, PackerStreamFormatter(show_timestamp=False)))
     builder_events.daemon = True
 
-    try:
-        # Watch events from builder logs
-        builder_events.start()
-        commonops.wait_for_success_events(
-            request_id,
-            platform_arn=arn,
-            streamer=streamer,
-            timeout_in_minutes=timeout,
-            version_label=version_label
-        )
-    except TimeoutError:
-        io.log_error(strings['timeout.error'])
+    # Watch events from builder logs
+    builder_events.start()
+    commonops.wait_for_success_events(
+        request_id,
+        platform_arn=arn,
+        streamer=streamer,
+        timeout_in_minutes=timeout,
+        version_label=version_label
+    )
 
 
 def _enable_healthd():

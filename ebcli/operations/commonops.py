@@ -125,7 +125,8 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
     finally:
         streamer.end_stream()
     # We have timed out
-    raise TimeoutError('Timed out while waiting for command to Complete. The timeout can be set using the --timeout option.')
+
+    io.log_error(strings['timeout.error'].format(timeout_in_minutes=timeout_in_minutes))
 
 
 def filter_events(events, version_label=None, request_id=None, env_name=None):
@@ -302,7 +303,8 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
                         successes[index] = True
     finally:
         streamer.end_stream()
-    raise TimeoutError('Timed out while waiting for commands to Complete')
+
+    io.log_error(strings['timeout.error'])
 
 
 def _is_success_string(message):
@@ -1122,11 +1124,10 @@ def update_environment(env_name, changes, nohang, remove=None,
         return
 
     io.echo('Printing Status:')
-    try:
-        wait_for_success_events(request_id, timeout_in_minutes=timeout,
-                                can_abort=True)
-    except TimeoutError:
-        io.log_error(strings['timeout.error'])
+
+    wait_for_success_events(request_id, timeout_in_minutes=timeout,
+                            can_abort=True)
+
 
 # BRANCH-DEFAULTS FOR CONFIG FILE
 def write_setting_to_current_branch(keyname, value):

@@ -45,11 +45,12 @@ def setenv(app_name, env_name, var_list, timeout=None):
 
     request_id = elasticbeanstalk.update_environment(env_name, options,
                                                      remove=options_to_remove)
-    try:
-        if timeout is None:
-            timeout = 4
-        commonops.wait_for_success_events(request_id,
-                                          timeout_in_minutes=timeout,
-                                          can_abort=True)
-    except TimeoutError:
-        io.log_error(strings['timeout.error'])
+
+    if timeout is None:
+        # specify a lower timeout duration because the `UpdateEnvironment`
+        # workflow does not take very long to just set environment variables.
+        timeout = 4
+
+    commonops.wait_for_success_events(request_id,
+                                      timeout_in_minutes=timeout,
+                                      can_abort=True)
