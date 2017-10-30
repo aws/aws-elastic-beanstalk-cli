@@ -72,9 +72,8 @@ def run_app(app):
         io.log_error(strings['toomanyplatforms.error'])
         app.close(code=4)
     except EBCLIException as e:
-        io.log_info(traceback.format_exc())
-        if app.pargs and app.pargs.debug:
-            raise
+        if '--verbose' in sys.argv or '--debug' in sys.argv:
+            io.log_info(traceback.format_exc())
 
         message = next(io._convert_to_strings([e]))
 
