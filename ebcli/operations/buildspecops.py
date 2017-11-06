@@ -18,7 +18,7 @@ from cement.utils.misc import minimal_logger
 from ebcli.core import io
 from ebcli.lib import elasticbeanstalk, codebuild
 from ebcli.objects.exceptions import ServiceError, ValidationError
-from ebcli.operations import commonops
+
 from ebcli.resources.strings import strings
 
 LOG = minimal_logger(__name__)
@@ -43,6 +43,9 @@ def stream_build_configuration_app_version_creation(app_name, app_version_label,
 
     # Wait for the success events
     try:
+        # Need to lazy-import `ebcli.lib.commonops` because `pytest` is unable to load it
+        # at module load-time using Python 2.7 and Python 3.4
+        from ebcli.operations import commonops
         commonops.wait_for_success_events(
             app_name=app_name,
             can_abort=False,
