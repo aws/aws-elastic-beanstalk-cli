@@ -2,9 +2,23 @@
 Changelog
 =========
 -------------------
+3.12.1 (2017-11-08)
+-------------------
+- Added ability for customers to download sample application during `eb create` if using one
+- Added graceful handling of errors when operating `ebp` commands in `eb` workspaces
+- Fixed hyperlink to page describing ECS permissions necessary to create multi-container docker environments
+- Fixed `DescribeEvents` polling logic for environment creation after ASG per-region quota is reached
+- Fixed `DescribeEvents` polling logic by filtering events returned accurately
+- Fixed `eb list`'s usage text by removing mention of environment name as a positional argument
+- Increased default timeout for `eb create` when the `-db` flag is specified
+- Modified `eb ssh` logic to use private IP address rather than private DNS when a public IP/DNS is not available
+- Modified generic EBCLI timeout message to prompt customers to view the result of `eb events -f`
+- Removed `eb ssh --custom`'s dependency on SSH private key in `~/.ssh`
+
+-------------------
 3.12.0 (2017-10-10)
 -------------------
- - Added support for tagging Environments
+- Added support for tagging Environments
 
 -------------------
 3.11.0 (2017-09-26)
