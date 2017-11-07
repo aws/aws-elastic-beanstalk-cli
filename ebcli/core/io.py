@@ -143,11 +143,11 @@ def log_warning(message):
 
 def log_error(message):
     try:
-        # Debug mode, use logger
         if ebglobals.app.pargs.debug:
             ebglobals.app.log.error(message)
+        else:
+            echo(bold(color('red', 'ERROR: {}'.format(message))))
     except AttributeError:
-        # Otherwise, use color
         echo(bold(color('red', 'ERROR: {}'.format(message))))
 
 

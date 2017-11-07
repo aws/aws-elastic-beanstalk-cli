@@ -14,7 +14,7 @@
 import unittest
 import mock
 
-from ebcli.core import io
+from ebcli.core import io, ebglobals
 
 
 class TestFileOperations(unittest.TestCase):

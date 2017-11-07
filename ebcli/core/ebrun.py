@@ -15,7 +15,7 @@ from cement.core.exc import CaughtSignal
 
 from . import io
 from ebcli.objects.exceptions import *
-from ebcli.resources.strings import strings, flag_text
+from ebcli.resources.strings import strings
 
 
 def fix_path():
@@ -32,13 +32,9 @@ def fix_path():
 
 fix_path()
 
+
 def run_app(app):
-    # Squash cement logging
-    ######
-    for d, k in iteritems(logging.Logger.manager.loggerDict):
-        if d.startswith('cement') and isinstance(k, logging.Logger):
-            k.setLevel('ERROR')
-    #######
+    squash_cement_logging()
 
     try:
         app.setup()
@@ -75,21 +71,21 @@ def run_app(app):
         if '--verbose' in sys.argv or '--debug' in sys.argv:
             io.log_info(traceback.format_exc())
 
-        message = next(io._convert_to_strings([e]))
+        io.log_error(e.__class__.__name__ + " - " + e.message)
 
-        if app.pargs and app.pargs.verbose:
-            io.log_error(e.__class__.__name__ + " - " + message)
-        else:
-            io.log_error(message)
         app.close(code=4)
     except Exception as e:
         # Generic catch all
-        io.log_info(traceback.format_exc())
-        if app.pargs and app.pargs.debug:
-            raise
+        if '--verbose' in sys.argv or '--debug' in sys.argv:
+            io.log_info(traceback.format_exc())
 
-        message = next(io._convert_to_strings([e]))
-        io.log_error(e.__class__.__name__ + " :: " + message)
+        io.log_error(e.__class__.__name__ + " :: " + e.message)
         app.close(code=10)
     finally:
         app.close()
+
+
+def squash_cement_logging():
+    for d, k in iteritems(logging.Logger.manager.loggerDict):
+        if d.startswith('cement') and isinstance(k, logging.Logger):
+            k.setLevel('ERROR')
