@@ -1202,13 +1202,6 @@ def get_config_setting_from_branch_or_default(key_name, default=_marker):
         return fileoperations.get_config_setting('global', key_name, default=default)
 
 
-def is_platform_arn(solution_string):
-    if solution_string is None:
-        return False
-
-    return PlatformVersion.ARN_PATTERN.match(str(solution_string)) is not None
-
-
 def get_solution_stack(solution_string):
     #If string is explicit, do not check
     if re.match(r'^\d\dbit [\w\s]+[0-9.]* v[0-9.]+ running .*$',

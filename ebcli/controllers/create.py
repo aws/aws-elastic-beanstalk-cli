@@ -17,10 +17,10 @@ import os
 
 from ..core import io, fileoperations, hooks
 from ..core.abstractcontroller import AbstractBaseController
-from ebcli.operations.commonops import is_platform_arn
 from ..lib import elasticbeanstalk, utils
 from ..objects.exceptions import NotFoundError, AlreadyExistsError, \
     InvalidOptionsError
+from ebcli.objects.platform import PlatformVersion
 from ..objects.requests import CreateEnvironmentRequest
 from ..objects.tier import Tier
 from ..operations import saved_configs, commonops, createops, composeops
@@ -156,7 +156,7 @@ class CreateController(AbstractBaseController):
 
         # Test out sstack and tier before we ask any questions (Fast Fail)
         if solution_string:
-            if is_platform_arn(solution_string):
+            if PlatformVersion.is_valid_arn(solution_string):
                 platform_arn = solution_string
             else:
                 try:
@@ -184,7 +184,7 @@ class CreateController(AbstractBaseController):
             solution = commonops.prompt_for_solution_stack()
 
         if solution is not None:
-            if is_platform_arn(solution.version):
+            if PlatformVersion.is_valid_arn(solution.version):
                 platform_arn = solution.version
                 solution = None
             elif solution.platform == 'Multi-container Docker' and iprofile is None:

@@ -15,14 +15,13 @@ import sys
 import os.path
 
 from cement.utils.misc import minimal_logger
-from ebcli.core.ebglobals import Constants
-from ebcli.operations.commonops import is_platform_arn
 
 from ebcli.core import fileoperations, io
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.lib import utils, elasticbeanstalk, codecommit, aws
 from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.objects import solutionstack, region as regions
+from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.exceptions import NotInitializedError, NoRegionError, \
     InvalidProfileError, ServiceError, ValidationError, CommandError
 from ebcli.operations import commonops, initializeops, sshops, gitops
@@ -267,7 +266,7 @@ class InitController(AbstractBaseController):
 
         # Validate that the platform exists
         if solution_string:
-            if is_platform_arn(solution_string):
+            if PlatformVersion.is_valid_arn(solution_string):
                 elasticbeanstalk.describe_platform_version(solution_string)
             else:
                 commonops.get_solution_stack(solution_string)
