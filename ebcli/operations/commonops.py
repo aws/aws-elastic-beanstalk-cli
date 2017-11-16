@@ -545,28 +545,17 @@ def prompt_for_solution_stack(module_name=None):
         if stack.platform not in platforms:
             platforms.append(stack.platform)
 
-    if custom_platforms is not None and len(custom_platforms) > 0:
+    if custom_platforms:
         platforms.append(custom_platform_option)
 
     cwd = os.getcwd()
-    # First check to see if we know what language the project is in
     try:
         fileoperations._traverse_to_project_root()
         platform = heuristics.find_language_type()
-
-        if platform == 'Docker':
-            # Check to see if dockerrun is version one or two
-            dockerrun_file = dockerrun.get_dockerrun(
-                os.path.join(os.getcwd(), 'Dockerrun.aws.json'))
-            if dockerrun_file:
-                if dockerrun_file.get('AWSEBDockerrunVersion') in (1, '1'):
-                    platform = 'Docker'
-                else:
-                    platform = 'Multi-container Docker'
     finally:
         os.chdir(cwd)
 
-    if platform is not None:
+    if platform:
         io.echo()
         io.echo(prompts['platform.validate'].replace('{platform}', platform))
         correct = io.get_boolean_response()
@@ -574,25 +563,27 @@ def prompt_for_solution_stack(module_name=None):
     if not platform or not correct:
         # ask for platform
         io.echo()
-        io.echo(prompts['platform.prompt']
-                if not module_name
-                else prompts['platform.prompt.withmodule'].replace('{module_name}',
-                                                                   module_name))
+
+        if not module_name:
+            io.echo(prompts['platform.prompt'])
+        else:
+            io.echo(prompts['platform.prompt.withmodule'].replace('{module_name}', module_name))
+
         platform = utils.prompt_for_item_in_list(platforms)
 
     if platform == custom_platform_option:
         return get_custom_platform(custom_platforms)
 
     # filter
-    solution_stacks = [x for x in solution_stacks if x.platform == platform]
+    solution_stacks = [solution_stack for solution_stack in solution_stacks if solution_stack.platform == platform]
 
-    #get Versions
+    # get Versions
     versions = []
     for stack in solution_stacks:
         if stack.version not in versions:
             versions.append(stack.version)
 
-    #now choose a version (if applicable)
+    # now choose a version (if applicable)
     if len(versions) > 1:
         io.echo()
         io.echo(prompts['sstack.version'])

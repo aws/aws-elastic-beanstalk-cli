@@ -10,17 +10,17 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
-from ..core.fileoperations import program_is_installed
+from ebcli.containers import dockerrun
+from ebcli.core.fileoperations import program_is_installed
 import glob
 import os
 
 
 def find_language_type():
-    # Docker could be any language, so we need to check for docker first
+    if smells_of_multi_container_docker():
+        return 'Multi-container Docker'
     if smells_of_docker():
         return 'Docker'
-
     if smells_of_python():
         return 'Python'
     if smells_of_ruby():
@@ -34,12 +34,17 @@ def find_language_type():
     if smells_of_tomcat():
         return 'Tomcat'
 
-    # We cant smell its type
-    ## If there is just an index.html, php will work
+    # If there is just an index.html, PHP will work
     if has_index_html():
         return 'PHP'
 
     return None
+
+
+def smells_of_multi_container_docker():
+    dockerrun_file = dockerrun.get_dockerrun('Dockerrun.aws.json')
+    if dockerrun_file and dockerrun_file.get('AWSEBDockerrunVersion') in (2, '2'):
+        return True
 
 
 def smells_of_docker():
@@ -126,14 +131,6 @@ def has_platform_definition_file():
     True if there is a file called 'platform.yaml' in the workspace root
     """
     return _contains_file_types('platform.yaml')
-
-
-def is_docker_installed():
-    return program_is_installed('docker')
-
-
-def is_docker_compose_installed():
-    return program_is_installed('docker-compose')
 
 
 def is_boot2docker_installed():
