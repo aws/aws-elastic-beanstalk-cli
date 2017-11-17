@@ -15,9 +15,8 @@ from ebcli.core import io
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.objects.exceptions import InvalidPlatformVersionError
 from ebcli.objects.platform import PlatformVersion
-from ebcli.operations import commonops, platformops
-from ebcli.operations.platformops import get_version_status
-from ebcli.resources.strings import strings, prompts, flag_text
+from ebcli.operations import platformops, solution_stack_ops
+from ebcli.resources.strings import strings, flag_text
 
 
 class PlatformShowController(AbstractBaseController):
@@ -34,11 +33,11 @@ class PlatformShowController(AbstractBaseController):
         app_name = self.get_app_name()
         env_name = self.get_env_name(noerror=True)
         # This could be an ARN or a solution stack platform / or solution stack short name
-        config_platform = commonops.get_default_solution_stack()
+        config_platform = solution_stack_ops.get_default_solution_stack()
         want_solution_stack = False
 
-        if PlatformVersion.is_valid_arn(config_platform):
-            platform_name, latest_platform = self.get_latest_platform(config_platform)
+        if PlatformVersion.is_custom_platform_arn(config_platform):
+            platform_name, latest_platform = self.get_latest_custom_platform(config_platform)
         else:
             want_solution_stack = True
             platform_name, latest_platform = self.get_latest_solution_stack(config_platform)
@@ -61,20 +60,19 @@ class PlatformShowController(AbstractBaseController):
             io.echo('Current:', platform)
             io.echo('Latest: ', latest_platform)
 
-            if latest_platform is  platform:
+            if latest_platform is platform:
                 io.echo(strings['platformstatus.upgrade'])
 
     def get_latest_solution_stack(self, solution_stack):
-        full_platform = commonops.get_solution_stack(solution_stack)
-        platform_name = full_platform.name.lower()
-        latest_platform = commonops.get_latest_solution_stack(full_platform.version).name
+        full_platform = solution_stack_ops.find_solution_stack_from_string(solution_stack)
+        latest_platform = solution_stack_ops.find_solution_stack_from_string(full_platform.platform_shorthand, find_newer=True)
 
-        return platform_name, latest_platform
+        return full_platform.name, latest_platform.name
 
-    def get_latest_platform(self, platform_arn):
-        latest_platform = commonops.get_latest_platform(platform_arn)
+    def get_latest_custom_platform(self, platform_arn):
+        latest_platform = platformops.get_latest_custom_platform(platform_arn)
 
-        return platform_arn, latest_platform
+        return platform_arn, latest_platform.platform_shorthand
 
 
 class GenericPlatformStatusController(AbstractBaseController):
@@ -91,7 +89,7 @@ class GenericPlatformStatusController(AbstractBaseController):
 
     def do_command(self):
         try:
-            get_version_status(self.app.pargs.version)
+            platformops.get_version_status(self.app.pargs.version)
         except InvalidPlatformVersionError:
             if not self.app.pargs.version:
                 io.log_error("This workspace is currently associated with a deleted version.")

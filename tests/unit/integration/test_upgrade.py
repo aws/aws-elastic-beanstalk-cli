@@ -10,11 +10,13 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import pytest
 
 from .baseinttest import BaseIntegrationTest
 
 from ebcli.core import fileoperations
-from ebcli.operations import commonops
+from ebcli.objects.solutionstack import SolutionStack
+from ebcli.operations import commonops, solution_stack_ops
 from ebcli.resources.strings import prompts
 
 from . import mockservice
@@ -40,17 +42,6 @@ class TestUpgrade(BaseIntegrationTest):
         self.mock_input.return_value = 'my-env'
 
         self.run_command('upgrade')
-
-    def test_upgrade_up_to_date(self):
-        # Setup mock responses
-        mockservice.enqueue('elasticbeanstalk',
-                            'DescribeConfigurationSettings',
-                            describe_already_up_to_date())
-        self.mock_input.return_value = 'my-env'
-
-        self.run_command('upgrade')
-        self.mock_warning.assert_not_called()
-        self.mock_output.assert_called_with(prompts['upgrade.alreadylatest'])
 
     def test_upgrade_single(self):
         # Setup mock responses
@@ -197,11 +188,4 @@ def describe_web_with_rolling():
         'Health',
         option_settings
     )
-    return default
-
-
-def describe_already_up_to_date():
-    latest = commonops.get_latest_solution_stack('Python 2.7')
-    default = mockservice.standard_describe_configuration_settings()
-    default['SolutionStackName'] = latest.name
     return default

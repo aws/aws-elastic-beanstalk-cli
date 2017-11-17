@@ -14,9 +14,9 @@
 import os
 from ebcli.core import io, fileoperations
 from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.core.ebglobals import Constants
 from ebcli.objects.platform import PlatformVersion
 from ebcli.operations import platformops
-from ebcli.operations.platformops import list_platform_versions
 from ebcli.resources.strings import strings, flag_text
 
 
@@ -35,7 +35,7 @@ class PlatformListController(AbstractBaseController):
     def do_command(self):
         verbose = self.app.pargs.verbose
         solution_stacks = platformops.get_all_platforms()
-        platform_arns = list(platformops.get_custom_platforms(platform_version="latest"))
+        platform_arns = platformops.list_custom_platform_versions(platform_version='latest')
 
         if verbose:
             lst = [s.name for s in solution_stacks]
@@ -72,7 +72,11 @@ class GenericPlatformListController(AbstractBaseController):
         else:
             platform_name = None
 
-        versions = list_platform_versions(platform_name=platform_name, status=status, owner='self', show_status=True)
+        versions = platformops.list_custom_platform_versions(
+            platform_name=platform_name,
+            status=status,
+            show_status=True
+        )
 
         if len(versions) > 20:
             io.echo_with_pager(os.linesep.join(versions))

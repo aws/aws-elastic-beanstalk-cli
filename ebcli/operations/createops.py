@@ -16,7 +16,7 @@ from zipfile import ZipFile
 
 from cement.utils.misc import minimal_logger
 
-from ebcli.operations import gitops, buildspecops, commonops
+from ebcli.operations import gitops, buildspecops, commonops, solution_stack_ops
 from ebcli.operations.tagops import tagops
 from ebcli.operations.tagops.taglist import TagList
 from ebcli.lib import cloudformation, elasticbeanstalk, heuristics, iam, utils
@@ -311,16 +311,22 @@ def resolve_roles(env_request, interactive):
     """
     LOG.debug('Resolving roles')
 
-    if (env_request.instance_profile is None or env_request.instance_profile == iam_attributes.DEFAULT_ROLE_NAME) \
-            and env_request.template_name is None:
+    if (
+	        (
+	            not env_request.instance_profile or
+	            env_request.instance_profile == iam_attributes.DEFAULT_ROLE_NAME
+	        ) and not env_request.template_name
+    ):
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
         env_request.instance_profile = commonops.create_default_instance_profile()
 
-
-    if (env_request.platform is not None and env_request.platform.has_healthd_support() and  # HealthD enabled
-            (env_request.service_role is None) and
-            (env_request.template_name is None)):
+    if (
+        env_request.platform and
+        env_request.platform.has_healthd_support and
+        not env_request.service_role and
+        not env_request.template_name
+    ):
         role = get_service_role()
         if role is None:
             if interactive:

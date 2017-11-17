@@ -101,7 +101,7 @@ def create_health_tables(screen, env):
         platform_arn = env['PlatformArn']
         has_healthd_V2_support = PlatformVersion(platform_arn).has_healthd_group_version_2_support()
     except KeyError:
-        has_healthd_V2_support = SolutionStack(env['SolutionStackName']).has_healthd_group_version_2_support()
+        has_healthd_V2_support = SolutionStack(env['SolutionStackName']).has_healthd_group_version_2_support
 
     if has_healthd_V2_support:
         screen.add_table(Table('deployments', columns=[

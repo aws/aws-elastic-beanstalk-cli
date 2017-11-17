@@ -56,7 +56,7 @@ def get_quick_link(app_name, env_name):
     # add application name
     link += '?applicationName=' + urllib.parse.quote(app_name)
     # add solution stack
-    link += '&solutionStackName=' + urllib.parse.quote(env.platform.platform)
+    link += '&solutionStackName=' + urllib.parse.quote(env.platform.platform_shorthand)
     # add
     link += '&tierName=' + env.tier.name
     if environment_type:

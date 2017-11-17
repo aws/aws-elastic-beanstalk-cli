@@ -14,7 +14,7 @@ from ebcli.objects.platform import PlatformVersion
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text, prompts
 from ..core import io
-from ..operations import commonops, cloneops
+from ..operations import cloneops, commonops, solution_stack_ops
 from ..lib import utils, elasticbeanstalk
 from ..controllers.create import get_cname, get_and_validate_envars
 from ..operations.createops import get_and_validate_tags
@@ -97,8 +97,11 @@ class CloneController(AbstractBaseController):
 
         if not exact:
             if not provided_clone_name:  # interactive mode
-                latest = commonops.get_latest_solution_stack(
-                    env.platform.version)
+                latest = solution_stack_ops.find_solution_stack_from_string(
+                    env.platform.name,
+                    find_newer=True
+                )
+
                 if latest != env.platform:
                     # ask for latest or exact
                     io.echo()
@@ -112,18 +115,20 @@ class CloneController(AbstractBaseController):
                     platform = latest
             else:
                 # assume latest - get original platform
-                platform = commonops.get_latest_solution_stack(
-                    env.platform.version)
+                platform = solution_stack_ops.find_solution_stack_from_string(
+                    env.platform.name,
+                    find_newer=True
+                )
                 if platform != env.platform:
                     io.log_warning(prompts['clone.latestwarn'])
 
-        if platform and PlatformVersion.is_valid_arn(platform.version):
+        if platform and PlatformVersion.is_valid_arn(platform.name):
             clone_request = CloneEnvironmentRequest(
                 app_name=app_name,
                 env_name=clone_name,
                 original_name=env_name,
                 cname=cname,
-                platform_arn=platform.version,
+                platform_arn=platform.name,
                 scale=scale,
                 tags=tags,
             )

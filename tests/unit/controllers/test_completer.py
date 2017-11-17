@@ -30,7 +30,7 @@ class TestCompleter(BaseControllerTest):
         self.module_name = 'create'
         super(TestCompleter, self).setUp()
         fileoperations.create_config_file(self.app_name, 'us-west-2',
-                                          self.solution.string)
+                                          self.solution.name)
 
     def test_base_commands(self):
         """

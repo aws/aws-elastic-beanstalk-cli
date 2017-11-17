@@ -21,9 +21,7 @@ import unittest
 
 from mock import Mock
 
-from ebcli.core.ebglobals import Constants
 from ebcli.operations import platformops
-from ebcli.resources.strings import strings, responses, prompts
 from ebcli.objects.exceptions import ValidationError
 from ebcli.objects.environment import Environment
 from ebcli.objects.platform import PlatformVersion
@@ -245,4 +243,415 @@ class TestPackerStreamFormatter(unittest.TestCase):
         self.assertEqual(
             u'\u2588my:message',
             packet_stream_formatter.format(event_message, 'Custom Stream')
+        )
+
+    custom_platforms_list = [
+        {
+            'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.0',
+            'PlatformStatus': 'Ready',
+            'SupportedAddonList': [
+                'Log/S3',
+                'WorkerDaemon/SQSD'
+            ],
+            'OperatingSystemName': 'Ubuntu',
+            'PlatformCategory': 'custom',
+            'PlatformOwner': 'self',
+            'OperatingSystemVersion': '16.04',
+            'SupportedTierList': [
+                'WebServer/Standard',
+                'Worker/SQS/HTTP'
+            ]
+        },
+        {
+            'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.0.3',
+            'PlatformStatus': 'Ready',
+            'SupportedAddonList': [
+                'Log/S3',
+                'WorkerDaemon/SQSD'
+            ],
+            'OperatingSystemName': 'Amazon linux',
+            'PlatformCategory': 'custom',
+            'PlatformOwner': 'self',
+            'OperatingSystemVersion': '2016.09.1',
+            'SupportedTierList': [
+                'WebServer/Standard',
+                'Worker/SQS/HTTP'
+            ]
+        },
+        {
+            'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.0.2',
+            'PlatformStatus': 'Ready',
+            'SupportedAddonList': [
+                'Log/S3',
+                'WorkerDaemon/SQSD'
+            ],
+            'OperatingSystemName': 'Amazon linux',
+            'PlatformCategory': 'custom',
+            'PlatformOwner': 'self',
+            'OperatingSystemVersion': '2016.09.1',
+            'SupportedTierList': [
+                'WebServer/Standard',
+                'Worker/SQS/HTTP'
+            ]
+        },
+        {
+            'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.0.0',
+            'PlatformStatus': 'Ready',
+            'SupportedAddonList': [
+                'Log/S3',
+                'WorkerDaemon/SQSD'
+            ],
+            'OperatingSystemName': 'Amazon linux',
+            'PlatformCategory': 'custom',
+            'PlatformOwner': 'self',
+            'OperatingSystemVersion': '2016.09.1',
+            'SupportedTierList': [
+                'WebServer/Standard',
+                'Worker/SQS/HTTP'
+            ]
+        },
+        {
+            'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-3/1.0.0',
+            'PlatformStatus': 'Ready',
+            'SupportedAddonList': [
+                'Log/S3',
+                'WorkerDaemon/SQSD'
+            ],
+            'OperatingSystemName': 'Ubuntu',
+            'PlatformCategory': 'custom',
+            'PlatformOwner': 'self',
+            'OperatingSystemVersion': '16.04',
+            'SupportedTierList': [
+                'WebServer/Standard',
+                'Worker/SQS/HTTP'
+            ]
+        },
+        {
+            'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.2',
+            'PlatformStatus': 'Failed',
+            'SupportedTierList': [
+
+            ],
+            'SupportedAddonList': [
+
+            ],
+            'PlatformOwner': 'self'
+        },
+        {
+            'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.1',
+            'PlatformStatus': 'Failed',
+            'SupportedTierList': [
+
+            ],
+            'SupportedAddonList': [
+
+            ],
+            'PlatformOwner': 'self'
+        },
+        {
+            'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0',
+            'PlatformStatus': 'Ready',
+            'SupportedAddonList': [
+                'Log/S3',
+                'WorkerDaemon/SQSD'
+            ],
+            'OperatingSystemName': 'Amazon linux',
+            'PlatformCategory': 'custom',
+            'PlatformOwner': 'self',
+            'OperatingSystemVersion': '2016.09.1',
+            'SupportedTierList': [
+                'WebServer/Standard',
+                'Worker/SQS/HTTP'
+            ]
+        }
+    ]
+
+    eb_managed_platforms_list = [
+        {
+            "PlatformArn": "arn:aws:elasticbeanstalk:us-west-2::platform/Java 8 running on 64bit Amazon Linux/2.5.3",
+            "PlatformOwner": "AWSElasticBeanstalk",
+            "PlatformStatus": "Ready",
+            "PlatformCategory": "Java",
+            "OperatingSystemName": "Amazon Linux",
+            "OperatingSystemVersion": "2017.03",
+            "SupportedTierList": [
+                "WebServer/Standard",
+                "Worker/SQS/HTTP"
+            ],
+            "SupportedAddonList": [
+                "Log/S3",
+                "Monitoring/Healthd",
+                "WorkerDaemon/SQSD"
+            ]
+        },
+        {
+            "PlatformArn": "arn:aws:elasticbeanstalk:us-west-2::platform/Java 8 running on 64bit Amazon Linux/2.5.2",
+            "PlatformOwner": "AWSElasticBeanstalk",
+            "PlatformStatus": "Ready",
+            "PlatformCategory": "Java",
+            "OperatingSystemName": "Amazon Linux",
+            "OperatingSystemVersion": "2017.03",
+            "SupportedTierList": [
+                "WebServer/Standard",
+                "Worker/SQS/HTTP"
+            ],
+            "SupportedAddonList": [
+                "Log/S3",
+                "Monitoring/Healthd",
+                "WorkerDaemon/SQSD"
+            ]
+        },
+        {
+            "PlatformArn": "arn:aws:elasticbeanstalk:us-west-2::platform/Go 1 running on 64bit Amazon Linux/2.1.0",
+            "PlatformOwner": "AWSElasticBeanstalk",
+            "PlatformStatus": "Ready",
+            "PlatformCategory": "Go",
+            "OperatingSystemName": "Amazon Linux",
+            "OperatingSystemVersion": "2016.03",
+            "SupportedTierList": [
+                "WebServer/Standard",
+                "Worker/SQS/HTTP"
+            ],
+            "SupportedAddonList": []
+        },
+        {
+            "PlatformArn": "arn:aws:elasticbeanstalk:us-west-2::platform/Docker running on 64bit Amazon Linux/2.1.0",
+            "PlatformOwner": "AWSElasticBeanstalk",
+            "PlatformStatus": "Ready",
+            "PlatformCategory": "Docker",
+            "OperatingSystemName": "Amazon Linux",
+            "OperatingSystemVersion": "2016.03",
+            "SupportedTierList": [
+                "WebServer/Standard",
+                "Worker/SQS/HTTP"
+            ],
+            "SupportedAddonList": []
+        },
+    ]
+
+    describe_platform_result = {
+        'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0',
+        'PlatformOwner': 'self',
+        'PlatformName': 'custom-platform-1',
+        'PlatformVersion': '1.0.0',
+        'PlatformStatus': 'Ready',
+        'DateCreated': '2017-07-05T22:55:15.583Z',
+        'DateUpdated': '2017-07-05T23:07:02.859Z',
+        'PlatformCategory': 'custom',
+        'Description': 'Sample NodeJs Container.',
+        'Maintainer': '<please enter your name here>',
+        'OperatingSystemName': 'Ubuntu',
+        'OperatingSystemVersion': '16.04',
+        'ProgrammingLanguages': [
+            {
+                'Name': 'ECMAScript',
+                'Version': 'ECMA-262'
+            }
+        ],
+        'Frameworks': [
+            {
+                'Name': 'NodeJs',
+                'Version': '4.4.4'
+            }
+        ],
+        'CustomAmiList': [
+            {
+                'VirtualizationType': 'pv',
+                'ImageId': 'ami-123123'
+            },
+            {
+                'VirtualizationType': 'hvm',
+                'ImageId': 'ami-123123'
+            }
+        ],
+        'SupportedTierList': [
+            'WebServer/Standard',
+            'Worker/SQS/HTTP'
+        ],
+        'SupportedAddonList': [
+            'Log/S3',
+            'WorkerDaemon/SQSD'
+        ]
+    }
+
+    @mock.patch('ebcli.lib.elasticbeanstalk.list_platform_versions')
+    def test_list_custom_platform_versions__filtered_by_owner_name(self, mock_list_platform_versions):
+        mock_list_platform_versions.return_value = self.custom_platforms_list
+
+        custom_platforms = platformops.list_custom_platform_versions(
+            show_status=True
+        )
+
+        self.assertEqual(
+            [
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.0.3  Status: Ready',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.0.2  Status: Ready',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.0.0  Status: Ready',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-3/1.0.0  Status: Ready',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.0  Status: Ready',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.2  Status: Failed',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.1  Status: Failed',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0  Status: Ready',
+            ],
+            custom_platforms
+        )
+
+    @mock.patch('ebcli.lib.elasticbeanstalk.list_platform_versions')
+    def test_list_custom_platform_versions__filtered_by_owner_name__display_list_without_status(self, mock_list_platform_versions):
+        mock_list_platform_versions.return_value = self.custom_platforms_list
+
+        custom_platforms = platformops.list_custom_platform_versions()
+
+        self.assertEqual(
+            [
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.0.3',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.0.2',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.0.0',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-3/1.0.0',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.0',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.2',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.1',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0',
+            ],
+            custom_platforms
+        )
+
+
+    @mock.patch('ebcli.lib.elasticbeanstalk.list_platform_versions')
+    def test_list_eb_managed_platform_versions(self, mock_list_platform_versions):
+        mock_list_platform_versions.return_value = self.eb_managed_platforms_list
+
+        eb_managed_platforms = platformops.list_eb_managed_platform_versions()
+
+        self.assertEqual(
+            [
+                'arn:aws:elasticbeanstalk:us-west-2::platform/Java 8 running on 64bit Amazon Linux/2.5.3',
+                'arn:aws:elasticbeanstalk:us-west-2::platform/Java 8 running on 64bit Amazon Linux/2.5.2',
+                'arn:aws:elasticbeanstalk:us-west-2::platform/Go 1 running on 64bit Amazon Linux/2.1.0',
+                'arn:aws:elasticbeanstalk:us-west-2::platform/Docker running on 64bit Amazon Linux/2.1.0'
+            ],
+            eb_managed_platforms
+        )
+
+    @mock.patch('ebcli.lib.elasticbeanstalk.list_platform_versions')
+    @mock.patch('ebcli.lib.elasticbeanstalk.describe_platform_version')
+    def test_describe_custom_platform_version(self, mock_describe_platform_version, mock_list_platform_versions):
+        mock_list_platform_versions.return_value = self.custom_platforms_list
+        mock_describe_platform_version.return_value = self.describe_platform_result
+
+        custom_platform = platformops.describe_custom_platform_version(
+            platform_name='custom-platform-1',
+            platform_version='1.0.0',
+            owner='self'
+        )
+
+        self.assertEqual(
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0',
+            custom_platform['PlatformArn']
+        )
+
+    @mock.patch('ebcli.lib.elasticbeanstalk.describe_platform_version')
+    def test_describe_custom_platform_version__platform_arn_passed_in(self, mock_describe_platform_version):
+        mock_describe_platform_version.return_value = self.describe_platform_result
+
+        custom_platform = platformops.describe_custom_platform_version(
+            platform_arn='arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0'
+        )
+
+        self.assertEqual(
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0',
+            custom_platform['PlatformArn']
+        )
+
+    @mock.patch('ebcli.operations.platformops.list_custom_platform_versions')
+    def test_get_latest_custom_platform(self, custom_platforms_lister_mock):
+        custom_platforms_lister_mock.return_value = [
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.3',
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.0'
+        ]
+        current_platform_arn = 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.0'
+        self.assertEqual(
+            PlatformVersion('arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.3'),
+            platformops.get_latest_custom_platform(current_platform_arn)
+        )
+
+    def test_group_custom_platforms_by_platform_name(self):
+        custom_platform_arns = [custom_platform['PlatformArn'] for custom_platform in self.custom_platforms_list]
+
+        self.assertEqual(
+            [
+                'custom-platform-1',
+                'custom-platform-2',
+                'custom-platform-3',
+                'custom-platform-4'
+            ],
+            platformops.group_custom_platforms_by_platform_name(custom_platform_arns)
+        )
+
+    @mock.patch('ebcli.lib.utils.prompt_for_index_in_list')
+    @mock.patch('ebcli.operations.platformops.group_custom_platforms_by_platform_name')
+    def test_prompt_customer_for_custom_platform_name(
+            self,
+            custom_platforms_grouper_mock,
+            index_prompter_mock
+    ):
+        custom_platform_arns = [custom_platform['PlatformArn'] for custom_platform in self.custom_platforms_list]
+        custom_platforms_grouper_mock.return_value = [
+            'custom-platform-1',
+            'custom-platform-2',
+            'custom-platform-3',
+            'custom-platform-4'
+        ]
+
+        index_prompter_mock.return_value = 2
+
+        self.assertEqual(
+            'custom-platform-3',
+            platformops.prompt_customer_for_custom_platform_name(custom_platform_arns)
+        )
+
+    @mock.patch('ebcli.lib.utils.prompt_for_index_in_list')
+    def test_prompt_customer_for_custom_platform_version(self, index_prompter_mock):
+        version_to_arn_mappings = {
+            '1.0.3': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.3',
+            '1.0.0': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.0',
+            '1.0.2': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.2'
+        }
+
+        index_prompter_mock.return_value = 2
+
+        self.assertEqual(
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.3',
+            platformops.prompt_customer_for_custom_platform_version(version_to_arn_mappings)
+        )
+
+    @mock.patch('ebcli.lib.utils.prompt_for_index_in_list')
+    def test_resolve_custom_platform_version__multiple_versions_to_choose_from(self, index_prompter_mock):
+        custom_platforms = [
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.3',
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.3',
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.0',
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.2'
+        ]
+        selected_platform_name = 'custom-platform-2'
+
+        index_prompter_mock.return_value = 0
+
+        self.assertEqual(
+            PlatformVersion('arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.0'),
+            platformops.resolve_custom_platform_version(custom_platforms, selected_platform_name)
+        )
+
+    def test_resolve_custom_platform_version__single_version_available(self):
+        custom_platforms = [
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.3',
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.3',
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.0',
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.2'
+        ]
+        selected_platform_name = 'custom-platform-1'
+
+        self.assertEqual(
+            PlatformVersion('arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.3'),
+            platformops.resolve_custom_platform_version(custom_platforms, selected_platform_name)
         )

@@ -15,7 +15,7 @@ from ..resources.strings import prompts
 from ..resources.statics import namespaces, option_names
 from ..core import io
 from ..lib import elasticbeanstalk
-from . import commonops
+from . import commonops, solution_stack_ops
 
 
 def _get_warning_message(confirm, single, rolling_enabled, webserver, noroll):
@@ -47,9 +47,9 @@ def _should_add_rolling(single, rolling_enabled, noroll):
 
 def upgrade_env(app_name, env_name, timeout, confirm, noroll):
     env = elasticbeanstalk.get_environment_settings(app_name, env_name)
-    latest = commonops.get_latest_solution_stack(env.platform.version)
+    latest = solution_stack_ops.find_solution_stack_from_string(env.platform.name, find_newer=True)
 
-    if latest == env.platform:
+    if latest.name == env.platform.name:
         io.echo(prompts['upgrade.alreadylatest'])
         return
     else:
@@ -64,7 +64,7 @@ def upgrade_env(app_name, env_name, timeout, confirm, noroll):
         io.echo()
         io.echo(prompts['upgrade.infodialog'].format(env_name))
         io.echo('Current platform:', env.platform)
-        io.echo('Latest platform: ', latest)
+        io.echo('Latest platform: ', latest.name)
         io.echo()
 
         warning = _get_warning_message(confirm, single,
@@ -81,7 +81,7 @@ def upgrade_env(app_name, env_name, timeout, confirm, noroll):
         add_rolling = _should_add_rolling(single, rolling_enabled, noroll)
 
         do_upgrade(env_name, add_rolling, timeout, latest.name,
-                   health_based=webserver, platform_arn = latest.version)
+                   health_based=webserver, platform_arn = latest.name)
 
 
 def do_upgrade(env_name, add_rolling, timeout, solution_stack_name,

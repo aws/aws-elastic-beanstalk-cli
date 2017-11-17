@@ -22,6 +22,16 @@ class PlatformVersion(object):
     ARN_PATTERN = re.compile('^arn:[^:]+:elasticbeanstalk:[^:]+:([^:]*):platform/([^/]+)/(\d+\.\d+\.\d+)$')
 
     @classmethod
+    def is_custom_platform_arn(cls, arn):
+        if PlatformVersion.is_valid_arn(arn):
+            return PlatformVersion(arn).account_id
+
+    @classmethod
+    def is_eb_managed_platform_arn(cls, arn):
+        if PlatformVersion.is_valid_arn(arn):
+            return not PlatformVersion(arn).account_id
+
+    @classmethod
     def is_valid_arn(cls, arn):
         if not isinstance(arn, str) and not isinstance(arn, bytes):
             return False
@@ -51,6 +61,26 @@ class PlatformVersion(object):
 
         return platform_name
 
+    @classmethod
+    def match_with_complete_arn(
+            cls,
+            platforms,
+            input_platform_name
+    ):
+        for platform in platforms:
+            if platform == input_platform_name:
+                return PlatformVersion(platform)
+
+    @classmethod
+    def match_with_platform_name(
+            cls,
+            custom_platforms,
+            input_platform_name
+    ):
+        for custom_platform in custom_platforms:
+            if PlatformVersion.get_platform_name(custom_platform) == input_platform_name:
+                return PlatformVersion(custom_platform)
+
     def __init__(self, arn):
         self.arn = arn
         account_id, platform_name, platform_version = PlatformVersion.arn_to_platform(arn)
@@ -58,10 +88,10 @@ class PlatformVersion(object):
         # For the sake of the CLI a version is the same thing as an ARN
         self.version = self.arn
 
-        self.name = platform_name
+        self.name = arn
         self.account_id = account_id
         self.platform_version = platform_version
-        self.platform = platform_name
+        self.platform_shorthand = platform_name
 
     def __str__(self):
         return self.version

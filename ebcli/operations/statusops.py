@@ -16,7 +16,7 @@ from ..core import io
 from ..resources.strings import alerts
 from ..resources.statics import elb_names
 from ..objects.exceptions import NotFoundError
-from . import commonops, gitops
+from . import commonops, gitops, solution_stack_ops
 
 
 SPACER = ' ' * 5
@@ -82,7 +82,7 @@ def status(app_name, env_name, verbose):
             #No load balancer. Dont show instance status
             pass
 
-    latest = commonops.get_latest_solution_stack(env.platform.version)
+    latest = solution_stack_ops.find_solution_stack_from_string(env.platform.name, find_newer=True)
 
     if env.platform != latest:
         io.log_alert(alerts['platform.old'])

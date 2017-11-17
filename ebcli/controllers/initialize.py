@@ -30,7 +30,14 @@ from ebcli.objects.exceptions import(
     ServiceError,
     ValidationError,
 )
-from ebcli.operations import commonops, initializeops, sshops, gitops
+from ebcli.operations import (
+	commonops,
+	gitops,
+	initializeops,
+	platformops,
+	solution_stack_ops,
+	sshops
+)
 from ebcli.resources.strings import strings, flag_text, prompts
 
 LOG = minimal_logger(__name__)
@@ -124,13 +131,12 @@ class InitController(AbstractBaseController):
             if fileoperations.env_yaml_exists():
                 env_yaml_platform = fileoperations.get_platform_from_env_yaml()
                 if env_yaml_platform:
-                    platform = solutionstack.SolutionStack(env_yaml_platform).version
+                    platform = solutionstack.SolutionStack(env_yaml_platform).platform_shorthand
                     self.solution = platform
                     platform_set = True
 
             if not platform_set:
-                result = commonops.prompt_for_solution_stack()
-                self.solution = result.version
+                self.solution = solution_stack_ops.get_solution_stack_from_customer().platform_shorthand
 
         # Select CodeBuild image if BuildSpec is present do not prompt or show if we are non-interactive
         if fileoperations.build_spec_exists() and not self.force_non_interactive:
@@ -264,16 +270,13 @@ class InitController(AbstractBaseController):
         # Get solution stack from config file, if exists
         if not solution_string:
             try:
-                solution_string = commonops.get_default_solution_stack()
+                solution_string = solution_stack_ops.get_default_solution_stack()
             except NotInitializedError:
                 solution_string = None
 
         # Validate that the platform exists
         if solution_string:
-            if PlatformVersion.is_valid_arn(solution_string):
-                elasticbeanstalk.describe_platform_version(solution_string)
-            else:
-                commonops.get_solution_stack(solution_string)
+            solution_stack_ops.find_solution_stack_from_string(solution_string)
 
         return solution_string
 
@@ -392,14 +395,13 @@ class InitController(AbstractBaseController):
                     if fileoperations.env_yaml_exists():
                         env_yaml_platform = fileoperations.get_platform_from_env_yaml()
                         if env_yaml_platform:
-                            platform = solutionstack.SolutionStack(env_yaml_platform).version
+                            platform = solutionstack.SolutionStack(env_yaml_platform).platform_shorthand
                             solution = platform
                             io.echo(strings['init.usingenvyamlplatform'].replace('{platform}', platform))
                             platform_set = True
 
                     if not platform_set:
-                        result = commonops.prompt_for_solution_stack()
-                        solution = result.version
+                        solution = solution_stack_ops.get_solution_stack_from_customer()
 
                 initializeops.setup(self.app_name, self.region,
                                     solution)

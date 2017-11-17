@@ -16,10 +16,10 @@ from mock import patch, Mock
 from unittest import TestCase
 
 
-PRECONFIG_SOLN_STK = Mock(version='GlassFish 4.1 Java 8 (Preconfigured - Docker)')
-GENERIC_SOLN_STK = Mock(platform='Docker')
-MULTI_SOLN_STK = Mock(platform='Multi-container Docker')
-NON_DOCKER_SOLN_STK = Mock(version='Ruby 2.0 (Puma)', platform='Ruby')
+PRECONFIG_SOLN_STK = Mock(platform_shorthand='GlassFish 4.1 Java 8 (Preconfigured - Docker)')
+GENERIC_SOLN_STK = Mock(language_name='Docker')
+MULTI_SOLN_STK = Mock(language_name='Multi-container Docker')
+NON_DOCKER_SOLN_STK = Mock(platform_shorthand='Ruby 2.0 (Puma)', language_name='Ruby')
 EXPECTED_PRECONFIG_LOG_PATH = '/usr/local/glassfish4/glassfish/domains/domain1/logs'
 
 

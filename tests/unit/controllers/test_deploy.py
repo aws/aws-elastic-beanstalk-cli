@@ -16,14 +16,10 @@ import mock
 from ebcli.controllers.deploy import DeployController
 from .basecontrollertest import BaseControllerTest
 from ebcli.core.ebcore import EB
-from ebcli.operations import commonops
-
-from cement.utils import test
-
 from ebcli.core import fileoperations
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.tier import Tier
-from ebcli.operations import commonops
+
 
 class TestDeploy(BaseControllerTest):
     solution = SolutionStack('64bit Amazon Linux 2015.03 v2.0.6 running PHP 5.5')
@@ -36,7 +32,7 @@ class TestDeploy(BaseControllerTest):
         self.module_name = 'deploy'
         super(TestDeploy, self).setUp()
         fileoperations.create_config_file(self.app_name, 'us-west-2',
-                                          self.solution.string)
+                                          self.solution.name)
 
     def test_deploy_multi_app_selection(self):
         app = DeployController()

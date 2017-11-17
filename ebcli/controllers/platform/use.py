@@ -14,7 +14,7 @@
 
 from ebcli.core import fileoperations
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.operations import commonops
+from ebcli.operations import solution_stack_ops
 from ebcli.operations.platformops import set_platform, get_platform_name_and_version_interactive
 from ebcli.resources.strings import strings, flag_text
 
@@ -32,8 +32,8 @@ class PlatformSelectController(AbstractBaseController):
         epilog = strings['platformselect.epilog']
 
     def do_command(self):
-        platform = commonops.prompt_for_solution_stack()
-        fileoperations.write_config_setting('global', 'default_platform', platform.version)
+        platform = solution_stack_ops.get_solution_stack_from_customer().name
+        fileoperations.write_config_setting('global', 'default_platform', platform)
 
 
 class GenericPlatformUseController(AbstractBaseController):

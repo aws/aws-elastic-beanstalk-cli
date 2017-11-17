@@ -20,7 +20,7 @@ from ..core.abstractcontroller import AbstractBaseController
 from ..lib import utils
 from ..objects.exceptions import NoEnvironmentForBranchError, \
     InvalidOptionsError
-from ..operations import commonops, deployops, composeops
+from ..operations import commonops, deployops, composeops, solution_stack_ops
 from ..resources.strings import strings, flag_text
 
 LOG = minimal_logger(__name__)

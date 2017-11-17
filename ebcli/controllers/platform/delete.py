@@ -10,11 +10,10 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
+from ebcli.core.ebglobals import Constants
 from ebcli.core import fileoperations, io
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.operations.commonops import list_platform_versions_sorted_by_name
-from ebcli.operations.platformops import delete_platform_version
+from ebcli.operations import platformops
 from ebcli.resources.strings import strings, flag_text, prompts
 
 
@@ -42,7 +41,7 @@ class GenericPlatformDeleteController(AbstractBaseController):
             self.cleanup_platforms()
         else:
             if version:
-                delete_platform_version(version, force)
+                platformops.delete_platform_version(version, force)
             else:
                 self.app.args.print_help()
 
@@ -56,7 +55,12 @@ class GenericPlatformDeleteController(AbstractBaseController):
             platform_name = fileoperations.get_platform_name()
 
         # We clean up all failed platform versions
-        failed_versions = sorted(list_platform_versions_sorted_by_name(platform_name=platform_name, status='Failed', owner='self'))
+        failed_versions = sorted(
+            platformops.list_custom_platform_versions(
+                platform_name=platform_name,
+                status='Failed',
+            )
+        )
 
         if failed_versions:
             if not force:
@@ -72,7 +76,7 @@ class GenericPlatformDeleteController(AbstractBaseController):
                     io.validate_action(prompts['cleanupplatform.validate'], platform_name)
 
             for failed_version in failed_versions:
-                delete_platform_version(failed_version, force=True)
+	            platformops.delete_platform_version(failed_version, force=True)
 
 
 class PlatformDeleteController(GenericPlatformDeleteController):

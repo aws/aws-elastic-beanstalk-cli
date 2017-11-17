@@ -59,8 +59,8 @@ class TestInit(BaseControllerTest):
             NoRegionError,
             True,
         ]
-        self.mock_commonops.prompt_for_solution_stack.return_value = \
-            self.solution
+
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = self.solution
         self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
@@ -68,7 +68,7 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.create_app.return_value = None, None
         self.mock_commonops.get_default_keyname.return_value = ''
         self.mock_commonops.get_default_region.return_value = ''
-        self.mock_commonops.get_default_solution_stack.return_value = ''
+        self.mock_solution_stack_ops.get_default_solution_stack.return_value = ''
         # Mock out source control so we don't depend on git
         mock_sourcecontrol.get_source_control.return_value = mock_git
         mock_git.is_setup.return_value = None
@@ -76,8 +76,8 @@ class TestInit(BaseControllerTest):
         self.mock_input.side_effect = [
             '3',  # region number
             self.app_name,  # Application name
-            '1',  # Platform selection
-            '1',  # Platform version selection
+            '2',  # Platform selection
+            '2',  # Platform version selection
             'n',  # Set up ssh selection
         ]
 
@@ -111,15 +111,15 @@ class TestInit(BaseControllerTest):
         self.mock_operations.credentials_are_valid.return_value = True
         self.mock_eb.application_exist.return_value = False
         self.mock_commonops.create_app.return_value = 'ss-stack', 'key'
-        self.mock_commonops.prompt_for_solution_stack.return_value = \
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = \
             self.solution
         self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
 
         self.mock_input.side_effect = [
             '3',  # region number
             self.app_name,  # Application name
-            '1',  # Platform selection
-            '1',  # Platform version selection'
+            '2',  # Platform selection
+            '2',  # Platform version selection'
             'n',  # Set up ssh selection
         ]
 
@@ -148,7 +148,7 @@ class TestInit(BaseControllerTest):
 
         # setup mock response
         self.mock_operations.credentials_are_valid.return_value = False
-        self.mock_commonops.prompt_for_solution_stack.return_value = \
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = \
             self.solution
         self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
         self.mock_commonops.get_current_branch_environment.side_effect = \
@@ -157,7 +157,7 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.pull_down_app_info.return_value = 'ss-stack', 'key'
         self.mock_commonops.get_default_keyname.return_value = ''
         self.mock_commonops.get_default_region.return_value = ''
-        self.mock_commonops.get_default_solution_stack.return_value = ''
+        self.mock_solution_stack_ops.get_default_solution_stack.return_value = ''
 
         # Mock out source control so we don't depend on git
         mock_sourcecontrol.get_source_control.return_value = mock_git
@@ -190,7 +190,7 @@ class TestInit(BaseControllerTest):
             NoRegionError,
             True
         ]
-        self.mock_commonops.prompt_for_solution_stack.return_value = Exception
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = Exception
         self.mock_sshops.prompt_for_ec2_keyname.return_value = Exception
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
@@ -198,7 +198,7 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.pull_down_app_info.return_value = 'ss-stack', 'key'
         self.mock_commonops.get_default_keyname.return_value = ''
         self.mock_commonops.get_default_region.return_value = 'us-west-2'
-        self.mock_commonops.get_default_solution_stack.return_value = ''
+        self.mock_solution_stack_ops.get_default_solution_stack.return_value = ''
 
         # Mock out source control so we don't depend on git
         mock_sourcecontrol.get_source_control.return_value = mock_git
@@ -227,7 +227,7 @@ class TestInit(BaseControllerTest):
             NoRegionError,
             True
         ]
-        self.mock_commonops.prompt_for_solution_stack.return_value = Exception
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = Exception
         self.mock_sshops.prompt_for_ec2_keyname.return_value = Exception
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
@@ -235,7 +235,7 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.create_app.return_value = None, None
         self.mock_commonops.get_default_keyname.return_value = ''
         self.mock_commonops.get_default_region.return_value = ''
-        self.mock_commonops.get_default_solution_stack.return_value = ''
+        self.mock_solution_stack_ops.get_default_solution_stack.return_value = ''
 
         # Mock out source control so we don't depend on git
         mock_sourcecontrol.get_source_control.return_value = mock_git
@@ -274,9 +274,8 @@ class TestInit(BaseControllerTest):
         self.mock_operations.credentials_are_valid.return_value = True
         self.mock_commonops.pull_down_app_info.return_value = None, None
         self.mock_commonops.create_app.return_value = None, None
-        self.mock_commonops.get_default_solution_stack.return_value = ''
-        self.mock_commonops.prompt_for_solution_stack.return_value = \
-            self.solution
+        self.mock_solution_stack_ops.get_default_solution_stack.return_value = ''
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = self.solution
 
         # Mocks for getting into CodeCommit interactive mode
         mock_gitops.git_management_enabled.return_value = False
@@ -288,7 +287,6 @@ class TestInit(BaseControllerTest):
 
         # Mocks for setting up SSH
         self.mock_sshops.prompt_for_ec2_keyname.return_value = 'test'
-
 
         self.mock_input.side_effect = [
             'y',  # Yes to setup CodeCommit
@@ -345,7 +343,7 @@ class TestInit(BaseControllerTest):
         # 3. Create app
         self.mock_commonops.get_application_names.return_value = list()
         self.mock_operations.credentials_are_valid.return_value = True
-        self.mock_commonops.prompt_for_solution_stack.return_value = \
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = \
             self.solution
         mock_fileops.env_yaml_exists.return_value = None
 
@@ -423,7 +421,7 @@ class TestInit(BaseControllerTest):
         # 3. Create app
         self.mock_commonops.get_application_names.return_value = list()
         self.mock_operations.credentials_are_valid.return_value = True
-        self.mock_commonops.prompt_for_solution_stack.return_value = \
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = \
             self.solution
         mock_fileops.env_yaml_exists.return_value = None
 
@@ -506,7 +504,7 @@ class TestInit(BaseControllerTest):
             NoRegionError,
             True
         ]
-        self.mock_commonops.prompt_for_solution_stack.return_value = Exception
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = Exception
         self.mock_sshops.prompt_for_ec2_keyname.return_value = Exception
         self.mock_commonops.get_current_branch_environment.side_effect = \
             NotInitializedError,
@@ -514,7 +512,7 @@ class TestInit(BaseControllerTest):
         self.mock_commonops.create_app.return_value = None, None
         self.mock_commonops.get_default_keyname.return_value = ''
         self.mock_commonops.get_default_region.return_value = ''
-        self.mock_commonops.get_default_solution_stack.return_value = ''
+        self.mock_solution_stack_ops.get_default_solution_stack.return_value = ''
 
         # run cmd
         EB.Meta.exit_on_close = False

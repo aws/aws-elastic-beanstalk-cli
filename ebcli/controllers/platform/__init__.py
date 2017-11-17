@@ -28,7 +28,7 @@ from ebcli.controllers.platform.logs import PlatformLogsController, EBPLogsContr
 from ebcli.controllers.platform.initialize import PlatformInitController, EBPInitController
 
 from ebcli.resources.strings import strings
-from ebcli.operations import commonops, platformops, initializeops
+from ebcli.operations import commonops, platformops, initializeops, solution_stack_ops
 
 class PlatformController(AbstractBaseController):
     class Meta:

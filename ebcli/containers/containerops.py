@@ -64,7 +64,7 @@ def is_generic(soln_stk, container_config):
     """
 
     expected_platform = container_config[GENERIC_CONTAINER_KEY][PLATFORM_KEY]
-    return expected_platform == soln_stk.platform
+    return expected_platform == soln_stk.language_name
 
 
 def is_multi(soln_stk, container_config):
@@ -76,7 +76,7 @@ def is_multi(soln_stk, container_config):
     """
 
     expected_platform = container_config[MULTI_CONTAINER_KEY][PLATFORM_KEY]
-    return expected_platform == soln_stk.platform
+    return expected_platform == soln_stk.language_name
 
 
 def get_configuration(fullpath=CONTAINER_CONFIG_PATH):
@@ -104,7 +104,7 @@ def get_runtime_default_log_path(soln_stk, container_config):
 
 def _get_preconfig_info(soln_stk, container_config):
     containers = container_config[PRECONFIG_CONTAINER_KEY]
-    return next((c for c in containers if c[VERSION_KEY] == soln_stk.version),
+    return next((c for c in containers if c[VERSION_KEY] == soln_stk.platform_shorthand),
                 None)
 
 

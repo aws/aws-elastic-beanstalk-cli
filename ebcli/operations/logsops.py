@@ -278,10 +278,17 @@ def stream_platform_logs(platform_name, version, streamer=None, sleep_time=4, lo
 def paginate_cloudwatch_logs(platform_name, version, formatter=None):
     log_group_name = _get_platform_builder_group_name(platform_name)
     next_token = None
+    start_time = None
 
     while True:
         try:
-            messages, next_token = get_cloudwatch_messages(log_group_name, version, formatter, next_token)
+            messages, next_token, start_time = get_cloudwatch_messages(
+                log_group_name,
+                version,
+                formatter,
+                next_token,
+                start_time
+            )
             if messages:
                 io.echo_with_pager("\n".join(messages))
             else:

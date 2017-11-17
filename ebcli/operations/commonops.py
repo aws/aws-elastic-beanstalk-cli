@@ -18,21 +18,16 @@ from datetime import datetime, timedelta
 import platform
 
 from ..core.fileoperations import _marker
-from semantic_version import Version
 
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
 from botocore.compat import six
 
 from ebcli.operations import buildspecops
-from ebcli.core.ebglobals import Constants
 from ..core import fileoperations, io
-from ..containers import dockerrun
 from ..lib import aws, ec2, elasticbeanstalk, heuristics, iam, s3, utils, codecommit
-from ebcli.objects.platform import PlatformVersion
 from ..lib.aws import InvalidParameterValueError
 from ..objects.exceptions import *
-from ..objects.solutionstack import SolutionStack
 from ..objects.sourcecontrol import SourceControl, NoSC
 from ..resources.strings import strings, responses, prompts
 from ..resources.statics import iam_documents, iam_attributes
@@ -462,199 +457,6 @@ def get_app_version_s3_location(app_name, version_label):
     return s3_bucket, s3_key
 
 
-def list_platform_versions_sorted_by_name(platform_name=None, status=None, owner=None, show_status=False, excludeEBOwned=True):
-    platform_list = elasticbeanstalk.list_platform_versions(
-        platform_name=platform_name, status=status, owner=owner)
-    platform_tuples = list()
-    platforms = list()
-    arn_index = 0
-    status_index = 1
-
-    for platform in platform_list:
-        arn = platform['PlatformArn']
-        owner = platform['PlatformOwner']
-
-        if excludeEBOwned and owner == Constants.AWS_ELASTIC_BEANSTALK_ACCOUNT:
-            continue
-
-        _, platform_name, _ = PlatformVersion.arn_to_platform(arn)
-
-        platform_tuples.append((arn, platform['PlatformStatus']))
-
-    # Sort by name, then by version
-    platform_tuples.sort(key=lambda platform: (PlatformVersion.get_platform_name(platform[arn_index]), Version(PlatformVersion.get_platform_version(platform[arn_index]))), reverse=True)
-
-    for platform in platform_tuples:
-        if show_status:
-            platforms.append("%s  Status: %s" % (platform[arn_index], platform[status_index]))
-        else:
-            platforms.append(platform[arn_index])
-
-    return platforms
-
-
-def get_custom_platform(custom_platforms):
-    accounts = dict()
-    platform_names = []
-
-    for platform_arn in custom_platforms:
-        account_id, platform_name, platform_version = PlatformVersion.arn_to_platform(platform_arn)
-
-        try:
-            platforms = accounts[account_id]
-        except KeyError:
-            platforms = dict()
-
-        try:
-            platform = platforms[platform_name]
-        except KeyError:
-            platform = dict()
-
-        platform[platform_version] = platform_arn
-        platforms[platform_name] = platform
-        accounts[account_id] = platforms
-        platform_names.append(platform_name)
-
-    longest_platform_name = len(max(platform_names, key=len))
-
-    platforms = []
-    for account in accounts:
-        for platform in accounts[account]:
-            platforms.append("%-*s (Owned by: %s)" % (longest_platform_name, platform, account))
-
-    io.echo()
-    io.echo(prompts['platform.prompt'])
-    selected_platform = utils.prompt_for_item_in_list(platforms)
-
-    option_pattern = re.compile('^(.+)\s+\(Owned by: (.+)\)$')
-    match = option_pattern.match(selected_platform)
-
-    selected_platform_name, selected_account = match.group(1, 2)
-    selected_platform_name = selected_platform_name.strip()
-
-    versions = []
-    for version in accounts[selected_account][selected_platform_name]:
-        versions.append(version)
-
-    if len(versions) > 1:
-        versions.sort(key=lambda arn: Version(arn), reverse=True)
-        io.echo()
-        io.echo(prompts['sstack.version'])
-        version = utils.prompt_for_item_in_list(versions)
-    else:
-        version = versions[0]
-
-    return PlatformVersion(accounts[selected_account][selected_platform_name][version])
-
-
-def prompt_for_solution_stack(module_name=None):
-    solution_stacks = elasticbeanstalk.get_available_solution_stacks()
-    custom_platforms = list_platform_versions_sorted_by_name()
-    custom_platform_option = "Custom Platform"
-
-    # get list of platforms
-    platforms = []
-    for stack in solution_stacks:
-        if stack.platform not in platforms:
-            platforms.append(stack.platform)
-
-    if custom_platforms:
-        platforms.append(custom_platform_option)
-
-    cwd = os.getcwd()
-    try:
-        fileoperations._traverse_to_project_root()
-        platform = heuristics.find_language_type()
-    finally:
-        os.chdir(cwd)
-
-    if platform:
-        io.echo()
-        io.echo(prompts['platform.validate'].replace('{platform}', platform))
-        correct = io.get_boolean_response()
-
-    if not platform or not correct:
-        # ask for platform
-        io.echo()
-
-        if not module_name:
-            io.echo(prompts['platform.prompt'])
-        else:
-            io.echo(prompts['platform.prompt.withmodule'].replace('{module_name}', module_name))
-
-        platform = utils.prompt_for_item_in_list(platforms)
-
-    if platform == custom_platform_option:
-        return get_custom_platform(custom_platforms)
-
-    # filter
-    solution_stacks = [solution_stack for solution_stack in solution_stacks if solution_stack.platform == platform]
-
-    # get Versions
-    versions = []
-    for stack in solution_stacks:
-        if stack.version not in versions:
-            versions.append(stack.version)
-
-    # now choose a version (if applicable)
-    if len(versions) > 1:
-        io.echo()
-        io.echo(prompts['sstack.version'])
-        version = utils.prompt_for_item_in_list(versions)
-    else:
-        version = versions[0]
-
-    return get_latest_solution_stack(version, stack_list=solution_stacks)
-
-
-def get_latest_platform(platform_arn):
-    account_id, platform_name, platform_version = PlatformVersion.arn_to_platform(platform_arn)
-
-    platforms = elasticbeanstalk.list_platform_versions(platform_name, 'latest', 'Ready', account_id)
-
-    if len(platforms) == 1:
-        return PlatformVersion(platforms[0]['PlatformArn'])
-
-    # The customer doesn't have access to the platform anymore?
-    return PlatformVersion(platform_arn)
-
-
-def get_latest_solution_stack(platform_version, stack_list=None):
-    if PlatformVersion.is_valid_arn(platform_version):
-        return get_latest_platform(platform_version)
-
-    if stack_list:
-        solution_stacks = stack_list
-    else:
-        solution_stacks = elasticbeanstalk.\
-            get_available_solution_stacks()
-
-    #filter
-    solution_stacks = [x for x in solution_stacks
-                       if x.version == platform_version]
-
-    #Lastly choose a server type
-    servers = []
-    for stack in solution_stacks:
-        if stack.server not in servers:
-            servers.append(stack.server)
-
-    # Default to latest version of server
-    # We are assuming latest is always first in list.
-    if len(servers) < 1:
-        raise NotFoundError(strings['sstacks.notaversion'].
-                            replace('{version}', platform_version))
-    server = servers[0]
-
-    #filter
-    solution_stacks = [x for x in solution_stacks if x.server == server]
-
-    #should have 1 and only have 1 result
-    assert len(solution_stacks) == 1, 'Filtered Solution Stack list ' \
-                                      'contains multiple results'
-    return solution_stacks[0]
-
-
 def create_app(app_name, default_env=None):
     # Attempt to create app
     try:
@@ -711,7 +513,7 @@ def pull_down_app_info(app_name, default_env=None):
     if keyname is None:
         keyname = -1
 
-    return env.platform.version, keyname
+    return env.platform.platform_shorthand, keyname
 
 
 def open_webpage_in_browser(url, ssl=False):
@@ -1183,10 +985,6 @@ def get_default_region():
         return None
 
 
-def get_default_solution_stack():
-    return get_config_setting_from_branch_or_default('default_platform')
-
-
 def get_setting_from_current_branch(keyname):
     try:
         source_control = SourceControl.get_source_control()
@@ -1213,53 +1011,6 @@ def get_config_setting_from_branch_or_default(key_name, default=_marker):
         return setting
     else:
         return fileoperations.get_config_setting('global', key_name, default=default)
-
-
-def get_solution_stack(solution_string):
-    #If string is explicit, do not check
-    if re.match(r'^\d\dbit [\w\s]+[0-9.]* v[0-9.]+ running .*$',
-                solution_string):
-        return SolutionStack(solution_string)
-
-    solution_string = solution_string.lower()
-    solution_stacks = elasticbeanstalk.get_available_solution_stacks()
-
-    custom_platform_solution_stacks = [x for x in solution_stacks if PlatformVersion.ARN_PATTERN.match(x.name.lower())]
-    stacks = [x for x in custom_platform_solution_stacks if solution_string in x.name.lower()]
-    if len(stacks):
-        return stacks[0]
-
-    # check for exact string
-    stacks = [x for x in solution_stacks if x.name.lower() == solution_string]
-
-    if len(stacks) == 1:
-        return stacks[0]
-
-    #should only have 1 result
-    if len(stacks) > 1:
-        LOG.error('Platform list contains '
-                  'multiple results')
-        return None
-
-    # No exact match, check for versions
-    string = solution_string
-
-    string = re.sub(r'([a-z])([0-9])', '\\1 \\2', string)
-
-    stacks = [x for x in solution_stacks if solution_strings_match(x.version.lower(), string)]
-    if len(stacks) > 0:
-        return stacks[0]
-
-    raise NotFoundError(prompts['sstack.invalidkey'].replace('{string}',
-                                                             solution_string))
-
-
-def solution_strings_match(str1, str2):
-    return(
-        str1 == re.sub(r'\s*-\s*', ' ', str2)
-        or re.sub(r'\s*-\s*', ' ', str1) == re.sub(r'-', ' ', str2)
-        or str1 == str2
-    )
 
 
 def is_cname_available(cname):

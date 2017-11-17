@@ -33,11 +33,14 @@ class BaseControllerTest(test.CementTestCase):
         self.patcher_commonops = mock.patch('ebcli.controllers.' +
                                             self.module_name + '.commonops')
         self.patcher_output = mock.patch('ebcli.core.io.echo')
+        self.patcher_solution_stack_ops = mock.patch('ebcli.controllers.' +
+                                            self.module_name + '.solution_stack_ops')
 
         self.mock_input = self.patcher_input.start()
         self.mock_operations = self.patcher_operations.start()
         self.mock_commonops = self.patcher_commonops.start()
         self.mock_output = self.patcher_output.start()
+        self.mock_solution_stack_ops = self.patcher_solution_stack_ops.start()
 
         # set up test directory
         if not os.path.exists('testDir/.git'):
@@ -62,6 +65,7 @@ class BaseControllerTest(test.CementTestCase):
         self.patcher_input.stop()
         self.patcher_output.stop()
         self.patcher_commonops.stop()
+        self.patcher_solution_stack_ops.stop()
 
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):

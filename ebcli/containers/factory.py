@@ -10,19 +10,11 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+from cement.utils.misc import minimal_logger
 
-import os
-
-from ebcli.lib import elasticbeanstalk
 from ebcli.objects.platform import PlatformVersion
-from ebcli.operations import platformops
-from . import compat
 from . import containerops
 from . import dockerrun
-from . import fshandler
-from . import log
-
-from cement.utils.misc import minimal_logger
 
 from .envvarcollector import EnvvarCollector
 from .pathconfig import PathConfig
@@ -30,11 +22,9 @@ from .fshandler import ContainerFSHandler, MultiContainerFSHandler
 from .generic_container import GenericContainer
 from .multicontainer import MultiContainer
 from .preconfigured_container import PreconfiguredContainer
-from ..controllers.create import get_and_validate_envars
-from ..core import fileoperations as fops
 from ..objects.exceptions import NotSupportedError, NotFoundError, \
         NotInitializedError
-from ..operations import commonops
+from ..operations import platformops, solution_stack_ops
 from ..resources.strings import strings
 
 
@@ -107,31 +97,31 @@ def make_container_fs_handler(pathconfig):
 
 
 def _get_solution_stack():
-    solution_string = commonops.get_default_solution_stack()
+    solution_string = solution_stack_ops.get_default_solution_stack()
     soln_stk = None
 
     # Test out sstack and tier before we ask any questions (Fast Fail)
     if solution_string:
         if PlatformVersion.is_valid_arn(solution_string):
             try:
-                elasticbeanstalk.describe_platform_version(solution_string)['PlatformDescription']
+                platformops.describe_custom_platform_version(solution_string)
             except NotFoundError:
-                raise NotFoundError('Platform arn %s does not appear to be valid' % solution_string)
+                raise NotFoundError(
+                    'Platform arn {} does not appear to be valid'.format(solution_string)
+                )
 
             soln_stk = PlatformVersion(solution_string)
         else:
             try:
-                soln_stk = commonops.get_solution_stack(solution_string)
+                soln_stk = solution_stack_ops.find_solution_stack_from_string(solution_string)
 
                 if PlatformVersion.is_valid_arn(soln_stk):
                     soln_stk = PlatformVersion.get_platform_name(soln_stk)
 
             except NotFoundError:
-                raise NotFoundError('Solution stack ' + solution_string +
-                                    ' does not appear to be valid')
+                raise NotFoundError('Solution stack {} does not appear to be valid'.format(solution_string))
 
-    LOG.debug(soln_stk)
-    if soln_stk is None:
+    if not soln_stk:
         raise NotInitializedError
-    else:
-        return soln_stk
+
+    return soln_stk

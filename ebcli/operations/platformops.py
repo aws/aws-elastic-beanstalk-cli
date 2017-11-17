@@ -1,4 +1,4 @@
-# Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You
 # may not use this file except in compliance with the License. A copy of
@@ -16,26 +16,30 @@ import sys
 import tempfile
 from datetime import datetime
 from shutil import copyfile, move
-
-from termcolor import colored
-
 import threading
 import yaml
+
+from semantic_version import Version
+from termcolor import colored
 
 from ebcli.core.ebglobals import Constants
 from ebcli.operations import logsops
 from ebcli.core import io, fileoperations
 from ebcli.lib import elasticbeanstalk, heuristics, s3, utils
-from ebcli.objects.exceptions import NotFoundError, InvalidPlatformVersionError, PlatformWorkspaceEmptyError, TimeoutError, ValidationError
+from ebcli.objects import api_filters
+from ebcli.objects.exceptions import (
+    InvalidPlatformVersionError,
+    NotFoundError,
+    PlatformWorkspaceEmptyError,
+    ValidationError
+)
 from ebcli.objects.platform import PlatformVersion
-from ebcli.objects.sourcecontrol import SourceControl, NoSC
+from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.operations import commonops
 from ebcli.operations.commonops import _zip_up_project, get_app_version_s3_location
 from ebcli.operations.eventsops import print_events
 from ebcli.resources.statics import namespaces, option_names
 from ebcli.resources.strings import strings, prompts
-
-from ebcli.lib import iam
 
 
 VALID_PLATFORM_VERSION_FORMAT = re.compile('^\d+\.\d+\.\d+$')
@@ -132,156 +136,6 @@ class PackerStreamFormatter(object):
             formatted_message = '{0} {1}'.format(stream_name, message)
 
         return formatted_message
-
-
-def get_all_platforms():
-    return elasticbeanstalk.get_available_solution_stacks()
-
-
-def get_environment_platform(app_name, env_name, want_solution_stack=False):
-    env = elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name, want_solution_stack=want_solution_stack)
-    return env.platform
-
-
-def list_platform_versions(platform_name=None, status=None, owner=None, show_status=False):
-    return commonops.list_platform_versions_sorted_by_name(platform_name, status, owner, show_status)
-
-
-def set_platform(platform_name, platform_version=None, verify=True):
-
-    if verify:
-        arn = _name_to_arn(platform_name)
-
-        _, platform_name, platform_version = PlatformVersion.arn_to_platform(arn)
-
-    fileoperations.update_platform_name(platform_name)
-    fileoperations.update_platform_version(platform_version)
-
-    io.echo(strings['platformset.version'])
-
-    # This could fail if the customer elected to create a new platform
-    try:
-        get_version_status(platform_version)
-    except InvalidPlatformVersionError:
-        io.echo(strings['platformset.newplatform'] % platform_name)
-
-
-def show_platform_events(follow, version):
-    platform_name = fileoperations.get_platform_name()
-
-    if version is None:
-        version = fileoperations.get_platform_version()
-
-        if version is None:
-            raise InvalidPlatformVersionError(strings['exit.nosuchplatformversion'])
-
-        platform = _get_platform(platform_name, version, owner=Constants.OWNED_BY_SELF)
-
-        if platform is None:
-            raise InvalidPlatformVersionError(strings['exit.nosuchplatformversion'])
-
-        arn = platform['PlatformArn']
-    else:
-        arn = _version_to_arn(version)
-
-    if arn is None:
-        raise InvalidPlatformVersionError(strings['exit.nosuchplatformversion'])
-
-    print_events(follow=follow, platform_arn=arn, app_name=None, env_name=None)
-
-
-def get_version_status(version):
-    platform_name = fileoperations.get_platform_name()
-
-    if version is None:
-        version = fileoperations.get_platform_version()
-
-    if version is None:
-        version = _get_latest_version(platform_name)
-        fileoperations.update_platform_version(version)
-
-    if version is None:
-        raise InvalidPlatformVersionError(strings['exit.nosuchplatformversion'])
-
-    arn = _version_to_arn(version)
-
-    if arn is None:
-        raise InvalidPlatformVersionError(strings['exit.nosuchplatformversion'])
-
-    _, platform_name, platform_version = PlatformVersion.arn_to_platform(arn)
-
-    platform = _get_platform(platform_name, platform_version, owner=Constants.OWNED_BY_SELF)
-    platform_status = elasticbeanstalk.list_platform_versions(
-        platform_name=platform_name,
-        platform_version=platform_version,
-        owner=Constants.OWNED_BY_SELF)
-
-    if platform is None:
-        raise InvalidPlatformVersionError(strings['exit.nosuchplatformversion'])
-
-    try:
-        description = platform['Description']
-    except KeyError:
-        description = None
-
-    status = platform['PlatformStatus']
-    created = platform['DateCreated']
-    updated = platform['DateUpdated']
-
-    io.echo('Platform: ', arn)
-    io.echo('Name: ', platform_name)
-    io.echo('Version: ', version)
-
-    # TODO: Cleanup this odd pattern used here.
-    try:
-        io.echo('Maintainer: ', platform['Maintainer'])
-    except KeyError:
-        pass
-
-    if description:
-        io.echo('Description: ', description)
-
-    if platform_status:
-        platform_status = platform_status[0]
-
-        try:
-            io.echo('Framework: ', platform_status['FrameworkName'])
-        except KeyError:
-            pass
-
-        try:
-            io.echo('Framework Version: ', platform_status['FrameworkVersion'])
-        except KeyError:
-            pass
-
-        try:
-            io.echo('Operating System: ', platform_status['OperatingSystemName'])
-        except KeyError:
-            pass
-
-        try:
-            io.echo('Operating System Version: ', platform_status['OperatingSystemVersion'])
-        except KeyError:
-            pass
-
-        try:
-            io.echo('Programming Language: ', platform_status['ProgrammingLanguageName'])
-        except KeyError:
-            pass
-
-        try:
-            io.echo('Programming Language Version: ', platform_status['ProgrammingLanguageVersion'])
-        except KeyError:
-            pass
-
-        try:
-            io.echo('Supported Tiers: ', str.join(',', platform_status['SupportedTierList']))
-        except KeyError:
-            pass
-
-    io.echo('Status: ', status)
-    io.echo('Created: ', created)
-    io.echo('Updated: ', updated)
 
 
 def create_platform_version(
@@ -423,6 +277,382 @@ def create_platform_version(
     )
 
 
+def delete_platform_version(platform_version, force=False):
+    arn = _version_to_arn(platform_version)
+
+    if not force:
+        io.echo(prompts['platformdelete.confirm'].replace('{platform-arn}', arn))
+        io.validate_action(prompts['platformdelete.validate'], arn)
+
+    environments = []
+    try:
+        environments = [env for env in elasticbeanstalk.get_environments() if env.platform.version == arn]
+    except NotFoundError:
+        pass
+
+    if len(environments) > 0:
+        _, platform_name, platform_version = PlatformVersion.arn_to_platform(arn)
+        raise ValidationError(strings['platformdeletevalidation.error'].format(
+            platform_name,
+            platform_version,
+            '\n '.join([env.name for env in environments])
+        ))
+
+    response = elasticbeanstalk.delete_platform(arn)
+    request_id = response['ResponseMetadata']['RequestId']
+    timeout = 10
+
+    commonops.wait_for_success_events(request_id, timeout_in_minutes=timeout, platform_arn=arn)
+
+
+def describe_custom_platform_version(
+        owner=None,
+        platform_arn=None,
+        platform_name=None,
+        platform_version=None,
+        status=None
+):
+    if not platform_arn:
+        platforms = list_custom_platform_versions(
+            platform_name=platform_name,
+            platform_version=platform_version,
+            status=status
+        )
+
+        platform_arn = platforms[0]
+
+    return elasticbeanstalk.describe_platform_version(platform_arn)
+
+
+def find_custom_platform_from_string(solution_string):
+    available_custom_platforms = list_custom_platform_versions()
+
+    for custom_platform_matcher in [
+        PlatformVersion.match_with_complete_arn,
+        PlatformVersion.match_with_platform_name,
+    ]:
+        matched_custom_platform = custom_platform_matcher(available_custom_platforms, solution_string)
+
+        if matched_custom_platform:
+            return matched_custom_platform
+
+
+def get_all_platforms():
+    return elasticbeanstalk.get_available_solution_stacks()
+
+
+def get_custom_platform_from_customer(custom_platforms):
+    selected_platform_name = prompt_customer_for_custom_platform_name(custom_platforms)
+
+    return resolve_custom_platform_version(custom_platforms, selected_platform_name)
+
+
+def get_environment_platform(app_name, env_name, want_solution_stack=False):
+    env = elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name, want_solution_stack=want_solution_stack)
+    return env.platform
+
+
+def get_latest_custom_platform(platform):
+    """
+    :param platform: A custom platform ARN or a custom platform name
+    :return: A PlatformVersion object representing the latest version of `platform`
+    """
+    account_id, platform_name, platform_version = PlatformVersion.arn_to_platform(platform)
+
+    if account_id:
+        matching_platforms = list_custom_platform_versions(
+            platform_name=platform_name,
+            status='Ready'
+        )
+
+        if matching_platforms:
+            return PlatformVersion(matching_platforms[0])
+
+        matching_platforms = list_custom_platform_versions(
+            platform_name=platform,
+            status='Ready'
+        )
+
+        if matching_platforms:
+            return PlatformVersion(matching_platforms[0])
+
+
+def get_latest_eb_managed_platform(platform_arn):
+    account_id, platform_name, platform_version = PlatformVersion.arn_to_platform(platform_arn)
+
+    if not account_id:
+        matching_platforms = list_eb_managed_platform_versions(
+            platform_name=platform_name,
+            status='Ready'
+        )
+
+        if matching_platforms:
+            return PlatformVersion(matching_platforms[0])
+
+
+def get_platforms(platform_name=None, ignored_states=None, owner=None, platform_version=None):
+    platform_list = list_custom_platform_versions(
+        platform_name=platform_name,
+        platform_version=platform_version
+    )
+    platforms = dict()
+
+    for platform in platform_list:
+        if ignored_states and platform['PlatformStatus'] in ignored_states:
+            continue
+
+        _, platform_name, platform_version = PlatformVersion.arn_to_platform(platform)
+        platforms[platform_name] = platform_version
+
+    return platforms
+
+
+def get_platform_name_and_version_interactive():
+    platforms = get_platforms(owner=Constants.OWNED_BY_SELF, platform_version="latest")
+    platform_list = list(platforms)
+
+    file_name = fileoperations.get_current_directory_name()
+    new_platform = False
+    version = None
+
+    if len(platform_list) > 0:
+        io.echo()
+        io.echo('Select a platform to use')
+        new_platform_option = '[ Create new Platform ]'
+        platform_list.append(new_platform_option)
+        try:
+            default_option = platform_list.index(file_name) + 1
+        except ValueError:
+            default_option = len(platform_list)
+        platform_name = utils.prompt_for_item_in_list(platform_list, default=default_option)
+        if platform_name == new_platform_option:
+            new_platform = True
+        else:
+            version = platforms[platform_name]
+
+    if len(platform_list) == 0 or new_platform:
+        io.echo()
+        io.echo('Enter Platform Name')
+        unique_name = utils.get_unique_name(file_name, platform_list)
+        platform_name = io.prompt_for_unique_name(unique_name, platform_list)
+
+    return platform_name, version
+
+
+def get_version_status(version):
+    platform_name = fileoperations.get_platform_name()
+
+    if version is None:
+        version = fileoperations.get_platform_version()
+
+    if version is None:
+        version = _get_latest_version(platform_name)
+        fileoperations.update_platform_version(version)
+
+    if version is None:
+        raise InvalidPlatformVersionError(strings['exit.nosuchplatformversion'])
+
+    arn = _version_to_arn(version)
+
+    _, platform_name, platform_version = PlatformVersion.arn_to_platform(arn)
+
+    platform = describe_custom_platform_version(
+        platform_arn=arn,
+        owner=Constants.OWNED_BY_SELF,
+        platform_name=platform_name,
+        platform_version=platform_version,
+    )
+
+    if not platform:
+        raise InvalidPlatformVersionError(strings['exit.nosuchplatformversion'])
+
+    created = platform.get('DateCreated')
+    description = platform.get('Description')
+    maintainer = platform.get('Maintainer')
+    status = platform.get('PlatformStatus')
+    updated = platform.get('DateUpdated')
+    framework_name = platform.get('FrameworkName')
+    framework_version = platform.get('FrameworkVersion')
+    os_name = platform.get('OperatingSystemName')
+    os_version = platform.get('OperatingSystemVersion')
+    language_name = platform.get('ProgrammingLanguageName')
+    language_version = platform.get('ProgrammingLanguageVersion')
+    supported_tiers = platform.get('SupportedTierList')
+
+    io.echo('Platform: ', arn)
+    io.echo('Name: ', platform_name)
+    io.echo('Version: ', version)
+    io.echo('Maintainer: ', maintainer) if maintainer else None
+    io.echo('Description: ', description) if description else None
+    io.echo('Framework: ', framework_name) if framework_name else None
+    io.echo('Framework: ', framework_name) if framework_name else None
+    io.echo('Framework Version: ', framework_version) if framework_version else None
+    io.echo('Operating System: ', os_name) if os_name else None
+    io.echo('Operating System Version: ', os_version) if os_version else None
+    io.echo('Programming Language: ', language_name) if language_name else None
+    io.echo('Programming Language Version: ', language_version) if language_version else None
+    io.echo('Supported Tiers: ', supported_tiers) if supported_tiers else None
+    io.echo('Status: ', status)
+    io.echo('Created: ', created)
+    io.echo('Updated: ', updated)
+
+
+def generate_version_to_arn_mappings(custom_platforms, specified_platform_name):
+    version_to_arn_mappings = {}
+    for custom_platform in custom_platforms:
+        custom_platform_name = PlatformVersion.get_platform_name(custom_platform)
+        if custom_platform_name == specified_platform_name:
+            version_to_arn_mappings[PlatformVersion.get_platform_version(custom_platform)] = custom_platform
+
+    return version_to_arn_mappings
+
+
+def group_custom_platforms_by_platform_name(custom_platforms):
+    return sorted(set([PlatformVersion.get_platform_name(custom_platform) for custom_platform in custom_platforms]))
+
+
+def list_custom_platform_versions(
+        platform_name=None,
+        platform_version=None,
+        show_status=False,
+        status=None
+):
+    filters = [api_filters.PlatformOwnerFilter(values=[Constants.OWNED_BY_SELF]).json()]
+
+    return list_platform_versions(filters, platform_name, platform_version, show_status, status)
+
+
+def list_eb_managed_platform_versions(
+        platform_name=None,
+        platform_version=None,
+        show_status=False,
+        status=None
+):
+    filters = [api_filters.PlatformOwnerFilter(values=['AWSElasticBeanstalk']).json()]
+
+    return list_platform_versions(filters, platform_name, platform_version, show_status, status)
+
+
+def list_platform_versions(
+        filters,
+        platform_name=None,
+        platform_version=None,
+        show_status=False,
+        status=None
+):
+    if platform_name:
+        filters.append(
+            api_filters.PlatformNameFilter(values=[platform_name]).json()
+        )
+
+    if platform_version:
+        filters.append(
+            api_filters.PlatformVersionFilter(values=[platform_version]).json()
+        )
+
+    if status:
+        filters.append(
+            api_filters.PlatformStatusFilter(values=[status]).json()
+        )
+
+    platforms_list = elasticbeanstalk.list_platform_versions(filters=filters)
+
+    return __formatted_platform_descriptions(platforms_list, show_status)
+
+
+def prompt_customer_for_custom_platform_name(custom_platforms):
+    custom_platform_names_to_display = group_custom_platforms_by_platform_name(custom_platforms)
+
+    return utils.prompt_for_item_in_list(custom_platform_names_to_display)
+
+
+def prompt_customer_for_custom_platform_version(version_to_arn_mappings):
+    custom_platform_versions_to_display = sorted(version_to_arn_mappings.keys())
+    io.echo()
+    io.echo(prompts['sstack.version'])
+    chosen_custom_platform_version = utils.prompt_for_item_in_list(custom_platform_versions_to_display)
+
+    return version_to_arn_mappings[chosen_custom_platform_version]
+
+
+def resolve_custom_platform_version(
+        custom_platforms,
+        selected_platform_name
+):
+    version_to_arn_mappings = generate_version_to_arn_mappings(
+        custom_platforms,
+        selected_platform_name
+    )
+
+    custom_platform_versions = []
+    for custom_platform_version in version_to_arn_mappings.keys():
+        custom_platform_versions.append(Version(custom_platform_version))
+
+    if len(custom_platform_versions) > 1:
+        chosen_custom_platform_arn = prompt_customer_for_custom_platform_version(
+            version_to_arn_mappings
+        )
+    else:
+        chosen_custom_platform_arn = custom_platforms[0]
+
+    return PlatformVersion(chosen_custom_platform_arn)
+
+
+def set_platform(platform_name, platform_version=None, verify=True):
+
+    if verify:
+        arn = _name_to_arn(platform_name)
+
+        _, platform_name, platform_version = PlatformVersion.arn_to_platform(arn)
+
+    fileoperations.update_platform_name(platform_name)
+    fileoperations.update_platform_version(platform_version)
+
+    io.echo(strings['platformset.version'])
+
+    # This could fail if the customer elected to create a new platform
+    try:
+        get_version_status(platform_version)
+    except InvalidPlatformVersionError:
+        io.echo(strings['platformset.newplatform'] % platform_name)
+
+
+def set_workspace_to_latest():
+    platform_name = fileoperations.get_platform_name()
+
+    version = _get_latest_version(platform_name, owner=Constants.OWNED_BY_SELF)
+    fileoperations.update_platform_version(version)
+
+    if version is not None:
+        io.echo(strings['platformset.version'])
+        get_version_status(version)
+
+
+def show_platform_events(follow, version):
+    platform_name = fileoperations.get_platform_name()
+
+    if version is None:
+        version = fileoperations.get_platform_version()
+
+        if version is None:
+            raise InvalidPlatformVersionError(strings['exit.nosuchplatformversion'])
+
+        platform = describe_custom_platform_version(
+            platform_name=platform_name,
+            platform_version=version,
+            owner=Constants.OWNED_BY_SELF
+        )
+
+        if platform is None:
+            raise InvalidPlatformVersionError(strings['exit.nosuchplatformversion'])
+
+        arn = platform['PlatformArn']
+    else:
+        arn = _version_to_arn(version)
+
+    print_events(follow=follow, platform_arn=arn, app_name=None, env_name=None)
+
+
 def _enable_healthd():
     option_settings = []
 
@@ -470,6 +700,29 @@ def _enable_healthd():
         stream.write(yaml.dump(platform_yaml, default_flow_style=False))
 
 
+def _get_latest_version(platform_name=None, owner=None, ignored_states=None):
+    if ignored_states is None:
+        ignored_states=['Deleting', 'Failed']
+
+    platforms = get_platforms(platform_name=platform_name, ignored_states=ignored_states, owner=owner, platform_version="latest")
+
+    try:
+        return platforms[platform_name]
+    except KeyError:
+        return None
+
+
+def _get_platform_arn(platform_name, platform_version, owner=None):
+    platform = describe_custom_platform_version(
+        platform_name=platform_name,
+        platform_version=platform_version,
+        owner=owner
+    )
+
+    if platform:
+        return platform['PlatformArn']
+
+
 def _name_to_arn(platform_name):
     arn = None
     if VALID_PLATFORM_NAME_FORMAT.match(platform_name):
@@ -498,140 +751,42 @@ def _version_to_arn(platform_version):
         match = VALID_PLATFORM_SHORT_FORMAT.match(platform_version)
         platform_name, platform_version = match.group(1, 2)
         arn = _get_platform_arn(platform_name, platform_version, owner=Constants.OWNED_BY_SELF)
-    else:
-        raise InvalidPlatformVersionError(strings['exit.invalidversion'])
+
+    if not arn:
+        raise InvalidPlatformVersionError(strings['exit.nosuchplatformversion'])
 
     return arn
 
 
-def delete_platform_version(platform_version, force=False):
-    arn = _version_to_arn(platform_version)
+def __formatted_platform_descriptions(platforms_list, show_status):
+    platform_tuples = []
+    for platform in platforms_list:
+        platform_tuples.append(
+            {
+                'PlatformArn': platform['PlatformArn'],
+                'PlatformStatus': platform['PlatformStatus']
+            }
+        )
 
-    if arn is None:
-        raise InvalidPlatformVersionError(strings['exit.nosuchplatformversion'])
+    # Sort by name, then by version
+    platform_tuples.sort(
+        key=lambda platform_tuple: (
+            PlatformVersion.get_platform_name(platform_tuple['PlatformArn']),
+            Version(PlatformVersion.get_platform_version(platform_tuple['PlatformArn']))
+        ),
+        reverse=True
+    )
 
-    if not force:
-        io.echo(prompts['platformdelete.confirm'].replace('{platform-arn}', arn))
-        io.validate_action(prompts['platformdelete.validate'], arn)
-
-    environments = []
-    try:
-        environments = [env for env in elasticbeanstalk.get_environments() if env.platform.version == arn]
-    except NotFoundError:
-        pass
-
-    if len(environments) > 0:
-        _, platform_name, platform_version = PlatformVersion.arn_to_platform(arn)
-        raise ValidationError(strings['platformdeletevalidation.error'].format(
-                platform_name,
-                platform_version,
-                '\n '.join([env.name for env in environments])
-                ))
-
-    response = elasticbeanstalk.delete_platform(arn)
-    request_id = response['ResponseMetadata']['RequestId']
-    timeout = 10
-
-    commonops.wait_for_success_events(request_id, timeout_in_minutes=timeout, platform_arn=arn)
-
-
-def set_workspace_to_latest():
-    platform_name = fileoperations.get_platform_name()
-
-    version = _get_latest_version(platform_name, owner=Constants.OWNED_BY_SELF)
-    fileoperations.update_platform_version(version)
-
-    if version is not None:
-        io.echo(strings['platformset.version'])
-        get_version_status(version)
-
-
-def _get_platform(platform_name, platform_version, owner=None):
-    platforms = elasticbeanstalk.list_platform_versions(platform_name=platform_name, platform_version=platform_version, owner=owner)
-
-    for platform in platforms:
-        arn = platform['PlatformArn']
-        return elasticbeanstalk.describe_platform_version(arn)['PlatformDescription']
-
-    return None
-
-
-def _get_platform_arn(platform_name, platform_version, owner=None):
-    platform = _get_platform(platform_name, platform_version, owner=owner)
-
-    if platform is None:
-        return None
-
-    return platform['PlatformArn']
-
-
-def _get_latest_version(platform_name=None, owner=None, ignored_states=None):
-    if ignored_states is None:
-        ignored_states=['Deleting', 'Failed']
-
-    platforms = get_platforms(platform_name=platform_name, ignored_states=ignored_states, owner=owner, platform_version="latest")
-
-    try:
-        return platforms[platform_name]
-    except KeyError:
-        return None
-
-
-def get_custom_platforms(platform_name=None, platform_version=None):
-    platform_list = elasticbeanstalk.list_platform_versions(platform_name=platform_name, platform_version=platform_version)
-    platforms = list()
-
-    for platform in platform_list:
-        # Ignore EB owned plaforms
-        if platform['PlatformOwner'] == Constants.AWS_ELASTIC_BEANSTALK_ACCOUNT:
-            continue
-
-        platforms.append(platform['PlatformArn'])
-
-    return platforms
-
-
-def get_platforms(platform_name=None, ignored_states=None, owner=None, platform_version=None):
-    platform_list = elasticbeanstalk.list_platform_versions(platform_name=platform_name, owner=owner, platform_version=platform_version)
-    platforms = dict()
-
-    for platform in platform_list:
-        if ignored_states and platform['PlatformStatus'] in ignored_states:
-            continue
-
-        _, platform_name, platform_version = PlatformVersion.arn_to_platform(platform['PlatformArn'])
-        platforms[platform_name] = platform_version
-
-    return platforms
-
-
-def get_platform_name_and_version_interactive():
-    platforms = get_platforms(owner=Constants.OWNED_BY_SELF, platform_version="latest")
-    platform_list = list(platforms)
-
-    file_name = fileoperations.get_current_directory_name()
-    new_platform = False
-    version = None
-
-    if len(platform_list) > 0:
-        io.echo()
-        io.echo('Select a platform to use')
-        new_platform_option = '[ Create new Platform ]'
-        platform_list.append(new_platform_option)
-        try:
-            default_option = platform_list.index(file_name) + 1
-        except ValueError:
-            default_option = len(platform_list)
-        platform_name = utils.prompt_for_item_in_list(platform_list, default=default_option)
-        if platform_name == new_platform_option:
-            new_platform = True
+    formatted_platform_descriptions = []
+    for index, platform_tuple in enumerate(platform_tuples):
+        if show_status:
+            formatted_platform_description = '{platform_arn}  Status: {platform_status}'.format(
+                platform_arn=platform_tuple['PlatformArn'],
+                platform_status=platform_tuple['PlatformStatus']
+            )
         else:
-            version = platforms[platform_name]
+            formatted_platform_description = platform_tuple['PlatformArn']
 
-    if len(platform_list) == 0 or new_platform:
-        io.echo()
-        io.echo('Enter Platform Name')
-        unique_name = utils.get_unique_name(file_name, platform_list)
-        platform_name = io.prompt_for_unique_name(unique_name, platform_list)
+        formatted_platform_descriptions.append(formatted_platform_description)
 
-    return platform_name, version
+    return formatted_platform_descriptions

@@ -19,7 +19,7 @@ from ebcli.objects.platform import PlatformVersion
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
 from ..core import io, fileoperations
-from ..operations import saved_configs, commonops, configops
+from ..operations import configops, saved_configs, solution_stack_ops
 from ..objects.exceptions import InvalidSyntaxError, NotFoundError
 from ..lib import utils
 
@@ -85,10 +85,10 @@ class ConfigController(AbstractBaseController):
     def put(self):
         app_name = self.get_app_name()
         name = self._get_cfg_name('put')
-        platform = commonops.get_default_solution_stack()
+        platform = solution_stack_ops.get_default_solution_stack()
 
         if not PlatformVersion.is_valid_arn(platform):
-            platform = commonops.get_solution_stack(platform)
+            platform = solution_stack_ops.find_solution_stack_from_string(platform)
             platform = platform.name
 
         saved_configs.update_config(app_name, name)

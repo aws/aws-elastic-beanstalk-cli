@@ -31,7 +31,7 @@ class TestAppVersions(BaseControllerTest):
         self.module_name = 'appversion'
         super(TestAppVersions, self).setUp()
         fileoperations.create_config_file(self.app_name, 'us-west-2',
-                                          self.solution.string)
+                                          self.solution.name)
 
         self.patcher_versions_ops = mock.patch('ebcli.controllers.appversion.appversionops')
         self.patcher_gitops = mock.patch('ebcli.operations.gitops')

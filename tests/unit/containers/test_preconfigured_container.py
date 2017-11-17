@@ -29,7 +29,7 @@ MOCK_DOCKERFILE_DEST = '/bar/Dockerfile.local'
 PRECONFIG_HOST_LOG_PATH = '/.elasticbeanstalk/logs/local'
 PRECONFIG_CONTAINER_LOG_PATH = '/foo'
 SOLN_STK = Mock()
-SOLN_STK.version = 'Multi-container Docker 1.3.3 (Generic)'
+SOLN_STK.platform_shorthand = 'Multi-container Docker 1.3.3 (Generic)'
 
 
 class TestPreconfiguredContainer(TestCase):

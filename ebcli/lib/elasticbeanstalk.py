@@ -46,31 +46,17 @@ def delete_platform(arn):
                           PlatformArn=arn,
                           DeleteResources=True)
 
-def _make_equal_filter(filter_type, filter_value):
-    return { 'Type': filter_type, 'Operator': '=', 'Values': [filter_value] }    
 
-def list_platform_versions(platform_name=None, platform_version=None, status=None, owner=None):
+def list_platform_versions(filters=None):
     kwargs = dict()
-    result_filters = []
 
-    if platform_name is not None:
-        result_filters.append(_make_equal_filter('PlatformName', platform_name))
-
-    if platform_version is not None:
-        result_filters.append(_make_equal_filter('PlatformVersion', platform_version))
-
-    if status:
-        result_filters.append(_make_equal_filter('PlatformStatus', status))
-
-    if owner:
-        result_filters.append(_make_equal_filter('PlatformOwner', owner))
-
-    kwargs['Filters'] = result_filters
+    if filters:
+        kwargs['Filters'] = filters
 
     LOG.debug('Inside list_platform_versions api wrapper')
     platforms, nextToken = _list_platform_versions(kwargs)
 
-    while nextToken is not None:
+    while nextToken:
         time.sleep(0.1)  # To avoid throttling we sleep for 100ms before requesting the next page
         next_platforms, nextToken = _list_platform_versions(kwargs, nextToken)
         platforms = platforms + next_platforms
@@ -81,7 +67,7 @@ def list_platform_versions(platform_name=None, platform_version=None, status=Non
 def describe_platform_version(arn):
     LOG.debug('Inside describe_platform_version api wrapper')
     return _make_api_call('describe_platform_version',
-                          PlatformArn=arn)
+                          PlatformArn=arn)['PlatformDescription']
 
 
 def _list_platform_versions(kwargs, nextToken=None):
@@ -426,7 +412,10 @@ def get_available_solution_stacks(fail_on_empty_response=True):
 
     solution_stacks = [SolutionStack(s) for s in stack_strings]
 
-    return solution_stacks
+    try:
+        return sorted(solution_stacks)
+    except Exception:
+        return solution_stacks
 
 
 def get_application_versions(app_name, version_labels=None, max_records=None, next_token=None):

@@ -49,7 +49,7 @@ class TestDeletePlatform(BaseControllerTest):
         self.app.run()
         self.app.close()
 
-    @mock.patch('ebcli.controllers.platform.delete.delete_platform_version')
+    @mock.patch('ebcli.operations.platformops.delete_platform_version')
     def test_delete_force_flag(self, mock_delete_platform_version):
         """
             Make sure that the force flag works
@@ -62,8 +62,8 @@ class TestDeletePlatform(BaseControllerTest):
         self.app.close()
 
         mock_delete_platform_version.assert_called_with(self.platform_arn, True)
-    
-    @mock.patch('ebcli.controllers.platform.delete.delete_platform_version')
+
+    @mock.patch('ebcli.operations.platformops.delete_platform_version')
     def test_delete_no_force_flag(self, mock_delete_platform_version):
         """
             Make sure that the force flag works

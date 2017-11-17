@@ -186,7 +186,7 @@ class CreateEnvironmentRequest(object):
                     option_names.INSTANCE_TYPE,
                     't2.micro'
                 )
-        if self.platform is not None and self.platform.has_healthd_support():
+        if self.platform and self.platform.has_healthd_support:
             self.add_option_setting(
                 namespaces.HEALTH_SYSTEM,
                 option_names.SYSTEM_TYPE,

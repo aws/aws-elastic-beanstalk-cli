@@ -22,7 +22,7 @@ from ebcli.objects.exceptions import InvalidOptionsError
 from ebcli.objects.requests import CreateEnvironmentRequest
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.tier import Tier
-from ebcli.operations import commonops
+from ebcli.operations import commonops, solution_stack_ops
 
 
 class TestCreate(BaseControllerTest):
@@ -53,7 +53,7 @@ class TestCreate(BaseControllerTest):
         self.module_name = 'create'
         super(TestCreate, self).setUp()
         fileoperations.create_config_file(self.app_name, 'us-west-2',
-                                          self.solution.string)
+                                          self.solution.name)
 
     def test_create_standard(self):
         """
@@ -64,7 +64,8 @@ class TestCreate(BaseControllerTest):
             """
         env_name = 'my-awesome-env'
         cname_prefix = env_name
-        self.mock_commonops.get_solution_stack.return_value = self.solution
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = self.solution
+        self.mock_solution_stack_ops.find_solution_stack_from_string.return_value = self.solution
         self.mock_commonops.is_cname_available.return_value = True
         self.mock_commonops.get_default_keyname = commonops.get_default_keyname
 
@@ -100,7 +101,8 @@ class TestCreate(BaseControllerTest):
             """
         env_name = 'my-awesome-env'
         cname_prefix = 'myenv-cname'
-        self.mock_commonops.get_solution_stack.return_value = self.solution
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = self.solution
+        self.mock_solution_stack_ops.find_solution_stack_from_string.return_value = self.solution
         self.mock_commonops.is_cname_available.return_value = True
         self.mock_commonops.get_default_keyname = commonops.get_default_keyname
 
@@ -133,7 +135,8 @@ class TestCreate(BaseControllerTest):
             """
         env_name = 'my-awesome-env'
         cname_prefix = 'myenv-cname'
-        self.mock_commonops.get_solution_stack.return_value = self.solution
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = self.solution
+        self.mock_solution_stack_ops.find_solution_stack_from_string.return_value = self.solution
         self.mock_commonops.is_cname_available.return_value = True
 
         self.mock_input.return_value = None
@@ -160,7 +163,8 @@ class TestCreate(BaseControllerTest):
         Command should now no longer be interactive and it should ask no questions.
         """
         env_name = 'my-awesome-env'
-        self.mock_commonops.get_solution_stack.return_value = self.solution
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = self.solution
+        self.mock_solution_stack_ops.find_solution_stack_from_string.return_value = self.solution
 
         EB.Meta.exit_on_close = False
         self.app = EB(argv=['create', env_name, '--elb-type', 'classic'])
@@ -178,10 +182,10 @@ class TestCreate(BaseControllerTest):
         tier = self.tier
         itype = 'c3.large'
         keyname ='mykey'
-        self.mock_commonops.get_solution_stack.return_value = self.solution
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = self.solution
+        self.mock_solution_stack_ops.find_solution_stack_from_string.return_value = self.solution
         self.mock_commonops.is_cname_available.return_value = True
         self.mock_operations.get_and_validate_tags.return_value = [{'Key': 'a', 'Value': '1'}, {'Key': 'b', 'Value': '2'}]
-
         self.mock_input.side_effect = [
             env_name,
             cname_prefix,
@@ -219,7 +223,8 @@ class TestCreate(BaseControllerTest):
         self.assertEqual(kwargs['branch_default'], True)
 
     def test_create_with_process_flag(self):
-        self.mock_commonops.get_solution_stack.return_value = self.solution
+        self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = self.solution
+        self.mock_solution_stack_ops.find_solution_stack_from_string.return_value = self.solution
         self.mock_commonops.is_cname_available.return_value = True
         self.mock_commonops.get_default_keyname = commonops.get_default_keyname
 

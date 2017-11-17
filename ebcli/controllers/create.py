@@ -10,8 +10,6 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
-import re
 import argparse
 import os
 
@@ -23,7 +21,13 @@ from ..objects.exceptions import NotFoundError, AlreadyExistsError, \
 from ebcli.objects.platform import PlatformVersion
 from ..objects.requests import CreateEnvironmentRequest
 from ..objects.tier import Tier
-from ..operations import saved_configs, commonops, createops, composeops
+from ..operations import(
+    commonops,
+    composeops,
+    createops,
+    saved_configs,
+    solution_stack_ops
+)
 from ..resources.strings import strings, prompts, flag_text
 from ..resources.statics import elb_names
 
@@ -152,7 +156,7 @@ class CreateController(AbstractBaseController):
 
         #load solution stack
         if not solution_string:
-            solution_string = commonops.get_default_solution_stack()
+            solution_string = solution_stack_ops.get_default_solution_stack()
 
         # Test out sstack and tier before we ask any questions (Fast Fail)
         if solution_string:
@@ -160,7 +164,7 @@ class CreateController(AbstractBaseController):
                 platform_arn = solution_string
             else:
                 try:
-                    solution = commonops.get_solution_stack(solution_string)
+                    solution = solution_stack_ops.find_solution_stack_from_string(solution_string)
                 except NotFoundError:
                     raise NotFoundError('Platform ' + solution_string +
                                         ' does not appear to be valid')
@@ -181,13 +185,13 @@ class CreateController(AbstractBaseController):
 
         # If we still dont have what we need, ask for it
         if not solution_string:
-            solution = commonops.prompt_for_solution_stack()
+            solution = solution_stack_ops.get_solution_stack_from_customer()
 
-        if solution is not None:
-            if PlatformVersion.is_valid_arn(solution.version):
-                platform_arn = solution.version
+        if solution:
+            if isinstance(solution, PlatformVersion) and PlatformVersion.is_valid_arn(solution.arn):
+                platform_arn = solution
                 solution = None
-            elif solution.platform == 'Multi-container Docker' and iprofile is None:
+            elif solution.language_name == 'Multi-container Docker' and not iprofile:
                 io.log_warning(prompts['ecs.permissions'])
 
         if not env_name:
