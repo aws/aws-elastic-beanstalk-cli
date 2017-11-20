@@ -10,9 +10,11 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from mock import MagicMock
-import unittest
+import os
 import sys
+
+from mock import MagicMock, patch
+import unittest
 
 from ebcli.core import ebglobals, ebrun, io
 from ebcli.objects.exceptions import EBCLIException
@@ -23,7 +25,7 @@ class TestEbRun(unittest.TestCase):
 	class MyDummyEBCLIException(EBCLIException):
 		pass
 
-	class MyDummyGenericException(EBCLIException):
+	class MyDummyGenericException(Exception):
 		pass
 
 	def setUp(self):
@@ -49,23 +51,90 @@ class TestEbRun(unittest.TestCase):
 
 		io.echo.assert_called_with(io.bold(io.color('red', 'ERROR: {}'.format('MyDummyEBCLIException - My Exception Message'))))
 
-	def test_rescue_EBCLIEXception__with_verbose_flag(self):
-		sys.argv.append('--verbose')
+	@patch('traceback.format_exc')
+	def test_rescue_EBCLIEXception__with_verbose_flag(self, traceback_mock):
+		with patch.object(sys, 'argv', ['--verbose']):
+			sys.argv.append('--verbose')
 
-		ebrun.run_app(self.dummy_ebcli_app)
+			ebrun.run_app(self.dummy_ebcli_app)
 
-		io.echo.assert_called_with(io.bold(io.color('red', 'ERROR: {}'.format('MyDummyEBCLIException - My Exception Message'))))
+			io.echo.side_effect = [
+				traceback_mock,
+				'INFO: My Exception Message'
+			]
 
-	def test_rescue_EBCLIEXception__with_debug_flag(self):
-		sys.argv.append('--debug')
+	@patch('traceback.format_exc')
+	def test_rescue_EBCLIEXception__with_debug_flag(self, traceback_mock):
+		with patch.object(sys, 'argv', ['--debug']):
+			ebrun.run_app(self.dummy_ebcli_app)
 
-		ebrun.run_app(self.dummy_ebcli_app)
-
-		io.echo.assert_called_with(io.bold(io.color('red', 'ERROR: {}'.format('MyDummyEBCLIException - My Exception Message'))))
+			io.echo.side_effect = [
+				traceback_mock,
+				'INFO: My Exception Message'
+			]
 
 	def test_rescue_generic_exception(self):
 		self.dummy_ebcli_app.setup = MagicMock(side_effect=TestEbRun.MyDummyGenericException('My Exception Message'))
 
 		ebrun.run_app(self.dummy_ebcli_app)
 
-		io.echo.assert_called_with(io.bold(io.color('red', 'ERROR: {}'.format('MyDummyGenericException - My Exception Message'))))
+		io.echo.assert_called_with(
+			io.bold(io.color('red', 'ERROR: {}'.format('MyDummyGenericException - My Exception Message')))
+		)
+
+	@patch('traceback.format_exc')
+	def test_rescue_generic_exception__debug_mode(self, traceback_mock):
+		with patch.object(sys, 'argv', ['--debug']):
+			self.dummy_ebcli_app.setup = MagicMock(side_effect=TestEbRun.MyDummyGenericException('My Exception Message'))
+
+			ebrun.run_app(self.dummy_ebcli_app)
+
+			io.echo.side_effect = [
+				traceback_mock,
+				'INFO: My Exception Message'
+			]
+
+	@patch('traceback.format_exc')
+	def test_rescue_generic_exception__verbose_mode(self, traceback_mock):
+		with patch.object(sys, 'argv', ['--verbose']):
+			self.dummy_ebcli_app.setup = MagicMock(side_effect=TestEbRun.MyDummyGenericException('My Exception Message'))
+
+			ebrun.run_app(self.dummy_ebcli_app)
+
+			io.echo.side_effect = [
+				traceback_mock,
+				'INFO: My Exception Message'
+			]
+
+	def test_rescue_generic_exception__no_args(self):
+		self.dummy_ebcli_app.setup = MagicMock(side_effect=TestEbRun.MyDummyGenericException(''))
+
+		ebrun.run_app(self.dummy_ebcli_app)
+
+		io.echo.assert_called_with(
+			io.bold(
+				io.color(
+					'red',
+					'ERROR: MyDummyGenericException'
+				)
+			)
+		)
+
+	def test_rescue_AttributeError(self):
+		self.dummy_ebcli_app.setup = MagicMock(side_effect=AttributeError('This is my error', 'This is my error as well'))
+
+		ebrun.run_app(self.dummy_ebcli_app)
+
+		io.echo.assert_called_with(
+			io.bold(
+				io.color(
+					'red',
+					"ERROR: {error_type} - ('{argument_1}', '{argument_2}')".format(
+						error_type='AttributeError',
+						linesep=os.linesep,
+						argument_1='This is my error',
+						argument_2='This is my error as well'
+					)
+				)
+			)
+		)

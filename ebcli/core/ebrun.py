@@ -70,17 +70,28 @@ def run_app(app):
     except EBCLIException as e:
         if '--verbose' in sys.argv or '--debug' in sys.argv:
             io.log_info(traceback.format_exc())
-
-        io.log_error(e.__class__.__name__ + " - " + e.message)
+        else:
+            io.log_error(e.__class__.__name__ + " - " + e.message)
 
         app.close(code=4)
     except Exception as e:
         # Generic catch all
+
+        if str(e):
+            message = '{exception_class} - {message}'.format(
+                exception_class=e.__class__.__name__,
+                message=str(e)
+            )
+        else:
+            message = '{exception_class}'.format(
+                exception_class=e.__class__.__name__
+            )
+
         if '--verbose' in sys.argv or '--debug' in sys.argv:
             io.log_info(traceback.format_exc())
-
-        io.log_error(e.__class__.__name__ + " :: " + e.message)
-        app.close(code=10)
+            io.log_info(message)
+        else:
+            io.log_error(message)
     finally:
         app.close()
 
