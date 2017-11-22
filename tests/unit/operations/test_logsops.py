@@ -186,14 +186,23 @@ class TestLogsOperations(unittest.TestCase):
     @mock.patch('ebcli.core.io.EventStreamer')
     def test_stream_single_stream_call(self, mock_streamer):
         # Mock out methods
-        self.mock_cloudwatch.get_log_events.side_effect = [self.get_log_events_response, Exception("Retry Me!"),
-                                                           MaxRetriesError("Retry Me!"), ServiceError("Fail!")]
+        self.mock_cloudwatch.get_log_events.side_effect = [
+            self.get_log_events_response,
+            Exception("Retry Me!"),
+            MaxRetriesError("Retry Me!"),
+            ServiceError("Fail!")
+        ]
 
         # Make actual call
         logsops.stream_single_stream(self.specified_log_group, self.instance_id, mock_streamer)
 
         # Assert correct methods were called
-        self.mock_cloudwatch.get_log_events.assert_called_with(self.specified_log_group, self.instance_id, next_token='fooToken')
+        self.mock_cloudwatch.get_log_events.assert_called_with(
+            self.specified_log_group,
+            self.instance_id,
+            next_token='fooToken',
+            start_time=None
+        )
 
     # TESTING logsops.cloudwatch_logs()
     @mock.patch('ebcli.operations.logsops.open')

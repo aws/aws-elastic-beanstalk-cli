@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 import os
 import re
+import sys
 import tempfile
 from datetime import datetime
 from shutil import copyfile, move
@@ -41,62 +42,94 @@ VALID_PLATFORM_VERSION_FORMAT = re.compile('^\d+\.\d+\.\d+$')
 VALID_PLATFORM_SHORT_FORMAT = re.compile('^([^:/]+)/(\d+\.\d+\.\d+)$')
 VALID_PLATFORM_NAME_FORMAT = re.compile('^([^:/]+)$')
 
+LOG_MESSAGE_REGEX = re.compile(r'.* -- (.+)$')
+LOG_MESSAGE_SEVERITY_REGEX = re.compile(r'.*(INFO|ERROR|WARN) -- .*')
+PACKER_UI_MESSAGE_FORMAT_REGEX = re.compile(r'Packer:.*ui,.*,(.*)')
+PACKER_OTHER_MESSAGE_DATA_REGEX = re.compile(r'Packer: \d+,([^,]*),.*')
+PACKER_OTHER_MESSAGE_TARGET_REGEX = re.compile(r'Packer: \d+,[^,]*,(.+)')
+OTHER_FORMAT_REGEX = re.compile(r'[^:]+: (.+)')
+
 PLATFORM_ARN = re.compile("^arn:aws(?:-[a-z\-0-9]+)?:elasticbeanstalk:(?:[a-z\-0-9]*):\d+:platform/([^/]+)/(\d+\.\d+\.\d+)$")
 
-class PackerStreamFormatter:
-    LOG_TYPE = 1
-    LOG_MESSAGE = 2
-    LOG_FORMAT = re.compile(b'.*(INFO|ERROR|WARN) -- (.+)$')
 
-    PACKER_MESSAGE = 1
-    PACKER_MSG_FORMAT = re.compile(b'^Packer: \d+,(?:[^,]*),ui,(?:[^,]*),(.*)')
+class PackerStreamMessage(object):
+    def __init__(self, event):
+        self.event = event
 
-    PACKER_OTHER_TARGET = 1
-    PACKER_OTHER_DATA = 2
-    PACKER_OTHER_FORMAT = re.compile(b'^Packer: \d+,([^,]*),(.+)')
+    def raw_message(self):
+        event = self.event
 
-    OTHER_DATA = 1
-    OTHER_FORMAT = re.compile(b'^[^:]+: (.+)')
+        if isinstance(event, bytes):
+            event = event.decode('utf-8')
 
-    def __init__(self, show_timestamp=True):
-        self.show_timestamp = show_timestamp
+        matches = LOG_MESSAGE_REGEX.search(event)
 
-    def format(self, stream_name, message, timestamp):
-        matches = PackerStreamFormatter.LOG_FORMAT.match(message)
-        formatted_message = None
+        return matches.groups(0)[0] if matches else None
 
-        if matches:
-            message = matches.group(PackerStreamFormatter.LOG_MESSAGE)
+    def message_severity(self):
+        matches = LOG_MESSAGE_SEVERITY_REGEX.search(self.event)
 
-            packer_message = PackerStreamFormatter.PACKER_MSG_FORMAT.match(message)
-            other_packer_message = PackerStreamFormatter.PACKER_OTHER_FORMAT.match(message)
-            other_message = PackerStreamFormatter.OTHER_FORMAT.match(message)
+        return matches.groups(0)[0] if matches else None
 
-            if packer_message:
-                message = packer_message.group(PackerStreamFormatter.PACKER_MESSAGE)
-            elif other_packer_message:
-                message = "%s: %s" % (
-                    other_packer_message.group(PackerStreamFormatter.PACKER_OTHER_TARGET),
-                    other_packer_message.group(PackerStreamFormatter.PACKER_OTHER_DATA))
-            elif other_message:
-                message = other_message.group(PackerStreamFormatter.OTHER_DATA)
+    def format(self):
+        ui_message = self.ui_message()
+        if ui_message:
+            return ui_message
 
-            utc_time = datetime.utcfromtimestamp(timestamp / 1e3).strftime("%Y-%m-%d %H:%M:%S")
+        other_packer_message = self.other_packer_message()
 
-            if self.show_timestamp:
-                formatted_message = "{0}    {1}    {2}".format(
-                    utc_time,
-                    matches.group(PackerStreamFormatter.LOG_TYPE).decode('utf-8'),
-                    message.decode('utf-8'))
-            else:
-                formatted_message = "{0}: {1}".format(
-                    matches.group(PackerStreamFormatter.LOG_TYPE).decode('utf-8'),
-                    message.decode('utf-8'))
+        if other_packer_message:
+            if sys.version_info < (3, 0):
+                other_packer_message = other_packer_message.encode('utf-8')
 
+            other_packer_message_target = self.other_packer_message_target()
+            formatted_other_message = '{}:{}'.format(
+                other_packer_message_target,
+                other_packer_message
+            )
+
+            if sys.version_info < (3, 0):
+                formatted_other_message = formatted_other_message.decode('utf-8')
+
+            return formatted_other_message
+
+        other_message = self.other_message()
+        if other_message:
+            return other_message
+
+    def ui_message(self):
+        return self.__return_match(PACKER_UI_MESSAGE_FORMAT_REGEX)
+
+    def other_packer_message(self):
+        return self.__return_match(PACKER_OTHER_MESSAGE_DATA_REGEX)
+
+    def other_packer_message_target(self):
+        return self.__return_match(PACKER_OTHER_MESSAGE_TARGET_REGEX)
+
+    def other_message(self):
+        return self.__return_match(OTHER_FORMAT_REGEX)
+
+    def __return_match(self, regex):
+        raw_message = self.raw_message()
+        if not raw_message:
+            return
+
+        if isinstance(raw_message, bytes):
+            raw_message = raw_message.decode('utf-8')
+
+        matches = regex.search(raw_message)
+
+        return matches.groups(0)[0].strip() if matches else None
+
+
+class PackerStreamFormatter(object):
+    def format(self, message, stream_name=None):
+        packer_stream_message = PackerStreamMessage(message)
+
+        if packer_stream_message.raw_message():
+            formatted_message = packer_stream_message.format()
         else:
-            formatted_message = "{0} {1}".format(
-                stream_name,
-                message.decode('utf-8'))
+            formatted_message = '{0} {1}'.format(stream_name, message)
 
         return formatted_message
 
@@ -377,7 +410,7 @@ def create_platform_version(
 
     builder_events = threading.Thread(
         target=logsops.stream_platform_logs,
-        args=(platform_name, version, streamer, 5, None, PackerStreamFormatter(show_timestamp=False)))
+        args=(platform_name, version, streamer, 5, None, PackerStreamFormatter()))
     builder_events.daemon = True
 
     # Watch events from builder logs

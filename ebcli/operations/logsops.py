@@ -16,6 +16,7 @@ import os
 import sys
 import threading
 import time
+import traceback
 
 from cement.utils.misc import minimal_logger
 from cement.core.exc import CaughtSignal
@@ -159,11 +160,18 @@ def stream_cloudwatch_logs(env_name, sleep_time=2, log_group=None, instance_id=N
 
 def stream_single_stream(log_group_name, stream_name, streamer, sleep_time=4, formatter=None):
     next_token = None
+    start_time = None
 
     while True:
         try:
             messages = None
-            messages, next_token = get_cloudwatch_messages(log_group_name, stream_name, formatter, next_token)
+            messages, next_token, start_time = get_cloudwatch_messages(
+                log_group_name,
+                stream_name,
+                formatter,
+                next_token,
+                start_time
+            )
         except ServiceError as e:
             # Something went wrong getting the stream
             # It probably doesnt exist anymore.
@@ -179,6 +187,7 @@ def stream_single_stream(log_group_name, stream_name, streamer, sleep_time=4, fo
             # Exceptions are typically connections reset and
             # Various things
             LOG.debug('Exception raised: ' + str(e))
+            LOG.debug(traceback.format_exc())
             # Loop will cause a retry
 
         if messages:
@@ -189,12 +198,40 @@ def stream_single_stream(log_group_name, stream_name, streamer, sleep_time=4, fo
             time.sleep(sleep_time)
 
 
-def get_cloudwatch_messages(log_group_name, stream_name, formatter=None, next_token=None):
+def stream_describe_events(
+        request_id,
+        platform_arn,
+        streamer,
+        timeout_in_minutes,
+        version_label
+):
+    commonops.wait_for_success_events(
+        request_id,
+        platform_arn=platform_arn,
+        streamer=streamer,
+        timeout_in_minutes=timeout_in_minutes,
+        version_label=version_label
+    )
+
+
+def get_cloudwatch_messages(
+        log_group_name,
+        stream_name,
+        formatter=None,
+        next_token=None,
+        start_time=None
+):
     messages = []
     response = None
+    latest_event_timestamp = start_time
 
     try:
-        response = cloudwatch.get_log_events(log_group_name, stream_name, next_token=next_token)
+        response = cloudwatch.get_log_events(
+            log_group_name,
+            stream_name,
+            next_token=next_token,
+            start_time=start_time
+        )
     except MaxRetriesError as e:
         LOG.debug('Received max retries')
         io.echo(e.message())
@@ -204,17 +241,22 @@ def get_cloudwatch_messages(log_group_name, stream_name, formatter=None, next_to
         for event in response.get('events'):
             message = event.get('message').encode('utf8', 'replace')
 
+            LOG.debug('Printing formatted event')
             if formatter:
                 timestamp = event.get('timestamp')
-                formatted_message = formatter.format(stream_name, message, timestamp)
+
+                if timestamp:
+                    latest_event_timestamp = timestamp
+
+                formatted_message = formatter.format(message, stream_name)
             else:
-                formatted_message = '[{}] {}'.format(stream_name, message)
+                formatted_message = '[{1}] {0}'.format(message, stream_name)
 
             messages.append(formatted_message)
         # Set the next token
         next_token = response.get('nextForwardToken')
 
-    return messages, next_token
+    return messages, next_token, latest_event_timestamp
 
 
 def _get_platform_builder_group_name(platform_name):
@@ -255,6 +297,7 @@ def paginate_cloudwatch_logs(platform_name, version, formatter=None):
             # Exceptions are typically connections reset and
             # Various things
             LOG.debug('Exception raised: ' + str(e))
+            LOG.debug(traceback.format_exc())
             # Loop will cause a retry
 
 
@@ -358,6 +401,7 @@ def get_cloudwatch_stream_logs(log_group_name, stream_name, num_log_events=None)
         # Exceptions are typically connections reset and
         # Various things
         LOG.debug('Exception raised: ' + str(e))
+        LOG.debug(traceback.format_exc())
         # Loop will cause a retry
     return full_log
 

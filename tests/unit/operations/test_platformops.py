@@ -45,10 +45,7 @@ class TestPlatformOperations(unittest.TestCase):
     def tearDown(self):
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
-            if sys.platform.startswith('win'):
-                os.system('rmdir /S /Q testDir')
-            else:
-                shutil.rmtree('testDir')
+            shutil.rmtree('testDir')
 
     @mock.patch('ebcli.operations.platformops.io')
     @mock.patch('ebcli.operations.platformops.elasticbeanstalk')
@@ -82,3 +79,170 @@ class TestPlatformOperations(unittest.TestCase):
         mock_elasticbeanstalk.get_environments.assert_called_with()
 
 
+class TestPackerStreamMessage(unittest.TestCase):
+    def test_raw_message__match_found(self):
+        event_message = u'I, [2017-11-21T19:13:21.560213+0000#29667]  ' \
+                        u'INFO -- Packer: 1511291601,,ui,message,    '  \
+                        u'HVM AMI builder: + install_eb_gems https://some-s3-gem-path' \
+                        u'https://some-other-s3-gem-path' \
+                        u'https://yet-s3-gem-path'
+
+        expected_raw_message = u'Packer: 1511291601,,ui,message,    '  \
+                                u'HVM AMI builder: + install_eb_gems https://some-s3-gem-path' \
+                                u'https://some-other-s3-gem-path' \
+                                u'https://yet-s3-gem-path'
+
+        packet_stream_message = platformops.PackerStreamMessage(event_message)
+
+        self.assertEqual(expected_raw_message, packet_stream_message.raw_message())
+
+    def test_raw_message__match_not_found(self):
+        event_message = u'I, [2017-11-21T19:13:21.560213+0000#29667]  ' \
+                        u'INFO Packer: 1511291601,,ui,message,    ' \
+                        u'HVM AMI builder: + install_eb_gems https://some-s3-gem-path' \
+                        u'https://some-other-s3-gem-path' \
+                        u'https://yet-s3-gem-path'
+
+        packet_stream_message = platformops.PackerStreamMessage(event_message)
+
+        self.assertIsNone(packet_stream_message.raw_message())
+
+    def test_message_severity__INFO(self):
+        event_message = u'I, [2017-11-21T19:13:21.561685+0000#29667]  INFO -- info'
+
+        packet_stream_message = platformops.PackerStreamMessage(event_message)
+
+        self.assertEqual('INFO', packet_stream_message.message_severity())
+
+    def test_message_severity__ERROR(self):
+        event_message = u'I, [2017-11-21T19:13:21.561685+0000#29667]  ERROR -- error'
+
+        packet_stream_message = platformops.PackerStreamMessage(event_message)
+
+        self.assertEqual('ERROR', packet_stream_message.message_severity())
+
+    def test_message_severity__WARN(self):
+        event_message = u'I, [2017-11-21T19:13:21.561685+0000#29667]  WARN -- warning'
+
+        packet_stream_message = platformops.PackerStreamMessage(event_message)
+
+        self.assertEqual('WARN', packet_stream_message.message_severity())
+
+    def test_message_severity__not_present(self):
+        event_message = u'I, [2017-11-21T19:13:21.561685+0000#29667]'
+
+        packet_stream_message = platformops.PackerStreamMessage(event_message)
+
+        self.assertIsNone(packet_stream_message.message_severity())
+
+    def test_ui_message(self):
+        event_message = u'I, [2017-11-21T19:13:26.119871+0000#29667]  ' \
+                        u'INFO -- Packer: 1511291606,,ui,message,    ' \
+                        u'HVM AMI builder: \x1b[K    100% |' \
+                        u'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588' \
+                        u'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588' \
+                        u'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588' \
+                        u'\u2588\u2588| 51kB 3.2MB/s'
+
+        expected_ui_message = u'HVM AMI builder: \x1b[K    100% |' \
+                              u'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588' \
+                              u'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588' \
+                              u'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588' \
+                              u'\u2588\u2588| 51kB 3.2MB/s'
+
+        packet_stream_message = platformops.PackerStreamMessage(event_message)
+
+        self.assertEqual(
+            expected_ui_message,
+            packet_stream_message.ui_message()
+        )
+
+    def test_other_packer_message(self):
+        event_message = u'I, [2017-11-21T19:13:26.119871+0000#29667]  ' \
+                        u'INFO -- Packer: 1511291606,\u2588\u2588\u2588, MESSAGE TARGET'
+
+        expected_ui_message = u'\u2588\u2588\u2588'
+
+        packet_stream_message = platformops.PackerStreamMessage(event_message)
+
+        self.assertEqual(
+            expected_ui_message,
+            packet_stream_message.other_packer_message()
+        )
+
+    def test_other_packer_message_target(self):
+        event_message = u'I, [2017-11-21T19:13:26.119871+0000#29667]  ' \
+                        u'INFO -- Packer: 1511291606,\u2588\u2588\u2588, MESSAGE TARGET'
+
+        packet_stream_message = platformops.PackerStreamMessage(event_message)
+
+        self.assertEqual(
+            'MESSAGE TARGET',
+            packet_stream_message.other_packer_message_target()
+        )
+
+    def test_other_message(self):
+        event_message = u'I, [2017-11-21T19:13:26.119871+0000#29667]  ' \
+                        u'INFO -- aws: \u2588my:message'
+
+        packet_stream_message = platformops.PackerStreamMessage(event_message)
+
+        self.assertEqual(
+            u'\u2588my:message',
+            packet_stream_message.other_message()
+        )
+
+
+class TestPackerStreamFormatter(unittest.TestCase):
+    def test_message_is_not_a_packet_stream_message(self):
+        packet_stream_formatter = platformops.PackerStreamFormatter()
+
+        self.assertEqual(
+            'Custom Stream hello, world',
+            packet_stream_formatter.format('hello, world', 'Custom Stream')
+        )
+
+    def test_message_is_a_packet_stream_message__ui_message(self):
+        packet_stream_formatter = platformops.PackerStreamFormatter()
+        event_message = u'I, [2017-11-21T19:13:26.119871+0000#29667]  ' \
+                        u'INFO -- Packer: 1511291606,,ui,message,    ' \
+                        u'HVM AMI builder: \x1b[K    100% |' \
+                        u'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588' \
+                        u'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588' \
+                        u'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588' \
+                        u'\u2588\u2588| 51kB 3.2MB/s'
+
+        expected_formatted_message = u'HVM AMI builder: \x1b[K    100% |' \
+                              u'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588' \
+                              u'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588' \
+                              u'\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588' \
+                              u'\u2588\u2588| 51kB 3.2MB/s'
+
+        self.assertEqual(
+            expected_formatted_message,
+            packet_stream_formatter.format(event_message, 'Custom Stream')
+        )
+
+    def test_other_packer_message(self):
+        event_message = u'I, [2017-11-21T19:13:26.119871+0000#29667]  ' \
+                        u'INFO -- Packer: 1511291606,\u2588\u2588\u2588, MESSAGE TARGET'
+
+        expected_formatted_message = u'MESSAGE TARGET:\u2588\u2588\u2588'
+
+        packet_stream_formatter = platformops.PackerStreamFormatter()
+
+        self.assertEqual(
+            expected_formatted_message,
+            packet_stream_formatter.format(event_message, 'Custom Stream')
+        )
+
+    def test_other_message(self):
+        event_message = u'I, [2017-11-21T19:13:26.119871+0000#29667]  ' \
+                        u'INFO -- aws: \u2588my:message'
+
+        packet_stream_formatter = platformops.PackerStreamFormatter()
+
+        self.assertEqual(
+            u'\u2588my:message',
+            packet_stream_formatter.format(event_message, 'Custom Stream')
+        )
