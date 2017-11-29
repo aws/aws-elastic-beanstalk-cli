@@ -41,6 +41,10 @@ class CommandError(EBCLIException):
         self.code = code
 
 
+class GitRemoteNotSetupError(EBCLIException):
+    pass
+
+
 class ServiceError(EBCLIException):
     """  Error occurred calling the api    """
     def __init__(self, message=None, code=None):

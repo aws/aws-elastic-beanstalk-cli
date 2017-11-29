@@ -40,28 +40,3 @@ class TestCodeCommit(unittest.TestCase):
     def test_region_supported(self):
         region_supported = codecommit.region_supported('us-east-1')
         self.assertTrue(region_supported, "Expected us-east-1 to be supported but it's not")
-
-    def test_create_signed_url(self):
-        # Set static variables
-        access_key = "access_key"
-        secret_key = "secret_key"
-        remote_url = "https://git-codecommit.us-east-1.amazonaws.com/v1/repos/foo-repo"
-        region = "us-east-1"
-        credentials = Credentials(access_key=access_key, secret_key=secret_key)
-
-        # Setup mocked methods
-        self.mock_codecommit_aws.get_credentials.return_value = credentials
-        self.mock_codecommit_aws.get_region_name.return_value = region
-
-        with mock.patch('ebcli.lib.codecommit.SigV4Auth') as MockSigV4Class:
-            mock_signer = MockSigV4Class.return_value
-            mock_signer.string_to_sign.return_value = "{0}::{1}".format(access_key, secret_key)
-            mock_signer.signature.return_value = "{0}::{1}".format(access_key, secret_key)
-
-            # Execute and assert method
-            expected_url = "https://{0}:{1}@{2}".format(
-                access_key, codecommit._sign_codecommit_url(credentials, region, remote_url), remote_url.split("//")[1])
-
-            signed_url = codecommit.create_signed_url(remote_url)
-
-        self.assertEqual(expected_url, signed_url, "Expected '{0}' but got: {1}".format(expected_url, signed_url))

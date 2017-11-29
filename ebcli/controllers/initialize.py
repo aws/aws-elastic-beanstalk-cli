@@ -22,8 +22,14 @@ from ebcli.lib import utils, elasticbeanstalk, codecommit, aws
 from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.objects import solutionstack, region as regions
 from ebcli.objects.platform import PlatformVersion
-from ebcli.objects.exceptions import NotInitializedError, NoRegionError, \
-    InvalidProfileError, ServiceError, ValidationError, CommandError
+from ebcli.objects.exceptions import(
+    CommandError,
+    InvalidProfileError,
+    NoRegionError,
+    NotInitializedError,
+    ServiceError,
+    ValidationError,
+)
 from ebcli.operations import commonops, initializeops, sshops, gitops
 from ebcli.resources.strings import strings, flag_text, prompts
 
@@ -164,8 +170,7 @@ class InitController(AbstractBaseController):
             default_branch_exists = True
 
         prompt_codecommit = True
-        # Do not prompt if we are in non-interactive mode, the region is not supported for CodeCommit,
-        #  the specified source is from CodeCommit OR we already have default CodeCommit values set.
+
         if self.force_non_interactive \
                 or not codecommit.region_supported(self.region) \
                 or self.source is not None \
@@ -181,7 +186,6 @@ class InitController(AbstractBaseController):
                 try:
                     io.validate_action(prompts['codecommit.usecc'], "y")
 
-                    # Setup git config settings for code commit credentials
                     source_control.setup_codecommit_cred_config()
 
                     # Get user specified repository
@@ -446,8 +450,7 @@ def get_repository_interactive():
     repo_list = codecommit.list_repositories()["repositories"]
 
     current_repository = source_control.get_current_repository()
-    current_repository = fileoperations.get_current_directory_name() \
-        if current_repository is None else current_repository
+    current_repository = current_repository or fileoperations.get_current_directory_name()
 
     # If there are existing repositories prompt the user to pick one
     # otherwise set default as the file name

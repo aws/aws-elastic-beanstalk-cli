@@ -20,7 +20,11 @@ import mock
 
 from ebcli.objects import sourcecontrol
 from ebcli.core import fileoperations
-from ebcli.objects.exceptions import CommandError, NoSourceControlError
+from ebcli.objects.exceptions import(
+    CommandError,
+    GitRemoteNotSetupError,
+    NoSourceControlError
+)
 
 
 class TestNoSourceControl(unittest.TestCase):
@@ -181,3 +185,12 @@ class TestGitSourceControl(unittest.TestCase):
         exit_code = 99999
         mock_exec_cmd.return_value = stdout, stderr, exit_code
         self.assertRaises(CommandError, sourcecontrol.Git().get_version_label)
+
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
+    @mock.patch('ebcli.objects.sourcecontrol.exec_cmd')
+    def test_git_remote(self, mock_exec_cmd):
+        stdout = ''
+        stderr = ''
+        exit_code = 0
+        mock_exec_cmd.return_value = stdout, stderr, exit_code
+        self.assertRaises(GitRemoteNotSetupError, sourcecontrol.Git().git_remote)
