@@ -122,6 +122,10 @@ def _get_solution_stack():
         else:
             try:
                 soln_stk = commonops.get_solution_stack(solution_string)
+
+                if PlatformVersion.is_valid_arn(soln_stk):
+                    soln_stk = PlatformVersion.get_platform_name(soln_stk)
+
             except NotFoundError:
                 raise NotFoundError('Solution stack ' + solution_string +
                                     ' does not appear to be valid')
