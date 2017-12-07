@@ -46,10 +46,16 @@ def stream_build_configuration_app_version_creation(app_name, app_version_label,
         # Need to lazy-import `ebcli.lib.commonops` because `pytest` is unable to load it
         # at module load-time using Python 2.7 and Python 3.4
         from ebcli.operations import commonops
+        timeout_error_message = ' '.join([
+            'The CodeBuild build timed out after {} minute(s).'.format(codebuild_timeout),
+            "To increase the time limit, use the 'Timeout' option in the 'buildspec.yml' file."
+        ])
         commonops.wait_for_success_events(
             app_name=app_name,
             can_abort=False,
+            on_timeout_raise=True,
             request_id=None,
+            timeout_error_message=timeout_error_message,
             timeout_in_minutes=codebuild_timeout,
             version_label=app_version_label
         )

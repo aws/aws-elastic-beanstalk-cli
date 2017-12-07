@@ -43,7 +43,7 @@ LOG = minimal_logger(__name__)
 def wait_for_success_events(request_id, timeout_in_minutes=None,
                             sleep_time=5, stream_events=True, can_abort=False,
                             streamer=None, app_name=None, env_name=None, version_label=None,
-                            platform_arn=None):
+                            platform_arn=None, on_timeout_raise=False, timeout_error_message=None):
     if timeout_in_minutes == 0:
         return
     if timeout_in_minutes is None:
@@ -131,7 +131,13 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
         streamer.end_stream()
     # We have timed out
 
-    io.log_error(strings['timeout.error'].format(timeout_in_minutes=timeout_in_minutes))
+    if not timeout_error_message:
+        timeout_error_message = strings['timeout.error'].format(timeout_in_minutes=timeout_in_minutes)
+
+    if on_timeout_raise:
+        raise TimeoutError(timeout_error_message)
+    else:
+        io.log_error(timeout_error_message)
 
 
 def filter_events(events, version_label=None, request_id=None, env_name=None):

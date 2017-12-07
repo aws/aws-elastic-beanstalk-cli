@@ -91,10 +91,17 @@ class TestBuildSpecOps(unittest.TestCase):
                                                                         version_labels=[self.version_label])
         self.mock_codebuild.batch_get_builds.assert_called_with(
             [self.app_version_raw_response['ApplicationVersions'][0]['BuildArn']])
+
+        timeout_error_message = ' '.join([
+            'The CodeBuild build timed out after 364 minute(s).',
+            "To increase the time limit, use the 'Timeout' option in the 'buildspec.yml' file."
+        ])
         mock_success_events.assert_called_with(
             app_name='foo-app',
             can_abort=False,
+            on_timeout_raise=True,
             request_id=None,
+            timeout_error_message=timeout_error_message,
             timeout_in_minutes=364,
             version_label=self.version_label
         )
@@ -119,10 +126,17 @@ class TestBuildSpecOps(unittest.TestCase):
                                                                         version_labels=[self.version_label])
         self.mock_codebuild.batch_get_builds.assert_called_with(
             [self.app_version_raw_response['ApplicationVersions'][0]['BuildArn']])
+
+        timeout_error_message = ' '.join([
+            'The CodeBuild build timed out after 60 minute(s).',
+            "To increase the time limit, use the 'Timeout' option in the 'buildspec.yml' file."
+        ])
         mock_success_events.assert_called_with(
             app_name='foo-app',
             can_abort=False,
+            on_timeout_raise=True,
             request_id=None,
+            timeout_error_message=timeout_error_message,
             timeout_in_minutes=60,
             version_label=self.version_label
         )
@@ -149,10 +163,17 @@ class TestBuildSpecOps(unittest.TestCase):
         self.mock_beanstalk.get_application_versions.assert_called_with(self.app_name,
                                                                         version_labels=[self.version_label])
         self.mock_codebuild.batch_get_builds.assert_not_called()
+
+        timeout_error_message = ' '.join([
+            'The CodeBuild build timed out after 60 minute(s).',
+            "To increase the time limit, use the 'Timeout' option in the 'buildspec.yml' file."
+        ])
         mock_success_events.assert_called_with(
             app_name='foo-app',
             can_abort=False,
+            on_timeout_raise=True,
             request_id=None,
+            timeout_error_message=timeout_error_message,
             timeout_in_minutes=60,
             version_label=self.version_label
         )
