@@ -74,7 +74,12 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
         if request_id:
             while not events:
                 events = elasticbeanstalk.get_new_events(
-                    app_name, env_name, request_id, last_event_time=None, version_label=version_label
+                    app_name,
+                    env_name,
+                    request_id,
+                    last_event_time=None,
+                    platform_arn=platform_arn,
+                    version_label=version_label
                 )
 
                 if len(events) > 0:
