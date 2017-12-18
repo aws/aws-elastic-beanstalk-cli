@@ -323,6 +323,8 @@ def _is_success_string(message):
         return True
     if message.startswith(responses['event.platformcreatefailed']):
         return True
+    if message.startswith(responses['event.platform_ami_region_service_region_mismatch']):
+        return True
     if message.startswith(responses['event.platformcreatesuccess']):
         return True
     if message == responses['event.greenmessage']:

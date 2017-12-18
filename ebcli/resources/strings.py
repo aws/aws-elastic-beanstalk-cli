@@ -661,6 +661,7 @@ flag_text = {
 responses = {
     'event.completewitherrors': 'Create environment operation is complete, but with errors.',
     'event.launched_environment': 'Launched environment',
+    'event.platform_ami_region_service_region_mismatch': 'Unmatched region for created AMI',
     'event.platformdeletesuccess': 'Successfully deleted platform version',
     'event.platformdeletefailed': 'Failed to delete platform version',
     'event.platformcreatefailed': 'Failed to create platform version',

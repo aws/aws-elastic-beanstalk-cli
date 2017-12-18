@@ -386,8 +386,7 @@ def create_platform_version(
         request_id,
         platform_arn=arn,
         streamer=streamer,
-        timeout_in_minutes=timeout,
-        version_label=version_label
+        timeout_in_minutes=timeout
     )
 
 
