@@ -406,7 +406,7 @@ prompts = {
     'vpc.ec2subnets': 'Enter a comma-separated list of Amazon EC2 subnets',
     'vpc.elbsubnets': 'Enter a comma-separated list of Amazon ELB subnets',
     'vpc.securitygroups': 'Enter a comma-separated list of Amazon VPC security groups',
-    'vpc.elbpublic': 'Do you want the load balencer to be public? (Select no for internal)',
+    'vpc.elbpublic': 'Do you want the load balancer to be public? (Select no for internal)',
     'vpc.dbsubnets': 'Enter a comma-separated list of database subnets',
     'logs.retrieving': 'Retrieving logs...',
     'swap.envprompt': 'Select the environment with which you want to swap CNAMEs.',
