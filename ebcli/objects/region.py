@@ -29,6 +29,7 @@ def get_all_regions():
         Region('us-east-2', 'US East (Ohio)'),
         Region('ca-central-1', 'Canada (Central)'),
         Region('eu-west-2', 'EU (London)'),
+        Region('eu-west-3', 'EU (Paris)'),
     ]
 
 
