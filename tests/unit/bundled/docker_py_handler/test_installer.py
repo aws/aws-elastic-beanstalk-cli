@@ -46,10 +46,10 @@ class TestDockerPyHandler(unittest.TestCase):
 
         message = os.linesep.join([
             "Your local host has the 'docker-py' version 1.10.6 and 'docker' version 2.5.0 Python packages installed on it.",
-            "When you run a Multicontainer Docker application locally, these two packages are in conflict. The EB CLI also requires a different version of ‘docker’.",
+            "When you run a Multicontainer Docker application locally, these two packages are in conflict. The EB CLI also requires a different version of 'docker'.",
             "",
             "To fix this error:",
-            "Be sure that no applications on your local host requires ‘docker-py’, and that no applications need this specific version of 'docker', and then run these commands:",
+            "Be sure that no applications on your local host requires 'docker-py', and that no applications need this specific version of 'docker', and then run these commands:",
             "   pip uninstall docker-py",
             "   pip install 'docker>=2.6.0,<2.7'"
         ])
@@ -74,7 +74,7 @@ class TestDockerPyHandler(unittest.TestCase):
 
         message = os.linesep.join([
             "Your local host has the 'docker' version 2.5.0 Python package installed on it.",
-            "When you run a Multicontainer Docker application locally, the EB CLI requires a different version of ‘docker’.",
+            "When you run a Multicontainer Docker application locally, the EB CLI requires a different version of 'docker'.",
             "",
             "To fix this error:",
             "Be sure that no applications on your local host require this specific version of 'docker', and then run this command:",
@@ -109,7 +109,7 @@ class TestDockerPyHandler(unittest.TestCase):
             "When you run a Multicontainer Docker application locally using the EB CLI, these two packages are in conflict.",
             "",
             "To fix this error:",
-            "Be sure that no applications on your local host require ‘docker-py’, and then run this command:",
+            "Be sure that no applications on your local host require 'docker-py', and then run this command:",
             "   pip uninstall docker-py"
         ])
 
@@ -133,10 +133,10 @@ class TestDockerPyHandler(unittest.TestCase):
 
         message = os.linesep.join([
             "Your local host has the 'docker-py' version 1.10.6 Python package installed on it.",
-            "When you run a Multicontainer Docker application locally, the EB CLI requires the ‘docker’ Python package.",
+            "When you run a Multicontainer Docker application locally, the EB CLI requires the 'docker' Python package.",
             "",
             "To fix this error:",
-            "Be sure that no applications on your local host require ‘docker-py’, and then run this command:",
+            "Be sure that no applications on your local host require 'docker-py', and then run this command:",
             "   pip uninstall docker-py",
             "",
             "The EB CLI will install 'docker' the next time you run it."

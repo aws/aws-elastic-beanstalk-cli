@@ -10,9 +10,16 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import subprocess
+
 import pytest
 
+# Forcefully uninstall `docker-py` so that CI does not fail due to presence of docker-py
+p = subprocess.Popen(['pip', 'uninstall', '-y', "docker-py"], stdout=subprocess.PIPE)
+p.communicate()
+
 from ebcli.bundled._compose.docker_py_handler import installer
+
 installer.install_docker_py()
 
 from ebcli.core.ebrun import fix_path

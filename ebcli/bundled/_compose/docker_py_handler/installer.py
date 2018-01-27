@@ -58,10 +58,10 @@ def raise_if_docker_py_exists_but_not_docker():
 			"Your local host has the 'docker-py' version {docker_py_version} Python package installed on it.".format(
 				docker_py_version=docker_py_package.version
 			),
-			"When you run a Multicontainer Docker application locally, the EB CLI requires the ‘docker’ Python package.",
+			"When you run a Multicontainer Docker application locally, the EB CLI requires the 'docker' Python package.",
 			"",
 			"To fix this error:",
-			"Be sure that no applications on your local host require ‘docker-py’, and then run this command:",
+			"Be sure that no applications on your local host require 'docker-py', and then run this command:",
 			"   pip uninstall docker-py",
 			"",
 			"The EB CLI will install 'docker' the next time you run it."
@@ -82,7 +82,7 @@ def raise_if_docker_py_and_docker_exist():
 			"When you run a Multicontainer Docker application locally using the EB CLI, these two packages are in conflict.",
 			"",
 			"To fix this error:",
-			"Be sure that no applications on your local host require ‘docker-py’, and then run this command:",
+			"Be sure that no applications on your local host require 'docker-py', and then run this command:",
 			"   pip uninstall docker-py"
 		])
 
@@ -98,10 +98,10 @@ def raise_if_docker_py_and_an_incorrect_version_of_docker_exist():
 				docker_py_version=docker_py_package.version,
 				docker_version=docker_package.version
 			),
-			"When you run a Multicontainer Docker application locally, these two packages are in conflict. The EB CLI also requires a different version of ‘docker’.",
+			"When you run a Multicontainer Docker application locally, these two packages are in conflict. The EB CLI also requires a different version of 'docker'.",
 			"",
 			"To fix this error:",
-			"Be sure that no applications on your local host requires ‘docker-py’, and that no applications need this specific version of 'docker', and then run these commands:",
+			"Be sure that no applications on your local host requires 'docker-py', and that no applications need this specific version of 'docker', and then run these commands:",
 			"   pip uninstall docker-py",
 			"   pip install 'docker>=2.6.0,<2.7'"
 		])
@@ -117,7 +117,7 @@ def raise_if_docker_py_does_not_exist_and_an_incorrect_version_of_docker_exists(
 			"Your local host has the 'docker' version {docker_version} Python package installed on it.".format(
 				docker_version=docker_package.version
 			),
-			"When you run a Multicontainer Docker application locally, the EB CLI requires a different version of ‘docker’.",
+			"When you run a Multicontainer Docker application locally, the EB CLI requires a different version of 'docker'.",
 			"",
 			"To fix this error:",
 			"Be sure that no applications on your local host require this specific version of 'docker', and then run this command:",
