@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
-from subprocess import check_call
-import shutil
+from subprocess import check_call, Popen, PIPE
 
 _dname = os.path.dirname
 
@@ -21,10 +20,8 @@ try:
 except KeyError:
     python_version = '.'.join([str(i) for i in sys.version_info[:2]])
 
+p = Popen(['pip', 'uninstall', '-y', 'awsebcli'], stdout=PIPE)
+p.communicate()
 
+run('pip install .')
 run('pip install -r dev_requirements.txt')
-if os.path.isdir('dist') and os.listdir('dist'):
-    shutil.rmtree('dist')
-run('python setup.py bdist_wheel')
-wheel_dist = os.listdir('dist')[0]
-run('pip install %s' % (os.path.join('dist', wheel_dist)))

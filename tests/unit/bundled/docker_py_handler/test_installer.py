@@ -160,14 +160,14 @@ class TestDockerPyHandler(unittest.TestCase):
         installer.install_docker_py()
 
     @patch('pip.get_installed_distributions')
-    @patch('subprocess.Popen')
+    @patch('setuptools.command.easy_install.main')
     def test_install_docker_py__docker_2_6_x_and_docker_py_absent__installs_docker_2_6_x(
             self,
-            popen_mock,
+            easy_install_mock,
             distributions_retriever_mock
     ):
         distributions_retriever_mock.return_value = []
 
         installer.install_docker_py()
 
-        popen_mock.assert_called_once_with(['pip', 'install', "docker>=2.6.0,<2.7"], stdout=subprocess.PIPE)
+        easy_install_mock.assert_called_once_with(["docker>=2.6.0,<2.7"])

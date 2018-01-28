@@ -67,24 +67,26 @@ class TestLog(TestCase):
         datetime.now.assert_called_once_with()
 
 
+    @patch('ebcli.containers.log.fileoperations.remove_execute_access_from_group_and_other_users')
     @patch('ebcli.containers.log.fileoperations.set_all_unrestricted_permissions')
     @patch('ebcli.containers.log.os')
-    def test_make_logdirs(self, os, set_all_unrestricted_permissions):
+    def test_make_logdirs(self, os, set_all_unrestricted_permissions, remove_execute_access_mock):
         os.path.join.return_value = LATEST_SYMLINK
-        fileoperations.remove_execute_access_from_group_and_other_users = MagicMock()
 
         log.make_logdirs(ROOT_LOG_DIR, HOST_LOG)
 
         os.path.join.assert_called_once_with(ROOT_LOG_DIR,
                                              log.LATEST_LOGS_DIRNAME)
         os.makedirs.assert_called_once_with(HOST_LOG)
-        set_all_unrestricted_permissions.assert_called_once_with(HOST_LOG)
         os.unlink.assert_called_with(LATEST_SYMLINK)
         os.symlink.assert_called_with(HOST_LOG, LATEST_SYMLINK)
 
     @unittest.skipIf(sys.platform.startswith('win'), 'Test is not designed for Windows')
     def test_make_logdirs__root_log_dir_and_host_log_dir_allow_full_write_access(self):
         try:
+            if os.path.exists('.elasticbeanstalk'):
+                shutil.rmtree('.elasticbeanstalk')
+
             enclosign_dir = '.elasticbeanstalk/logs'
             root_log_dir = '.elasticbeanstalk/logs/local'
             new_local_dir = '.elasticbeanstalk/logs/local/1234456'
@@ -103,7 +105,7 @@ class TestLog(TestCase):
             self.assertEquals(local_dir_permissions, oct(os.stat(new_local_dir).st_mode))
 
         finally:
-            shutil.rmtree(ROOT_LOG_DIR)
+            shutil.rmtree('.elasticbeanstalk')
 
 
     @patch('ebcli.containers.log.os')

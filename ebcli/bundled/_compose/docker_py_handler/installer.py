@@ -12,9 +12,9 @@
 # language governing permissions and limitations under the License.
 import os
 import pip
-import subprocess
 
 from pkg_resources import parse_version
+from setuptools.command import easy_install
 
 from ebcli.objects.exceptions import DockerVersionError
 
@@ -46,8 +46,7 @@ def install_docker_py():
 		return
 
 	# Install `docker` on behalf of the customer
-	p = subprocess.Popen(['pip', 'install', "docker>=2.6.0,<2.7"], stdout=subprocess.PIPE)
-	p.communicate()
+	easy_install.main(["docker>=2.6.0,<2.7"])
 
 
 def raise_if_docker_py_exists_but_not_docker():

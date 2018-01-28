@@ -22,7 +22,11 @@ class TestTags(unittest.TestCase):
 
     @patch('ebcli.core.io.log_error')
     @patch('ebcli.operations.commonops.get_current_branch_environment')
-    def test_tags_command_fails_when_branch_has_no_default_environment(self, log_error, get_current_branch_environment):
+    def test_tags_command_fails_when_branch_has_no_default_environment(
+            self,
+            get_current_branch_environment,
+            log_error
+    ):
         get_current_branch_environment.return_value = None
         log_error.return_value = None
 

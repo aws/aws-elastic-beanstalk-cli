@@ -14,7 +14,7 @@
 from ebcli.core import io
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.objects.exceptions import InvalidOptionsError, NoEnvironmentForBranchError
-from ebcli.operations.commonops import get_current_branch_environment
+from ebcli.operations import commonops
 from ebcli.operations.tagops.tagops import TagOps
 from ebcli.resources.strings import strings, flag_text
 
@@ -68,7 +68,7 @@ class TagsController(AbstractBaseController):
         if self.app.pargs.environment_name:
             env_name = self.app.pargs.environment_name
         else:
-            env_name = get_current_branch_environment()
+            env_name = commonops.get_current_branch_environment()
 
         if not env_name:
             message = strings['branch.noenv'].replace('{cmd}', self.Meta.label)
