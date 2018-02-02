@@ -15,7 +15,6 @@ os.chdir(os.path.join(REPO_ROOT, 'tests/unit'))
 def run(command):
     return check_call(command, shell=True)
 
-run('pwd')
 run('py.test --cov-report term-missing --junitxml=junit-ebcli.xml --cov=ebcli --cov-report xml .')
 
 os.chdir(REPO_ROOT)

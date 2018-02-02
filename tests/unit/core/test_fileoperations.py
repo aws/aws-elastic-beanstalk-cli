@@ -357,7 +357,7 @@ class TestFileOperations(unittest.TestCase):
     def test_get_json_dict(self, read_from_data_file, loads):
         read_from_data_file.return_value = '{}'
         loads.return_value = {}
-        mock_path = '/a/b/c/file.json'
+        mock_path = 'a{0}b{0}c{0}file.json'.format(os.path.sep)
 
         self.assertEquals(fileoperations.get_json_dict(mock_path), {})
         read_from_data_file.assert_called_once_with(mock_path)
@@ -365,8 +365,8 @@ class TestFileOperations(unittest.TestCase):
 
     @patch('ebcli.core.fileoperations.get_project_root')
     def test_project_file_path(self, get_project_root):
-        get_project_root.side_effect = ['/']
-        expected_file_path = os.path.join('/', 'foo')
+        get_project_root.side_effect = [os.path.sep]
+        expected_file_path = '{}foo'.format(os.path.sep)
         self.assertEquals(fileoperations.project_file_path('foo'),
                           expected_file_path)
 
@@ -374,12 +374,12 @@ class TestFileOperations(unittest.TestCase):
     @patch('ebcli.core.fileoperations.project_file_path')
     def test_project_file_exists(self, project_file_path,
                                  file_exists):
-        project_file_path.side_effect = ['/foo']
+        project_file_path.side_effect = ['{}foo'.format(os.path.sep)]
         file_exists.return_value = True
 
         self.assertTrue(fileoperations.project_file_exists('foo'))
         project_file_path.assert_called_once_with('foo')
-        file_exists.assert_called_once_with('/foo')
+        file_exists.assert_called_once_with('{}foo'.format(os.path.sep))
 
     def _traverse_to_deeper_subdir(self):
         dir = 'fol1' + os.path.sep + 'fol2' + os.path.sep + 'fol3'
@@ -453,7 +453,7 @@ class TestFileOperations(unittest.TestCase):
         os.remove(file)
 
     def test_get_filename_without_extension_with_path(self):
-        filepath = '/tmp/dir/test/{0}'.format(self.expected_file)
+        filepath = '{1}tmp{1}dir{1}test{1}{0}'.format(self.expected_file, os.path.sep)
 
         actual_file = fileoperations.get_filename_without_extension(filepath)
         self.assertEqual(self.expected_file_without_ext, actual_file, "Expected {0} but got: {1}"
@@ -499,7 +499,7 @@ class TestEbIgnore(unittest.TestCase):
         os.mkdir('directory_1')
         open('.gitignore', 'w').close()
         open('.dotted_file', 'w').close()
-        open('directory_1/.dotted_file', 'w').close()
+        open('directory_1{}.dotted_file'.format(os.path.sep), 'w').close()
 
         with open('.ebignore', 'w') as file:
             ebignore_file_contents = """
@@ -519,7 +519,14 @@ directory_1/.dotted_file
         paths_to_ignore = fileoperations.get_ebignore_list()
 
         self.assertEqual(
-            set(['.gitignore', '.dotted_file', 'directory_1/.dotted_file', '.ebignore']),
+            set(
+                [
+                    '.gitignore',
+                    '.dotted_file',
+                    'directory_1{}.dotted_file'.format(os.path.sep),
+                    '.ebignore'
+                ]
+            ),
             set(paths_to_ignore)
         )
 
@@ -541,7 +548,7 @@ file_1
 
 # ignore regular inner-level file'
 directory_1/file_2
-"""
+""".format(os.path.sep)
 
             file.write(ebignore_file_contents)
             file.close()
@@ -549,7 +556,7 @@ directory_1/file_2
         paths_to_ignore = fileoperations.get_ebignore_list()
 
         self.assertEqual(
-            set(['file_1', 'directory_1/file_2', '.ebignore']),
+            set(['file_1', 'directory_1{}file_2'.format(os.path.sep), '.ebignore']),
             set(paths_to_ignore)
         )
 
@@ -561,9 +568,9 @@ directory_1/file_2
         get_ebignore_location_mock.return_value = os.path.join(os.getcwd(), '.ebignore')
 
         os.mkdir('directory_1')
-        open('directory_1/.gitkeep', 'w').close()
+        open('directory_1{}.gitkeep'.format(os.path.sep), 'w').close()
         os.mkdir('directory_2')
-        open('directory_2/.gitkeep', 'w').close()
+        open('directory_2{}.gitkeep'.format(os.path.sep), 'w').close()
 
         with open('.ebignore', 'w') as file:
             ebignore_file_contents = """
@@ -580,22 +587,32 @@ directory_2/
         paths_to_ignore = fileoperations.get_ebignore_list()
 
         self.assertEqual(
-            set(['directory_1/.gitkeep', 'directory_2/.gitkeep', '.ebignore']),
+            set(
+                [
+                    'directory_1{}.gitkeep'.format(os.path.sep),
+                    'directory_2{}.gitkeep'.format(os.path.sep),
+                    '.ebignore'
+                ]
+            ),
             set(paths_to_ignore)
         )
 
     @patch('ebcli.core.fileoperations.get_project_root')
     @patch('ebcli.core.fileoperations.get_ebignore_location')
-    def test_get_ebignore_list__excludes_paths_escaped_with_exclamation_from_the_ebignore_list(self, get_ebignore_location_mock, get_project_root_mock):
+    def test_get_ebignore_list__excludes_paths_escaped_with_exclamation_from_the_ebignore_list(
+            self,
+            get_ebignore_location_mock,
+            get_project_root_mock
+    ):
         get_project_root_mock.return_value = os.getcwd()
         get_ebignore_location_mock.return_value = os.path.join(os.getcwd(), '.ebignore')
 
         os.mkdir('directory_1')
-        os.mkdir('directory_1/directory_2')
-        open('directory_1/file_1', 'w').close()
-        open('directory_1/file_2', 'w').close()
-        open('directory_1/directory_2/file_1', 'w').close()
-        open('directory_1/directory_2/file_2', 'w').close()
+        os.mkdir(os.path.join('directory_1', 'directory_2'))
+        open('directory_1{0}file_1'.format(os.path.sep), 'w').close()
+        open('directory_1{0}file_2'.format(os.path.sep), 'w').close()
+        open('directory_1{0}directory_2{0}file_1'.format(os.path.sep), 'w').close()
+        open('directory_1{0}directory_2{0}file_2'.format(os.path.sep), 'w').close()
 
         with open('.ebignore', 'w') as file:
             ebignore_file_contents = """
@@ -618,7 +635,14 @@ directory_1/directory_2/*
         paths_to_ignore = fileoperations.get_ebignore_list()
 
         self.assertEqual(
-            set(['directory_1/file_1', 'directory_1/file_2', 'directory_1/directory_2/file_1', '.ebignore']),
+            set(
+                [
+                    'directory_1{0}file_1'.format(os.path.sep),
+                    'directory_1{0}file_2'.format(os.path.sep),
+                    'directory_1{0}directory_2{0}file_1'.format(os.path.sep),
+                    '.ebignore'
+                ]
+            ),
             set(paths_to_ignore)
         )
 

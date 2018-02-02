@@ -30,8 +30,8 @@ from ebcli.objects.exceptions import(
 class TestNoSourceControl(unittest.TestCase):
     def setUp(self):
         # set up test directory
-        if not os.path.exists('testDir/'):
-            os.makedirs('testDir/')
+        if not os.path.exists('testDir{}'.format(os.path.sep)):
+            os.makedirs('testDir{}'.format(os.path.sep))
         os.chdir('testDir')
 
         self.patcher_io = mock.patch('ebcli.objects.sourcecontrol.io')
@@ -43,10 +43,7 @@ class TestNoSourceControl(unittest.TestCase):
 
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
-            if sys.platform.startswith('win'):
-                os.system('rmdir /S /Q testDir')
-            else:
-                shutil.rmtree('testDir')
+            shutil.rmtree('testDir')
 
     @unittest.skipIf(fileoperations.program_is_installed('git'), "Skipped because git is installed")
     def test_get_source_control(self):
@@ -73,8 +70,8 @@ class TestNoSourceControl(unittest.TestCase):
 class TestGitSourceControl(unittest.TestCase):
     def setUp(self):
         # set up test directory
-        if not os.path.exists('testDir/'):
-            os.makedirs('testDir/')
+        if not os.path.exists('testDir{}'.format(os.path.sep)):
+            os.makedirs('testDir{}'.format(os.path.sep))
         os.chdir('testDir')
         fileoperations.create_config_file('testapp', 'us-east-1', 'PHP')
 
@@ -82,6 +79,8 @@ class TestGitSourceControl(unittest.TestCase):
             f.write('Hello')
 
         subprocess.call(['git', 'init'])
+        subprocess.call(['git', 'config', '--local', 'user.email', 'abc@def.com'])
+        subprocess.call(['git', 'config', '--local', 'user.name', 'abc def'])
         subprocess.call(['git', 'add', 'myFile'])
         subprocess.call(['git', 'commit', '-m', 'Initial'])
 
@@ -90,7 +89,6 @@ class TestGitSourceControl(unittest.TestCase):
             f.write('Hello There')
         subprocess.call(['git', 'add', 'myFile2'])
         subprocess.call(['git', 'commit', '-m', 'Hello'])
-
 
         subprocess.call(['git', 'tag', '-a', 'v1', '-m', 'my version'])
 
