@@ -26,6 +26,7 @@ def get_all_regions():
         Region('ap-northeast-2', 'Asia Pacific (Seoul)'),
         Region('sa-east-1', 'South America (Sao Paulo)'),
         Region('cn-north-1', 'China (Beijing)'),
+        Region('cn-northwest-1', 'China (Ningxia)'),
         Region('us-east-2', 'US East (Ohio)'),
         Region('ca-central-1', 'Canada (Central)'),
         Region('eu-west-2', 'EU (London)'),
