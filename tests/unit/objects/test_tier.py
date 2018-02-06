@@ -16,42 +16,28 @@ from ebcli.objects.tier import Tier
 from ebcli.objects.exceptions import NotFoundError
 
 
-class TestNoSourceControl(unittest.TestCase):
+class TestTier(unittest.TestCase):
 
-    def test_parse_tier_base_web(self):
-        expected = Tier('WebServer', 'Standard', '1.0')
-        self.assertEqual(Tier.parse_tier('webserver'), expected)
+    def test_from_raw_string__webserver(self):
+        for customer_input in [
+            'WebServer',
+            'WebServer/Standard'
+        ]:
+            tier = Tier.from_raw_string(customer_input)
+            self.assertEqual('WebServer', tier.name)
+            self.assertEqual('Standard', tier.type)
+            self.assertEqual('1.0', tier.version)
 
-    def test_parse_tier_base_webserver_version1_0(self):
-        expected = Tier('WebServer', 'Standard', '1.0')
-        self.assertEqual(Tier.parse_tier('webserver-1.0'), expected)
+    def test_from_raw_string__worker(self):
+        for customer_input in [
+            'Worker',
+            'Worker/SQS/HTTP'
+        ]:
+            tier = Tier.from_raw_string(customer_input)
+            self.assertEqual('Worker', tier.name)
+            self.assertEqual('SQS/HTTP', tier.type)
+            self.assertEqual('', tier.version)
 
-    def test_parse_tier_base_web_version1_0(self):
-        expected = Tier('WebServer', 'Standard', '1.0')
-        self.assertEqual(Tier.parse_tier('web-1.0'), expected)
-
-    def test_parse_tier_base_worker(self):
-        expected = Tier('Worker', 'SQS/HTTP', '')
-        self.assertEqual(Tier.parse_tier('worker'), expected)
-
-    def test_parse_tier_base_worker_version1_1(self):
-        expected = Tier('Worker', 'SQS/HTTP', '1.1')
-        self.assertEqual(Tier.parse_tier('worker-1.1'), expected)
-
-    def test_parse_tier_base_worker_version1_0(self):
-        expected = Tier('Worker', 'SQS/HTTP', '1.0')
-        self.assertEqual(Tier.parse_tier('worker-1.0'), expected)
-
-    def test_parse_tier_base_worker_full(self):
-        expected = Tier('Worker', 'SQS/HTTP', '1.0')
-        self.assertEqual(Tier.parse_tier('worker-sqs/http-1.0'), expected)
-
-    def test_parse_tier_base_worker_nonexistant_version(self):
-        expected = Tier('Worker', 'SQS/HTTP', '12.24')
-        self.assertEqual(Tier.parse_tier('worker-12.24'), expected)
-
-    def test_parse_tier_bad(self):
-        self.assertRaises(NotFoundError, Tier.parse_tier, 'foobar')
-
-    def test_parse_tier_bad_with_version(self):
-        self.assertRaises(NotFoundError, Tier.parse_tier, 'foobar-2.5')
+    def test_from_raw_string__invalid_input(self):
+        with self.assertRaises(NotFoundError):
+            Tier.from_raw_string('invalid/input')

@@ -117,7 +117,7 @@ class CreateEnvironmentRequest(object):
         if self.tags:
             kwargs['Tags'] = self.tags
         if self.tier:
-            kwargs['Tier'] = self.tier.to_struct()
+            kwargs['Tier'] = self.tier.to_dict()
 
         if self.scale:
             self.add_option_setting(

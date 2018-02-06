@@ -15,21 +15,39 @@ from ..objects.exceptions import NotFoundError
 import re
 
 
-class Tier():
-    def __init__(self, name, typ, version):
+class Tier(object):
+
+    TIER_MAP = {
+        'webserver': (lambda: Tier('WebServer', 'Standard', '1.0')),
+        'webserver/standard': (lambda: Tier('WebServer', 'Standard', '1.0')),
+        'worker': (lambda: Tier('Worker', 'SQS/HTTP', '')),
+        'worker/sqs/http': (lambda: Tier('Worker', 'SQS/HTTP', '')),
+    }
+
+    @staticmethod
+    def get_all_tiers():
+        lst = [
+            Tier('WebServer', 'Standard', '1.0'),
+            Tier('Worker', 'SQS/HTTP', ''),
+        ]
+        return lst
+
+    def __init__(self, name, typ, version, elb_type=None):
         self.name = name
         self.type = typ
-        self.version = version.strip()
-        self.string = self.__str__()
+        self.version = version
+        self.elb_type = elb_type
 
-    def to_struct(self):
-        strct = {
+    def to_dict(self):
+        json = {
             'Name': self.name,
             'Type': self.type,
         }
+
         if self.version:
-            strct['Version'] = self.version
-        return strct
+            json['Version'] = self.version
+
+        return json
 
     def __str__(self):
         s = self.name + '-' + self.type
@@ -40,42 +58,22 @@ class Tier():
     def __eq__(self, other):
         if not isinstance(other, Tier):
             return False
-        return self.string.lower() == other.string.lower()
 
-    @staticmethod
-    def get_all_tiers():
-        lst = [
-            Tier('WebServer', 'Standard', '1.0'),
-            Tier('Worker', 'SQS/HTTP', '1.0'),
-            Tier('Worker', 'SQS/HTTP', '1.1'),
-            Tier('Worker', 'SQS/HTTP', ''),
-        ]
-        return lst
+        return self.name.lower() == other.name.lower()
 
-    @staticmethod
-    def parse_tier(string):
-        if string.lower() == 'web' or string.lower() == 'webserver':
-            return Tier('WebServer', 'Standard', '1.0')
-        if string.lower() == 'worker':
-            return Tier('Worker', 'SQS/HTTP', '')
+    @classmethod
+    def get_default(cls):
+        return cls.TIER_MAP['webserver']()
 
-        params = string.split('-')
-        if len(params) == 3:
-            name, typ, version = string.split('-')
-        elif len(params) == 2:
-            name, typ = string.split('-')
-            if re.match('\d+[.]\d+', typ):
-                version = typ
-            else:
-                version = ''
-        else:
-            raise NotFoundError('Tier Not found')
+    @classmethod
+    def from_raw_string(cls, customer_input):
+        try:
+            return cls.TIER_MAP[customer_input.lower().strip()]()
+        except KeyError:
+            raise NotFoundError()
 
-        # we want to return the Proper, uppercase version
-        if name.lower() == 'webserver' or name.lower() == 'web':
-            return Tier('WebServer', 'Standard', version)
-        elif name.lower() == 'worker':
-            return Tier('Worker', 'SQS/HTTP', version)
+    def is_webserver(self):
+        return self.name.lower() == 'webserver'
 
-        # tier not found
-        raise NotFoundError('Tier Not found')
+    def is_worker(self):
+        return self.name.lower() == 'worker'

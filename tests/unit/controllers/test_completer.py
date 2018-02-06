@@ -24,7 +24,7 @@ class TestCompleter(BaseControllerTest):
     solution = SolutionStack('64bit Amazon Linux 2014.03 '
                              'v1.0.6 running PHP 5.5')
     app_name = 'ebcli-test-app'
-    tier = Tier.get_all_tiers()[0]
+    tier = Tier.get_default()
 
     def setUp(self):
         self.module_name = 'create'

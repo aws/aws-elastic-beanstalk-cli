@@ -30,7 +30,7 @@ class TestCreate(BaseControllerTest):
                              'v1.0.6 running PHP 5.5')
     app_name = 'ebcli-intTest-app'
     env_name = 'create-env'
-    tier = Tier.get_all_tiers()[0]
+    tier = Tier.get_default()
 
     nlb_supported_regions = [
         'us-east-1',
@@ -196,7 +196,7 @@ class TestCreate(BaseControllerTest):
         EB.Meta.exit_on_close = False
         self.app = EB(argv=['create', env_name, '-c', cname_prefix,
                             '-ip', profile, '-r', 'us-east-1',
-                            '-t', 'web', '-i', itype, '-p', self.solution.name,
+                            '-t', 'webserver', '-i', itype, '-p', self.solution.name,
                             '--sample', '-d', '-k', keyname, '--scale', '3',
                             '--tags', 'a=1,b=2', '--elb-type', 'classic'])
         self.app.setup()

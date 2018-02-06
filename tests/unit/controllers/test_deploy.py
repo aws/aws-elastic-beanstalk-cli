@@ -25,7 +25,7 @@ class TestDeploy(BaseControllerTest):
     solution = SolutionStack('64bit Amazon Linux 2015.03 v2.0.6 running PHP 5.5')
     app_name = 'ebcli-intTest-app'
     env_name = 'my-env'
-    tier = Tier.get_all_tiers()[0]
+    tier = Tier.get_default()
     app_class = DeployController
 
     def setUp(self):

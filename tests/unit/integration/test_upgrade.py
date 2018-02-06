@@ -133,7 +133,7 @@ def describe_worker():
     default = mockservice.standard_describe_configuration_settings()
     settings = default['ConfigurationSettings'][0]
     settings['SolutionStackName'] = '64bit Amazon Linux 2014.09 v1.1.0 running Python 2.7'
-    settings['Tier'] = {u'Version': ' ', u'Type': 'HTTP/SQS', u'Name': 'Worker'}
+    settings['Tier'] = {u'Version': ' ', u'Type': 'SQS/HTTP', u'Name': 'Worker'}
     return default
 
 

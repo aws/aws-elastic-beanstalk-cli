@@ -21,7 +21,7 @@ from ..objects.exceptions import NotFoundError, AlreadyExistsError, \
 from ebcli.objects.platform import PlatformVersion
 from ..objects.requests import CreateEnvironmentRequest
 from ..objects.tier import Tier
-from ..operations import(
+from ..operations import (
     commonops,
     composeops,
     createops,
@@ -170,13 +170,14 @@ class CreateController(AbstractBaseController):
                                         ' does not appear to be valid')
 
         if tier:
-            if 'worker' in tier.lower() and cname:
-                raise InvalidOptionsError(strings['worker.cname'])
             try:
-                tier = Tier.parse_tier(tier)
+                tier = Tier.from_raw_string(tier)
             except NotFoundError:
                 raise NotFoundError('Provided tier ' + tier + ' does not '
                                     'appear to be valid')
+
+            if tier.is_worker() and cname:
+                raise InvalidOptionsError(strings['worker.cname'])
 
         if cname:
             if not commonops.is_cname_available(cname):
@@ -221,9 +222,9 @@ class CreateController(AbstractBaseController):
                 app_name, template_name)
 
             if template_contents['Tier']['Name'] == 'Worker':
-                tier = Tier.parse_tier('worker')
+                tier = Tier.from_raw_string('worker')
 
-        if not tier or tier.name.lower() == 'webserver':
+        if not tier or tier.is_webserver():
             if not cname and not provided_env_name:
                 cname = get_cname(env_name)
             elif not cname:
