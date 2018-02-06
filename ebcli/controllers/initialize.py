@@ -175,13 +175,21 @@ class InitController(AbstractBaseController):
         if gitops.git_management_enabled() and not self.interactive:
             default_branch_exists = True
 
-        prompt_codecommit = True
-
-        if self.force_non_interactive \
-                or not codecommit.region_supported(self.region) \
-                or self.source is not None \
-                or default_branch_exists:
+        # Prompt customer to opt into CodeCommit unless one of the follows holds:
+        if self.force_non_interactive:
             prompt_codecommit = False
+        elif not codecommit.region_supported(self.region):
+            prompt_codecommit = False
+        elif self.source:
+            # Do not prompt if customer has already specified a code source to
+            # associate the EB workspace with
+            prompt_codecommit = False
+        elif default_branch_exists:
+            # Do not prompt if customer has already configured the EB application
+            # in the present working directory with Git
+            prompt_codecommit = False
+        else:
+            prompt_codecommit = True
 
         # Prompt for interactive CodeCommit
         if prompt_codecommit:
@@ -192,6 +200,7 @@ class InitController(AbstractBaseController):
                 try:
                     io.validate_action(prompts['codecommit.usecc'], "y")
 
+                    # Setup git config settings for code commit credentials
                     source_control.setup_codecommit_cred_config()
 
                     # Get user specified repository

@@ -1,7 +1,21 @@
-
 =========
 Changelog
 =========
+-------------------
+3.12.2 (2018-02-06)
+-------------------
+- Added eu-west-3 EU (Paris) and cn-northwest-1 China (Ningxia) regions
+- Added support for `eb local run` with major versions 2 of Python package `docker-py`
+- Fixed `--platform` option to take language name as argument
+- Fixed behavior of `--platform` flag to pick the latest version of solution stack when input is ambiguous
+- Fixed .ebignore logic to recognize files with Unicode characters
+- Fixed redundant downloading of Packer events published by CloudWatch
+- Fixed silent rescues of `UnicodeEncodeError`s when printing Packer events
+- Fixed `DescribeEvents` polling in the context of custom platforms
+- Fixed `eb local run` to work with `PlatformArn`s
+- Fixed local-remote inconsistency observed after deployments using CodeCommit
+- Fixed misspelling in the prompt for whether VPC ELB should be public
+
 -------------------
 3.12.1 (2017-11-08)
 -------------------

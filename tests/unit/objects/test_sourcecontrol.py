@@ -192,3 +192,23 @@ class TestGitSourceControl(unittest.TestCase):
         exit_code = 0
         mock_exec_cmd.return_value = stdout, stderr, exit_code
         self.assertRaises(GitRemoteNotSetupError, sourcecontrol.Git().git_remote)
+
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
+    def test_get_current_branch(self):
+        self.assertEqual('master', sourcecontrol.Git().get_current_branch())
+
+    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
+    @mock.patch('ebcli.core.io.log_warning')
+    def test_get_current_branch__detached_head_state(self, log_warning_mock):
+        self.assertIsNotNone(sourcecontrol.Git().get_current_branch())
+
+        # find commit SHA of HEAD
+        p = subprocess.Popen(['git', 'rev-parse', 'HEAD'], stdout=subprocess.PIPE)
+        stdout, _ = p.communicate()
+        commit_of_head = stdout.decode().strip()
+
+        # enter detached HEAD state
+        p = subprocess.Popen(['git', 'checkout', commit_of_head], stdout=subprocess.PIPE)
+        p.communicate()
+
+        self.assertEqual('default', sourcecontrol.Git().get_current_branch())

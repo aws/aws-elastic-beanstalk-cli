@@ -33,7 +33,7 @@ from ebcli.resources.strings import git_ignore, strings
 LOG = minimal_logger(__name__)
 
 
-class SourceControl():
+class SourceControl(object):
     name = 'base'
 
     def __init__(self):
@@ -195,12 +195,9 @@ class Git(SourceControl):
         return stdout.split('/')[-1]
 
     def get_current_branch(self):
-        stdout, stderr, exitcode = self._run_cmd(
-            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
-            handle_exitcode=False
-        )
+        stdout, stderr, exitcode = self._run_cmd(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], handle_exitcode=False)
 
-        if stdout == 'HEAD':
+        if stdout.strip() == 'HEAD':
             io.log_warning('Git is in a detached head state. Using branch "default".')
             return 'default'
         else:
