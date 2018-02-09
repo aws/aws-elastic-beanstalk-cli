@@ -16,7 +16,7 @@ from ..resources.strings import strings, flag_text, prompts
 from ..core import io
 from ..operations import cloneops, commonops, solution_stack_ops
 from ..lib import utils, elasticbeanstalk
-from ..controllers.create import get_cname, get_and_validate_envars
+from ..controllers.create import get_cname_from_customer, get_and_validate_envars
 from ..operations.createops import get_and_validate_tags
 from ..objects.exceptions import InvalidOptionsError, AlreadyExistsError
 from ..objects.requests import CloneEnvironmentRequest

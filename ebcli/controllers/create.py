@@ -116,7 +116,7 @@ class CreateController(AbstractBaseController):
         cname = self.app.pargs.cname
         tier = self.app.pargs.tier
         itype = self.app.pargs.instance_type
-        solution_string = self.app.pargs.platform
+        solution_string = self.app.pargs.platform or solution_stack_ops.get_default_solution_stack()
         single = self.app.pargs.single
         iprofile = self.app.pargs.instance_profile
         service_role = self.app.pargs.service_role
@@ -135,10 +135,8 @@ class CreateController(AbstractBaseController):
         process = self.app.pargs.process
         region = self.app.pargs.region
         interactive = False if env_name else True
-        platform_arn = None
-        solution = None
 
-        provided_env_name = env_name is not None
+        provided_env_name = env_name
 
         if sample and label:
             raise InvalidOptionsError(strings['create.sampleandlabel'])
@@ -149,95 +147,27 @@ class CreateController(AbstractBaseController):
         if single and elb_type:
             raise InvalidOptionsError(strings['create.single_and_elb_type'])
 
+        if cname and tier and Tier.looks_like_worker_tier(tier):
+            raise InvalidOptionsError(strings['worker.cname'])
+
+        if cname and not commonops.is_cname_available(cname):
+            raise AlreadyExistsError(
+                strings['cname.unavailable'].replace('{cname}', cname)
+            )
+
         app_name = self.get_app_name()
-
-        # get tags
         tags = createops.get_and_validate_tags(tags)
-
-        if not solution_string:
-            solution_string = solution_stack_ops.get_default_solution_stack()
-
-        # Test out sstack and tier before we ask any questions (Fast Fail)
-        if solution_string:
-            if PlatformVersion.is_valid_arn(solution_string):
-                platform_arn = solution_string
-            else:
-                try:
-                    solution = solution_stack_ops.find_solution_stack_from_string(solution_string)
-                except NotFoundError:
-                    raise NotFoundError('Platform "' + solution_string +
-                                        '" does not appear to be valid')
-
-        if tier:
-            try:
-                tier = Tier.from_raw_string(tier)
-            except NotFoundError:
-                raise NotFoundError('Provided tier "' + tier + '" does not '
-                                    'appear to be valid')
-
-            if tier.is_worker() and cname:
-                raise InvalidOptionsError(strings['worker.cname'])
-
-        if cname:
-            if not commonops.is_cname_available(cname):
-                raise AlreadyExistsError(strings['cname.unavailable'].
-                                         replace('{cname}', cname))
-
-        # If we still dont have what we need, ask for it
-        if not solution_string:
-            solution = solution_stack_ops.get_solution_stack_from_customer()
-
-        if solution:
-            if isinstance(solution, PlatformVersion) and PlatformVersion.is_valid_arn(solution.arn):
-                platform_arn = solution
-                solution = None
-            elif solution.language_name == 'Multi-container Docker' and not iprofile:
-                io.log_warning(prompts['ecs.permissions'])
-
-        if not env_name:
-            # default is app-name plus '-dev'
-            default_name = app_name + '-dev'
-            current_environments = commonops.get_all_env_names()
-            unique_name = utils.get_unique_name(default_name,
-                                                current_environments)
-
-            if fileoperations.env_yaml_exists():
-                env_name = fileoperations.get_env_name_from_env_yaml()
-                if env_name is not None:
-                    if env_name.endswith('+') and group is None:
-                        raise InvalidOptionsError(strings['create.missinggroupsuffix'])
-                    else:
-                        env_name = env_name[:-1] + '-' + group
-                else:
-                    env_name = io.prompt_for_environment_name(unique_name)
-            else:
-                env_name = io.prompt_for_environment_name(unique_name)
-
-        # Get template if applicable
+        envvars = get_and_validate_envars(envvars)
         template_name = get_template_name(app_name, cfg)
-        if template_name:
-            template_contents = elasticbeanstalk.describe_template(app_name, template_name)
-            environment_name_from_configuration_template = template_contents.get('EnvironmentName')
-            if environment_name_from_configuration_template:
-                tier_definition = elasticbeanstalk.get_environment_tier_definition()
-                if tier_definition.is_worker():
-                    tier = tier_definition
-
-        if not tier or tier.is_webserver():
-            if not cname and not provided_env_name:
-                cname = get_cname(env_name)
-            elif not cname:
-                cname = None
-
-        if not key_name:
-            key_name = commonops.get_default_keyname()
-
-        if not elb_type and interactive and not single:
-            elb_type = get_elb_type(region)
-
+        tier = get_environment_tier(tier)
+        process_app_version = fileoperations.env_yaml_exists() or process
+        platform_arn, solution = get_solution_stack_or_platform(solution_string, iprofile)
+        env_name = provided_env_name or get_environment_name(app_name, group)
+        cname = cname or get_environment_cname(env_name, provided_env_name, tier)
+        key_name = key_name or commonops.get_default_keyname()
+        elb_type = elb_type or get_elb_type_from_customer(interactive, single, region)
         database = self.form_database_object()
         vpc = self.form_vpc_object()
-        envvars = get_and_validate_envars(envvars)
 
         env_request = CreateEnvironmentRequest(
             app_name=app_name,
@@ -262,8 +192,6 @@ class CreateController(AbstractBaseController):
             platform_arn=platform_arn)
 
         env_request.option_settings += envvars
-
-        process_app_version = fileoperations.env_yaml_exists() or process
 
         # avoid prematurely timing out in the CLI when an environment is launched with a RDS DB
         if not timeout and database:
@@ -335,22 +263,14 @@ class CreateController(AbstractBaseController):
         if vpc:
             # Interactively ask for vpc settings
             io.echo()
-            if not vpc_id:
-                vpc_id = io.get_input(prompts['vpc.id'])
-            if not publicip:
-                publicip = io.get_boolean_response(
-                    text=prompts['vpc.publicip'])
-            if not ec2subnets:
-                ec2subnets = io.get_input(prompts['vpc.ec2subnets'])
-            if not elbsubnets:
-                elbsubnets = io.get_input(prompts['vpc.elbsubnets'])
-            if not securitygroups:
-                securitygroups = io.get_input(prompts['vpc.securitygroups'])
-            if not elbpublic:
-                elbpublic = io.get_boolean_response(
-                    text=prompts['vpc.elbpublic'])
-            if not dbsubnets and database:
-                dbsubnets = io.get_input(prompts['vpc.dbsubnets'])
+            vpc_id = vpc_id or io.get_input(prompts['vpc.id'])
+            publicip = publicip or io.get_boolean_response(text=prompts['vpc.publicip'])
+            ec2subnets = ec2subnets or io.get_input(prompts['vpc.ec2subnets'])
+            elbsubnets = elbsubnets or io.get_input(prompts['vpc.elbsubnets'])
+            securitygroups = securitygroups or io.get_input(prompts['vpc.securitygroups'])
+            elbpublic = elbpublic or io.get_boolean_response(text=prompts['vpc.elbpublic'])
+            if database:
+                dbsubnets = dbsubnets or io.get_input(prompts['vpc.dbsubnets'])
 
         if vpc_id or vpc:
             vpc_object = dict()
@@ -424,21 +344,139 @@ class CreateController(AbstractBaseController):
             io.log_warning(strings['compose.novalidmodules'])
 
 
-def get_cname(env_name):
+def get_environment_cname(env_name, provided_env_name, tier):
+    """
+    Returns the CNAME for the environment that will be created. Suggests to customer a name based
+    of the environment name, which the customer is free to disregard.
+
+    :param env_name: Name of the environment determined by `create.get_environment_name`
+    :param provided_env_name: True/False depending on whether or not the customer passed an environment name
+    through the command line
+    :return: Unique CNAME for the environment which will be created by `eb create`
+    """
+    if tier and tier.is_worker():
+        return
+
+    if not provided_env_name:
+        return get_cname_from_customer(env_name)
+
+
+def get_environment_name(app_name, group):
+    """
+    Returns:
+        - environment name is present in the env.yaml file if one exists, or
+        - prompts customer interactively to enter an environment name
+
+    If using env.yaml to create an environment with, `group` must be passed through
+    the `-g/--env-group-suffix/` argument.
+
+    :param app_name: name of the application associated with the present working
+    directory
+    :param group: name of the group associated with
+    :return: Unique name of the environment which will be created by `eb create`
+    """
+    env_name = None
+    if fileoperations.env_yaml_exists():
+        env_name = fileoperations.get_env_name_from_env_yaml()
+        if env_name:
+            if env_name.endswith('+') and not group:
+                raise InvalidOptionsError(strings['create.missinggroupsuffix'])
+            elif not env_name.endswith('+') and group:
+                raise InvalidOptionsError(strings['create.missing_plus_sign_in_group_name'])
+            else:
+                env_name = env_name[:-1] + '-' + group
+
+    return env_name or io.prompt_for_environment_name(get_unique_environment_name(app_name))
+
+
+def get_solution_stack_or_platform(solution_string, iprofile):
+    """
+    Set a platform_arn or a solution name depending on
+    :param solution_string:
+    :param iprofile:
+    :return:
+    """
+    solution, platform_arn = None, None
+
+    # Test out sstack and tier before we ask any questions (Fast Fail)
+    if solution_string:
+        if PlatformVersion.is_valid_arn(solution_string):
+            platform_arn = solution_string
+        else:
+            try:
+                solution = solution_stack_ops.find_solution_stack_from_string(solution_string)
+            except NotFoundError:
+                raise NotFoundError(
+                    'Platform "' + solution_string + '" does not appear to be valid'
+                )
+
+    if not platform_arn and not solution:
+        solution = solution_stack_ops.get_solution_stack_from_customer()
+
+    if solution and solution.language_name == 'Multi-container Docker' and not iprofile:
+        io.log_warning(prompts['ecs.permissions'])
+
+    return platform_arn, solution
+
+
+def get_environment_tier(tier):
+    """
+    Set the 'tier' for the environment from the raw value received for the `--tier`
+    argument.
+
+    :return: A Tier object representing the environment's tier type
+    """
+    if tier:
+        tier = Tier.from_raw_string(tier)
+
+    return tier
+
+
+def get_unique_environment_name(app_name):
+    """
+    Derive a unique name for a new environment based on the application name
+    to suggest to the customer
+    :param app_name: name of the application associated with the present working
+    directory
+    :return: A unique name for a new environment
+    """
+    default_name = app_name + '-dev'
+    current_environments = commonops.get_all_env_names()
+
+    return utils.get_unique_name(default_name, current_environments)
+
+
+def get_cname_from_customer(env_name):
+    """
+    Prompt customer to specify the CNAME for the environment.
+
+    Selection defaults to the Environment's name when provided with blank input.
+    :param env_name: name of the environment whose CNAME to configure
+    :return: CNAME chosen for the environment
+    """
     while True:
         cname = io.prompt_for_cname(default=env_name)
-        if not cname:
-            # Reverting to default
-            break
-        if not commonops.is_cname_available(cname):
-            io.echo('That cname is not available. '
-                    'Please choose another.')
+        if cname and not commonops.is_cname_available(cname):
+            io.echo('That cname is not available. Please choose another.')
         else:
             break
     return cname
 
 
-def get_elb_type(region):
+def get_elb_type_from_customer(interactive, single, region):
+    """
+    Prompt customer to specify the ELB type if operating in the interactive mode and
+    on a load-balanced environment.
+
+    Selection defaults to 'classic' when provided with blank input.
+    :param interactive: True/False depending on whether operating in the interactive mode or not
+    :param single: False/True depending on whether environment is load balanced or not
+    :param region: AWS region in which in load balancer will be created
+    :return: selected ELB type which is one among ['application', 'classic', 'network']
+    """
+    if not interactive or single:
+        return
+
     io.echo()
     io.echo('Select a load balancer type')
     result = utils.prompt_for_item_in_list(elb_types(region), default=1)
@@ -448,6 +486,12 @@ def get_elb_type(region):
 
 
 def elb_types(region):
+    """
+    Returns the list of Load Balancer types that a customer can use in
+    the given region.
+    :param region: Name of region of create environment in
+    :return: list of Load Balancer types
+    """
     types = [elb_names.CLASSIC_VERSION, elb_names.APPLICATION_VERSION]
 
     if not region:
@@ -460,6 +504,10 @@ def elb_types(region):
 
 
 def get_and_validate_envars(envvars):
+    """
+    :param envvars: A comma-separated string of environment variables to create the environment with
+    :return: A sanitized list of environment variables
+    """
     if not envvars:
         return []
 
@@ -471,10 +519,21 @@ def get_and_validate_envars(envvars):
 
 
 def get_template_name(app_name, cfg):
+    """
+    Returns the name of the saved configuration template:
+    - specified by the customer stored in S3
+    - identified as 'default' present locally
+
+    For more information, please refer to saved_configs.resolve_config_name
+    :param app_name: name of the application associated with this directory
+    :param cfg: saved config name specified by the customer
+    :return: normalized
+    """
     if not cfg:
         # See if a default template exists
-        if saved_configs.resolve_config_location('default') is None:
-            return None
+        if not saved_configs.resolve_config_location('default'):
+            return
         else:
             cfg = 'default'
+
     return saved_configs.resolve_config_name(app_name, cfg)

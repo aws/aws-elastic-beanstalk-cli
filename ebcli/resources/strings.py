@@ -145,6 +145,7 @@ strings = {
     'create.single_and_elb_type': 'You cannot use the "--single" and "--elb-type" options together.',
     'create.appdoesntexist': 'The specified app {app_name} does not exist. Skipping.',
     'create.missinggroupsuffix': 'The environment name specified in env.yaml ends with a \'+\', but no group suffix was provided. Please pass the --env-group-suffix argument.',
+    'create.missing_plus_sign_in_group_name': 'The environment name specified in env.yaml does not end with a \'+\', but a group suffix was provided. Please add a trailing \'+\' to the environment name',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',
     # Text shown if 'eb terminate' is called while no environment is selected as default
     'terminate.noenv': 'To delete the application and all application versions, type "eb terminate --all".',

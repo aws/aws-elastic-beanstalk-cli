@@ -108,3 +108,8 @@ class TestPlatform(unittest.TestCase):
 			"Unable to parse arn 'node.js'",
 			context_manager.exception.message
 		)
+
+	def test_is_eb_managed_platform(self):
+		arn = 'arn:aws:elasticbeanstalk:us-west-2::platform/Multi-container Docker running on 64bit Amazon Linux/2.7.5'
+
+		self.assertTrue(PlatformVersion.is_eb_managed_platform_arn(arn))

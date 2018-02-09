@@ -15,7 +15,9 @@ import shutil
 
 import unittest
 import mock
+import unittest
 
+from ebcli.controllers import create
 from ebcli.controllers import create
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
@@ -540,140 +542,6 @@ class TestCreate(TestCreateBase):
             expected_environment_request,
             branch_default=False,
             process_app_version=True,
-            nohang=False,
-            interactive=False,
-            timeout=None,
-            source=None
-        )
-
-    @mock.patch('ebcli.controllers.create.get_template_name')
-    @mock.patch('ebcli.lib.elasticbeanstalk.describe_template')
-    @mock.patch('ebcli.lib.elasticbeanstalk.get_environment_tier_definition')
-    @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
-    @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.get_default_keyname')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
-    def test_create_with_configuration_template_flag__overrides_tier_specified(
-            self,
-            is_cname_available_mock,
-            get_default_keyname_mock,
-            find_solution_stack_from_string_mock,
-            get_solution_stack_from_customer_mock,
-            make_new_env_mock,
-            get_environment_tier_definition_mock,
-            describe_template_mock,
-            get_template_name_mock
-    ):
-        get_template_name_mock.return_value = 'my-template-name'
-        describe_template_mock.return_value = {
-            "SolutionStackName": "64bit Amazon Linux 2017.09 v2.6.5 running PHP 7.1",
-            "PlatformArn": "arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/2.6.5",
-            "ApplicationName": "health-transition-test-1",
-            "EnvironmentName": "health-transition-test-1",
-            "TemplateName": "health-transition-test-test-1-sc",
-            "Description": "Configuration created from the EB CLI using \"eb config save\".",
-            "DeploymentStatus": "deployed",
-            "DateCreated": "2018-03-23T19:02:10Z",
-            "DateUpdated": "2018-03-23T19:02:10Z",
-            "OptionSettings": [
-                {
-                    "ResourceName": "AWSEBAutoScalingGroup",
-                    "Namespace": "aws:autoscaling:asg",
-                    "OptionName": "Availability Zones",
-                    "Value": "Any"
-                },
-            ]
-        }
-        get_environment_tier_definition_mock.return_value = Tier('Worker', 'SQS/HTTP', '')
-        get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
-        is_cname_available_mock.return_value = True
-        get_default_keyname_mock.return_value = None
-
-        self.app = EB(argv=['create', '-t', 'webserver', '--cfg', 'my-template-name', self.env_name])
-        self.app.setup()
-        self.app.run()
-
-        expected_environment_request = CreateEnvironmentRequest(
-            app_name=self.app_name,
-            env_name=self.env_name,
-            platform=self.solution,
-            tier=Tier.from_raw_string('worker'),
-            template_name='my-template-name'
-        )
-        call_args, kwargs = make_new_env_mock.call_args
-        actual_environment_request = call_args[0]
-        self.assertEqual(actual_environment_request, expected_environment_request)
-        make_new_env_mock.assert_called_with(
-            expected_environment_request,
-            branch_default=False,
-            process_app_version=False,
-            nohang=False,
-            interactive=False,
-            timeout=None,
-            source=None
-        )
-
-    @mock.patch('ebcli.controllers.create.get_template_name')
-    @mock.patch('ebcli.lib.elasticbeanstalk.describe_template')
-    @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
-    @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.get_default_keyname')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
-    def test_create_with_configuration_template_flag__environment_name_not_found_in_template__tier_not_overridden(
-            self,
-            is_cname_available_mock,
-            get_default_keyname_mock,
-            find_solution_stack_from_string_mock,
-            get_solution_stack_from_customer_mock,
-            make_new_env_mock,
-            describe_template_mock,
-            get_template_name_mock
-    ):
-        get_template_name_mock.return_value = 'my-template-name'
-        describe_template_mock.return_value = {
-            "SolutionStackName": "64bit Amazon Linux 2017.09 v2.6.5 running PHP 7.1",
-            "PlatformArn": "arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/2.6.5",
-            "ApplicationName": "health-transition-test-1",
-            "TemplateName": "health-transition-test-test-1-sc",
-            "Description": "Configuration created from the EB CLI using \"eb config save\".",
-            "DeploymentStatus": "deployed",
-            "DateCreated": "2018-03-23T19:02:10Z",
-            "DateUpdated": "2018-03-23T19:02:10Z",
-            "OptionSettings": [
-                {
-                    "ResourceName": "AWSEBAutoScalingGroup",
-                    "Namespace": "aws:autoscaling:asg",
-                    "OptionName": "Availability Zones",
-                    "Value": "Any"
-                },
-            ]
-        }
-        get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
-        is_cname_available_mock.return_value = True
-        get_default_keyname_mock.return_value = None
-
-        self.app = EB(argv=['create', '-t', 'webserver', '--cfg', 'my-template-name', self.env_name])
-        self.app.setup()
-        self.app.run()
-
-        expected_environment_request = CreateEnvironmentRequest(
-            app_name=self.app_name,
-            env_name=self.env_name,
-            platform=self.solution,
-            tier=Tier.from_raw_string('webserver'),
-            template_name='my-template-name'
-        )
-        call_args, kwargs = make_new_env_mock.call_args
-        actual_environment_request = call_args[0]
-        self.assertEqual(actual_environment_request, expected_environment_request)
-        make_new_env_mock.assert_called_with(
-            expected_environment_request,
-            branch_default=False,
-            process_app_version=False,
             nohang=False,
             interactive=False,
             timeout=None,
@@ -1403,3 +1271,137 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         actual_environment_request = call_args[0]
 
         self.assertEnvironmentRequestsEqual(expected_environment_request, actual_environment_request)
+
+
+class TestCreateModule(unittest.TestCase):
+    def setUp(self):
+        if not os.path.exists('testDir'):
+            os.makedirs('testDir')
+        os.chdir('testDir')
+
+    def tearDown(self):
+        os.chdir(os.path.pardir)
+        if os.path.exists('testDir'):
+            shutil.rmtree('testDir')
+
+    @mock.patch('ebcli.operations.saved_configs.resolve_config_location')
+    def test_get_template_name__config_file_name_not_passed__defaul_config_file_location_not_resolved(
+            self,
+            resolve_config_location_mock
+    ):
+        resolve_config_location_mock.return_value = None
+
+        self.assertIsNone(create.get_template_name('some_app', None))
+
+    @mock.patch('ebcli.operations.saved_configs.resolve_config_location')
+    @mock.patch('ebcli.operations.saved_configs.resolve_config_name')
+    def test_get_template_name__config_file_name_not_passed__defaul_config_file_location_resolved(
+            self,
+            resolve_config_name,
+            resolve_config_location_mock
+    ):
+        resolve_config_location_mock.return_value = 'default'
+        resolve_config_name.return_value = 'default'
+
+        self.assertEqual('default', create.get_template_name('some_app', None))
+
+    @mock.patch('ebcli.operations.saved_configs.resolve_config_name')
+    def test_get_template_name__config_file_name_passed_in(
+            self,
+            resolve_config_name_mock
+    ):
+        resolve_config_name_mock.return_value = 'some_cfg'
+
+        self.assertEqual('some_cfg', create.get_template_name('some_app', 'some_cfg'))
+
+    def test_get_elb_type_from_customer__single_instance_environment(self):
+        self.assertIsNone(
+            create.get_elb_type_from_customer(
+                interactive=True,
+                single=True,
+                region='us-west-2'
+            )
+        )
+
+    def test_get_elb_type_from_customer__non_interactive_mode(self):
+        self.assertIsNone(
+            create.get_elb_type_from_customer(
+                interactive=False,
+                single=True,
+                region='us-west-2'
+            )
+        )
+
+    @mock.patch('ebcli.lib.utils.prompt_for_item_in_list')
+    def test_get_elb_type_from_customer__interactive_mode__load_balanced_environment(
+            self,
+            prompt_for_item_in_list_mock
+    ):
+        prompt_for_item_in_list_mock.return_value = 'application'
+        self.assertEqual(
+            'application',
+            create.get_elb_type_from_customer(
+                interactive=True,
+                single=None,
+                region='us-west-2'
+            )
+        )
+
+    def test_get_environment_name__env_yaml_exists__env_name_present__group_name_is_provided(self):
+        with open('env.yaml', 'w') as env_yaml:
+            env_yaml.write("""AWSConfigurationTemplateVersion: 1.1.0.0
+SolutionStack: 64bit Amazon Linux 2017.03 v2.7.5 running Multi-container Docker 17.03.2-ce (Generic)
+EnvironmentName: my-test-environment+
+"""
+                           )
+
+            env_yaml.close()
+
+        group_name = 'production'
+        self.assertEqual(
+            'my-test-environment-production',
+            create.get_environment_name('my-application', group_name)
+        )
+
+    @mock.patch('ebcli.core.io.echo')
+    def test_get_environment_name__env_yaml_exists__env_name_present_but_not_suffixed_with_plus(
+            self,
+            echo_mock
+    ):
+        with open('env.yaml', 'w') as env_yaml:
+            env_yaml.write("""AWSConfigurationTemplateVersion: 1.1.0.0
+SolutionStack: 64bit Amazon Linux 2017.03 v2.7.5 running Multi-container Docker 17.03.2-ce (Generic)
+EnvironmentName: my-test-environment
+"""
+                           )
+
+            env_yaml.close()
+
+        group_name = 'production'
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            create.get_environment_name('my-application', group_name)
+
+        self.assertEqual(
+            "The environment name specified in env.yaml does not end with a '+', but a group suffix was provided. Please add a trailing '+' to the environment name",
+            str(context_manager.exception)
+        )
+
+    def test_get_environment_name__env_yaml_exists__env_name_present__group_name_not_provided(self):
+        with open('env.yaml', 'w') as env_yaml:
+            env_yaml.write("""AWSConfigurationTemplateVersion: 1.1.0.0
+SolutionStack: 64bit Amazon Linux 2017.03 v2.7.5 running Multi-container Docker 17.03.2-ce (Generic)
+EnvironmentName: my-test-environment+
+"""
+                           )
+
+            env_yaml.close()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            create.get_environment_name('my-application', None)
+
+        self.assertEqual(
+            "The environment name specified in env.yaml ends with a '+', but no group "
+            "suffix was provided. Please pass the --env-group-suffix argument.",
+            str(context_manager.exception)
+        )

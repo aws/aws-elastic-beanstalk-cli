@@ -70,10 +70,14 @@ class Tier(object):
         try:
             return cls.TIER_MAP[customer_input.lower().strip()]()
         except KeyError:
-            raise NotFoundError()
+            raise NotFoundError('Provided tier "{}" does not appear to be valid'.format(customer_input))
 
     def is_webserver(self):
         return self.name.lower() == 'webserver'
 
     def is_worker(self):
         return self.name.lower() == 'worker'
+
+    @classmethod
+    def looks_like_worker_tier(cls, customer_input):
+        return cls.from_raw_string(customer_input) == cls.from_raw_string('worker')
