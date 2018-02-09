@@ -37,7 +37,6 @@ class TestRequests(unittest.TestCase):
 			'template_name': None,
 			'tier': None,
 			'version_label': None,
-			'platform_arn': None,
 			'group_name': None,
 			'tags': [],
 			'database': {
@@ -274,7 +273,6 @@ class TestRequests(unittest.TestCase):
 			'template_name': None,
 			'tier': 'webserver',
 			'version_label': None,
-			'platform_arn': None,
 			'group_name': None,
 			'tags': [],
 			'elb_type': 'application',

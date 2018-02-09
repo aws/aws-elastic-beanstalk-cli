@@ -122,26 +122,15 @@ class CloneController(AbstractBaseController):
                 if platform != env.platform:
                     io.log_warning(prompts['clone.latestwarn'])
 
-        if platform and PlatformVersion.is_valid_arn(platform.name):
-            clone_request = CloneEnvironmentRequest(
-                app_name=app_name,
-                env_name=clone_name,
-                original_name=env_name,
-                cname=cname,
-                platform_arn=platform.name,
-                scale=scale,
-                tags=tags,
-            )
-        else:
-            clone_request = CloneEnvironmentRequest(
-                app_name=app_name,
-                env_name=clone_name,
-                original_name=env_name,
-                cname=cname,
-                platform=platform,
-                scale=scale,
-                tags=tags,
-            )
+        clone_request = CloneEnvironmentRequest(
+            app_name=app_name,
+            env_name=clone_name,
+            original_name=env_name,
+            cname=cname,
+            platform=platform,
+            scale=scale,
+            tags=tags,
+        )
 
         clone_request.option_settings += envvars
 

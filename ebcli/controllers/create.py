@@ -18,7 +18,7 @@ from ..core.abstractcontroller import AbstractBaseController
 from ..lib import elasticbeanstalk, utils
 from ..objects.exceptions import NotFoundError, AlreadyExistsError, \
     InvalidOptionsError
-from ebcli.objects.platform import PlatformVersion
+from ebcli.objects.solutionstack import SolutionStack
 from ..objects.requests import CreateEnvironmentRequest
 from ..objects.tier import Tier
 from ..operations import (
@@ -158,10 +158,10 @@ class CreateController(AbstractBaseController):
         app_name = self.get_app_name()
         tags = createops.get_and_validate_tags(tags)
         envvars = get_and_validate_envars(envvars)
+        process_app_version = fileoperations.env_yaml_exists() or process
+        platform = get_platform(solution_string, iprofile)
         template_name = get_template_name(app_name, cfg)
         tier = get_environment_tier(tier)
-        process_app_version = fileoperations.env_yaml_exists() or process
-        platform_arn, solution = get_solution_stack_or_platform(solution_string, iprofile)
         env_name = provided_env_name or get_environment_name(app_name, group)
         cname = cname or get_environment_cname(env_name, provided_env_name, tier)
         key_name = key_name or commonops.get_default_keyname()
@@ -169,13 +169,17 @@ class CreateController(AbstractBaseController):
         database = self.form_database_object()
         vpc = self.form_vpc_object()
 
+        # avoid prematurely timing out in the CLI when an environment is launched with a RDS DB
+        if not timeout and database:
+            timeout = 15
+
         env_request = CreateEnvironmentRequest(
             app_name=app_name,
             env_name=env_name,
             group_name=group,
             cname=cname,
             template_name=template_name,
-            platform=solution,
+            platform=platform,
             tier=tier,
             instance_type=itype,
             version_label=label,
@@ -188,14 +192,9 @@ class CreateController(AbstractBaseController):
             scale=scale,
             database=database,
             vpc=vpc,
-            elb_type=elb_type,
-            platform_arn=platform_arn)
+            elb_type=elb_type)
 
         env_request.option_settings += envvars
-
-        # avoid prematurely timing out in the CLI when an environment is launched with a RDS DB
-        if not timeout and database:
-            timeout = 15
 
         createops.make_new_env(env_request,
                                branch_default=branch_default,
@@ -389,34 +388,22 @@ def get_environment_name(app_name, group):
     return env_name or io.prompt_for_environment_name(get_unique_environment_name(app_name))
 
 
-def get_solution_stack_or_platform(solution_string, iprofile):
+def get_platform(solution_string, iprofile=None):
     """
-    Set a platform_arn or a solution name depending on
-    :param solution_string:
-    :param iprofile:
-    :return:
+    Set a PlatformVersion or a SolutionStack based on the `solution_string`.
+    :param solution_string: The value of the `--platform` argument input by the customer
+    :param iprofile: The instance profile, if any, the customer passed as argument
+    :return: a PlatformVersion or a SolutionStack object depending on whether the match was
+        against an ARN of a Solution Stack name.
     """
-    solution, platform_arn = None, None
+    solution = solution_stack_ops.find_solution_stack_from_string(solution_string)
+    solution = solution or solution_stack_ops.get_solution_stack_from_customer()
 
-    # Test out sstack and tier before we ask any questions (Fast Fail)
-    if solution_string:
-        if PlatformVersion.is_valid_arn(solution_string):
-            platform_arn = solution_string
-        else:
-            try:
-                solution = solution_stack_ops.find_solution_stack_from_string(solution_string)
-            except NotFoundError:
-                raise NotFoundError(
-                    'Platform "' + solution_string + '" does not appear to be valid'
-                )
+    if isinstance(solution, SolutionStack):
+        if solution.language_name == 'Multi-container Docker' and not iprofile:
+            io.log_warning(prompts['ecs.permissions'])
 
-    if not platform_arn and not solution:
-        solution = solution_stack_ops.get_solution_stack_from_customer()
-
-    if solution and solution.language_name == 'Multi-container Docker' and not iprofile:
-        io.log_warning(prompts['ecs.permissions'])
-
-    return platform_arn, solution
+    return solution
 
 
 def get_environment_tier(tier):
@@ -424,6 +411,10 @@ def get_environment_tier(tier):
     Set the 'tier' for the environment from the raw value received for the `--tier`
     argument.
 
+    If a configuration template corresponding to `template_name` is also resolved,
+    and the tier corresponding to the configuration template is a 'worker' tier,
+    any previously set value for 'tier' is replaced with the value from the saved
+    config.
     :return: A Tier object representing the environment's tier type
     """
     if tier:

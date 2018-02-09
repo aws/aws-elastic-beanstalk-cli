@@ -92,7 +92,7 @@ def find_solution_stack_from_string(solution_string, find_newer=False):
 		match = platformops.find_custom_platform_from_string(solution_string)
 
 	if not match:
-		raise NotFoundError(prompts['sstack.invalidkey'].replace('{string}', solution_string))
+		raise NotFoundError('Platform "{}" does not appear to be valid'.format(solution_string))
 
 	return match
 
