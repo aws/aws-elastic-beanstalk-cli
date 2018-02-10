@@ -102,7 +102,7 @@ def _get_solution_stack():
 
     # Test out sstack and tier before we ask any questions (Fast Fail)
     if solution_string:
-        if PlatformVersion.is_valid_arn(solution_string):
+        if PlatformVersion.is_custom_platform_arn(solution_string):
             try:
                 platformops.describe_custom_platform_version(solution_string)
             except NotFoundError:
@@ -115,7 +115,7 @@ def _get_solution_stack():
             try:
                 soln_stk = solution_stack_ops.find_solution_stack_from_string(solution_string)
 
-                if PlatformVersion.is_valid_arn(soln_stk):
+                if PlatformVersion.is_eb_managed_platform_arn(soln_stk):
                     soln_stk = PlatformVersion.get_platform_name(soln_stk)
 
             except NotFoundError:
