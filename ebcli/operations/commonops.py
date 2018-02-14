@@ -513,7 +513,7 @@ def pull_down_app_info(app_name, default_env=None):
     if keyname is None:
         keyname = -1
 
-    return env.platform.platform_shorthand, keyname
+    return env.platform.arn, keyname
 
 
 def open_webpage_in_browser(url, ssl=False):
