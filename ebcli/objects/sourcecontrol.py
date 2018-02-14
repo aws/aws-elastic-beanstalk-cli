@@ -159,43 +159,30 @@ class Git(SourceControl):
     def get_current_repository(self):
         # it's possible 'origin' isn't the name of their remote so attempt to get their current remote
         current_branch = self.get_current_branch()
+        get_remote_name_command = ['git', 'config', '--get', 'branch.{0}.remote'.format(current_branch)]
+        LOG.debug(
+            'Getting current repository name based on the current branch name:'
+            '{0}'.format(' '.join(get_remote_name_command))
+        )
+
         stdout, stderr, exitcode = self._run_cmd(
-            ['git', 'config', '--get', 'branch.{0}.remote'.format(current_branch)], handle_exitcode=False)
+            get_remote_name_command,
+            handle_exitcode=False
+        )
 
         current_remote = stdout
         if exitcode != 0:
             LOG.debug("No remote found for the current working directory.")
             current_remote = "origin"
-        else:
-            LOG.debug("Found remote branch {0} that is currently being tracked".format(current_remote))
-            try:
-                if current_remote.split('/') > 1:
-                    # TODO: To confirm a url like this is really hacky I should change it.
-                    # This assumes the remote they have is a raw address and get the repository name from that. It works
-                    # for the way that I use it but it might fail if it is used to get repos that were not created by
-                    # the eb cli
-                    LOG.debug("Assuming remote branch is a raw url, returning this as the repository")
-                    return stdout.split('/')[-1]
-            except TypeError:
-                LOG.debug("stdout from git config branch remote was not a string: {0}".format(stdout))
-                current_remote = "origin"
 
-        # We want the name of the repository not the remote it is saved as locally
-        stdout, stderr, exitcode = self._run_cmd(
-            ['git', 'config', '--get', 'remote.{0}.url'.format(current_remote)], handle_exitcode=False)
-        if exitcode != 0:
-            LOG.debug('No remote repository found')
-            return
-        else:
-            self._handle_exitcode(exitcode, stderr)
-
-        LOG.debug('git config --get remote.origin.url: ' + stdout)
-        # Need to parse branch from ref manually because "--short" is
-        # not supported on git < 1.8
-        return stdout.split('/')[-1]
+        LOG.debug('Found remote: {}'.format(current_remote))
+        return current_remote
 
     def get_current_branch(self):
-        stdout, stderr, exitcode = self._run_cmd(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], handle_exitcode=False)
+        revparse_command = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']
+        LOG.debug('Getting current branch name: {0}'.format(' '.join(revparse_command)))
+
+        stdout, stderr, exitcode = self._run_cmd(revparse_command, handle_exitcode=False)
 
         if stdout.strip() == 'HEAD':
             io.log_warning('Git is in a detached head state. Using branch "default".')
@@ -203,18 +190,25 @@ class Git(SourceControl):
         else:
             self._handle_exitcode(exitcode, stderr)
 
+        LOG.debug(stdout)
+
         return stdout
 
     def get_current_commit(self):
+        latest_commit_command = ['git', 'rev-parse', '--verify', 'HEAD']
+        LOG.debug('Getting current branch name: {0}'.format(' '.join(latest_commit_command)))
+
         stdout, stderr, exitcode = self._run_cmd(
-            ['git', 'rev-parse', '--verify', 'HEAD'], handle_exitcode=False)
+            latest_commit_command,
+            handle_exitcode=False
+        )
         if exitcode != 0:
             LOG.debug('No current commit found')
             return
         else:
             self._handle_exitcode(exitcode, stderr)
 
-        LOG.debug('git rev-parse --verify HEAD result: ' + stdout)
+        LOG.debug(stdout)
         return stdout
 
     def do_zip_submodule(self, main_location, sub_location, staged=False, submodule_dir=None):
@@ -316,27 +310,10 @@ class Git(SourceControl):
         finally:
             os.chdir(cwd)
 
-    def git_remote(self):
-        stdout, stderr, exitcode = self._run_cmd(['git', 'remote'])
-
-        if not stdout:
-            raise GitRemoteNotSetupError("""fatal: No configured push destination.
-Either specify the URL from the command-line or configure a remote repository using
-
-    git remote add <name> <url>
-
-and then push using the remote name
-
-    git push <name>
-
-""")
-
-        return stdout
-
     def push_codecommit_code(self):
         io.log_info('Pushing local code to codecommit with git-push')
 
-        stdout, stderr, exitcode = self._run_cmd(['git', 'push', self.git_remote(), self.get_current_branch()])
+        stdout, stderr, exitcode = self._run_cmd(['git', 'push', self.get_current_repository(), self.get_current_branch()])
 
         if exitcode != 0:
             io.log_warning('Git is not able to push code: {0}'.format(exitcode))
@@ -346,24 +323,35 @@ and then push using the remote name
             self._handle_exitcode(exitcode, stderr)
 
     def setup_codecommit_remote_repo(self, remote_url):
-        stdout, stderr, exitcode = self._run_cmd(['git', 'remote', 'add', self.codecommit_remote_name, remote_url], handle_exitcode=False)
+        remote_add_command = ['git', 'remote', 'add', self.codecommit_remote_name, remote_url]
+        LOG.debug('Adding remote: {0}'.format(' '.join(remote_add_command)))
+
+        stdout, stderr, exitcode = self._run_cmd(remote_add_command, handle_exitcode=False)
 
         # Setup the remote repository with code commit
         if exitcode != 0:
             if exitcode == 128:
-                LOG.debug("git remote already exists modifying to new url: {0}".format(remote_url))
-                self._run_cmd(['git', 'remote', 'set-url', self.codecommit_remote_name, remote_url])
-                self._run_cmd(['git', 'remote', 'set-url', '--push', self.codecommit_remote_name, remote_url])
+                remote_set_url_command = ['git', 'remote', 'set-url', self.codecommit_remote_name, remote_url]
+                LOG.debug('Remote already exists, performing: {0}'.format(' '.join(remote_set_url_command)))
+                self._run_cmd(remote_set_url_command)
+
+                remote_set_url_with_push_command = ['git', 'remote', 'set-url', '--push', self.codecommit_remote_name, remote_url]
+                LOG.debug('                {0}'.format(' '.join(remote_set_url_with_push_command)))
+                self._run_cmd(remote_set_url_with_push_command)
             else:
-                LOG.debug("Error setting up git config for code commit: {0}".format(stderr))
+                LOG.debug("Error setting up git config for CodeCommit: {0}".format(stderr))
                 return
         else:
-            self._run_cmd(['git', 'remote', 'set-url', '--add', '--push', self.codecommit_remote_name, remote_url])
+            remote_set_url_with_add_push_command = ['git', 'remote', 'set-url', '--add', '--push', self.codecommit_remote_name, remote_url]
+            LOG.debug('Setting remote URL and pushing to it: {0}'.format(' '.join(remote_set_url_with_add_push_command)))
+            self._run_cmd(remote_set_url_with_add_push_command)
             self._handle_exitcode(exitcode, stderr)
 
         LOG.debug('git remote result: ' + stdout)
 
     def setup_new_codecommit_branch(self, branch_name):
+        LOG.debug("Setting up CodeCommit branch")
+
         # Get fetch to ensure the remote repository is up to date
         self.fetch_remote_branches(self.codecommit_remote_name)
 
@@ -372,7 +360,7 @@ and then push using the remote name
 
         # Push the current code and set the remote as the current working remote
         stdout, stderr, exitcode = self._run_cmd(
-            ['git', 'push', '-u', self.git_remote(), branch_name],
+            ['git', 'push', '-u', self.codecommit_remote_name, branch_name],
             handle_exitcode=False
         )
 
@@ -404,9 +392,9 @@ and then push using the remote name
 
         LOG.debug('git branch result: ' + stdout)
 
-    def setup_existing_codecommit_branch(self, branch_name):
+    def setup_existing_codecommit_branch(self, branch_name, remote_url=None):
         # Get fetch to ensure the remote repository is up to date
-        self.fetch_remote_branches(self.codecommit_remote_name)
+        self.fetch_remote_branches(self.codecommit_remote_name, remote_url)
 
         # Attempt to check out the desired branch, if it doesn't exist create it from the current HEAD
         self.checkout_branch(branch_name, create_branch=True)
@@ -455,16 +443,24 @@ and then push using the remote name
         LOG.debug('git commit result: {0}'.format(stdout))
         return stdout
 
-    def fetch_remote_branches(self, remote):
-        stdout, stderr, exitcode = self._run_cmd(
-            [
+    def fetch_remote_branches(self, remote_name, remote_url=None):
+        if not remote_url:
+            fetch_command = [
                 'git',
                 'fetch',
-                self.git_remote(),
-                '+refs/heads/*:refs/remotes/{0}/*'.format(remote)
-            ],
-            handle_exitcode=False
-        )
+                self.get_current_repository(),
+                '+refs/heads/*:refs/remotes/{0}/*'.format(remote_name)
+            ]
+            LOG.debug('Fetching remote branches using remote name: {0}'.format(' '.join(fetch_command)))
+        else:
+            fetch_command = [
+                'git',
+                'fetch',
+                remote_url
+            ]
+            LOG.debug('Fetching remote branches using remote URL: {0}'.format(' '.join(fetch_command)))
+
+        stdout, stderr, exitcode = self._run_cmd(fetch_command, handle_exitcode=False)
 
         if stderr:
             LOG.debug('git fetch error: ' + stderr)

@@ -204,26 +204,28 @@ class InitController(AbstractBaseController):
                     source_control.setup_codecommit_cred_config()
 
                     # Get user specified repository
+                    remote_url = None
                     if repository is None:
                         repository = get_repository_interactive()
                     else:
                         try:
                             result = codecommit.get_repository(repository)
-                            source_control.setup_codecommit_remote_repo(remote_url=result['repositoryMetadata']['cloneUrlHttp'])
+                            remote_url = result['repositoryMetadata']['cloneUrlHttp']
+                            source_control.setup_codecommit_remote_repo(remote_url=remote_url)
                         except ServiceError as ex:
                             io.log_error(strings['codecommit.norepo'])
                             raise ex
 
                     # Get user specified branch
                     if branch is None:
-                        branch = get_branch_interactive(repository)
+                        branch = get_branch_interactive(repository, remote_url)
                     else:
                         try:
                             codecommit.get_branch(repository, branch)
                         except ServiceError as ex:
                             io.log_error(strings['codecommit.nobranch'])
                             raise ex
-                        source_control.setup_existing_codecommit_branch(branch)
+                        source_control.setup_existing_codecommit_branch(branch, remote_url)
 
                 except ValidationError:
                     LOG.debug("Denied option to use CodeCommit, continuing initialization")
@@ -495,7 +497,7 @@ def get_repository_interactive():
     return repo_name
 
 
-def get_branch_interactive(repository):
+def get_branch_interactive(repository, remote_url):
     source_control = SourceControl.get_source_control()
     # Give list of code commit branches to use
     new_branch = False
@@ -504,7 +506,6 @@ def get_branch_interactive(repository):
 
     # If there are existing branches prompt the user to pick one
     if len(branch_list) > 0:
-        io.echo()
         io.echo('Select a branch')
         new_branch_option = '[ Create new Branch with local HEAD ]'
         branch_list.append(new_branch_option)
@@ -529,7 +530,8 @@ def get_branch_interactive(repository):
 
     # Setup git to push to this repo
     result = codecommit.get_repository(repository)
-    source_control.setup_codecommit_remote_repo(remote_url=result['repositoryMetadata']['cloneUrlHttp'])
+    remote_url = result['repositoryMetadata']['cloneUrlHttp']
+    source_control.setup_codecommit_remote_repo(remote_url=remote_url)
 
     if len(branch_list) == 0 or new_branch:
         LOG.debug("Creating a new branch")
@@ -556,7 +558,7 @@ def get_branch_interactive(repository):
             return None
     elif not new_branch:
         LOG.debug("Setting up an existing branch")
-        succesful_branch = source_control.setup_existing_codecommit_branch(branch_name)
+        succesful_branch = source_control.setup_existing_codecommit_branch(branch_name, remote_url)
         if not succesful_branch:
             io.echo("Could not set CodeCommit branch, run with '--debug' to get the full error")
             return None

@@ -185,15 +185,6 @@ class TestGitSourceControl(unittest.TestCase):
         self.assertRaises(CommandError, sourcecontrol.Git().get_version_label)
 
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
-    @mock.patch('ebcli.objects.sourcecontrol.exec_cmd')
-    def test_git_remote(self, mock_exec_cmd):
-        stdout = ''
-        stderr = ''
-        exit_code = 0
-        mock_exec_cmd.return_value = stdout, stderr, exit_code
-        self.assertRaises(GitRemoteNotSetupError, sourcecontrol.Git().git_remote)
-
-    @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_current_branch(self):
         self.assertEqual('master', sourcecontrol.Git().get_current_branch())
 
