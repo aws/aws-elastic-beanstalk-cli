@@ -44,7 +44,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
     if timeout_in_minutes is None:
         timeout_in_minutes = 10
 
-    start = datetime.now()
+    start = datetime.utcnow()
     timediff = timedelta(seconds=timeout_in_minutes * 60)
 
     # default to now, will update if request_id is provided
@@ -92,7 +92,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                     time.sleep(sleep_time)
 
         # Get remaining events
-        while (datetime.now() - start) < timediff:
+        while (datetime.utcnow() - start) < timediff:
             time.sleep(sleep_time)
 
             events = elasticbeanstalk.get_new_events(
@@ -161,88 +161,6 @@ def filter_events(events, version_label=None, request_id=None, env_name=None):
     return filtered_events
 
 
-def wait_for_multiple_success_events(request_ids, timeout_in_minutes=None,
-                                     sleep_time=5, stream_events=True,
-                                     can_abort=False):
-    if timeout_in_minutes == 0:
-        return
-    if timeout_in_minutes is None:
-        timeout_in_minutes = 10
-
-    start = datetime.now()
-    timediff = timedelta(seconds=timeout_in_minutes * 60)
-
-    last_times = []
-    events_matrix = []
-    app_names = []
-    env_names = []
-    successes = []
-    for i in range(len(request_ids)):
-        # Like indices of last_times and events_matrix correspond
-        # to the same environment
-        last_times.append(None)
-        app_names.append(None)
-        env_names.append(None)
-        events_matrix.append([])
-        successes.append(False)
-
-    streamer = io.get_event_streamer()
-    if can_abort:
-        streamer.prompt += strings['events.abortmessage']
-
-    try:
-        # Get first events from all requests for start times
-        for index in range(len(request_ids)):
-            while not events_matrix[index]:
-                events_matrix[index] = elasticbeanstalk.get_new_events(
-                    None, None, request_ids[index], last_event_time=None
-                )
-
-                if len(events_matrix[index]) > 0:
-                    event = events_matrix[index][-1]
-                    app_name = event.app_name
-                    env_name = event.environment_name
-
-                    app_names[index] = app_name
-                    env_names[index] = env_name
-
-                    if stream_events:
-                        streamer.stream_event(get_env_event_string(event))
-                    if _is_success_string(event.message):
-                        successes[index] = True
-                    last_times[index] = event.event_date
-                else:
-                    time.sleep(sleep_time)
-
-        # Poll for events from all environments
-        while (datetime.now() - start) < timediff:
-            # Check for success from all environments
-            if all(successes):
-                return
-
-            for index in range(len(env_names)):
-                if successes[index]:
-                    continue
-
-                time.sleep(sleep_time)
-
-                events_matrix[index] = elasticbeanstalk.get_new_events(
-                    app_names[index], env_names[index], None,
-                    last_event_time=last_times[index]
-                )
-
-                for event in reversed(events_matrix[index]):
-                    if stream_events:
-                        streamer.stream_event(get_env_event_string(event))
-                        last_times[index] = event.event_date
-
-                    if _is_success_string(event.message):
-                        successes[index] = True
-    finally:
-        streamer.end_stream()
-    raise TimeoutError('Timed out while waiting for commands to Complete')
-
-
 def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minutes=None,
                             sleep_time=5, stream_events=True,
                             can_abort=False):
@@ -251,7 +169,7 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
     if timeout_in_minutes is None:
         timeout_in_minutes = 15
 
-    start = datetime.now()
+    start = datetime.utcnow()
     timediff = timedelta(seconds=timeout_in_minutes * 60)
 
     last_times = []
@@ -274,7 +192,7 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
 
     try:
         # Poll for events from all environments
-        while (datetime.now() - start) < timediff:
+        while (datetime.utcnow() - start) < timediff:
             # Check for success from all environments
             if all(successes):
                 return
