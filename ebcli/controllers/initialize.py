@@ -218,7 +218,7 @@ class InitController(AbstractBaseController):
 
                     # Get user specified branch
                     if branch is None:
-                        branch = get_branch_interactive(repository, remote_url)
+                        branch = get_branch_interactive(repository)
                     else:
                         try:
                             codecommit.get_branch(repository, branch)
@@ -497,7 +497,7 @@ def get_repository_interactive():
     return repo_name
 
 
-def get_branch_interactive(repository, remote_url):
+def get_branch_interactive(repository):
     source_control = SourceControl.get_source_control()
     # Give list of code commit branches to use
     new_branch = False

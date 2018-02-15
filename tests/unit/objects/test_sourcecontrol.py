@@ -203,3 +203,34 @@ class TestGitSourceControl(unittest.TestCase):
         p.communicate()
 
         self.assertEqual('default', sourcecontrol.Git().get_current_branch())
+
+    def test_verify_url_is_a_codecommit_url__valid_urls(self):
+        valid_urls = [
+            'https://git-codecommit.us-east-1.amazonaws.com',
+            'https://git-codecommit.us-east-1.amazonaws.com/v1/repos/github-tests-test-1',
+            'https://git-codecommit.us-east-1.amazonaws.com.cn/v1/repos/github-tests-test-1',
+            'ssh://git-codecommit.us-east-1.amazonaws.com/v1/repos/github-tests-test-1',
+            'git-codecommit..amazonaws.com',
+            'git-codecommit.us-east-1.amazonaws.com/v1/repos/github-tests-test-1',
+        ]
+
+        for url in valid_urls:
+            sourcecontrol.Git().verify_url_is_a_codecommit_url(url)
+
+    def test_verify_url_is_a_codecommit_url__invalid_urls(self):
+        invalid_urls = [
+            'https://github.us-east-1.amazonaws.com',
+            'ssh://git-codecommit.us-east-1.com/v1/repos/github-tests-test-1',
+            'https://github.com/rahulrajaram/dummy_repository.git',
+            'https://emmap1@bitbucket.org/tutorials/tutorials.git.bitbucket.org.git',
+            'github..amazonaws.com',
+        ]
+
+        for url in invalid_urls:
+            with self.assertRaises(NoSourceControlError) as context_manager:
+                sourcecontrol.Git().verify_url_is_a_codecommit_url(url)
+
+            self.assertEqual(
+                'Could not connect to repository located at {}'.format(url),
+                context_manager.exception.message
+            )

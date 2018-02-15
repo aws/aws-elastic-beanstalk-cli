@@ -15,16 +15,15 @@ from __future__ import print_function
 import datetime
 import fileinput
 import os
-import sys
+import re
 
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
 
-from ebcli.lib import codecommit, utils
+from ebcli.lib import utils
 from ebcli.core import fileoperations, io
 from ebcli.objects.exceptions import(
     CommandError,
-    GitRemoteNotSetupError,
     NotInitializedError,
     NoSourceControlError
 )
@@ -323,6 +322,7 @@ class Git(SourceControl):
             self._handle_exitcode(exitcode, stderr)
 
     def setup_codecommit_remote_repo(self, remote_url):
+        self.verify_url_is_a_codecommit_url(remote_url)
         remote_add_command = ['git', 'remote', 'add', self.codecommit_remote_name, remote_url]
         LOG.debug('Adding remote: {0}'.format(' '.join(remote_add_command)))
 
@@ -453,6 +453,8 @@ class Git(SourceControl):
             ]
             LOG.debug('Fetching remote branches using remote name: {0}'.format(' '.join(fetch_command)))
         else:
+            self.verify_url_is_a_codecommit_url(remote_url)
+
             fetch_command = [
                 'git',
                 'fetch',
@@ -483,3 +485,11 @@ class Git(SourceControl):
         if handle_exitcode:
             self._handle_exitcode(exitcode, stderr)
         return stdout, stderr, exitcode
+
+    def verify_url_is_a_codecommit_url(self, remote_url):
+        codecommit_url_regex = re.compile(r'.*git-codecommit\..*\.amazonaws.com.*')
+
+        if not codecommit_url_regex.search(remote_url):
+            # Prevent communiocating with non-CodeCommit repositories because of unknown security implications
+            # Integration with non-CodeCommit repositories is not something Beanstalk presently supports
+            raise NoSourceControlError('Could not connect to repository located at {}'.format(remote_url))

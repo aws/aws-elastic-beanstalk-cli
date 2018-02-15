@@ -129,9 +129,7 @@ def initialize_codecommit():
         # Get user desired repository
         from ..controllers import initialize
         repository = initialize.get_repository_interactive()
-        result = codecommit.get_repository(repository)
-        remote_url = result['repositoryMetadata']['cloneUrlHttp']
-        branch = initialize.get_branch_interactive(repository, remote_url)
+        branch = initialize.get_branch_interactive(repository)
 
         # set defaults for current environment
         set_repo_default_for_current_environment(repository)
