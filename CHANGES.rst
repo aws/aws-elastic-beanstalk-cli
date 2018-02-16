@@ -2,6 +2,12 @@
 Changelog
 =========
 -------------------
+3.12.3 (2018-02-15)
+-------------------
+- Fixed CodeCommit integration problem when there are multiple remotes
+- Fixed bug involving `eb init` using preexisting app
+
+-------------------
 3.12.2 (2018-02-06)
 -------------------
 - Added eu-west-3 EU (Paris) and cn-northwest-1 China (Ningxia) regions
