@@ -99,7 +99,6 @@ class TestBuildSpecOps(unittest.TestCase):
         mock_success_events.assert_called_with(
             app_name='foo-app',
             can_abort=False,
-            on_timeout_raise=True,
             request_id=None,
             timeout_error_message=timeout_error_message,
             timeout_in_minutes=364,
@@ -134,7 +133,6 @@ class TestBuildSpecOps(unittest.TestCase):
         mock_success_events.assert_called_with(
             app_name='foo-app',
             can_abort=False,
-            on_timeout_raise=True,
             request_id=None,
             timeout_error_message=timeout_error_message,
             timeout_in_minutes=60,
@@ -171,7 +169,6 @@ class TestBuildSpecOps(unittest.TestCase):
         mock_success_events.assert_called_with(
             app_name='foo-app',
             can_abort=False,
-            on_timeout_raise=True,
             request_id=None,
             timeout_error_message=timeout_error_message,
             timeout_in_minutes=60,

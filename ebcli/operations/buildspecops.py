@@ -53,7 +53,6 @@ def stream_build_configuration_app_version_creation(app_name, app_version_label,
         commonops.wait_for_success_events(
             app_name=app_name,
             can_abort=False,
-            on_timeout_raise=True,
             request_id=None,
             timeout_error_message=timeout_error_message,
             timeout_in_minutes=codebuild_timeout,
