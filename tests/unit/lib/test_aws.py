@@ -10,15 +10,17 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import os
+import sys
 
 import unittest
 
 import botocore
 import botocore.exceptions
+import botocore.parsers
 
 import mock
 import pytest
-import sys
 
 from mock import patch, MagicMock
 from ebcli.lib import aws
@@ -197,3 +199,89 @@ Received 5XX error during attempt #11
             aws._handle_response_code(self.response_data, 0, [])
 
         self.assertEqual(context_manager.exception.message, exception_message)
+
+    @patch('ebcli.lib.aws._set_operation')
+    @patch('ebcli.lib.aws._get_delay')
+    def test_handle_botocore_response_parser_error(self, get_delay_mock, set_operation_mock):
+        get_delay_mock.return_value = 0
+        operation_mock = MagicMock(
+            side_effect=[
+                botocore.parsers.ResponseParserError(
+                    os.linesep.join(
+                        [
+                            "Unable to parse response (no element found: line 1, column 0), invalid XML received:",
+                            "b''"
+                        ]
+                    )
+                ),
+                botocore.parsers.ResponseParserError(
+                    os.linesep.join(
+                        [
+                            "Unable to parse response (no element found: line 1, column 0), invalid XML received:",
+                            "b''"
+                        ]
+                    )
+                ),
+                {
+                    'Events': [],
+                    'ResponseMetadata': {
+                        'RequestId': 'd0ac21eb-c138-42cb-a679-eea1a6e56fe0',
+                        'HTTPStatusCode': 200,
+                        'date': 'Wed, 21 Feb 2018 09:09:16 GMT',
+                        'RetryAttempts': 0
+                    }
+                }
+            ]
+        )
+        set_operation_mock.return_value = operation_mock
+
+        aws.make_api_call('some_aws_service', 'some_operation')
+
+    @patch('ebcli.lib.aws._set_operation')
+    @patch('ebcli.lib.aws._get_delay')
+    def test_handle_botocore_response_parser_error__max_attempts_reached(self, get_delay_mock, set_operation_mock):
+        self.maxDiff = None
+        get_delay_mock.return_value = 0
+
+        botocore_parse_errors = []
+        for i in range(1, 12):
+            botocore_parse_errors.append(
+                botocore.parsers.ResponseParserError(
+                    os.linesep.join(
+                        [
+                            "Unable to parse response (no element found: line 1, column 0), invalid XML received:",
+                            "b''"
+                        ]
+                    )
+                )
+            )
+
+        operation_mock = MagicMock(side_effect=botocore_parse_errors)
+        set_operation_mock.return_value = operation_mock
+
+        with self.assertRaises(aws.MaxRetriesError) as context_manager:
+            aws.make_api_call('some_aws_service', 'some_operation')
+
+        self.assertEqual(
+            """Max retries exceeded for ResponseParserErrorsUnable to parse response (no element found: line 1, column 0), invalid XML received:
+b''
+Unable to parse response (no element found: line 1, column 0), invalid XML received:
+b''
+Unable to parse response (no element found: line 1, column 0), invalid XML received:
+b''
+Unable to parse response (no element found: line 1, column 0), invalid XML received:
+b''
+Unable to parse response (no element found: line 1, column 0), invalid XML received:
+b''
+Unable to parse response (no element found: line 1, column 0), invalid XML received:
+b''
+Unable to parse response (no element found: line 1, column 0), invalid XML received:
+b''
+Unable to parse response (no element found: line 1, column 0), invalid XML received:
+b''
+Unable to parse response (no element found: line 1, column 0), invalid XML received:
+b''
+Unable to parse response (no element found: line 1, column 0), invalid XML received:
+b''""",
+            str(context_manager.exception)
+        )

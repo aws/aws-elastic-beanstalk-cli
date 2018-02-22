@@ -18,6 +18,7 @@ import warnings
 
 import botocore
 import botocore.exceptions
+import botocore.parsers
 import botocore.session
 from botocore.config import Config
 from botocore.loaders import Loader
@@ -191,6 +192,7 @@ def get_credentials():
 def make_api_call(service_name, operation_name, **operation_options):
     operation = _set_operation(service_name, operation_name)
     aggregated_error_message = []
+    max_attempts = 10
 
     region = _region_name
     if not region:
@@ -217,7 +219,14 @@ def make_api_call(service_name, operation_name, **operation_options):
 
         except botocore.exceptions.ClientError as e:
             _handle_response_code(e.response, attempt, aggregated_error_message)
+        except botocore.parsers.ResponseParserError as e:
+            LOG.debug('Botocore could not parse response received')
+            if attempt > max_attempts:
+                raise MaxRetriesError(
+                    'Max retries exceeded for ResponseParserErrors' + os.linesep.join(aggregated_error_message)
+                )
 
+            aggregated_error_message.insert(attempt, str(e))
         except botocore.exceptions.NoCredentialsError:
             LOG.debug('No credentials found')
             raise CredentialsError('Operation Denied. You appear to have no'
