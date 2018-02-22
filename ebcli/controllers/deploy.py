@@ -50,11 +50,16 @@ class DeployController(AbstractBaseController):
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 
     def do_command(self):
-        self.message = self.app.pargs.message
-        self.staged = self.app.pargs.staged
         self.timeout = self.app.pargs.timeout
         self.nohang = self.app.pargs.nohang
-        self.modules = self.app.pargs.modules
+        if self.nohang:
+            self.timeout = 0
+        if self.app.pargs.modules:
+            self.multiple_app_deploy()
+            return
+
+        self.message = self.app.pargs.message
+        self.staged = self.app.pargs.staged
         self.source = self.app.pargs.source
         self.app_name = self.get_app_name()
         self.env_name = self.app.pargs.environment_name
@@ -62,13 +67,6 @@ class DeployController(AbstractBaseController):
         self.label = self.app.pargs.label
         self.process = self.app.pargs.process
         group_name = self.app.pargs.env_group_suffix
-
-        if self.modules and len(self.modules) > 0:
-            self.multiple_app_deploy()
-            return
-
-        if self.nohang:
-            self.timeout = 0
 
         if self.version and (self.message or self.label):
             raise InvalidOptionsError(strings['deploy.invalidoptions'])
@@ -107,7 +105,7 @@ class DeployController(AbstractBaseController):
         missing_env_yaml = []
         top_dir = getcwd()
 
-        for module in self.modules:
+        for module in self.app.pargs.modules:
             if not path.isdir(path.join(top_dir, module)):
                 continue
 
@@ -129,7 +127,6 @@ class DeployController(AbstractBaseController):
             return
 
         self.compose_deploy()
-        return
 
     def compose_deploy(self):
         app_name = None

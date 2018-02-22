@@ -128,7 +128,7 @@ class EB(foundation.CementApp):
             UpgradeController,
         ]
 
-        if "modules" in self.argv:
+        if "--modules" in self.argv:
             for c in environment_controllers:
                 c._add_to_handler(handler)
 
