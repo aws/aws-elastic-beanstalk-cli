@@ -90,13 +90,8 @@ class InitController(AbstractBaseController):
         if self.interactive:
             self.region = get_region(self.region, self.interactive, self.force_non_interactive)
         else:
-            self.region = get_region_from_inputs(self.app.pargs.region)
+            self.region = get_region_from_inputs(self.region)
         aws.set_region(self.region)
-
-        # Warn the customer if they picked a region that CodeCommit is not supported
-        codecommit_region_supported = codecommit.region_supported(self.region)
-        if self.source is not None and not codecommit_region_supported:
-            io.log_warning(strings['codecommit.badregion'])
 
         self.region = set_up_credentials(self.app.pargs.profile, self.region, self.interactive)
 
@@ -175,12 +170,18 @@ class InitController(AbstractBaseController):
         if gitops.git_management_enabled() and not self.interactive:
             default_branch_exists = True
 
+        # Warn the customer if they picked a region that CodeCommit is not supported
+        codecommit_region_supported = codecommit.region_supported(self.region)
+
+        if self.source is not None and not codecommit_region_supported:
+            io.log_warning(strings['codecommit.badregion'])
+
         # Prompt customer to opt into CodeCommit unless one of the follows holds:
         if self.force_non_interactive:
             prompt_codecommit = False
         elif not codecommit.region_supported(self.region):
             prompt_codecommit = False
-        elif self.source:
+        elif self.source and source_location.lower() != 'codecommit':
             # Do not prompt if customer has already specified a code source to
             # associate the EB workspace with
             prompt_codecommit = False
@@ -198,7 +199,8 @@ class InitController(AbstractBaseController):
             else:
                 io.echo(strings['codecommit.ccwarning'])
                 try:
-                    io.validate_action(prompts['codecommit.usecc'], "y")
+                    if not self.source:
+                        io.validate_action(prompts['codecommit.usecc'], "y")
 
                     # Setup git config settings for code commit credentials
                     source_control.setup_codecommit_cred_config()
@@ -209,12 +211,14 @@ class InitController(AbstractBaseController):
                         repository = get_repository_interactive()
                     else:
                         try:
-                            result = codecommit.get_repository(repository)
-                            remote_url = result['repositoryMetadata']['cloneUrlHttp']
-                            source_control.setup_codecommit_remote_repo(remote_url=remote_url)
+                            setup_codecommit_remote_repo(repository, source_control)
                         except ServiceError as ex:
-                            io.log_error(strings['codecommit.norepo'])
-                            raise ex
+                            if self.source:
+                                create_codecommit_repository(repository)
+                                setup_codecommit_remote_repo(repository, source_control)
+                            else:
+                                io.log_error(strings['codecommit.norepo'])
+                                raise ex
 
                     # Get user specified branch
                     if branch is None:
@@ -223,8 +227,11 @@ class InitController(AbstractBaseController):
                         try:
                             codecommit.get_branch(repository, branch)
                         except ServiceError as ex:
-                            io.log_error(strings['codecommit.nobranch'])
-                            raise ex
+                            if self.source:
+                                create_codecommit_branch(source_control, repository, branch)
+                            else:
+                                io.log_error(strings['codecommit.nobranch'])
+                                raise ex
                         source_control.setup_existing_codecommit_branch(branch, remote_url)
 
                 except ValidationError:
@@ -490,11 +497,43 @@ def get_repository_interactive():
         unique_name = utils.get_unique_name(current_repository, repo_list)
         repo_name = io.prompt_for_unique_name(unique_name, repo_list)
 
-        # Create the repository if we get here
-        codecommit.create_repository(repo_name, "Created with EB CLI")
-        io.echo("Successfully created repository: {0}".format(repo_name))
+        create_codecommit_repository(repo_name)
 
     return repo_name
+
+
+def create_codecommit_repository(repo_name):
+    # Create the repository if we get here
+    codecommit.create_repository(repo_name, "Created with EB CLI")
+    io.echo("Successfully created repository: {0}".format(repo_name))
+
+
+def setup_codecommit_remote_repo(repository, source_control):
+    result = codecommit.get_repository(repository)
+    remote_url = result['repositoryMetadata']['cloneUrlHttp']
+    source_control.setup_codecommit_remote_repo(remote_url=remote_url)
+
+
+def create_codecommit_branch(source_control, repository, branch_name):
+    current_commit = source_control.get_current_commit()
+
+    # Creating the branch requires that we setup the remote branch first
+    # to ensure the code commit branch is synced with the local branch
+    if current_commit is None:
+        # TODO: Test on windows for weird empty returns with the staged files
+        staged_files = source_control.get_list_of_staged_files()
+        if not staged_files:
+            source_control.create_initial_commit()
+        else:
+            LOG.debug("Cannot create placeholder commit because there are staged files: {0}".format(staged_files))
+            io.echo("Could not set create a commit with staged files; cannot setup CodeCommit branch without a commit")
+            return None
+
+        current_commit = source_control.get_current_commit()
+
+    source_control.setup_new_codecommit_branch(branch_name=branch_name)
+    codecommit.create_branch(repository, branch_name, current_commit)
+    io.echo("Successfully created branch: {0}".format(branch_name))
 
 
 def get_branch_interactive(repository):
@@ -519,7 +558,7 @@ def get_branch_interactive(repository):
             new_branch = True
 
     # Create a new branch if the user specifies or there are no existing branches
-    current_commit = source_control.get_current_commit()
+
     if len(branch_list) == 0 or new_branch:
         new_branch = True
         io.echo()
@@ -536,23 +575,7 @@ def get_branch_interactive(repository):
     if len(branch_list) == 0 or new_branch:
         LOG.debug("Creating a new branch")
         try:
-            # Creating the branch requires that we setup the remote branch first
-            # to ensure the code commit branch is synced with the local branch
-            if current_commit is None:
-                # TODO: Test on windows for weird empty returns with the staged files
-                staged_files = source_control.get_list_of_staged_files()
-                if staged_files is None or not staged_files:
-                    source_control.create_initial_commit()
-                else:
-                    LOG.debug("Cannot create placeholder commit because there are staged files: {0}".format(staged_files))
-                    io.echo("Could not set create a commit with staged files; cannot setup CodeCommit branch without a commit")
-                    return None
-
-                current_commit = source_control.get_current_commit()
-
-            source_control.setup_new_codecommit_branch(branch_name=branch_name)
-            codecommit.create_branch(repository, branch_name, current_commit)
-            io.echo("Successfully created branch: {0}".format(branch_name))
+            create_codecommit_branch(source_control, repository, branch_name)
         except ServiceError:
             io.echo("Could not set CodeCommit branch with the current commit, run with '--debug' to get the full error")
             return None
