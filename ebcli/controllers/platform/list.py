@@ -35,12 +35,13 @@ class PlatformListController(AbstractBaseController):
     def do_command(self):
         verbose = self.app.pargs.verbose
         solution_stacks = platformops.get_all_platforms()
-        platform_arns = platformops.list_custom_platform_versions(platform_version='latest')
 
         if verbose:
+            platform_arns = platformops.list_custom_platform_versions()
             lst = [s.name for s in solution_stacks]
             lst.extend(platform_arns)
         else:
+            platform_arns = platformops.list_custom_platform_versions(platform_version='latest')
             lst = sorted(set([s.pythonify() for s in solution_stacks]))
             lst.extend([PlatformVersion.get_platform_name(arn) for arn in platform_arns])
 
