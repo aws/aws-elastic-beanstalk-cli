@@ -22,7 +22,7 @@ from botocore.compat import six
 from dateutil import tz
 from ebcli.display.data_poller import DataPoller
 from ebcli.display.screen import Screen
-from ebcli.lib import elasticbeanstalk, elb, ec2
+from ebcli.lib import ec2, elasticbeanstalk, elb, elbv2
 
 Queue = six.moves.queue.Queue
 LOG = minimal_logger(__name__)
@@ -36,10 +36,16 @@ class TraditionalHealthDataPoller(DataPoller):
         env = elasticbeanstalk.get_environment(app_name=self.app_name, env_name=self.env_name)
         env_dict = elasticbeanstalk.get_environment_resources(self.env_name)
         env_dict = env_dict['EnvironmentResources']
-        load_balancers = env_dict.get('LoadBalancers', None)
-        if load_balancers and len(load_balancers) > 0:
+        load_balancers = env_dict.get('LoadBalancers')
+        if load_balancers:
             load_balancer_name = env_dict.get('LoadBalancers')[0].get('Name')
-            instance_states = elb.get_health_of_instances(load_balancer_name)
+
+            if elb.load_balancer_exists(load_balancer_name):
+                instance_states = elb.get_health_of_instances(load_balancer_name)
+            else:
+                elbv2_target_groups = elbv2.get_target_groups_for_load_balancer(load_balancer_arn=load_balancer_name)
+                target_group_arns = [target_group['TargetGroupArn'] for target_group in elbv2_target_groups]
+                instance_states = elbv2.get_instance_healths_from_target_groups(target_group_arns)
         else:
             instance_states = []
         instance_ids = [i['Id'] for i in
