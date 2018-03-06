@@ -63,6 +63,13 @@ def display_interactive_health(app_name, env_name, refresh,
 
 
 def create_health_tables(screen, env):
+    try:
+        is_windows_platform = 'windows' in env['PlatformArn'].lower()
+        has_healthd_V2_support = PlatformVersion(env['PlatformArn']).has_healthd_group_version_2_support()
+    except KeyError:
+        is_windows_platform = 'windows' in env['SolutionStackName'].lower()
+        has_healthd_V2_support = SolutionStack(env['SolutionStackName']).has_healthd_group_version_2_support
+
     screen.add_table(StatusTable('health', columns=[
         Column('instance-id', None, 'InstanceId', 'left'),
         Column('status', 10, 'HealthStatus', 'left', 'status_sort'),
@@ -81,27 +88,35 @@ def create_health_tables(screen, env):
         Column('p50', 7, 'P50', 'right', 'P50_sort'),
         Column('p10', 7, 'P10', 'right', 'P10_sort'),
     ]))
+
     screen.add_table(Table('cpu', columns=[
         Column('instance-id', None, 'InstanceId', 'left'),
         Column('type', None, 'InstanceType', 'left'),
         Column('az', None, 'AvailabilityZone', 'left'),
-        Column('running', 10, 'running', 'left', 'LaunchedAt'),
-        Column('load 1', 7, 'load1', 'right'),
-        Column('load 5', 7, 'load5', 'right'),
-        Column('user%', 10, 'User', 'right'),
-        Column('nice%', 6, 'Nice', 'right'),
-        Column('system%', 8, 'System', 'right'),
-        Column('idle%', 6, 'Idle', 'right'),
-        Column('iowait%', 9, 'IOWait', 'right'),
-    ]))
+        Column('running', 10, 'running', 'left', 'LaunchedAt')]))
 
-    has_healthd_V2_support = False
+    requests_table = screen.tables[-1]
+    if not is_windows_platform:
+        requests_table.columns += [
+            Column('load 1', 7, 'load1', 'right'),
+            Column('load 5', 7, 'load5', 'right')
+        ]
 
-    try:
-        platform_arn = env['PlatformArn']
-        has_healthd_V2_support = PlatformVersion(platform_arn).has_healthd_group_version_2_support()
-    except KeyError:
-        has_healthd_V2_support = SolutionStack(env['SolutionStackName']).has_healthd_group_version_2_support
+    cpu_table = screen.tables[-1]
+    if is_windows_platform:
+        cpu_table.columns += [
+            Column('% user time', 12, 'User', 'right'),
+            Column('% privileged time', 20, 'System', 'right'),
+            Column('% idle time', 12, 'Idle', 'right'),
+        ]
+    else:
+        cpu_table.columns += [
+            Column('user %', 11, 'User', 'right'),
+            Column('nice %', 7, 'Nice', 'right'),
+            Column('system %', 9, 'System', 'right'),
+            Column('idle %', 7, 'Idle', 'right'),
+            Column('iowait %', 10, 'IOWait', 'right'),
+        ]
 
     if has_healthd_V2_support:
         screen.add_table(Table('deployments', columns=[
