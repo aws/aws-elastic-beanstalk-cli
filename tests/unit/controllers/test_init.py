@@ -18,7 +18,7 @@ from .basecontrollertest import BaseControllerTest
 
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
-from ebcli.objects.exceptions import NotInitializedError, NoRegionError
+from ebcli.objects.exceptions import NotInitializedError, NoRegionError, ServiceError
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.buildconfiguration import BuildConfiguration
 
@@ -475,7 +475,20 @@ class TestInit(BaseControllerTest):
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.fileoperations')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
-    def test_init_with_codecommit_source_and_codebuild(self, mock_sourcecontrol, mock_fileops, mock_git):
+    @mock.patch('ebcli.controllers.initialize.setup_codecommit_remote_repo')
+    @mock.patch('ebcli.controllers.initialize.create_codecommit_repository')
+    @mock.patch('ebcli.lib.codecommit.get_branch')
+    @mock.patch('ebcli.controllers.initialize.create_codecommit_branch')
+    def test_init_with_codecommit_source_and_codebuild(
+            self,
+            mock_create_codecommit_branch,
+            mock_get_branch,
+            mock_create_codecommit_repository,
+            mock_setup_codecommit_remote_repo,
+            mock_sourcecontrol,
+            mock_fileops,
+            mock_git
+    ):
         """
         Test that we prompt for
         """
@@ -495,7 +508,11 @@ class TestInit(BaseControllerTest):
         mock_fileops.get_build_configuration.return_value = build_config
         mock_fileops.buildspec_config_header = fileoperations.buildspec_config_header
         mock_fileops.buildspec_name = fileoperations.buildspec_name
-
+        mock_setup_codecommit_remote_repo.side_effect = [
+            ServiceError,
+            None
+        ]
+        mock_sourcecontrol.setup_existing_codecommit_branch = mock.MagicMock()
         self.mock_operations.get_codebuild_image_from_platform.return_value = \
             {u'name': expected_image, u'description': u'PHP 5.5 Running on Amazon Linux 64bit '}
 
