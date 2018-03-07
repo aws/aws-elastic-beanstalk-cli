@@ -2,6 +2,16 @@
 Changelog
 =========
 -------------------
+3.12.4 (2018-03-07)
+-------------------
+- Fixed `DescribeEvents` polling logic to use `datetime.utcnow()` instead of `datetime.now()`
+- Fixed `TimeoutError`s to force `eb` to exit with return code 4
+- Fixed `eb deploy --modules ...` bug preventing it from finding project root
+- Fixed `eb platform list --verbose` bug preventing it from listing all custom platform ARNs
+- Fixed `eb init --source` bug by enforcing association with remote CodeCommit repository
+- Modified `eb` to retry after `botocore.parsers.ResponseParserErrors`
+
+-------------------
 3.12.3 (2018-02-15)
 -------------------
 - Fixed CodeCommit integration problem when there are multiple remotes
