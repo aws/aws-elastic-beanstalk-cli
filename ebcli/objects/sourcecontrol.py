@@ -179,7 +179,7 @@ class Git(SourceControl):
 
     def get_current_branch(self):
         revparse_command = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']
-        LOG.debug('Getting current branch name: {0}'.format(' '.join(revparse_command)))
+        LOG.debug('Getting current branch name by performing `{0}`'.format(' '.join(revparse_command)))
 
         stdout, stderr, exitcode = self._run_cmd(revparse_command, handle_exitcode=False)
 
@@ -195,7 +195,7 @@ class Git(SourceControl):
 
     def get_current_commit(self):
         latest_commit_command = ['git', 'rev-parse', '--verify', 'HEAD']
-        LOG.debug('Getting current branch name: {0}'.format(' '.join(latest_commit_command)))
+        LOG.debug('Getting current commit by performing `{0}`'.format(' '.join(latest_commit_command)))
 
         stdout, stderr, exitcode = self._run_cmd(
             latest_commit_command,

@@ -228,7 +228,7 @@ class InitController(AbstractBaseController):
                             codecommit.get_branch(repository, branch)
                         except ServiceError as ex:
                             if self.source:
-                                create_codecommit_branch(source_control, repository, branch)
+                                create_codecommit_branch(source_control, branch)
                             else:
                                 io.log_error(strings['codecommit.nobranch'])
                                 raise ex
@@ -514,7 +514,7 @@ def setup_codecommit_remote_repo(repository, source_control):
     source_control.setup_codecommit_remote_repo(remote_url=remote_url)
 
 
-def create_codecommit_branch(source_control, repository, branch_name):
+def create_codecommit_branch(source_control, branch_name):
     current_commit = source_control.get_current_commit()
 
     # Creating the branch requires that we setup the remote branch first
@@ -529,10 +529,7 @@ def create_codecommit_branch(source_control, repository, branch_name):
             io.echo("Could not set create a commit with staged files; cannot setup CodeCommit branch without a commit")
             return None
 
-        current_commit = source_control.get_current_commit()
-
     source_control.setup_new_codecommit_branch(branch_name=branch_name)
-    codecommit.create_branch(repository, branch_name, current_commit)
     io.echo("Successfully created branch: {0}".format(branch_name))
 
 
@@ -575,7 +572,7 @@ def get_branch_interactive(repository):
     if len(branch_list) == 0 or new_branch:
         LOG.debug("Creating a new branch")
         try:
-            create_codecommit_branch(source_control, repository, branch_name)
+            create_codecommit_branch(source_control, branch_name)
         except ServiceError:
             io.echo("Could not set CodeCommit branch with the current commit, run with '--debug' to get the full error")
             return None
