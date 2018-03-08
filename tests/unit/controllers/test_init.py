@@ -314,10 +314,9 @@ class TestInit(BaseControllerTest):
                                                       'us-east-1',
                                                       'PHP 5.5', dir_path=None, repository='new-repo', branch='devo')
 
-
         mock_codecommit.create_repository.assert_called_once_with('new-repo','Created with EB CLI')
         mock_git.setup_new_codecommit_branch.assert_called_once_with(branch_name='devo')
-        mock_codecommit.create_branch.assert_called_once_with('new-repo', 'devo', 'CommitId')
+        mock_sourcecontrol.setup_new_codecommit_branch('devo')
 
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
