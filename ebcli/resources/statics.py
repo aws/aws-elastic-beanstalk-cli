@@ -11,7 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-# TODO: Merge into ebcli/lib/iam_role.py when the code has been merged in
+
 class iam_documents(object):
     EC2_ASSUME_ROLE_PERMISSION = '{"Version": "2008-10-17","Statement": [{"Action":' \
                                  ' "sts:AssumeRole","Principal": {"Service": ' \
@@ -86,6 +86,10 @@ class option_names(object):
     RETENTION_DAYS = 'RetentionInDays'
 
 
+class option_values(object):
+    SYSTEM_TYPE__ENHANCED = 'enhanced'
+
+
 class elb_names(object):
     HEALTHY_STATE = 'healthy'
     UNHEALTHY_STATE = 'unhealthy'
@@ -94,3 +98,7 @@ class elb_names(object):
     CLASSIC_VERSION = 'classic'
     APPLICATION_VERSION = 'application'
     NETWORK_VERSION = 'network'
+
+
+class ec2_instance_statuses(object):
+    IN_SERVICE = 'InService'

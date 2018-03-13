@@ -29,6 +29,10 @@ def version(load_balancer_name):
     return elb_names.CLASSIC_VERSION
 
 
+def is_classic_load_balancer(load_balancer_name):
+    return '/app/' not in load_balancer_name
+
+
 def get_health_of_instances(load_balancer_name):
     try:
         result = _make_api_call(
@@ -39,13 +43,3 @@ def get_health_of_instances(load_balancer_name):
         raise NotFoundError(e)
 
     return result['InstanceStates']
-
-
-def load_balancer_exists(load_balancer_name):
-    try:
-        return _make_api_call(
-            'describe_instance_health',
-            LoadBalancerName=load_balancer_name
-        )
-    except ServiceError:
-        pass

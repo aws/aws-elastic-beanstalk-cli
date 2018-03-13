@@ -24,26 +24,34 @@ from ..display.specialtables import RequestTable, StatusTable
 from ebcli.objects.platform import PlatformVersion
 from ..objects.exceptions import NotSupportedError
 from ..objects.solutionstack import SolutionStack
-from ..resources.statics import namespaces, option_names
+from ..resources.statics import namespaces, option_names, option_values
 
 LOG = minimal_logger(__name__)
 
 
-def display_interactive_health(app_name, env_name, refresh,
-                               mono, default_view):
+def display_interactive_health(
+        app_name,
+        env_name,
+        refresh,
+        mono,
+        default_view
+):
     env = elasticbeanstalk.describe_configuration_settings(app_name, env_name)
-    option_settings = env.get('OptionSettings')
     health_type = elasticbeanstalk.get_option_setting(
-        option_settings,
+        env.get('OptionSettings'),
         namespaces.HEALTH_SYSTEM,
         option_names.SYSTEM_TYPE)
 
-    if health_type == 'enhanced':
+    if health_type == option_values.SYSTEM_TYPE__ENHANCED:
+        LOG.debug('Platform has enhanced health capabilities')
+
         poller = DataPoller
-        # Create dynamic screen
         screen = Screen()
-        create_health_tables(screen, env)
+        platform = PlatformVersion(env['PlatformArn']) if env.get('PlatformArn') else SolutionStack(env['SolutionStackName'])
+        create_health_tables(screen, platform)
     elif env['Tier']['Name'] == 'WebServer':
+        LOG.debug('Platform has basic health capabilities')
+
         poller = TraditionalHealthDataPoller
         screen = TraditionalHealthScreen()
         create_traditional_health_tables(screen)
@@ -62,13 +70,10 @@ def display_interactive_health(app_name, env_name, refresh,
         term.return_cursor_to_normal()
 
 
-def create_health_tables(screen, env):
-    try:
-        is_windows_platform = 'windows' in env['PlatformArn'].lower()
-        has_healthd_V2_support = PlatformVersion(env['PlatformArn']).has_healthd_group_version_2_support()
-    except KeyError:
-        is_windows_platform = 'windows' in env['SolutionStackName'].lower()
-        has_healthd_V2_support = SolutionStack(env['SolutionStackName']).has_healthd_group_version_2_support
+def create_health_tables(screen, platform):
+    LOG.debug('Adding tables the `eb health` screen')
+
+    is_windows_platform = 'windows' in platform.name.lower()
 
     screen.add_table(StatusTable('health', columns=[
         Column('instance-id', None, 'InstanceId', 'left'),
@@ -118,7 +123,7 @@ def create_health_tables(screen, env):
             Column('iowait %', 10, 'IOWait', 'right'),
         ]
 
-    if has_healthd_V2_support:
+    if platform.has_healthd_group_version_2_support:
         screen.add_table(Table('deployments', columns=[
             Column('instance-id', None, 'InstanceId', 'left'),
             Column('status', None, 'DeploymentStatus', 'left'),
@@ -127,6 +132,8 @@ def create_health_tables(screen, env):
             Column('ago', None, 'TimeSinceDeployment', 'left'),
         ]))
     screen.add_help_table(HelpTable())
+
+    LOG.debug('Added {} tables to `eb health` screen'.format(len(screen.tables)))
 
 
 def create_traditional_health_tables(screen):

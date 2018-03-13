@@ -265,7 +265,4 @@ class Column(object):
         self.fit_size = size
         self.key = key
         self.justify = justify
-        if sort_key:
-            self.sort_key = sort_key
-        else:
-            self.sort_key = self.key
+        self.sort_key = sort_key or self.key

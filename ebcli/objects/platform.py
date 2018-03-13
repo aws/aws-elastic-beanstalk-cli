@@ -12,6 +12,8 @@
 # language governing permissions and limitations under the License.
 import re
 
+import pkg_resources
+
 from ebcli.objects.exceptions import EBCLIException
 
 
@@ -105,5 +107,10 @@ class PlatformVersion(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    @property
     def has_healthd_group_version_2_support(self):
-        return True
+        if PlatformVersion.is_custom_platform_arn(self.name):
+            return False
+
+        if pkg_resources.parse_version(self.platform_version) >= pkg_resources.parse_version('2.0.10'):
+            return True
