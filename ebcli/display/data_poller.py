@@ -55,48 +55,32 @@ class DataPoller(object):
     def start_background_polling(self):
         threading.Thread(target=self._poll_for_health_data, daemon=True).start()
 
-    def _poll_for_health_data(self):
-        LOG.debug('Starting data poller child thread')
-        while True:
-            try:
-                data = self._get_health_data()
-                self.data_queue.put(data)
-                refresh_time = data['environment'].get('RefreshedAt', None)
-
-                sleep_time = _get_sleep_time(refresh_time)
-                LOG.debug('Sleeping for {} second(s)'.format(sleep_time))
-                time.sleep(sleep_time)
-            except (SystemError, SystemExit, KeyboardInterrupt) as e:
-                LOG.debug('Exiting due to: {}'.format(e.__class__.__name__))
-
-                break
-            except InvalidParameterValueError as e:
-                # Environment no longer exists, exit
-                LOG.debug(e)
-
-                break
-            except Exception as e:
-                if str(e) == responses['health.nodescribehealth']:
-                    traceback.print_exc()
-
-                    # Environment probably switching between health monitoring types
-                    LOG.debug("Swallowing 'DescribeEnvironmentHealth is not supported' exception")
-                    LOG.debug('Nothing to do as environment should be transitioning')
-
-                    break
-                else:
-                    # Not a recoverable error, raise it
-                    raise e
-
-        self.data_queue.put({})
-
-    def _account_for_clock_drift(self, datetime_str):
+    @staticmethod
+    def _account_for_clock_drift(datetime_str):
         time = datetime.strptime(datetime_str, '%a, %d %b %Y %H:%M:%S %Z')
         delta = utils.get_delta_from_now_and_datetime(time)
         LOG.debug(u'Clock offset={0}'.format(delta))
         LOG.debug(delta)
 
         return delta
+
+    @staticmethod
+    def _get_sleep_time(refresh_time):
+        if not refresh_time:
+            return 2
+
+        delta = utils.get_delta_from_now_and_datetime(refresh_time)
+
+        countdown = 11 - delta.seconds
+        LOG.debug(
+            'health time={}. current={}. ({} seconds until next refresh)'.format(
+                utils.get_local_time_as_string(refresh_time),
+                utils.get_local_time_as_string(datetime.now()),
+                countdown
+            )
+        )
+
+        return max(0.5, min(countdown, 11))  # x in range [0.5, 11]
 
     def _get_health_data(self):
         environment_health = elasticbeanstalk.get_environment_health(self.env_name)
@@ -136,6 +120,41 @@ class DataPoller(object):
         LOG.debug('collapsed-data:{}'.format(data))
         return data
 
+    def _poll_for_health_data(self):
+        LOG.debug('Starting data poller child thread')
+        while True:
+            try:
+                data = self._get_health_data()
+                self.data_queue.put(data)
+                refresh_time = data['environment'].get('RefreshedAt', None)
+
+                sleep_time = self._get_sleep_time(refresh_time)
+                LOG.debug('Sleeping for {} second(s)'.format(sleep_time))
+                time.sleep(sleep_time)
+            except (SystemError, SystemExit, KeyboardInterrupt) as e:
+                LOG.debug('Exiting due to: {}'.format(e.__class__.__name__))
+
+                break
+            except InvalidParameterValueError as e:
+                # Environment no longer exists, exit
+                LOG.debug(e)
+
+                break
+            except Exception as e:
+                if str(e) == responses['health.nodescribehealth']:
+                    traceback.print_exc()
+
+                    # Environment probably switching between health monitoring types
+                    LOG.debug("Swallowing 'DescribeEnvironmentHealth is not supported' exception")
+                    LOG.debug('Nothing to do as environment should be transitioning')
+
+                    break
+                else:
+                    # Not a recoverable error, raise it
+                    raise e
+
+        self.data_queue.put({})
+
 
 def collapse_environment_health_data(environment_health):
     application_metrics = environment_health.get('ApplicationMetrics', {})
@@ -150,7 +169,7 @@ def collapse_environment_health_data(environment_health):
     statuses = application_metrics.pop('StatusCodes', {})
 
     for k, v in six.iteritems(statuses):
-        convert_data_to_percentage(statuses, k, request_count)
+        _convert_data_to_percentage(statuses, k, request_count)
     result.update(statuses)
     result.update(environment_health.pop('ApplicationMetrics', {}))
     total = 0
@@ -211,15 +230,20 @@ def collapse_instance_health_data(instances_health):
 
         # Convert counts to percentages
         for key in {'Status_2xx', 'Status_3xx', 'Status_4xx', 'Status_5xx'}:
-            convert_data_to_percentage(instance, key, request_count,
+            _convert_data_to_percentage(instance, key, request_count,
                                        add_sort_column=True)
 
         # Add status sort index
-        instance['status_sort'] = _get_health_sort_order(instance['HealthStatus'])
+        instance['status_sort'] = __get_health_sort_order(instance['HealthStatus'])
 
         result.append(instance)
 
     return result
+
+
+def format_float(flt, number_of_places):
+    format_string = '{0:.' + str(number_of_places) + 'f}'
+    return format_string.format(flt)
 
 
 def format_time_since(timestamp):
@@ -233,13 +257,25 @@ def format_time_since(timestamp):
     hours = minutes // 60
 
     if days > 0:
-        return '{0} day{s}'.format(days, s=_get_s(days))
+        return '{0} day{s}'.format(days, s=__plural_suffix(days))
     elif hours > 0:
-        return '{0} hour{s}'.format(hours, s=_get_s(hours))
+        return '{0} hour{s}'.format(hours, s=__plural_suffix(hours))
     elif minutes > 0:
-        return '{0} min{s}'.format(minutes, s=_get_s(minutes))
+        return '{0} min{s}'.format(minutes, s=__plural_suffix(minutes))
     else:
         return '{0} secs'.format(delta.seconds)
+
+
+def _convert_data_to_percentage(data, index, total, add_sort_column=False):
+    if total > 0:
+        percent = (data.get(index, 0) / (total * 1.0)) * 100.0
+        # Now convert to string
+        representation = format_float(percent, 1)
+        data[index] = representation
+
+        # Convert back to float for sorting
+        if add_sort_column:
+            data[index + '_sort'] = float(representation)
 
 
 def _datetime_utcnow_wrapper():
@@ -262,28 +298,7 @@ def _format_latency_dict(latency_dict, request_count):
     return new_dict
 
 
-def _get_s(number):
-    return 's' if number > 1 else ''
-
-
-def convert_data_to_percentage(data, index, total, add_sort_column=False):
-    if total > 0:
-        percent = (data.get(index, 0) / (total * 1.0)) * 100.0
-        # Now convert to string
-        representation = format_float(percent, 1)
-        data[index] = representation
-
-        # Convert back to float for sorting
-        if add_sort_column:
-            data[index + '_sort'] = float(representation)
-
-
-def format_float(flt, number_of_places):
-    format_string = '{0:.' + str(number_of_places) + 'f}'
-    return format_string.format(flt)
-
-
-def _get_health_sort_order(health):
+def __get_health_sort_order(health):
     health_order = dict(
         (v, k) for k, v in enumerate([
             'Severe',
@@ -300,19 +315,5 @@ def _get_health_sort_order(health):
     return health_order[health]
 
 
-def _get_sleep_time(refresh_time):
-    if not refresh_time:
-        return 2
-
-    delta = utils.get_delta_from_now_and_datetime(refresh_time)
-
-    countdown = 11 - delta.seconds
-    LOG.debug(
-        'health time={}. current={}. ({} seconds until next refresh)'.format(
-            utils.get_local_time_as_string(refresh_time),
-            utils.get_local_time_as_string(datetime.now()),
-            countdown
-        )
-    )
-
-    return max(0.5, min(countdown, 11))  # x in range [0.5, 11]
+def __plural_suffix(number):
+    return 's' if number > 1 else ''

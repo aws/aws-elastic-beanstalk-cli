@@ -245,7 +245,7 @@ class TestDataPoller(unittest.TestCase):
 		)
 
 	def test_format_time_since(self):
-		now = datetime.datetime.now()
+		now = datetime.datetime(2018, 3, 13, 19, 12, 27, tzinfo=tz.tzutc())
 		five_seconds_ago = now - datetime.timedelta(seconds=5)
 		one_minute_ago = now - datetime.timedelta(minutes=1)
 		five_minutes_ago = now - datetime.timedelta(minutes=5)
@@ -288,7 +288,7 @@ class TestDataPoller(unittest.TestCase):
 			poller._get_health_data()
 		)
 
-	@mock.patch('ebcli.display.data_poller._get_sleep_time')
+	@mock.patch('ebcli.display.data_poller.DataPoller._get_sleep_time')
 	@mock.patch('ebcli.display.data_poller.LOG')
 	def test_poll_for_health_data(
 			self,

@@ -24,7 +24,7 @@ class TestTraditionalHealthDataPoller(unittest.TestCase):
 	def test_get_instance_states__no_load_balancer(self):
 		self.assertEqual(
 			[],
-			traditional.TraditionalHealthDataPoller('fake app name', 'fake env name')._get_instance_states(None)
+			traditional.TraditionalHealthDataPoller('fake app name', 'fake env name').get_instance_states(None)
 		)
 
 	def test_get_instance_states(self):
@@ -63,7 +63,7 @@ class TestTraditionalHealthDataPoller(unittest.TestCase):
 					'State': 'healthy'
 				}
 			],
-			poller._get_instance_states(load_balancers)
+			poller.get_instance_states(load_balancers)
 		)
 
 	@mock.patch('ebcli.lib.elb.get_health_of_instances')
@@ -283,7 +283,7 @@ class TestTraditionalHealthDataPoller(unittest.TestCase):
 				'Status': 'Ready',
 				'Total': 3
 			},
-			poller.env_data(instance_ids, instance_states)
+			poller.assemble_environment_data(instance_ids, instance_states)
 		)
 
 	@mock.patch('ebcli.lib.elasticbeanstalk.get_environment_resources')
@@ -318,7 +318,7 @@ class TestTraditionalHealthDataPoller(unittest.TestCase):
 		}
 
 		poller = traditional.TraditionalHealthDataPoller('fake app name', 'fake env name')
-		poller._get_instance_states = mock.MagicMock(
+		poller.get_instance_states = mock.MagicMock(
 			return_value=[
 				{
 					'Description': '',
@@ -360,7 +360,7 @@ class TestTraditionalHealthDataPoller(unittest.TestCase):
 				}
 			]
 		)
-		poller.env_data = mock.MagicMock(
+		poller.assemble_environment_data = mock.MagicMock(
 			return_value={
 				'Color': 'Green',
 				'EnvironmentName': 'fake env name',

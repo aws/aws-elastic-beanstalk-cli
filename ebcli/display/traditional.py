@@ -29,9 +29,7 @@ LOG = minimal_logger(__name__)
 
 
 class TraditionalHealthDataPoller(DataPoller):
-    """ Assumes we are using a LoadBalanced Environment  """
-
-    def env_data(
+    def assemble_environment_data(
             self,
             ids_of_all_instances,
             instances_registered_with_elb
@@ -41,8 +39,8 @@ class TraditionalHealthDataPoller(DataPoller):
         for instance_state in instances_registered_with_elb:
             if instance_state['State'] == statics.ec2_instance_statuses.IN_SERVICE:
                 total_in_service += 1
-
         env = elasticbeanstalk.get_environment(app_name=self.app_name, env_name=self.env_name)
+
         return {
             'EnvironmentName': env.name,
             'Color': env.health,
@@ -85,26 +83,7 @@ class TraditionalHealthDataPoller(DataPoller):
 
         return instance_healths
 
-    def _get_health_data(self):
-        env_dict = elasticbeanstalk.get_environment_resources(self.env_name)
-        environment_resources = env_dict['EnvironmentResources']
-        instances_registered_with_elb = self._get_instance_states(environment_resources.get('LoadBalancers'))
-        ids_of_all_instances = [instance['Id'] for instance in environment_resources.get('Instances', [])]
-        all_instances = (
-            self.get_instance_health(instances_registered_with_elb)
-            +
-            self.get_health_information_of_instance_not_associated_with_elb(
-                ids_of_all_instances,
-                instances_registered_with_elb
-            )
-        )
-
-        return {
-            'instances': all_instances,
-            'environment': self.env_data(ids_of_all_instances, instances_registered_with_elb)
-        }
-
-    def _get_instance_states(self, load_balancers):
+    def get_instance_states(self, load_balancers):
         if not load_balancers:
             return []
 
@@ -122,6 +101,25 @@ class TraditionalHealthDataPoller(DataPoller):
             instance_states = elbv2.get_instance_healths_from_target_groups(target_group_arns)
 
         return instance_states
+
+    def _get_health_data(self):
+        env_dict = elasticbeanstalk.get_environment_resources(self.env_name)
+        environment_resources = env_dict['EnvironmentResources']
+        instances_registered_with_elb = self.get_instance_states(environment_resources.get('LoadBalancers'))
+        ids_of_all_instances = [instance['Id'] for instance in environment_resources.get('Instances', [])]
+        all_instances = (
+            self.get_instance_health(instances_registered_with_elb)
+            +
+            self.get_health_information_of_instance_not_associated_with_elb(
+                ids_of_all_instances,
+                instances_registered_with_elb
+            )
+        )
+
+        return {
+            'instances': all_instances,
+            'environment': self.assemble_environment_data(ids_of_all_instances, instances_registered_with_elb)
+        }
 
 
 class TraditionalHealthScreen(Screen):
