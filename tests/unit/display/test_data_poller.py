@@ -58,7 +58,7 @@ class TestDataPoller(unittest.TestCase):
 				'Causes':[
 					'Instance initialization failed.'
 				],
-				'LaunchedAt':datetime.datetime(2018, 3, 13, 19, 12, 27, tzinfo=tz.tzutc()),
+				'LaunchedAt':datetime.datetime(2018, 3, 14, 4, 12, 27, tzinfo=tz.tzutc()),
 				'ApplicationMetrics': {
 					'Duration': 10,
 					'RequestCount': 6,
@@ -130,7 +130,7 @@ class TestDataPoller(unittest.TestCase):
 				'HealthStatus': 'Severe',
 				'InstanceId': 'i-0f111c68ca2eb9ce2',
 				'InstanceType': 't2.micro',
-				'LaunchedAt': datetime.datetime(2018, 3, 13, 19, 12, 27, tzinfo=tz.tzutc()),
+				'LaunchedAt': datetime.datetime(2018, 3, 14, 4, 12, 27, tzinfo=tz.tzutc()),
 				'launched': '2018-03-14 04:12:27',
 				'load1': '-',
 				'load5': '-',
@@ -206,7 +206,7 @@ class TestDataPoller(unittest.TestCase):
 					'Idle': 100.0,
 					'InstanceId': 'i-0f111c68ca2eb9ce2',
 					'InstanceType': 't2.micro',
-					'LaunchedAt': datetime.datetime(2018, 3, 13, 19, 12, 27, tzinfo=tz.tzutc()),
+					'LaunchedAt': datetime.datetime(2018, 3, 14, 4, 12, 27, tzinfo=tz.tzutc()),
 					'P10': '0.000',
 					'P10_sort': 0.0,
 					'P50': '5.200',
@@ -273,17 +273,20 @@ class TestDataPoller(unittest.TestCase):
 			self.assertEqual('5 days', data_poller.format_time_since(five_days_ago))
 
 	@mock.patch('ebcli.display.data_poller.format_time_since')
+	@mock.patch('ebcli.lib.utils.get_local_time')
 	@mock.patch('ebcli.lib.elasticbeanstalk.get_environment_health')
 	@mock.patch('ebcli.lib.elasticbeanstalk.get_instance_health')
 	def test_get_health_data(
 			self,
 			get_instance_health_mock,
 			get_environment_health_mock,
+			get_local_time_mock,
 			format_time_since_mock
 	):
 		get_environment_health_mock.return_value = TestDataPoller.ENVIRONMENT_HEALTH
 		get_instance_health_mock.return_value = TestDataPoller.DESCRIBE_INSTANCES_HEALTH
 		format_time_since_mock.return_value = '1 day'
+		get_local_time_mock.return_value = datetime.datetime(2018, 3, 14, 4, 12, 27)
 
 		poller = data_poller.DataPoller('some_app_name', 'some_env_name')
 		poller._account_for_clock_drift = mock.MagicMock(return_value=datetime.timedelta(minutes=1))

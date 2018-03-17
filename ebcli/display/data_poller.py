@@ -53,7 +53,9 @@ class DataPoller(object):
         return new_data
 
     def start_background_polling(self):
-        threading.Thread(target=self._poll_for_health_data, daemon=True).start()
+        data_poller_thread = threading.Thread(target=self._poll_for_health_data)
+        data_poller_thread.daemon = True
+        data_poller_thread.start()
 
     @staticmethod
     def _account_for_clock_drift(datetime_str):

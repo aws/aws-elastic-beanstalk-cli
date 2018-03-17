@@ -396,10 +396,10 @@ class TestFileOperations(unittest.TestCase):
         timeout = 60
 
         mock_yaml_load.return_value = {fileoperations.buildspec_config_header:
-                                       {'ComputeType': compute_type,
-                                        'CodeBuildServiceRole': service_role,
-                                        'Image': image,
-                                        'Timeout': timeout}}
+                                           {'ComputeType': compute_type,
+                                            'CodeBuildServiceRole': service_role,
+                                            'Image': image,
+                                            'Timeout': timeout}}
 
         expected_build_config = BuildConfiguration(image=image, compute_type=compute_type,
                                                    service_role=service_role, timeout=timeout)
@@ -441,7 +441,7 @@ class TestFileOperations(unittest.TestCase):
         file = 'buildspec.yaml'
         open(file, 'a').close()
         self.assertFalse(fileoperations.build_spec_exists(),
-                        "Expected to find build spec file with filename: {0}".format(file))
+                         "Expected to find build spec file with filename: {0}".format(file))
         os.remove(file)
 
     def test_build_spec_file_exists_yml(self):

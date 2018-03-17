@@ -19,6 +19,7 @@ requires = ['pyyaml>=3.11',
             'semantic_version == 2.5.0',
             'tabulate == 0.7.5',
             'termcolor == 1.1.0',
+            'six == 1.11.0'
            ]
 # When executing 'eb local run', if the platform is a multi-container Docker platform, 'docker' is installed
 

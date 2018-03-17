@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 
 from ebcli.lib import aws
+from ebcli.objects.log_stream import LogStream
 
 
 def _make_api_call(operation_name, **operation_options):
@@ -23,11 +24,14 @@ def get_all_stream_names(log_group_name, log_stream_name_prefix=None):
     Return all stream names under the log group.
     param: log_group_name: str
     """
-
-    streams = describe_log_streams(log_group_name, log_stream_name_prefix=log_stream_name_prefix)
+    streams = describe_log_streams(
+        log_group_name=log_group_name,
+        log_stream_name_prefix=log_stream_name_prefix,
+    )
 
     streams = streams or {}
-    return [s['logStreamName'] for s in streams.get('logStreams')]
+
+    return [log_stream.name for log_stream in LogStream.log_stream_objects_from_json(streams.get('logStreams', []))]
 
 
 def get_log_events(log_group_name, log_stream_name, next_token=None,
@@ -54,17 +58,24 @@ def get_log_events(log_group_name, log_stream_name, next_token=None,
     return _make_api_call('get_log_events', **params)
 
 
-def describe_log_streams(log_group_name, log_stream_name_prefix=None,
-                         next_token=None, limit=None):
-    params = dict(logGroupName=log_group_name)
+def describe_log_streams(
+        limit=None,
+        log_group_name=None,
+        log_stream_name_prefix=None,
+        next_token=None
+):
+    params = dict()
 
-    if log_stream_name_prefix is not None:
+    if log_group_name:
+        params['logGroupName'] = log_group_name
+
+    if log_stream_name_prefix:
         params['logStreamNamePrefix'] = log_stream_name_prefix
 
-    if next_token is not None:
+    if next_token:
         params['nextToken'] = next_token
 
-    if limit is not None:
+    if limit:
         params['limit'] = limit
 
     return _make_api_call('describe_log_streams', **params)

@@ -10,7 +10,8 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from ebcli.resources.statics import iam_attributes
+import os
+
 
 strings = {
     # Inform customers that this has created the platform builder environment
@@ -262,10 +263,22 @@ strings = {
     # Log command/ Beanstalk logs
     'logs.info': 'Gets recent logs.',
     'logs.epilog': 'This command displays the last 100 lines of logs. To retrieve all logs, use the "--all" option.',
-    'logs.allandzip': 'You cannot use the "--all" and "--all_zip" options together.',
-    'logs.allandinstance': 'You cannot use the "--all" and "--instance" options together.',
+    'logs.all_argument_and_zip_argument': """You can't use the "--all" and "--zip" options together. They are two different ways to retrieve logs.""",
+    'logs.all_argument_and_instance_argument': """You can't use "--instance" with "--all".""",
+    'logs.invalid_cloudwatch_log_source_type': """You can't specify the source type "all" for the "--cloudwatch-log-source" option when retrieving logs. Specify "instance" or "environment-health".""",
+    'logs.cloudwatch_log_source_argument_and_log_group_argument': 'You cannot use the "--cloudwatch-logs" and "--cloudwatch-log-source" options together.',
+    'logs.cloudwatch_log_source_argumnent_is_invalid_for_retrieval': """Invalid CloudWatch Logs source type for retrieving logs: "{}". Valid types: instance | environment-health""",
+    'logs.cloudwatch_log_source_argumnent_is_invalid_for_enabling_streaming': """Invalid CloudWatch Logs source type for setting log streaming: "{}". Valid types: instance | environment-health | all""",
+    'logs.cloudwatch_logs_argument_and_log_group_argument': """You can't use the "--log-group" option when setting log streaming. You can enable or disable all instance log group streaming and/or environment-health streaming.""",
+    'logs.cloudwatch_logs_argument_and_instance_argument': """You can't use the "--instance" option when setting log streaming. You can enable or disable instance log streaming for the entire environment and/or environment-health streaming.""",
+    'logs.cloudwatch_logs_argument_and_all_argument': """You can't use the "--all" option when setting log streaming. This is an output option for log retrieval commands.""",
+    'logs.cloudwatch_logs_argument_and_zip_argument': """You can't use the "--zip" option when setting log streaming. This is an output option for log retrieval commands.""",
+    'logs.health_and_instance_argument': """You can't use the "--instance" option when retrieving environment-health logs. The scope for these logs is the entire environment.""",
+    'logs.environment_health_log_streaming_disabled': """Can't retrieve environment-health logs for environment {}. Environment-health log streaming is disabled.""",
+    'logs.instance_log_streaming_disabled': """Can't retrieve instance logs for environment {}. Instance log streaming is disabled.""",
     'logs.location': 'Logs were saved to {location}',
-    'beanstalk-logs.badinstance': 'Could not find specified instance "{instance_id}" in the retrieved logs',
+    'logs.log_group_and_environment_health_log_source': """You can't use the "--log-group" option when retrieving environment-health logs. These logs are in a specific, implied log group.""",
+    'beanstalk-logs.badinstance': """Can't find instance "{}" in the environment's instance logs on CloudWatch Logs.""",
 
     # labs cloudwatch-setup command
     'cloudwatch-setup.info': 'Create .ebextensions files necessary for setting up CloudWatch used in logging instance deployment.',
@@ -280,11 +293,19 @@ strings = {
                                    '"eb deploy".',
 
     # Log streaming
-    'cloudwatch-stream.notsetup': 'Could not find log group; CloudWatch log streaming may not enabled for this environment.\n'
-                                  'Run "eb logs -cw enable" to enable log streaming.',
+    'cloudwatch_log_streaming.not_setup': os.linesep.join([
+        'Could not find log group; CloudWatch log streaming might not enabled for this environment.',
+        '   - To enable instance log streaming, run "eb logs -cw enable".',
+        '   - To enable health log streaming, run "eb logs -cw enable -cls environment-health".',
+        '   - To enable all the log streaming features, run "eb logs -cw enable -cls all".',
+    ]),
+    'cloudwatch_environment_health_log_streaming.enhanced_health_not_found': 'Enhanced health disabled. Could not setup health-transitions log streaming.',
     'cloudwatch-logs.nostreams': 'Could not find any log streams with log group: {log_group}',
-    'cloudwatch-logs.enable': 'Enabling CloudWatch log for your environment',
-    'cloudwatch-logs.disable': 'Disabling CloudWatch log for your environment',
+    'cloudwatch_instance_log_streaming.enable': 'Enabling instance log streaming to CloudWatch for your environment',
+    'cloudwatch_instance_log_streaming.disable': 'Disabling instance log streaming to CloudWatch for your environment',
+    'cloudwatch_environment_health_log_streaming.enable': 'Enabling health transition log streaming to CloudWatch for your environment',
+    'cloudwatch_environment_health_log_streaming.disable': 'Disabling health transition log streaming to CloudWatch for your environment',
+
 
     # The link to Cloudwatch console is different for BJS:
     'cloudwatch-logs.link': 'After the environment is updated you can view your logs by following the link:\n'
@@ -292,8 +313,10 @@ strings = {
     'cloudwatch-logs.bjslink': 'After the environment is updated you can view your logs by following the link:\n'
                     'https://console.amazonaws.cn/cloudwatch/home?region={region}#logs:prefix=/aws/elasticbeanstalk/{env_name}/',
 
-    'cloudwatch-logs.alreadyenabled': 'CloudWatch logs are already enabled for your environment',
-    'cloudwatch-logs.alreadydisabled': 'CloudWatch logs are already disabled for your environment',
+    'cloudwatch_instance_log_streaming.already_enabled': 'CloudWatch instance log streaming is already enabled for your environment',
+    'cloudwatch_environment_health_log_streaming.already_enabled': 'CloudWatch health transition log streaming is already enabled for your environment',
+    'cloudwatch_instance_log_streaming.already_disabled': 'CloudWatch logs are already disabled for your environment',
+    'cloudwatch_environment_health_log_streaming.already_disabled': 'CloudWatch health transition log streaming is already disabled for your environment',
 
     # lifecycle
     'lifecycle.info': 'Modifying application version lifecycle policy',
@@ -559,10 +582,19 @@ flag_text = {
     # Logs
     'logs.all': 'retrieve all logs',
     'logs.zip': 'retrieve all logs as .zip',
-    'logs.instance': 'instance id',
-    'logs.log-group': 'entire log group or just the path to the file, ex: "var/log/httpd/error_log"',
-    'logs.stream': 'stream deployment logs that were set up with cloudwatch',
+    'logs.instance': 'retrieve logs only for this instance',
+    'logs.log-group': 'retrieve logs only for this log group',
+    'logs.stream': 'enable/disable log streaming to CloudWatch Logs',
     'logs.environment': 'environment from which to download logs',
+    'logs.cloudwatch_logs': 'enable/disable log streaming to CloudWatch Logs',
+    'logs.cloudwatch_log_source': os.linesep.join(
+        [
+            'CloudWatch logs source to enable/disable or to retrieve',
+            'valid values:',
+            '  with --cloudwatch-logs (enable/disable): instance | environment-health | all',
+            '  without --cloudwatch-logs (retrieve): instance | environment-health',
+        ]
+    ),
 
     # Restore
     'restore.env': 'The ID of the environment to restore',
