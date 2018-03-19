@@ -283,5 +283,5 @@ Unable to parse response (no element found: line 1, column 0), invalid XML recei
 b''
 Unable to parse response (no element found: line 1, column 0), invalid XML received:
 b''""",
-            str(context_manager.exception)
+            str(context_manager.exception).replace('\r\n', '\n').replace(r'\s$', "")
         )

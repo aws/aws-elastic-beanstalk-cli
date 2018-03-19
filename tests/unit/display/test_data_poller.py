@@ -153,7 +153,10 @@ class TestDataPoller(unittest.TestCase):
 		self.assertEqual('1.6', data_poller.format_float(flt=1.55, number_of_places=1))
 		self.assertEqual('2.0', data_poller.format_float(flt=1.99, number_of_places=1))
 
-	def test_collapse_environment_health_data(self):
+	@mock.patch('ebcli.lib.utils.get_local_time_as_string')
+	def test_collapse_environment_health_data(self, get_local_time_as_string_mock):
+		get_local_time_as_string_mock.return_value = '2018-03-14 04:12:27'
+
 		self.assertEqual(
 			{
 				'Cause': 'Fake cause 1',
@@ -183,9 +186,11 @@ class TestDataPoller(unittest.TestCase):
 			},
 			data_poller.collapse_environment_health_data(TestDataPoller.ENVIRONMENT_HEALTH))
 
+	@mock.patch('ebcli.lib.utils.get_local_time_as_string')
 	@mock.patch('ebcli.display.data_poller.format_time_since')
-	def test_collapse_instance_health_data(self, format_time_since_mock):
+	def test_collapse_instance_health_data(self, format_time_since_mock, get_local_time_as_string_mock):
 		self.maxDiff = None
+		get_local_time_as_string_mock.return_value = '2018-03-14 04:12:27'
 		format_time_since_mock.return_value = '4 hours'
 
 		self.assertEqual(
