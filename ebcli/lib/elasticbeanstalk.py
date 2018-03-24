@@ -778,6 +778,10 @@ def get_environment_health(env_name, attributes=None):
     return result
 
 
+def get_environment_tier_definition():
+    return get_environment(app_name=None, env_name=None).tier
+
+
 def get_instance_health(env_name, next_token=None, attributes=None):
     if attributes is None:
         attributes = [

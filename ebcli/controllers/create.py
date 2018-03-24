@@ -154,7 +154,6 @@ class CreateController(AbstractBaseController):
         # get tags
         tags = createops.get_and_validate_tags(tags)
 
-        #load solution stack
         if not solution_string:
             solution_string = solution_stack_ops.get_default_solution_stack()
 
@@ -166,14 +165,14 @@ class CreateController(AbstractBaseController):
                 try:
                     solution = solution_stack_ops.find_solution_stack_from_string(solution_string)
                 except NotFoundError:
-                    raise NotFoundError('Platform ' + solution_string +
-                                        ' does not appear to be valid')
+                    raise NotFoundError('Platform "' + solution_string +
+                                        '" does not appear to be valid')
 
         if tier:
             try:
                 tier = Tier.from_raw_string(tier)
             except NotFoundError:
-                raise NotFoundError('Provided tier ' + tier + ' does not '
+                raise NotFoundError('Provided tier "' + tier + '" does not '
                                     'appear to be valid')
 
             if tier.is_worker() and cname:
@@ -206,8 +205,7 @@ class CreateController(AbstractBaseController):
                 env_name = fileoperations.get_env_name_from_env_yaml()
                 if env_name is not None:
                     if env_name.endswith('+') and group is None:
-                        io.echo(strings['create.missinggroupsuffix'])
-                        return
+                        raise InvalidOptionsError(strings['create.missinggroupsuffix'])
                     else:
                         env_name = env_name[:-1] + '-' + group
                 else:
@@ -218,11 +216,12 @@ class CreateController(AbstractBaseController):
         # Get template if applicable
         template_name = get_template_name(app_name, cfg)
         if template_name:
-            template_contents = elasticbeanstalk.describe_template(
-                app_name, template_name)
-
-            if template_contents['Tier']['Name'] == 'Worker':
-                tier = Tier.from_raw_string('worker')
+            template_contents = elasticbeanstalk.describe_template(app_name, template_name)
+            environment_name_from_configuration_template = template_contents.get('EnvironmentName')
+            if environment_name_from_configuration_template:
+                tier_definition = elasticbeanstalk.get_environment_tier_definition()
+                if tier_definition.is_worker():
+                    tier = tier_definition
 
         if not tier or tier.is_webserver():
             if not cname and not provided_env_name:

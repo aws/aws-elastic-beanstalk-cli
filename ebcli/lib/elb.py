@@ -43,3 +43,4 @@ def get_health_of_instances(load_balancer_name):
         raise NotFoundError(e)
 
     return result['InstanceStates']
+

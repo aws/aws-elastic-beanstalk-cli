@@ -10,10 +10,43 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import copy
 
 from ..lib import ec2, utils
 from ..resources.strings import strings
 from ..resources.statics import namespaces, option_names
+
+
+class OptionSetting(object):
+    def __init__(self, namespace, option_name, value):
+        self.namespace = namespace
+        self.option_name = option_name
+        self.value = value
+
+    def __eq__(self, other):
+        return self.__hash__() == other.__hash__()
+
+    def __hash__(self):
+        """
+        __hash__ method for `OptionSetting` to enable comparison of sets of `OptionSetting`s objects.
+        :return: a hash of the `tuple` of the `OptionSetting` attributes
+        """
+        return hash((self.namespace, self.option_name, self.value))
+
+    @classmethod
+    def option_settings_from_json(cls, json_array):
+        option_settings = set()
+        for option_setting in json_array:
+            option_settings.add(
+                OptionSetting(
+                    namespace=option_setting['Namespace'],
+                    option_name=option_setting['OptionName'],
+                    value=option_setting['Value'],
+                )
+            )
+
+        return option_settings
+
 
 class CreateEnvironmentRequest(object):
 
@@ -70,10 +103,16 @@ class CreateEnvironmentRequest(object):
                 self.scale = str(scale)
 
     def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+        self_dict = copy.deepcopy(self.__dict__)
+        other_dict = copy.deepcopy(other.__dict__)
+
+        self_dict['option_settings'] = OptionSetting.option_settings_from_json(self_dict.get('option_settings', []))
+        other_dict['option_settings'] = OptionSetting.option_settings_from_json(other_dict.get('option_settings', []))
+
+        return self_dict == other_dict
 
     def __ne__(self, other):
-        return self.__dict__ != other.__dict__
+        return not self == other
 
     def add_option_setting(self, namespace, option_name, value, resource=None):
         setting = {'Namespace': namespace,
