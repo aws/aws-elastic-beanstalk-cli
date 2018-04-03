@@ -256,9 +256,8 @@ def clone_environment(clone):
 
 
 def _api_to_environment(api_dict, want_solution_stack = False):
-    # Convert solution_stack and tier to objects
     try:
-        if want_solution_stack:
+        if want_solution_stack or api_dict['SolutionStackName'] == 'custom':
             solution_stack_name = api_dict['SolutionStackName']
             platform = SolutionStack(solution_stack_name)
         else:
