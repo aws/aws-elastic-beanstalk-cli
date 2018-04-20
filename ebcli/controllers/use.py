@@ -21,6 +21,7 @@ from ..operations import useops, gitops
 
 LOG = minimal_logger(__name__)
 
+
 class UseController(AbstractBaseController):
     class Meta:
         label = 'use'
@@ -33,32 +34,34 @@ class UseController(AbstractBaseController):
         usage = 'eb use [environment_name] [options ...]'
 
     def do_command(self):
-        self.source = self.app.pargs.source
-        app_name = self.get_app_name()
+        source = self.app.pargs.source
         env_name = self.app.pargs.environment_name[0]
 
-        useops.switch_default_environment(app_name, env_name)
+        useops.switch_default_environment(env_name)
 
-        if self.source is not None:
-            source_location, repo, branch = utils.parse_source(self.source)
-
-            if source_location == "codecommit":
-                source_control = SourceControl.get_source_control()
-                source_control.is_setup()
-
-                if repo is None:
-                    repo = gitops.get_default_repository()
-
-                useops.switch_default_repo_and_branch(repo, branch)
-                successfully_checked_out_branch = source_control.checkout_branch(branch)
-                if not successfully_checked_out_branch:
-                    raise NotFoundError("Could not checkout branch {0}.".format(branch))
-            else:
-                LOG.debug("Source location '{0}' is not supported by 'eb use'".format(source_location))
-
-        # If source is not set attempt to change branch to the environment default
+        if source:
+            self.__attempt_to_checkout_branch_specified_in_source_input(source)
         else:
-            source_control = SourceControl.get_source_control()
-            default_branch = gitops.get_branch_default_for_current_environment()
-            if default_branch is not None:
-                source_control.checkout_branch(default_branch)
+            self.__attempt_to_change_branch_to_environment_default()
+
+    @staticmethod
+    def __attempt_to_change_branch_to_environment_default():
+        source_control = SourceControl.get_source_control()
+        default_branch = gitops.get_branch_default_for_current_environment()
+        if default_branch:
+            source_control.checkout_branch(default_branch)
+
+    @staticmethod
+    def __attempt_to_checkout_branch_specified_in_source_input(source):
+        source_location, repo, branch = utils.parse_source(source)
+
+        source_control = SourceControl.get_source_control()
+        source_control.is_setup()
+
+        repo = repo or gitops.get_default_repository()
+
+        useops.switch_default_repo_and_branch(repo, branch)
+        successfully_checked_out_branch = source_control.checkout_branch(branch)
+
+        if not successfully_checked_out_branch:
+            raise NotFoundError("Could not checkout branch {0}.".format(branch))

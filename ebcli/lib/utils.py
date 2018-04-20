@@ -323,27 +323,21 @@ def check_source(value):
 
 
 def parse_source(source):
-    # Source is already validated by the check_source method.
-    if source is None:
-        return
+    if source:
+        split_source = source.split('/')
 
-    split_source = source.split('/')
+        source_location = split_source[0].lower()
+        raise_if_source_location_is_not_codecommit(source_location)
 
-    # Validate that we support the source location
-    source_location = split_source[0].lower()
-    validate_source_location(source_location)
+        repository = split_source[1]
+        branch = split_source[2]
 
-    repository = split_source[1]
-    branch = split_source[2]
-    return source_location, repository, branch
+        return source_location, repository, branch
 
 
-def validate_source_location(source_location):
-    valid_source_locations = ['codecommit']
-    if source_location in valid_source_locations:
-        return
-    else:
-        raise InvalidOptionsError("Source location '{0}' is not in the list of valid locations: {1}".format(source_location, valid_source_locations))
+def raise_if_source_location_is_not_codecommit(source_location):
+    if source_location != 'codecommit':
+        raise InvalidOptionsError('Source location "{0}" is not supported by the EBCLI'.format(source_location))
 
 
 def encode_to_ascii(unicode_value):
