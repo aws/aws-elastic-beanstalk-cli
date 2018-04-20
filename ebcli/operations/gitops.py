@@ -22,12 +22,7 @@ LOG = minimal_logger(__name__)
 
 
 def git_management_enabled():
-    default_branch = get_default_branch()
-    default_repo = get_default_repository()
-    codecommit_setup = (default_repo and default_repo is not None) and (default_branch and default_branch is not None)
-    if codecommit_setup:
-        return True
-    return False
+    return get_default_branch() and get_default_repository()
 
 
 def get_config_setting_from_current_environment_or_default(key_name):
@@ -78,18 +73,16 @@ def get_repo_default_for_current_environment():
 
 def get_default_branch():
     result = get_branch_default_for_current_environment()
-    if result is not None:
+    if result:
         return result
     LOG.debug('Branch not found')
-    return None
 
 
 def get_default_repository():
     result = get_repo_default_for_current_environment()
-    if result is not None:
+    if result:
         return result
     LOG.debug('Repository not found')
-    return None
 
 
 def initialize_codecommit():
