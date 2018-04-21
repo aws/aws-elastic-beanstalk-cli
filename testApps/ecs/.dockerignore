@@ -1,4 +1,0 @@
-# Exclude git and environment variables
-# from Docker Image
-.git/
-.env
