@@ -10,7 +10,6 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
 from collections import defaultdict
 
 from botocore.compat import six
@@ -23,40 +22,41 @@ from ..objects.exceptions import NotAuthorizedError
 from . import commonops
 
 
-def terminate(env_name, force_terminate=False, nohang=False, timeout=5):
-    request_id = elasticbeanstalk.terminate_environment(env_name,
-                                                        force_terminate=force_terminate)
+def terminate(
+        env_name,
+        force_terminate=False,
+        nohang=False,
+        timeout=15
+):
+    request_id = elasticbeanstalk.terminate_environment(
+        env_name,
+        force_terminate=force_terminate
+    )
 
-    # disassociate with branch if branch default
+    dissociate_environment_from_branch(env_name)
+
+    if not nohang:
+        commonops.wait_for_success_events(
+            request_id,
+            timeout_in_minutes=timeout
+        )
+
+
+def dissociate_environment_from_branch(env_name):
     default_env = commonops.get_current_branch_environment()
     if default_env == env_name:
         commonops.set_environment_for_current_branch(None)
 
-    if not nohang:
-       commonops.wait_for_success_events(request_id,
-                                         timeout_in_minutes=timeout)
 
-
-def delete_app(app_name, force, nohang=False, cleanup=True,
-               timeout=15):
-    app = elasticbeanstalk.describe_application(app_name)
-
-    if 'Versions' not in app:
-        app['Versions'] = []
-
+def delete_app(
+        app_name,
+        force,
+        nohang=False,
+        cleanup=True,
+        timeout=15
+):
     if not force:
-        #Confirm
-        envs = elasticbeanstalk.get_environment_names(app_name)
-        confirm_message = prompts['delete.confirm'].replace(
-            '{app-name}', app_name)
-        confirm_message = confirm_message.replace('{env-num}', str(len(envs)))
-        confirm_message = confirm_message.replace(
-            '{config-num}', str(len(app['ConfigurationTemplates'])))
-        confirm_message = confirm_message.replace(
-            '{version-num}', str(len(app['Versions'])))
-        io.echo()
-        io.echo(confirm_message)
-        io.validate_action(prompts['delete.validate'], app_name)
+        ask_for_customer_confirmation_to_delete_all_application_resources(app_name)
 
     cleanup_application_versions(app_name)
 
@@ -65,30 +65,49 @@ def delete_app(app_name, force, nohang=False, cleanup=True,
     if cleanup:
         cleanup_ignore_file()
         fileoperations.clean_up()
+
     if not nohang:
-        commonops.wait_for_success_events(request_id, sleep_time=1,
-                                          timeout_in_minutes=timeout)
+        commonops.wait_for_success_events(
+            request_id,
+            sleep_time=5,
+            timeout_in_minutes=timeout
+        )
+
+
+def ask_for_customer_confirmation_to_delete_all_application_resources(app_name):
+    application = elasticbeanstalk.describe_application(app_name)
+
+    application['Versions'] = application.get('Versions', [])
+
+    environments = elasticbeanstalk.get_environment_names(app_name)
+    confirm_message = prompts['delete.confirm'].format(
+        app_name=app_name,
+        env_num=len(environments),
+        config_num=len(application['ConfigurationTemplates']),
+        version_num=len(application['Versions'])
+    )
+    io.echo(confirm_message)
+    io.validate_action(prompts['delete.validate'], app_name)
 
 
 def cleanup_application_versions(app_name):
-    # Clean up app versions from s3
     io.echo('Removing application versions from s3.')
     versions = elasticbeanstalk.get_application_versions(app_name)['ApplicationVersions']
     buckets = defaultdict(list)
     for version in versions:
         bundle = version.get('SourceBundle', {})
-        bucket = bundle.get('S3Bucket', None)
-        key = bundle.get('S3Key', None)
+        bucket = bundle.get('S3Bucket')
+        key = bundle.get('S3Key')
         if bucket and key:
             buckets[bucket].append(key)
 
-    # Delete all keys in batches per bucket
     for bucket, keys in six.iteritems(buckets):
         try:
             s3.delete_objects(bucket, keys)
         except NotAuthorizedError:
-            io.log_warning('Error deleting application '
-                           'versions from bucket "{0}"'.format(bucket))
+            io.log_warning(
+                'Error deleting application versions from bucket "{0}"'.format(bucket)
+            )
 
 
 def cleanup_ignore_file():
