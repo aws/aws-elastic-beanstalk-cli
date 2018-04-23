@@ -110,7 +110,7 @@ def get_war_file_location():
     cwd = os.getcwd()
     try:
         _traverse_to_project_root()
-        lst = glob.glob('build/libs/*.war')
+        lst = glob.glob('{}'.format(os.path.join('build', 'libs', '*.war')))
         try:
             return os.path.join(os.getcwd(), lst[0])
         except IndexError:
@@ -468,6 +468,9 @@ def _zipdir(path, zipf, ignore_list=None):
         for d in dirs:
             cur_dir = os.path.join(root, d)
             if os.path.islink(cur_dir):
+                # It is probably safe to remove this code since os.walk seems to categorize
+                # symlinks-to-directories as files. This doesn't matter as far as creation
+                # of the zip is concerned, but just having the code around is confusing.
                 zipInfo = zipfile.ZipInfo()
                 zipInfo.filename = os.path.join(root, d)
 
@@ -496,7 +499,7 @@ def _zipdir(path, zipf, ignore_list=None):
                 if os.path.islink(cur_file):
                     zipInfo = zipfile.ZipInfo()
                     zipInfo.filename = os.path.join(root, f)
-                    
+
                     # 2716663808L is the "magic code" for symlinks
 
                     # Python 3 merged "int" and "long" into int, so we must check the
@@ -522,18 +525,6 @@ def unzip_folder(file_location, directory):
             if not os.path.isdir(path):
                 os.makedirs(path)
             open(os.path.join(path, name), 'wb').write(zip.read(cur_file))
-
-
-def save_to_file(data, location, filename):
-    if not os.path.isdir(location):
-        os.makedirs(location)
-
-    file_location = os.path.join(location, filename)
-    data_file = open(file_location, 'wb')
-    data_file.write(data)
-
-    data_file.close()
-    return file_location
 
 
 def delete_app_file(app_name):
@@ -570,7 +561,7 @@ def get_editor():
         platform = sys.platform
         windows = platform.startswith('win')
         if windows:
-            editor = None
+            editor = 'notepad.exe'
         else:
             editor = 'nano'
 
@@ -631,15 +622,13 @@ def get_environment_from_file(env_name):
         path = file_name + file_ext
         if os.path.exists(path):
             with codecs.open(path, 'r', encoding='utf8') as f:
-                env = load(f)
+                return load(f)
     except (ScannerError, ParserError):
         raise InvalidSyntaxError('The environment file contains '
                                  'invalid syntax.')
 
     finally:
         os.chdir(cwd)
-
-    return env
 
 
 def get_application_from_file(app_name):
@@ -652,15 +641,13 @@ def get_application_from_file(app_name):
         path = file_name + file_ext
         if os.path.exists(path):
             with codecs.open(path, 'r', encoding='utf8') as f:
-                app = load(f)
+                return load(f)
     except (ScannerError, ParserError):
         raise InvalidSyntaxError('The application file contains '
                                  'invalid syntax.')
 
     finally:
         os.chdir(cwd)
-
-    return app
 
 
 def update_platform_version(version):
@@ -813,27 +800,20 @@ def get_build_configuration():
             io.log_warning(strings['codebuild.noheader'].replace('{header}', buildspec_config_header))
             return None
 
-        build_configuration = BuildConfiguration()
         beanstalk_build_configs = build_spec[buildspec_config_header]
 
         if beanstalk_build_configs is None:
             LOG.debug("No values for EB header in buildspec file")
-            return build_configuration
+            return BuildConfiguration()
 
         LOG.debug("EB Config Keys: {0}".format(beanstalk_build_configs.keys()))
 
-        if service_role_key in beanstalk_build_configs.keys():
-            build_configuration.service_role = beanstalk_build_configs[service_role_key]
-
-        if image_key in beanstalk_build_configs.keys():
-            build_configuration.image = beanstalk_build_configs[image_key]
-
-        if compute_key in beanstalk_build_configs.keys():
-            build_configuration.compute_type = beanstalk_build_configs[compute_key]
-
-        if timeout_key in beanstalk_build_configs.keys():
-            build_configuration.timeout = beanstalk_build_configs[timeout_key]
-
+        build_configuration = BuildConfiguration(
+            compute_type=beanstalk_build_configs.get(compute_key),
+            image=beanstalk_build_configs.get(image_key),
+            service_role=beanstalk_build_configs.get(service_role_key),
+            timeout=beanstalk_build_configs.get(timeout_key)
+        )
     finally:
         os.chdir(cwd)  # move back to working directory
 
@@ -876,16 +856,6 @@ def write_to_eb_data_file(location, data):
         _traverse_to_project_root()
         path = beanstalk_directory + location
         write_to_data_file(path, data)
-    finally:
-        os.chdir(cwd)
-
-
-def read_from_eb_data_file(location):
-    cwd = os.getcwd()
-    try:
-        _traverse_to_project_root()
-        path = beanstalk_directory + location
-        read_from_data_file(path)
     finally:
         os.chdir(cwd)
 
@@ -979,14 +949,12 @@ def open_file_for_editing(file_location):
     # Added this line for windows whitespace escaping
     file_location = '"{0}"'.format(file_location)
     editor = get_editor()
-    if editor:
-        try:
-            os.system(editor + ' ' + file_location)
-        except OSError:
-            io.log_error(prompts['fileopen.error1'].replace('{editor}',
-                                                            editor))
-    else:
-        try:
-            os.system(file_location)
-        except OSError:
-            io.log_error(prompts['fileopen.error2'])
+    try:
+        os.system(editor + ' ' + file_location)
+    except OSError:
+        io.log_error(
+            prompts['fileopen.error1'].replace(
+                '{editor}',
+                editor
+            )
+        )

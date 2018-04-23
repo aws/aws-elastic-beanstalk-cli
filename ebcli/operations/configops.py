@@ -65,19 +65,3 @@ def save_env_file(api_model):
     usr_model = configuration.convert_api_to_usr_model(api_model)
     file_location = fileoperations.save_env_file(usr_model)
     return file_location
-
-
-def open_file_for_editing(file_location):
-
-    editor = fileoperations.get_editor()
-    if editor:
-        try:
-            os.system(editor + ' ' + file_location)
-        except OSError:
-            io.log_error(prompts['fileopen.error1'].replace('{editor}',
-                                                            editor))
-    else:
-        try:
-            os.system(file_location)
-        except OSError:
-            io.log_error(prompts['fileopen.error2'])

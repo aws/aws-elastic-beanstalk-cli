@@ -410,7 +410,6 @@ prompts = {
                       'Application versions: {version-num}\n',
     'delete.validate': 'To confirm, type the application name',
     'fileopen.error1': 'EB CLI cannot open the file using the editor {editor}.',
-    'fileopen.error2': 'Unable to open environment file. Try setting the EDITOR environment variable.',
     'update.invalidstate': 'The environment update cannot be complete at this time. Try again later.',
     'update.invalidsyntax': 'The configuration settings you provided contain an error. The environment will not be updated.',
     'ssh.setup': 'Do you want to set up SSH for your instances?',

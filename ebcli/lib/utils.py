@@ -248,7 +248,13 @@ def parse_version(version_string):
 def save_file_from_url(url, location, filename):
     result = get_data_from_url(url)
 
-    return fileoperations.save_to_file(result, location, filename)
+    os.path.isdir(location) or os.makedirs(location)
+
+    file_location = os.path.join(location, filename)
+    with open(file_location, 'wb') as data_file:
+        data_file.write(result)
+
+    return file_location
 
 
 # http://stackoverflow.com/a/5164027
