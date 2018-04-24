@@ -5,23 +5,25 @@ from setuptools import setup, find_packages
 
 import ebcli
 
-requires = ['pyyaml>=3.11',
-            'botocore>=1.0.1',
-            'cement==2.8.2',
-            'colorama==0.3.7',
-            'pathspec==0.5.5',
-            'setuptools >= 20.0',
-            ## For docker-compose
-            'docopt >= 0.6.1, < 0.7',
-            'requests >= 2.6.1, <= 2.9.1',
-            'websocket-client >= 0.11.0, < 1.0',
-            'dockerpty >= 0.3.2, <= 0.4.1',
-            'semantic_version == 2.5.0',
-            'tabulate == 0.7.5',
-            'termcolor == 1.1.0',
-            'six == 1.11.0'
-           ]
-# When executing 'eb local run', if the platform is a multi-container Docker platform, 'docker' is installed
+
+requires = [
+    'botocore>=1.0.1',
+    'cement==2.8.2',
+    'colorama==0.3.7',
+    'pathspec==0.5.5',
+    'pyyaml>=3.11',
+    'setuptools >= 20.0',
+    ## For docker-compose
+    'docker >= 2.6.1, < 2.7.0',
+    'dockerpty >= 0.3.2, <= 0.4.1',
+    'docopt >= 0.6.1, < 0.7',
+    'requests >= 2.6.1, <= 2.9.1',
+    'semantic_version == 2.5.0',
+    'six == 1.11.0',
+    'tabulate == 0.7.5',
+    'termcolor == 1.1.0',
+    'websocket-client >= 0.11.0, < 1.0',
+]
 
 testing_requires = ['pytest>=3.03',
                     'mock>=2.0.0',

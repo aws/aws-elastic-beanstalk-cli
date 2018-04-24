@@ -1,11 +1,8 @@
 import os
 import ssl
 
-from docker import tls
-
-from ebcli.bundled._compose.docker_py_handler import client
-
 from docker import APIClient
+from docker import tls
 
 
 def docker_client():
@@ -36,4 +33,4 @@ def docker_client():
         )
 
     timeout = int(os.environ.get('DOCKER_CLIENT_TIMEOUT', 60))
-    return APIClient(base_url=base_url, tls=tls_config, version=client.api_version().base_version, timeout=timeout)
+    return APIClient(base_url=base_url, tls=tls_config, version='1.21', timeout=timeout)

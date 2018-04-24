@@ -12,7 +12,6 @@ from .config import DOCKER_CONFIG_KEYS
 from .container import Container, get_container_name
 from docker.errors import APIError
 from docker.types import HostConfig
-from ebcli.bundled._compose.docker_py_handler import client as docker_py_client
 from .progress_stream import stream_output, StreamOutputError
 
 log = logging.getLogger(__name__)
@@ -453,7 +452,7 @@ class Service(object):
         extra_hosts = build_extra_hosts(options.get('extra_hosts', None))
 
         return HostConfig(
-            version=docker_py_client.api_version().base_version,
+            version='1.21',
             links=self._get_links(link_to_self=one_off),
             port_bindings=port_bindings,
             binds=volume_bindings,
