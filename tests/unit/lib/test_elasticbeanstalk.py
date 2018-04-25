@@ -17,6 +17,35 @@ from ebcli.lib import elasticbeanstalk
 from ebcli.objects.buildconfiguration import BuildConfiguration
 
 
+DESCRIBE_ENVIRONMENTS_RESPONSE = {
+    'Environments': [
+        {
+            'HealthStatus': 'Severe',
+            'ApplicationName': 'my-application',
+            'VersionLabel': 'app-171013_210522',
+            'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 5.4 running on 64bit Amazon Linux (TEST)/0.0.2',
+            'DateUpdated': '2018-04-12T23:13:47.539Z',
+            'Alerts': [],
+            'EnvironmentArn': 'arn:aws:elasticbeanstalk:us-east-1:123123123123:environment/my-application/my-environment',
+            'DateCreated': '2017-10-13T21:05:28.754Z',
+            'AbortableOperationInProgress': False,
+            'Health': 'Red',
+            'EnvironmentLinks': [],
+            'SolutionStackName': '64bit Amazon Linux 2017.03 v0.0.2 running PHP 5.4',
+            'EnvironmentId': 'e-rewrwrwer',
+            'Status': 'Ready',
+            'Tier': {
+                'Type': 'Standard',
+                'Version': ' ',
+                'Name': 'Webserver'
+            },
+            'Description': 'Environment created from the EB CLI using \'eb create\'',
+            'EnvironmentName': 'my-environment'
+        }
+    ]
+}
+
+
 class TestElasticBeanstalk(unittest.TestCase):
     app_name = 'ebcli-app'
     app_version_name = 'ebcli-app-version'
@@ -110,3 +139,68 @@ class TestElasticBeanstalk(unittest.TestCase):
                                                                                             'TimeoutInMinutes': self.timeout},
                                                                         VersionLabel=self.app_version_name,)
 
+    @mock.patch('ebcli.lib.elasticbeanstalk._make_api_call')
+    def test_get_environments__attempting_to_match_single_env__match_found(
+            self,
+            _make_api_call_mock
+    ):
+        _make_api_call_mock.return_value = DESCRIBE_ENVIRONMENTS_RESPONSE
+
+        environments = elasticbeanstalk.get_environments(['my-environment'])
+        self.assertEqual('Environment', environments[0].__class__.__name__)
+
+    @mock.patch('ebcli.lib.elasticbeanstalk._make_api_call')
+    def test_get_environments__attempting_to_match_single_env__match_not_found(
+            self,
+            _make_api_call_mock
+    ):
+        _make_api_call_mock.return_value = {
+            'Environments': []
+        }
+
+        with self.assertRaises(elasticbeanstalk.NotFoundError) as context_manager:
+            elasticbeanstalk.get_environments(['my-environment'])
+
+        self.assertEqual(
+            'Could not find any environments from the list: my-environment',
+            str(context_manager.exception)
+        )
+
+    @mock.patch('ebcli.lib.elasticbeanstalk._make_api_call')
+    def test_get_environments__attempting_to_match_multiple_env__match_not_found(
+            self,
+            _make_api_call_mock
+    ):
+        _make_api_call_mock.return_value = {
+            'Environments': []
+        }
+
+        with self.assertRaises(elasticbeanstalk.NotFoundError) as context_manager:
+            elasticbeanstalk.get_environments(
+                [
+                    'my-absent-environment-1',
+                    'my-absent-environment-2'
+                ]
+            )
+
+        self.assertEqual(
+            'Could not find any environments from the list: my-absent-environment-1, my-absent-environment-2',
+            str(context_manager.exception)
+        )
+
+    @mock.patch('ebcli.lib.elasticbeanstalk._make_api_call')
+    def test_get_environments__attempting_to_match_multiple_env__partial_match_found(
+            self,
+            _make_api_call_mock
+    ):
+        _make_api_call_mock.return_value = DESCRIBE_ENVIRONMENTS_RESPONSE
+
+        environments = elasticbeanstalk.get_environments(
+            [
+                'my-environment',
+                'my-absent-environment'
+            ]
+        )
+
+        self.assertEqual(1, len(environments))
+        self.assertEqual('Environment', environments[0].__class__.__name__)
