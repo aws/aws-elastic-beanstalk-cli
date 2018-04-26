@@ -1,4 +1,4 @@
-# Copyright 2017 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You
 # may not use this file except in compliance with the License. A copy of
@@ -538,45 +538,6 @@ def get_worker_sqs_url(env_name):
         raise WorkerQueueNotFound
 
     return worker_queue['URL']
-
-
-def create_envvars_list(var_list, as_option_settings=True):
-    namespace = 'aws:elasticbeanstalk:application:environment'
-
-    options = dict()
-    options_to_remove = set()
-    for pair in var_list:
-        ## validate
-        if not re.match('^[\w\\_.:/+@-][^=]*=.*$', pair):
-            raise InvalidOptionsError(strings['setenv.invalidformat'])
-
-        try:
-            option_name, value = pair.split('=', 1)
-        except ValueError:
-            raise InvalidOptionsError(strings['setenv.invalidformat'])
-
-        if value:
-            options[option_name] = value
-        else:
-            options_to_remove.add(option_name)
-
-    if as_option_settings:
-        option_dict = options
-        options = list()
-        remove_list = options_to_remove
-        options_to_remove = list()
-        for k, v in six.iteritems(option_dict):
-            options.append(
-                dict(Namespace=namespace,
-                     OptionName=k,
-                     Value=v))
-
-        for k in remove_list:
-            options_to_remove.append(
-                dict(Namespace=namespace,
-                     OptionName=k))
-
-    return options, options_to_remove
 
 
 def create_dummy_app_version(app_name):

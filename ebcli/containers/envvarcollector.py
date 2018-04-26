@@ -1,4 +1,4 @@
-# Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"). You
 # may not use this file except in compliance with the License. A copy of
@@ -13,8 +13,8 @@
 
 from botocore.compat import six
 
-from ..operations import commonops
-from ..lib import utils
+from ebcli.operations import envvarops
+from ebcli.lib import utils
 
 
 class EnvvarCollector(object):
@@ -37,7 +37,7 @@ class EnvvarCollector(object):
         if not envvars_str:
             return cls()
         envvars = envvars_str.split(',')
-        envvars_map, envvars_to_remove = commonops.create_envvars_list(
+        envvars_map, envvars_to_remove = envvarops.create_environment_variables_list(
             envvars, as_option_settings=False)
 
         return cls(envvars_map, envvars_to_remove)

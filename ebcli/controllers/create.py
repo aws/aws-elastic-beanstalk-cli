@@ -25,6 +25,7 @@ from ..operations import (
     commonops,
     composeops,
     createops,
+    envvarops,
     saved_configs,
     solution_stack_ops
 )
@@ -494,19 +495,21 @@ def elb_types(region):
     return types
 
 
-def get_and_validate_envars(envvars):
+def get_and_validate_envars(environment_variables_input):
     """
-    :param envvars: A comma-separated string of environment variables to create the environment with
-    :return: A sanitized list of environment variables
+    Returns a list of environment variables as option settings from the raw environment variables
+    string input provided by the customer
+    :param environment_variables_input: a string of the form "KEY_1=VALUE_1,...,KYE_N=VALUE_N"
+    :return: the list of option settings derived from the key-value pairs in `environment_variables_input`
     """
-    if not envvars:
-        return []
+    environment_variables = envvarops.sanitize_environment_variables_from_customer_input(
+        environment_variables_input
+    )
+    environment_variable_option_settings, options_to_remove = envvarops.create_environment_variables_list(
+        environment_variables
+    )
 
-    envvars = envvars.strip().strip('"').strip('\'')
-    envvars = envvars.split(',')
-
-    options, options_to_remove = commonops.create_envvars_list(envvars)
-    return options
+    return environment_variable_option_settings
 
 
 def get_template_name(app_name, cfg):

@@ -493,12 +493,12 @@ class TestCreate(TestCreateBase):
             {
              'Namespace': 'aws:elasticbeanstalk:application:environment',
              'OptionName': 'DB_USER',
-             'Value': '"root"'
+             'Value': 'root'
             },
             {
              'Namespace': 'aws:elasticbeanstalk:application:environment',
              'OptionName': 'DB_PASSWORD',
-             'Value': '"password'
+             'Value': 'password'
             }
         ]
 
