@@ -11,13 +11,14 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import re
+
 from six import iteritems
 
-from ebcli.lib import elasticbeanstalk, utils
 from ebcli.core import io
-from ebcli.objects.exceptions import InvalidOptionsError, InvalidSyntaxError
-from ebcli.resources.strings import strings
+from ebcli.lib import elasticbeanstalk, utils
+from ebcli.objects.exceptions import InvalidSyntaxError
 from ebcli.operations import commonops
+from ebcli.resources.strings import strings
 
 
 def get_and_print_environment_vars(app_name, env_name):
@@ -25,9 +26,10 @@ def get_and_print_environment_vars(app_name, env_name):
         app_name, env_name
     )['OptionSettings']
     namespace = 'aws:elasticbeanstalk:application:environment'
-    vars = {n['OptionName']: n['Value'] for n in settings
-            if n["Namespace"] == namespace}
-    print_environment_vars(vars)
+    environment_variables = {
+        setting['OptionName']: setting['Value'] for setting in settings if setting["Namespace"] == namespace
+    }
+    print_environment_vars(environment_variables)
 
 
 def sanitize_environment_variables_from_customer_input(environment_variables_input):
@@ -49,14 +51,14 @@ def sanitize_environment_variables_from_customer_input(environment_variables_inp
         if '=' not in key_value_pair:
             raise InvalidSyntaxError(strings['setenv.invalidformat'])
 
-        key, value = key_value_pair.split('=', maxsplit=1)
-        key = key.strip().strip('"')
+        environment_variable, value = key_value_pair.split('=', maxsplit=1)
+        environment_variable = environment_variable.strip().strip('"')
         value = value.strip().strip('"')
 
-        if not key:
+        if not environment_variable:
             raise InvalidSyntaxError(strings['setenv.invalidformat'])
 
-        environment_variables.append('='.join([key, value]))
+        environment_variables.append('='.join([environment_variable, value]))
 
     return environment_variables
 
@@ -95,25 +97,31 @@ def create_environment_variables_list(environment_variables, as_option_settings=
         options = list()
         remove_list = options_to_remove
         options_to_remove = list()
-        for k, v in iteritems(option_dict):
+        for environment_variable, value in iteritems(option_dict):
             options.append(
-                dict(Namespace=namespace,
-                     OptionName=k,
-                     Value=v))
+                dict(
+                    Namespace=namespace,
+                    OptionName=environment_variable,
+                    Value=value
+                )
+            )
 
-        for k in remove_list:
+        for environment_variable in remove_list:
             options_to_remove.append(
-                dict(Namespace=namespace,
-                     OptionName=k))
+                dict(
+                    Namespace=namespace,
+                    OptionName=environment_variable
+                )
+            )
 
     return options, options_to_remove
 
 
-def print_environment_vars(vars):
+def print_environment_vars(environment_variables):
     io.echo(' Environment Variables:')
-    for key, value in iteritems(vars):
-        key, value = utils.mask_vars(key, value)
-        io.echo('    ', key, '=', value)
+    for environment_variable, value in iteritems(environment_variables):
+        environment_variable, value = utils.mask_vars(environment_variable, value)
+        io.echo('    ', environment_variable, '=', value)
 
 
 def setenv(app_name, env_name, var_list, timeout=None):

@@ -10,11 +10,10 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
 from botocore.compat import six
 
-from ebcli.operations import envvarops
 from ebcli.lib import utils
+from ebcli.operations import envvarops
 
 
 class EnvvarCollector(object):
@@ -42,6 +41,17 @@ class EnvvarCollector(object):
 
         return cls(envvars_map, envvars_to_remove)
 
+    def filtered(self):
+        """
+        Return new Envvarcollector with all environment variables in self.map that
+        are not in to_remove
+        :return EnvvarCollector
+        """
+
+        filtered_envvars = {k: v for k, v in six.iteritems(self.map) if k not in
+                            self.to_remove}
+        return EnvvarCollector(filtered_envvars)
+
     def merge(self, higher_priority_env):
         """
         Merge self with higher_priority_env.
@@ -54,14 +64,3 @@ class EnvvarCollector(object):
         to_remove = self.to_remove | higher_priority_env.to_remove
 
         return EnvvarCollector(envvars_map, to_remove)
-
-    def filtered(self):
-        """
-        Return new Envvarcollector with all environment variables in self.map that
-        are not in to_remove
-        :return EnvvarCollector
-        """
-
-        filtered_envvars = {k: v for k, v in six.iteritems(self.map) if k not in
-                            self.to_remove}
-        return EnvvarCollector(filtered_envvars)
