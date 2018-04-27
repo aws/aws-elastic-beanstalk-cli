@@ -10,10 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
-import os
 import json
-import sys
 
 from botocore.compat import six
 from cement.utils.misc import minimal_logger
@@ -115,9 +112,7 @@ def up(compose_path=None, allow_insecure_ssl=False):
 
 
 def _compose_run(args):
-    from ebcli.bundled._compose.cli.main import main as compose_run
-
-    compose_run(*args)
+    utils.exec_cmd_live_output(['docker-compose'] + args)
 
 
 def get_container_lowlvl_info(container_id):

@@ -13,16 +13,11 @@ requires = [
     'pathspec==0.5.5',
     'pyyaml>=3.11',
     'setuptools >= 20.0',
-    ## For docker-compose
-    'docker >= 2.6.1, < 2.7.0',
-    'dockerpty >= 0.3.2, <= 0.4.1',
-    'docopt >= 0.6.1, < 0.7',
-    'requests >= 2.6.1, <= 2.9.1',
+    'docker-compose >= 1.21.2, < 1.22.0',
     'semantic_version == 2.5.0',
     'six == 1.11.0',
     'tabulate == 0.7.5',
     'termcolor == 1.1.0',
-    'websocket-client >= 0.11.0, < 1.0',
 ]
 
 testing_requires = [
