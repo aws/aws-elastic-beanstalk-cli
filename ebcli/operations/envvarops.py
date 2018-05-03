@@ -51,7 +51,7 @@ def sanitize_environment_variables_from_customer_input(environment_variables_inp
         if '=' not in key_value_pair:
             raise InvalidSyntaxError(strings['setenv.invalidformat'])
 
-        environment_variable, value = key_value_pair.split('=', maxsplit=1)
+        environment_variable, value = key_value_pair.split('=', 1)
         environment_variable = environment_variable.strip().strip('"')
         value = value.strip().strip('"')
 
@@ -85,7 +85,7 @@ def create_environment_variables_list(environment_variables, as_option_settings=
         ):
             raise InvalidSyntaxError(strings['setenv.invalidformat'])
 
-        environment_variable, value = environment_variable_string.split('=', maxsplit=1)
+        environment_variable, value = environment_variable_string.split('=', 1)
 
         if value:
             options[environment_variable] = value
