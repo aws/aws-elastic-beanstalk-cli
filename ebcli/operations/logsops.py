@@ -118,6 +118,7 @@ def disable_cloudwatch_logs(app_name, env_name, cloudwatch_log_source):
     cloudwatch_log_source = cloudwatch_log_source or logs_operations_constants.LOG_SOURCES.INSTANCE_LOG_SOURCE
     configuration_settings = elasticbeanstalk.describe_configuration_settings(app_name, env_name)
     option_settings = []
+    timeout = 5
 
     if cloudwatch_log_source in [
         logs_operations_constants.LOG_SOURCES.INSTANCE_LOG_SOURCE,
@@ -126,6 +127,7 @@ def disable_cloudwatch_logs(app_name, env_name, cloudwatch_log_source):
         if instance_log_streaming_enabled(app_name, env_name, config_settings=configuration_settings):
             option_settings.append(_instance_log_streaming_option_setting(disable=True))
             io.echo(strings['cloudwatch_instance_log_streaming.disable'])
+            timeout = 15
         else:
             io.echo(strings['cloudwatch_instance_log_streaming.already_disabled'])
 
@@ -140,7 +142,7 @@ def disable_cloudwatch_logs(app_name, env_name, cloudwatch_log_source):
             io.echo(strings['cloudwatch_environment_health_log_streaming.already_disabled'])
 
     if option_settings:
-        commonops.update_environment(env_name, changes=option_settings, nohang=False)
+        commonops.update_environment(env_name, changes=option_settings, nohang=False, timeout=timeout)
 
 
 def enable_cloudwatch_logs(app_name, env_name, cloudwatch_log_source):
@@ -160,12 +162,14 @@ def enable_cloudwatch_logs(app_name, env_name, cloudwatch_log_source):
 
     configuration_settings = elasticbeanstalk.describe_configuration_settings(app_name, env_name)
     option_settings = []
+    timeout = 5
 
     if cloudwatch_log_source in [
         logs_operations_constants.LOG_SOURCES.ALL_LOG_SOURCES,
         logs_operations_constants.LOG_SOURCES.INSTANCE_LOG_SOURCE
     ]:
         if not instance_log_streaming_enabled(app_name, env_name, config_settings=configuration_settings):
+            timeout = 15
             option_settings.append(_instance_log_streaming_option_setting())
             io.echo(strings['cloudwatch_instance_log_streaming.enable'])
         else:
@@ -188,7 +192,7 @@ def enable_cloudwatch_logs(app_name, env_name, cloudwatch_log_source):
 
     _echo_link_to_cloudwatch_console(env_name)
 
-    commonops.update_environment(env_name, changes=option_settings, nohang=False)
+    commonops.update_environment(env_name, changes=option_settings, nohang=False, timeout=timeout)
 
 
 def environment_health_streaming_enabled(app_name, env_name, config_settings=None):

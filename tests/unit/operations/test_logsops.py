@@ -183,7 +183,8 @@ class TestLogsOperations(unittest.TestCase):
                     'Value': 'false'
                 }
             ],
-            nohang=False
+            nohang=False,
+            timeout=15
         )
 
     @mock.patch('ebcli.operations.logsops.commonops.update_environment')
@@ -230,7 +231,8 @@ class TestLogsOperations(unittest.TestCase):
                     'Value': 'false'
                 }
             ],
-            nohang=False
+            nohang=False,
+            timeout=5
         )
 
     @mock.patch('ebcli.operations.logsops.commonops.update_environment')
@@ -255,7 +257,8 @@ class TestLogsOperations(unittest.TestCase):
                     'Value': 'false'
                 }
             ],
-            nohang=False
+            nohang=False,
+            timeout=15
         )
 
     @mock.patch('ebcli.operations.logsops.commonops.update_environment')
@@ -295,7 +298,8 @@ class TestLogsOperations(unittest.TestCase):
                     'Value': 'false'
                 }
             ],
-            nohang=False
+            nohang=False,
+            timeout=15
         )
 
     @mock.patch('ebcli.operations.logsops.commonops.update_environment')
@@ -335,7 +339,8 @@ class TestLogsOperations(unittest.TestCase):
                     'Value': 'false'
                 }
             ],
-            nohang=False
+            nohang=False,
+            timeout=5
         )
 
     @mock.patch('ebcli.operations.logsops.commonops.update_environment')
@@ -388,7 +393,8 @@ class TestLogsOperations(unittest.TestCase):
                     'Value': 'true'
                 }
             ],
-            nohang=False
+            nohang=False,
+            timeout=15
         )
 
     @mock.patch('ebcli.operations.logsops.commonops.update_environment')
@@ -445,7 +451,8 @@ class TestLogsOperations(unittest.TestCase):
                     'Value': 'true'
                 }
             ],
-            nohang=False
+            nohang=False,
+            timeout=15
         )
 
     @mock.patch('ebcli.operations.logsops.commonops.update_environment')
@@ -474,7 +481,8 @@ class TestLogsOperations(unittest.TestCase):
                     'Value': 'true'
                 }
             ],
-            nohang=False
+            nohang=False,
+            timeout=15
         )
 
     @mock.patch('ebcli.operations.logsops.commonops.update_environment')
@@ -518,7 +526,8 @@ class TestLogsOperations(unittest.TestCase):
                     'Value': 'true'
                 }
             ],
-            nohang=False
+            nohang=False,
+            timeout=15
         )
 
     @mock.patch('ebcli.operations.logsops.commonops.update_environment')
@@ -566,7 +575,8 @@ class TestLogsOperations(unittest.TestCase):
                     'Value': 'true'
                 }
             ],
-            nohang=False
+            nohang=False,
+            timeout=5
         )
 
     @mock.patch('ebcli.operations.logsops.commonops.update_environment')
