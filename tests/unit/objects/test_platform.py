@@ -113,3 +113,12 @@ class TestPlatform(unittest.TestCase):
 		arn = 'arn:aws:elasticbeanstalk:us-west-2::platform/Multi-container Docker running on 64bit Amazon Linux/2.7.5'
 
 		self.assertTrue(PlatformVersion.is_eb_managed_platform_arn(arn))
+
+	def test_has_healthd_support(self):
+		platform_arn_1 = 'arn:aws:elasticbeanstalk:ap-southeast-2::platform/PHP 5.4 running on 64bit Amazon Linux/2.6.0'
+		platform_arn_2 = 'arn:aws:elasticbeanstalk:ap-southeast-2::platform/PHP 5.4 running on 64bit Amazon Linux/1.4.6'
+		platform_arn_3 = 'arn:aws:elasticbeanstalk:ap-southeast-2::platform/IIS 10.0 running on 64bit Windows Server 2016/1.2.0'
+
+		self.assertTrue(PlatformVersion(platform_arn_1).has_healthd_support)
+		self.assertFalse(PlatformVersion(platform_arn_2).has_healthd_support)
+		self.assertFalse(PlatformVersion(platform_arn_3).has_healthd_support)
