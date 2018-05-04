@@ -25,9 +25,12 @@ requires = [
     'websocket-client >= 0.11.0, < 1.0',
 ]
 
-testing_requires = ['pytest>=3.03',
-                    'mock>=2.0.0',
-                    'nose>=1.3.7']
+testing_requires = [
+    'mock>=2.0.0',
+    'nose>=1.3.7'
+    'pytest>=3.03',
+    'pytest_socket',
+]
 
 if not sys.platform.startswith('win'):
     requires.append('blessed>=1.9.5')

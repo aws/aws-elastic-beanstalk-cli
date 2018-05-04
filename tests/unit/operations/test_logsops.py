@@ -616,8 +616,10 @@ class TestLogsOperations(unittest.TestCase):
         }
 
         self.assertEqual(
-            """[my_log_stream] [2018-03-19T23:19:55.811Z] INFO  [2810]  - [Initialization] : Starting activity...
-[my_log_stream] [2018-03-19T23:19:55.811Z] INFO  [2810]  - [Initialization/AddonsBefore] : Starting activity...""",
+            '[my_log_stream] [2018-03-19T23:19:55.811Z] INFO  [2810]  - [Initialization] : Starting activity...{linesep}'
+            '[my_log_stream] [2018-03-19T23:19:55.811Z] INFO  [2810]  - [Initialization/AddonsBefore] : Starting activity...'.format(
+                linesep=os.linesep
+            ),
             logsops.get_cloudwatch_log_stream_events(
                 'log_group_name',
                 'my_log_stream'
@@ -925,15 +927,14 @@ class TestLogsOperations(unittest.TestCase):
 
         logsops.stream_logs_in_terminal('log_group', ['log_stream_1', 'log_stream_2'])
 
-
         echo_with_pager_mock.assert_called_with(
             '{linesep}{linesep}============= log_stream_1 - log_group =============={linesep}{linesep}'
-            '[my_log_stream_1] [2018-03-19T23:19:55.811Z] INFO  [2810]  - [Initialization] : Starting activity...{linesep}'
+            '[my_log_stream_1] [2018-03-19T23:19:55.811Z] INFO  [2810]  - [Initialization] : Starting activity...\n'
             '[my_log_stream] [2018-03-19T23:19:55.811Z] INFO  [2810]  - [Initialization/AddonsBefore] : Starting activity...'
             '{linesep}'
             '{linesep}============= log_stream_2 - log_group =============={linesep}'
             '{linesep}'
-            '[my_log_stream_2] [2018-03-19T23:19:55.811Z] INFO  [2810]  - [Initialization] : Starting activity...{linesep}'
+            '[my_log_stream_2] [2018-03-19T23:19:55.811Z] INFO  [2810]  - [Initialization] : Starting activity...\n'
             '[my_log_stream] [2018-03-19T23:19:55.811Z] INFO  [2810]  - [Initialization/AddonsBefore] : Starting activity...'.format(
                 linesep=os.linesep
             )
@@ -1382,8 +1383,9 @@ class TestLogsOperations(unittest.TestCase):
                 'i-053efe7c102d0a540': 'https://elasticbeanstalk-us-east-1-1231231231234.s3.amazonaws.com/resources/environments/logs/tail/e-spfgk5xbd'
             }
         )
+
         echo_with_pager_mock.assert_called_with(
-            '============= i-090689581e5afcfc6 ==============\n-------------------------------------\n/var/log/awslogs.log\n-------------------------------------\n{\'skipped_events_count\': 0, \'first_event\': {\'timestamp\': 1522962583519, \'start_position\': 559799L, \'end_position\': 560017L}, \'fallback_events_count\': 0, \'last_event\': {\'timestamp\': 1522962583519, \'start_position\': 559799L, \'end_position\': 560017L}, \'source_id\': \'77b026040b93055eb448bdc0b59e446f\', \'num_of_events\': 1, \'batch_size_in_bytes\': 243}\n\n\n\n-------------------------------------\n/var/log/httpd/error_log\n-------------------------------------\n[Thu Apr 05 19:54:23.624780 2018] [mpm_prefork:warn] [pid 3470] AH00167: long lost child came home! (pid 3088)\n\n\n\n-------------------------------------\n/var/log/httpd/access_log\n-------------------------------------\n172.31.69.153 (94.208.192.103) - - [05/Apr/2018:20:57:55 +0000] "HEAD /pma/ HTTP/1.1" 404 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"\n\n\n\n-------------------------------------\n/var/log/eb-activity.log\n-------------------------------------\n  + chown -R webapp:webapp /var/app/ondeck\n[2018-04-05T19:54:21.630Z] INFO  [3555]  - [Application update app-180406_044630@3/AppDeployStage0/AppDeployPreHook/02_setup_envvars.sh] : Starting activity...\n\n\n-------------------------------------\n/tmp/sample-app.log\n-------------------------------------\n2018-04-05 20:52:51 Received message: \\xe2\\x96\\x88\\xe2\n\n\n\n-------------------------------------\n/var/log/eb-commandprocessor.log\n-------------------------------------\n[2018-04-05T19:45:05.526Z] INFO  [2853]  : Running 2 of 2 actions: AppDeployPostHook...\n============= i-053efe7c102d0a540 ==============\n-------------------------------------\n/var/log/awslogs.log\n-------------------------------------\n{\'skipped_events_count\': 0, \'first_event\': {\'timestamp\': 1522962583519, \'start_position\': 559799L, \'end_position\': 560017L}, \'fallback_events_count\': 0, \'last_event\': {\'timestamp\': 1522962583519, \'start_position\': 559799L, \'end_position\': 560017L}, \'source_id\': \'77b026040b93055eb448bdc0b59e446f\', \'num_of_events\': 1, \'batch_size_in_bytes\': 243}\n\n\n\n-------------------------------------\n/var/log/httpd/error_log\n-------------------------------------\n[Thu Apr 05 19:54:23.624780 2018] [mpm_prefork:warn] [pid 3470] AH00167: long lost child came home! (pid 3088)\n\n\n\n-------------------------------------\n/var/log/httpd/access_log\n-------------------------------------\n172.31.69.153 (94.208.192.103) - - [05/Apr/2018:20:57:55 +0000] "HEAD /pma/ HTTP/1.1" 404 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"\n\n\n\n-------------------------------------\n/var/log/eb-activity.log\n-------------------------------------\n  + chown -R webapp:webapp /var/app/ondeck\n[2018-04-05T19:54:21.630Z] INFO  [3555]  - [Application update app-180406_044630@3/AppDeployStage0/AppDeployPreHook/02_setup_envvars.sh] : Starting activity...\n\n\n-------------------------------------\n/tmp/sample-app.log\n-------------------------------------\n2018-04-05 20:52:51 Received message: \\xe2\\x96\\x88\\xe2\n\n\n\n-------------------------------------\n/var/log/eb-commandprocessor.log\n-------------------------------------\n[2018-04-05T19:45:05.526Z] INFO  [2853]  : Running 2 of 2 actions: AppDeployPostHook...'
+            '============= i-090689581e5afcfc6 =============={linesep}-------------------------------------\n/var/log/awslogs.log\n-------------------------------------\n{\'skipped_events_count\': 0, \'first_event\': {\'timestamp\': 1522962583519, \'start_position\': 559799L, \'end_position\': 560017L}, \'fallback_events_count\': 0, \'last_event\': {\'timestamp\': 1522962583519, \'start_position\': 559799L, \'end_position\': 560017L}, \'source_id\': \'77b026040b93055eb448bdc0b59e446f\', \'num_of_events\': 1, \'batch_size_in_bytes\': 243}\n\n\n\n-------------------------------------\n/var/log/httpd/error_log\n-------------------------------------\n[Thu Apr 05 19:54:23.624780 2018] [mpm_prefork:warn] [pid 3470] AH00167: long lost child came home! (pid 3088)\n\n\n\n-------------------------------------\n/var/log/httpd/access_log\n-------------------------------------\n172.31.69.153 (94.208.192.103) - - [05/Apr/2018:20:57:55 +0000] "HEAD /pma/ HTTP/1.1" 404 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"\n\n\n\n-------------------------------------\n/var/log/eb-activity.log\n-------------------------------------\n  + chown -R webapp:webapp /var/app/ondeck\n[2018-04-05T19:54:21.630Z] INFO  [3555]  - [Application update app-180406_044630@3/AppDeployStage0/AppDeployPreHook/02_setup_envvars.sh] : Starting activity...\n\n\n-------------------------------------\n/tmp/sample-app.log\n-------------------------------------\n2018-04-05 20:52:51 Received message: \\xe2\\x96\\x88\\xe2\n\n\n\n-------------------------------------\n/var/log/eb-commandprocessor.log\n-------------------------------------\n[2018-04-05T19:45:05.526Z] INFO  [2853]  : Running 2 of 2 actions: AppDeployPostHook...{linesep}============= i-053efe7c102d0a540 =============={linesep}-------------------------------------\n/var/log/awslogs.log\n-------------------------------------\n{\'skipped_events_count\': 0, \'first_event\': {\'timestamp\': 1522962583519, \'start_position\': 559799L, \'end_position\': 560017L}, \'fallback_events_count\': 0, \'last_event\': {\'timestamp\': 1522962583519, \'start_position\': 559799L, \'end_position\': 560017L}, \'source_id\': \'77b026040b93055eb448bdc0b59e446f\', \'num_of_events\': 1, \'batch_size_in_bytes\': 243}\n\n\n\n-------------------------------------\n/var/log/httpd/error_log\n-------------------------------------\n[Thu Apr 05 19:54:23.624780 2018] [mpm_prefork:warn] [pid 3470] AH00167: long lost child came home! (pid 3088)\n\n\n\n-------------------------------------\n/var/log/httpd/access_log\n-------------------------------------\n172.31.69.153 (94.208.192.103) - - [05/Apr/2018:20:57:55 +0000] "HEAD /pma/ HTTP/1.1" 404 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"\n\n\n\n-------------------------------------\n/var/log/eb-activity.log\n-------------------------------------\n  + chown -R webapp:webapp /var/app/ondeck\n[2018-04-05T19:54:21.630Z] INFO  [3555]  - [Application update app-180406_044630@3/AppDeployStage0/AppDeployPreHook/02_setup_envvars.sh] : Starting activity...\n\n\n-------------------------------------\n/tmp/sample-app.log\n-------------------------------------\n2018-04-05 20:52:51 Received message: \\xe2\\x96\\x88\\xe2\n\n\n\n-------------------------------------\n/var/log/eb-commandprocessor.log\n-------------------------------------\n[2018-04-05T19:45:05.526Z] INFO  [2853]  : Running 2 of 2 actions: AppDeployPostHook...'.replace('{linesep}', os.linesep)
         )
 
 
@@ -1422,12 +1424,12 @@ class TestSetupLogs(unittest.TestCase):
         unzip_folder_mock.assert_has_calls(
             [
                 mock.call(
-                    'testDir/.elasticbeanstalk/logs/180404_044924/logs.zip',
-                    'testDir/.elasticbeanstalk/logs/180404_044924/i-090689581e5afcfc6'
+                    os.path.join('testDir', '.elasticbeanstalk', 'logs', '180404_044924', 'logs.zip'),
+                    os.path.join('testDir', '.elasticbeanstalk', 'logs', '180404_044924', 'i-090689581e5afcfc6')
                 ),
                 mock.call(
-                    'testDir/.elasticbeanstalk/logs/180404_044924/logs.zip',
-                    'testDir/.elasticbeanstalk/logs/180404_044924/i-053efe7c102d0a540'
+                    os.path.join('testDir', '.elasticbeanstalk', 'logs', '180404_044924', 'logs.zip'),
+                    os.path.join('testDir', '.elasticbeanstalk', 'logs', '180404_044924', 'i-053efe7c102d0a540')
                 )
             ]
         )
@@ -1435,10 +1437,10 @@ class TestSetupLogs(unittest.TestCase):
         delete_file_mock.assert_has_calls(
             [
                 mock.call(
-                    'testDir/.elasticbeanstalk/logs/180404_044924/logs.zip'
+                    os.path.join('testDir', '.elasticbeanstalk', 'logs', '180404_044924', 'logs.zip')
                 ),
                 mock.call(
-                    'testDir/.elasticbeanstalk/logs/180404_044924/logs.zip'
+                    os.path.join('testDir', '.elasticbeanstalk', 'logs', '180404_044924', 'logs.zip')
                 )
             ]
         )
@@ -1457,11 +1459,11 @@ class TestSetupLogs(unittest.TestCase):
         )
 
         zip_up_folder_mock.assert_called_once_with(
-            'testDir/.elasticbeanstalk/logs/180404_044924',
-            'testDir/.elasticbeanstalk/logs/180404_044924.zip'
+            os.path.join('testDir', '.elasticbeanstalk', 'logs', '180404_044924'),
+            os.path.join('testDir', '.elasticbeanstalk', 'logs', '180404_044924.zip')
         )
-        delete_directory_mock.assert_called_once_with('testDir/.elasticbeanstalk/logs/180404_044924')
-        set_user_only_permissions_mock.assert_called_once_with('testDir/.elasticbeanstalk/logs/180404_044924.zip')
+        delete_directory_mock.assert_called_once_with(os.path.join('testDir', '.elasticbeanstalk', 'logs', '180404_044924'))
+        set_user_only_permissions_mock.assert_called_once_with(os.path.join('testDir', '.elasticbeanstalk', 'logs', '180404_044924.zip'))
 
     @mock.patch('ebcli.operations.logsops.fileoperations.set_user_only_permissions')
     @mock.patch('ebcli.operations.logsops.fileoperations.get_logs_location')

@@ -13,11 +13,10 @@
 import os
 import shutil
 
-import unittest
 import mock
 import unittest
+from pytest_socket import disable_socket, enable_socket
 
-from ebcli.controllers import create
 from ebcli.controllers import create
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
@@ -51,6 +50,7 @@ class TestCreateBase(unittest.TestCase):
     ]
 
     def setUp(self):
+        disable_socket()
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
@@ -67,6 +67,8 @@ class TestCreateBase(unittest.TestCase):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
 
+        enable_socket()
+
     def assertEnvironmentRequestsEqual(self, expected_request, actual_request):
         error_message = os.linesep.join(
             [
@@ -82,17 +84,18 @@ class TestCreateBase(unittest.TestCase):
 
 
 class TestCreate(TestCreateBase):
-    def test_create__invalid_platform(self):
+    @mock.patch('ebcli.controllers.create.solution_stack_ops.find_solution_stack_from_string')
+    def test_create__invalid_platform(
+            self,
+            find_solution_stack_from_string_mock
+    ):
         self.app = EB(argv=['create', '--platform', 'invalid_platform'])
         self.app.setup()
 
-        with self.assertRaises(NotFoundError) as context_manager:
-            self.app.run()
+        find_solution_stack_from_string_mock.side_effect = NotFoundError
 
-        self.assertEqual(
-            'Platform "invalid_platform" does not appear to be valid',
-            str(context_manager.exception)
-        )
+        with self.assertRaises(NotFoundError):
+            self.app.run()
 
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.commonops.is_cname_available')
@@ -163,6 +166,7 @@ class TestCreate(TestCreateBase):
         )
 
     @mock.patch('ebcli.core.io.get_input')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
@@ -175,12 +179,14 @@ class TestCreate(TestCreateBase):
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
+            get_unique_environment_name_mock,
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -211,6 +217,7 @@ class TestCreate(TestCreateBase):
         self.assertEqual(3, get_input_mock.call_count)
 
     @mock.patch('ebcli.core.io.get_input')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
@@ -223,12 +230,14 @@ class TestCreate(TestCreateBase):
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
+            get_unique_environment_name_mock,
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -257,6 +266,7 @@ class TestCreate(TestCreateBase):
         self.assertEqual(2, get_input_mock.call_count)
 
     @mock.patch('ebcli.core.io.get_input')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
@@ -269,12 +279,14 @@ class TestCreate(TestCreateBase):
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
+            get_unique_environment_name_mock,
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
 
         env_name = 'my-awesome-env'
         load_balancer_choice = '1'
@@ -303,6 +315,7 @@ class TestCreate(TestCreateBase):
         self.assertEqual(2, get_input_mock.call_count)
 
     @mock.patch('ebcli.core.io.get_input')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
@@ -315,12 +328,14 @@ class TestCreate(TestCreateBase):
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
+            get_unique_environment_name_mock,
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
 
         env_name = 'my-awesome-env'
 
@@ -347,6 +362,7 @@ class TestCreate(TestCreateBase):
         self.assertEqual(1, get_input_mock.call_count)
 
     @mock.patch('ebcli.core.io.get_input')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
@@ -359,12 +375,14 @@ class TestCreate(TestCreateBase):
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
+            get_unique_environment_name_mock,
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.find_solution_stack_from_string.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
 
         get_input_mock.return_value = None
 
@@ -421,18 +439,22 @@ class TestCreate(TestCreateBase):
         self.assertEqual(0, get_input_mock.call_count)
 
     @mock.patch('ebcli.core.io.get_input')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.createops.get_and_validate_tags')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.operations.commonops.is_cname_available')
     def test_non_interactive_mode__all_options(
             self,
+            is_cname_available_mock,
             get_default_keyname_mock,
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
             get_and_validate_tags_mock,
             make_new_env_mock,
+            get_unique_environment_name_mock,
             get_input_mock
     ):
         env_name = 'my-awesome-env'
@@ -445,6 +467,8 @@ class TestCreate(TestCreateBase):
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
         get_default_keyname_mock.return_value = True
+        is_cname_available_mock.return_value = True
+
         get_and_validate_tags_mock.return_value = [
             {'Key': 'a', 'Value': '1'},
             {'Key': 'b', 'Value': '2'}
@@ -454,6 +478,7 @@ class TestCreate(TestCreateBase):
             cname_prefix,
             application_load_balancer_choice,
         ]
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
 
         self.app = EB(
             argv=[
@@ -662,6 +687,7 @@ EnvironmentName: front+""")
         make_new_env_mock.assert_not_called()
 
     @mock.patch('ebcli.core.io.get_input')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
@@ -672,6 +698,7 @@ EnvironmentName: front+""")
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
+            get_unique_environment_name_mock,
             get_input_mock
     ):
         with open('env.yaml', 'w') as env_yaml:
@@ -682,6 +709,8 @@ CName: front-A08G28LG+""")
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
+
         get_input_mock.side_effect = [
             'my-environment-name'
         ]
@@ -734,6 +763,7 @@ CName: front-A08G28LG+""")
 
 class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.core.io.get_input')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.core.io.get_pass')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
@@ -748,12 +778,14 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_pass_mock,
+            get_unique_environment_name_mock,
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -800,6 +832,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
 
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.core.io.get_pass')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
@@ -812,6 +845,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
+            get_unique_environment_name_mock,
             get_pass_mock,
             get_input_mock
     ):
@@ -819,6 +853,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -862,6 +897,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         self.assertEqual(1, get_pass_mock.call_count)
 
     @mock.patch('ebcli.core.io.get_input')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
@@ -874,12 +910,14 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
+            get_unique_environment_name_mock,
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -973,6 +1011,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         self.assertEnvironmentRequestsEqual(expected_environment_request, actual_environment_request)
 
     @mock.patch('ebcli.core.io.get_input')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.core.io.get_boolean_response')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
@@ -987,12 +1026,14 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_boolean_response_mock,
+            get_unique_environment_name_mock,
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -1103,6 +1144,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.core.io.get_boolean_response')
     @mock.patch('ebcli.core.io.get_pass')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
@@ -1115,6 +1157,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
+            get_unique_environment_name_mock,
             get_pass_mock,
             get_boolean_response_mock,
             get_input_mock,
@@ -1123,6 +1166,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name

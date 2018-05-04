@@ -14,6 +14,7 @@ import copy
 
 from ..lib import ec2, utils
 from ebcli.objects.solutionstack import SolutionStack
+from ebcli.objects.platform import PlatformVersion
 from ..resources.strings import strings
 from ..resources.statics import namespaces, option_names
 
@@ -145,8 +146,8 @@ class CreateEnvironmentRequest(object):
         if self.platform:
             if isinstance(self.platform, SolutionStack):
                 kwargs['SolutionStackName'] = self.platform.name
-            elif isinstance(self.platform, SolutionStack):
-                kwargs['PlatformArn'] = self.platform_arn
+            elif isinstance(self.platform, PlatformVersion):
+                kwargs['PlatformArn'] = self.platform.name
         if self.description:
             kwargs['Description'] = self.description
         if self.cname:
