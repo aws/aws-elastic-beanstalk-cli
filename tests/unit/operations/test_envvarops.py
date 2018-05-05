@@ -28,12 +28,12 @@ class TestEnvvarOps(unittest.TestCase):
 			Counter(frozenset(iteritems(d)) for d in ls2))
 
 	def test_sanitize_environment_variables_from_customer_input(self):
-		environment_variables_input = 'DB_USER="r=o\"o\'t\"\"",DB_PAS\=SWORD="\"pass=\'\"word\""'
+		environment_variables_input = '  """  DB_USER"""   =     "\"  r=o\"o\'t\"\"  "   ,  DB_PAS\ = SWORD="\"pass=\'\"word\""'
 
 		self.assertEqual(
 			[
-				'DB_USER=r=o"o\'t',
-				'DB_PAS\\=SWORD=""pass=\'"word'
+				'  DB_USER="  r=o"o\'t""  ',
+				'DB_PAS\\=SWORD=""pass=\'"word"'
 			],
 			envvarops.sanitize_environment_variables_from_customer_input(environment_variables_input)
 		)
@@ -157,7 +157,9 @@ class TestEnvvarOps(unittest.TestCase):
 		options, options_to_remove = envvarops.create_environment_variables_list(
 			[
 				'foo=' + string1,
-				'wierd er value='+ string2
+				'weird er value='+ string2,
+				'DB_USER="  r=o"o\'t""',
+				'DB_PAS\\=SWORD=""pass=\'"word"'
 			],
 			as_option_settings=False
 		)
@@ -165,10 +167,21 @@ class TestEnvvarOps(unittest.TestCase):
 			options,
 			{
 				'foo': string1,
-				'wierd er value': string2
+				'weird er value': string2,
+				'DB_PAS\\': 'SWORD=""pass=\'"word"',
+				'DB_USER': '"  r=o"o\'t""',
 			}
 		)
 		self.assertEqual(options_to_remove, set())
+
+	def test_create_envvars_error_because_of_double_quote_in_key(self):
+		with self.assertRaises(envvarops.InvalidSyntaxError):
+			envvarops.create_environment_variables_list(
+				[
+					'DB_\"PAS\\=SWORD=""pass=\'"word"'
+				],
+				as_option_settings=False
+			)
 
 	def test_create_envvars_not_bad_characters(self):
 		strings = [

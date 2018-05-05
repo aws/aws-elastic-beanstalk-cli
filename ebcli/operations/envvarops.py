@@ -32,6 +32,16 @@ def get_and_print_environment_vars(app_name, env_name):
     print_environment_vars(environment_variables)
 
 
+def __strip_leading_and_trailing_double_quotes(string):
+    if len(string) > 0 and string[0] == '"':
+        string = string[1:]
+
+    if len(string) > 0 and string[-1] == '"':
+        string = string[:-1]
+
+    return string
+
+
 def sanitize_environment_variables_from_customer_input(environment_variables_input):
     """
     Returns a list of the sanitized key-value pairs in the `environment_variables_input` string,
@@ -53,7 +63,9 @@ def sanitize_environment_variables_from_customer_input(environment_variables_inp
 
         environment_variable, value = key_value_pair.split('=', 1)
         environment_variable = environment_variable.strip().strip('"')
-        value = value.strip().strip('"')
+
+        value = value.strip()
+        value = __strip_leading_and_trailing_double_quotes(value)
 
         if not environment_variable:
             raise InvalidSyntaxError(strings['setenv.invalidformat'])
@@ -80,7 +92,7 @@ def create_environment_variables_list(environment_variables, as_option_settings=
     options_to_remove = set()
     for environment_variable_string in environment_variables:
         if (
-            not re.match('^[\w\\_.:/+@-][^=]*=.*$', environment_variable_string)
+            not re.match('^[\w\\_.:/+@-][^="]*=.*$', environment_variable_string)
             or '=' not in environment_variable_string
         ):
             raise InvalidSyntaxError(strings['setenv.invalidformat'])
