@@ -291,9 +291,9 @@ class Git(SourceControl):
                         return
 
         with open('.gitignore', 'a') as f:
-            f.write(os.linesep)
+            f.write('\n')
             for line in git_ignore:
-                f.write(line + os.linesep)
+                f.write('{}\n'.format(line))
 
     def clean_up_ignore_file(self):
         cwd = os.getcwd()
