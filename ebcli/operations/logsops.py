@@ -664,6 +664,12 @@ def stream_single_stream(
 
 
 def _attempt_update_symlink_to_latest_logs_retrieved(logs_location):
+    # `symlink` is not defined on Python 2.7 for Windows
+    if not getattr(os, 'symlink', None):
+        LOG.debug("Couldn't create symlink to latest logs retrieved")
+
+        return
+
     io.echo(strings['logs.location'].replace('{location}', logs_location))
     latest_symlink_location = os.path.join(
         os.path.dirname(logs_location),
@@ -796,7 +802,6 @@ def _handle_bundle_logs(instance_id_list, do_zip):
     else:
         io.echo(strings['logs.location'].replace('{location}',
                                                  logs_location))
-
         _attempt_update_symlink_to_latest_logs_retrieved(logs_location)
 
 
