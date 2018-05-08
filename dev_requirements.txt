@@ -2,3 +2,4 @@ nose
 pytest
 mock
 pytest-cov
+pytest_socket
