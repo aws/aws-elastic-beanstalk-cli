@@ -2,6 +2,20 @@
 Changelog
 =========
 -------------------
+3.13.0 (2018-05-15)
+-------------------
+- Added ability to enable streaming environment-health logs to CloudWatch
+- Added explicit dependency on Python package `docker`
+- Fixed environment variables parsing logic during `eb create`
+- Fixed `eb health` for environments using basic health and an ELBV2 load balancer
+- Fixed `eb logs` behavior to choose an incorrect default log group for Windows platforms
+- Fixed `eb platform delete`'s inability to delete custom platforms in some situations
+- Fixed `eb tags --list` failure occurring when the default branch environment is absent
+- Fixed .gitignore problem on Windows whereby files specified for omission could also be staged
+- Prevented attempts to create convenience symlinks to latest logs when executing with Python 2.7 on Windows
+- Removed code that installs Python package `docker` on the customer's behalf
+
+-------------------
 3.12.4 (2018-03-07)
 -------------------
 - Fixed `DescribeEvents` polling logic to use `datetime.utcnow()` instead of `datetime.now()`
