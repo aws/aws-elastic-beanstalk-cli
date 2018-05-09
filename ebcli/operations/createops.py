@@ -122,7 +122,12 @@ def make_new_env(
         download_and_extract_sample_app(env_name)
 
     # Print status of env
-    commonops.print_env_details(result, health=False)
+    result.print_env_details(
+        io.echo,
+        elasticbeanstalk.get_environments,
+        elasticbeanstalk.get_environment_resources,
+        health=False
+    )
 
     if nohang:
         return

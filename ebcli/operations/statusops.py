@@ -20,9 +20,16 @@ from . import commonops, gitops, solution_stack_ops
 
 
 SPACER = ' ' * 5
+
+
 def status(app_name, env_name, verbose):
     env = elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name)
-    commonops.print_env_details(env, health=True)
+    env.print_env_details(
+        io.echo,
+        elasticbeanstalk.get_environments,
+        elasticbeanstalk.get_environment_resources,
+        health=True
+    )
 
     if verbose:
         # Print number of running instances

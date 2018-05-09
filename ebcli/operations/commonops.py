@@ -478,68 +478,6 @@ def get_application_names():
     return [n.name for n in app_list]
 
 
-def print_env_details(env, health=True):
-    region = aws.get_region_name()
-
-    io.echo('Environment details for:', env.name)
-    io.echo('  Application name:', env.app_name)
-    io.echo('  Region:', region)
-    io.echo('  Deployed Version:', env.version_label)
-    io.echo('  Environment ID:', env.id)
-    io.echo('  Platform:', env.platform)
-    io.echo('  Tier:', env.tier)
-    io.echo('  CNAME:', env.cname)
-    io.echo('  Updated:', env.date_updated)
-    print_env_links(env)
-
-    if health:
-        io.echo('  Status:', env.status)
-        io.echo('  Health:', env.health)
-
-
-def print_env_links(env):
-    if env.environment_links is not None and len(env.environment_links) > 0:
-        links = {}
-        linked_envs = []
-
-        # Process information returned in EnvironmentLinks
-        for link in env.environment_links:
-            link_data = dict(link_name=link['LinkName'], env_name=link['EnvironmentName'])
-            links[link_data['env_name']] = link_data
-            linked_envs.append(link_data['env_name'])
-
-        # Call DescribeEnvironments for linked environments
-        linked_env_descriptions = elasticbeanstalk.get_environments(linked_envs)
-
-        for linked_env in linked_env_descriptions:
-            if linked_env.tier.name == 'WebServer':
-                links[linked_env.name]['value'] = linked_env.cname
-            elif linked_env.tier.name == 'Worker':
-                links[linked_env.name]['value'] = get_worker_sqs_url(linked_env.name)
-                time.sleep(.5)
-
-        io.echo('  Environment Links:')
-
-        for link in links.values():
-            io.echo('    {}:'.format(link['env_name']))
-            io.echo('      {}: {}'.format(link['link_name'],
-                                          link['value']))
-
-
-def get_worker_sqs_url(env_name):
-    resources = elasticbeanstalk.get_environment_resources(env_name)['EnvironmentResources']
-    queues = resources['Queues']
-    worker_queue = None
-    for queue in queues:
-        if queue['Name'] == 'WorkerQueue':
-            worker_queue = queue
-
-    if worker_queue is None:
-        raise WorkerQueueNotFound
-
-    return worker_queue['URL']
-
-
 def create_dummy_app_version(app_name):
     version_label = 'Sample Application'
     return _create_application_version(app_name, version_label, None,

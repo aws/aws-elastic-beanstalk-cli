@@ -10,6 +10,13 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import time
+import re
+
+from ebcli.objects.solutionstack import SolutionStack
+from ebcli.objects.tier import Tier
+from ebcli.objects.platform import PlatformVersion
+from ebcli.objects.exceptions import WorkerQueueNotFound
 
 
 class Environment(object):
@@ -39,3 +46,84 @@ class Environment(object):
 
     def __str__(self):
         return self.name
+
+    def print_env_details(
+            self,
+            echo_method,
+            get_environments_callback,
+            get_environment_resources_callback,
+            health=True
+    ):
+        echo_method('Environment details for:', self.name)
+        echo_method('  Application name:', self.app_name)
+        echo_method('  Region:', self.__region_from_environment_arn())
+        echo_method('  Deployed Version:', self.version_label)
+        echo_method('  Environment ID:', self.id)
+        echo_method('  Platform:', self.platform)
+        echo_method('  Tier:', self.tier)
+        echo_method('  CNAME:', self.cname)
+        echo_method('  Updated:', self.date_updated)
+        self.print_env_links(
+            echo_method,
+            get_environments_callback,
+            get_environment_resources_callback
+        )
+
+        if health:
+            echo_method('  Status:', self.status)
+            echo_method('  Health:', self.health)
+
+    def print_env_links(
+            self,
+            echo_method,
+            get_environments_callback,
+            get_environment_resources_callback
+    ):
+        if self.environment_links and len(self.environment_links) > 0:
+            links = {}
+            linked_envs = []
+
+            # Process information returned in EnvironmentLinks
+            for link in self.environment_links:
+                link_data = dict(link_name=link['LinkName'], env_name=link['EnvironmentName'])
+                links[link_data['env_name']] = link_data
+                linked_envs.append(link_data['env_name'])
+
+            # Call DescribeEnvironments for linked environments
+            linked_env_descriptions = get_environments_callback(linked_envs)
+
+            for linked_environment in linked_env_descriptions:
+                if linked_environment.tier.name == 'WebServer':
+                    links[linked_environment.name]['value'] = linked_environment.cname
+                elif linked_environment.tier.name == 'Worker':
+                    links[linked_environment.name]['value'] = self.get_worker_sqs_url(
+                        get_environment_resources_callback
+                    )
+                    time.sleep(.5)
+
+            echo_method('  Environment Links:')
+
+            for link in links.values():
+                echo_method('    {}:'.format(link['env_name']))
+                echo_method('      {}: {}'.format(link['link_name'],
+                                              link['value']))
+
+    def get_worker_sqs_url(self, get_environment_resources_callback):
+        resources = get_environment_resources_callback(self.name)['EnvironmentResources']
+        queues = resources['Queues']
+        worker_queue = None
+        for queue in queues:
+            if queue['Name'] == 'WorkerQueue':
+                worker_queue = queue
+
+        if worker_queue is None:
+            raise WorkerQueueNotFound
+
+        return worker_queue['URL']
+
+    def __region_from_environment_arn(self):
+        environment_arn_regex = re.compile(r'arn:aws.*:elasticbeanstalk:(.*):\d+:environment/.*/.*$')
+
+        matches = re.match(environment_arn_regex, self.environment_arn)
+
+        return matches.groups(0)[0]
