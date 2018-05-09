@@ -22,7 +22,7 @@ from ebcli.objects.requests import CreateEnvironmentRequest
 class TestCreateEnvironment(BaseOperationsTest):
     module_name = 'createops'
 
-    @patch('ebcli.operations.createops.commonops.get_all_env_names')
+    @patch('ebcli.operations.createops.elasticbeanstalk.get_all_environment_names')
     def test_create_new_environment_envname_taken(self, mock_names):
         mock_names.return_value = ['my-env', 'my-env2']
         self.mock_elasticbeanstalk.create_environment.side_effect = [

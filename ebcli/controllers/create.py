@@ -433,7 +433,7 @@ def get_unique_environment_name(app_name):
     :return: A unique name for a new environment
     """
     default_name = app_name + '-dev'
-    current_environments = commonops.get_all_env_names()
+    current_environments = elasticbeanstalk.get_all_environment_names()
 
     return utils.get_unique_name(default_name, current_environments)
 

@@ -257,7 +257,7 @@ def create_env(env_request, interactive=True):
                     cname = io.prompt_for_cname()
                 elif re.match(responses['env.nameexists'], e.message):
                     io.echo(strings['env.exists'])
-                    current_environments = commonops.get_all_env_names()
+                    current_environments = elasticbeanstalk.get_all_environment_names()
                     unique_name = utils.get_unique_name(env_request.env_name,
                                                         current_environments)
                     env_request.env_name = io.prompt_for_environment_name(

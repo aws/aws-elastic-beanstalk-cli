@@ -455,6 +455,12 @@ def get_app_environments(app_name, include_deleted=False, deleted_back_to=None):
     return Environment.json_to_environment_objects_array(result['Environments'])
 
 
+def get_all_envronment_names():
+    environments = elasticbeanstalk.get_all_environments()
+
+    return [environment.name for environment in environments]
+
+
 def get_all_environments():
     LOG.debug('Inside get_all_environments api wrapper')
     result = _make_api_call('describe_environments',
