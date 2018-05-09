@@ -343,11 +343,6 @@ def get_all_env_names():
     return [e.name for e in envs]
 
 
-def get_env_names(app_name):
-    envs = elasticbeanstalk.get_app_environments(app_name)
-    return [e.name for e in envs]
-
-
 def get_app_version_labels(app_name):
     app_versions = elasticbeanstalk.get_application_versions(app_name)['ApplicationVersions']
     return [v['VersionLabel'] for v in app_versions]

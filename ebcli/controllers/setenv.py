@@ -43,4 +43,4 @@ class SetEnvController(AbstractBaseController):
         self.complete_region(commands)
         if commands[-1] in ['-e', '--environment']:
             app_name = fileoperations.get_application_name()
-            io.echo(*commonops.get_env_names(app_name))
+            io.echo(*elasticbeanstalk.get_environment_names(app_name))

@@ -63,4 +63,4 @@ class SSHController(AbstractBaseController):
             ## controller, so we only complete if its the second
             if len(commands) == 2 and commands[-1].startswith('-'):
                 app_name = fileoperations.get_application_name()
-                io.echo(commonops.get_env_names(app_name))
+                io.echo(elasticbeanstalk.get_environment_names(app_name))

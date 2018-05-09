@@ -31,7 +31,7 @@ def list_env_names(app_name, verbose, all_apps):
 
 def list_env_names_for_app(app_name, verbose):
     current_env = commonops.get_current_branch_environment()
-    env_names = commonops.get_env_names(app_name)
+    env_names = elasticbeanstalk.get_environment_names(app_name)
     env_names.sort()
 
     if verbose:

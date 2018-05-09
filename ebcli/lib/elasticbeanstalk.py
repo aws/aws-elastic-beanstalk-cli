@@ -234,7 +234,7 @@ def create_environment(environment):
     result = _make_api_call('create_environment', **kwargs)
 
     # convert to object
-    env = _api_to_environment(result)
+    env = Environment.json_to_environment_object(result)
     request_id = result['ResponseMetadata']['RequestId']
     return env, request_id
 
@@ -250,44 +250,9 @@ def clone_environment(clone):
     result = _make_api_call('create_environment', **kwargs)
 
     # convert to object
-    env = _api_to_environment(result)
+    environment = Environment.json_to_environment_object(result)
     request_id = result['ResponseMetadata']['RequestId']
-    return env, request_id
-
-
-def _api_to_environment(api_dict, want_solution_stack = False):
-    try:
-        if want_solution_stack or api_dict['SolutionStackName'] == 'custom':
-            solution_stack_name = api_dict['SolutionStackName']
-            platform = SolutionStack(solution_stack_name)
-        else:
-            platform_arn = api_dict['PlatformArn']
-            platform = PlatformVersion(platform_arn)
-    except KeyError:
-        platform = SolutionStack(api_dict['SolutionStackName'])
-
-    tier = api_dict['Tier']
-    tier = Tier(tier['Name'], tier['Type'], tier['Version'])
-
-    env = Environment(
-        version_label=api_dict.get('VersionLabel'),
-        status=api_dict.get('Status'),
-        app_name=api_dict.get('ApplicationName'),
-        health=api_dict.get('Health'),
-        id=api_dict.get('EnvironmentId'),
-        date_updated=api_dict.get('DateUpdated'),
-        platform=platform,
-        description=api_dict.get('Description'),
-        name=api_dict.get('EnvironmentName'),
-        date_created=api_dict.get('DateCreated'),
-        tier=tier,
-        cname=api_dict.get('CNAME', 'UNKNOWN'),
-        option_settings=api_dict.get('OptionSettings'),
-        is_abortable=api_dict.get('AbortableOperationInProgress', False),
-        environment_links=api_dict.get('EnvironmentLinks'),
-        environment_arn=api_dict.get('EnvironmentArn')
-    )
-    return env
+    return environment, request_id
 
 
 def delete_application(app_name):
@@ -486,21 +451,16 @@ def get_app_environments(app_name, include_deleted=False, deleted_back_to=None):
                             ApplicationName=app_name,
                             IncludeDeleted=include_deleted,
                             **kwargs)
-    # convert to objects
-    envs = [_api_to_environment(env) for env in result['Environments']]
 
-    return envs
+    return Environment.json_to_environment_objects_array(result['Environments'])
 
 
 def get_all_environments():
     LOG.debug('Inside get_all_environments api wrapper')
     result = _make_api_call('describe_environments',
                             IncludeDeleted=False)
-    # convert to object
-    envs = []
-    for env in result['Environments']:
-        envs.append(_api_to_environment(env))
-    return envs
+
+    return Environment.json_to_environment_objects_array(result['Environments'])
 
 
 def get_environment(app_name=None, env_name=None, env_id=None, include_deleted=False, deleted_back_to=None, want_solution_stack=False):
@@ -525,7 +485,12 @@ def get_environment(app_name=None, env_name=None, env_id=None, include_deleted=F
         env_str = env_id if env_name is None else env_name
         raise NotFoundError('Environment "' + env_str + '" not Found.')
     else:
-        return _api_to_environment(envs[0], want_solution_stack)
+        return Environment.json_to_environment_object(envs[0], want_solution_stack)
+
+
+def get_environment_names(app_name):
+    environments = get_app_environments(app_name)
+    return [environment.name for environment in environments]
 
 
 def get_environments(env_names=None):
@@ -534,14 +499,14 @@ def get_environments(env_names=None):
                             EnvironmentNames=env_names or [],
                             IncludeDeleted=False)
 
-    envs = result['Environments']
-    if not envs and env_names:
+    environments = result['Environments']
+    if not environments and env_names:
         raise NotFoundError(
             'Could not find any environments from the list: {}'.format(
                 ', '.join(env_names)
             )
         )
-    return [_api_to_environment(env) for env in envs]
+    return Environment.json_to_environment_objects_array(environments)
 
 
 def get_environment_settings(app_name, env_name):
@@ -550,7 +515,7 @@ def get_environment_settings(app_name, env_name):
                             ApplicationName=app_name,
                             EnvironmentName=env_name)
 
-    return _api_to_environment(result['ConfigurationSettings'][0])
+    return Environment.json_to_environment_object(result['ConfigurationSettings'][0])
 
 
 def get_environment_resources(env_name):

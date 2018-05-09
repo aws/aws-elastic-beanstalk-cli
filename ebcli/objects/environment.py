@@ -47,6 +47,66 @@ class Environment(object):
     def __str__(self):
         return self.name
 
+    @classmethod
+    def json_to_environment_object(
+            cls,
+            environment_json,
+            want_solution_stack=False
+    ):
+        platform_name = cls.__get_platform_name(environment_json, want_solution_stack)
+
+        tier = environment_json['Tier']
+        tier = Tier(tier['Name'], tier['Type'], tier['Version'])
+
+        environment = Environment(
+            version_label=environment_json.get('VersionLabel'),
+            status=environment_json.get('Status'),
+            app_name=environment_json.get('ApplicationName'),
+            health=environment_json.get('Health'),
+            id=environment_json.get('EnvironmentId'),
+            date_updated=environment_json.get('DateUpdated'),
+            platform=platform_name,
+            description=environment_json.get('Description'),
+            name=environment_json.get('EnvironmentName'),
+            date_created=environment_json.get('DateCreated'),
+            tier=tier,
+            cname=environment_json.get('CNAME', 'UNKNOWN'),
+            option_settings=environment_json.get('OptionSettings'),
+            is_abortable=environment_json.get('AbortableOperationInProgress', False),
+            environment_links=environment_json.get('EnvironmentLinks'),
+            environment_arn=environment_json.get('EnvironmentArn')
+        )
+
+        return environment
+
+    @classmethod
+    def json_to_environment_objects_array(
+            cls,
+            json,
+            want_solution_stack=False
+    ):
+        environments = []
+        for environment_json in json:
+            environments.append(
+                Environment.json_to_environment_object(environment_json, want_solution_stack)
+            )
+
+        return environments
+
+    @classmethod
+    def __get_platform_name(cls, environment, want_solution_stack=False):
+        try:
+            if want_solution_stack or environment['SolutionStackName'] == 'custom':
+                solution_stack_name = environment['SolutionStackName']
+                platform_name = SolutionStack(solution_stack_name)
+            else:
+                platform_arn = environment['PlatformArn']
+                platform_name = PlatformVersion(platform_arn)
+        except KeyError:
+            platform_name = SolutionStack(environment['SolutionStackName'])
+
+        return platform_name
+
     def print_env_details(
             self,
             echo_method,

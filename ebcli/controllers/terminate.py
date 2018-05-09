@@ -58,7 +58,7 @@ class TerminateController(AbstractBaseController):
 
             if not force:
                 # make sure env exists
-                env_names = commonops.get_env_names(app_name)
+                env_names = elasticbeanstalk.get_environment_names(app_name)
                 if env_name not in env_names:
                     raise NotFoundError('Environment ' +
                                         env_name + ' not found')

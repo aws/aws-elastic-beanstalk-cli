@@ -72,22 +72,3 @@ class TestCompleter(BaseControllerTest):
             }
 
         self.assertEqual(expected, output)
-
-    @mock.patch('ebcli.operations.commonops.get_env_names')
-    def test_env_names(self, mock_env_names):
-        """
-        testing for env name completion
-        """
-        # mock env_name
-        env_list = [
-            'my-env', 'env2', 'env5'
-        ]
-        mock_env_names.return_value = env_list
-
-        # run cmd
-        self.run_command('completer', '--cmplt', '"status  "')
-
-
-        output = list(self.mock_output.call_args[0])
-
-        self.assertEqual(env_list, output)

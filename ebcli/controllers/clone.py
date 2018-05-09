@@ -80,7 +80,7 @@ class CloneController(AbstractBaseController):
             else:
                 unique_name = 'my-cloned-env'
 
-            env_list = commonops.get_env_names(app_name)
+            env_list = elasticbeanstalk.get_environment_names(app_name)
 
             unique_name = utils.get_unique_name(unique_name, env_list)
 

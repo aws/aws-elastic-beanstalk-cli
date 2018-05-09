@@ -46,7 +46,7 @@ def delete_app(app_name, force, nohang=False, cleanup=True,
 
     if not force:
         #Confirm
-        envs = commonops.get_env_names(app_name)
+        envs = elasticbeanstalk.get_environment_names(app_name)
         confirm_message = prompts['delete.confirm'].replace(
             '{app-name}', app_name)
         confirm_message = confirm_message.replace('{env-num}', str(len(envs)))

@@ -112,7 +112,7 @@ class AbstractBaseController(controller.CementBaseController):
             if len(commands) == 1:  # They only have the main command so far
                 # lets complete for positional args
                 app_name = fileoperations.get_application_name()
-                io.echo(*commonops.get_env_names(app_name))
+                io.echo(*elasticbeanstalk.get_environment_names(app_name))
 
     def complete_region(self, commands):
         # we only care about top command

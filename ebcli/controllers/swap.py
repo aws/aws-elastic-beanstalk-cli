@@ -37,7 +37,7 @@ class SwapController(AbstractBaseController):
 
         if not destination_env:
             # Ask interactively for an env to swap with
-            envs = commonops.get_env_names(app_name)
+            envs = elasticbeanstalk.get_environment_names(app_name)
             if len(envs) < 2:
                 raise NotSupportedError(strings['swap.unsupported'])
 
