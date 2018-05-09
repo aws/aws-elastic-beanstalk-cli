@@ -10,6 +10,10 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import datetime
+from dateutil import tz
+
+
 DESCRIBE_DB_ENGINE_VERSIONS_RESPONSE = {
 	"DBEngineVersions": [
 		{
@@ -1354,7 +1358,7 @@ DESCRIBE_SECURITY_GROUPS_RESPONSE = {
 					"UserIdGroupPairs": []
 				}
 			],
-			"OwnerId": "180301529717",
+			"OwnerId": "123123123123",
 			"GroupId": "sg-013d807d",
 			"IpPermissionsEgress": [
 				{
@@ -1422,7 +1426,7 @@ DESCRIBE_SECURITY_GROUPS_RESPONSE = {
 					"UserIdGroupPairs": []
 				}
 			],
-			"OwnerId": "180301529717",
+			"OwnerId": "123123123123",
 			"GroupId": "sg-fd6f4986",
 			"IpPermissionsEgress": [
 				{
@@ -1438,6 +1442,207 @@ DESCRIBE_SECURITY_GROUPS_RESPONSE = {
 				}
 			],
 			'VpcId': 'vpc-eb1e688d',
+		}
+	]
+}
+
+
+DESCRIBE_KEY_PAIRS_RESPONSE = {
+	'KeyPairs': [
+		{
+			'KeyName': 'key_pair_1',
+			'KeyFingerprint': '77:77:77:77:77:77:77:77:77:77:77:77:77:77:77:77:77:77:77:77'
+		},
+		{
+			'KeyName': 'key_pair_2',
+			'KeyFingerprint': '77:77:77:77:77:77:77:77:77:77:77:77:77:77:77:77:77:77:77:77'
+		}
+	]
+}
+
+
+DESCRIBE_ENVIRONMENT_RESOURCES_RESPONSE = {
+	'EnvironmentResources': {
+		'LaunchConfigurations': [
+			{
+				'Name': 'awseb-e-zitmqcrygu-stack-AWSEBAutoScalingLaunchConfiguration'
+			}
+		],
+		'AutoScalingGroups': [
+			{
+				'Name': 'awseb-e-zitmqcrygu-stack-AWSEBAutoScalingGroup'
+			}
+		],
+		'Triggers': [],
+		'Instances': [
+			{
+				'Id': 'i-23452345346456566'
+			},
+			{
+				'Id': 'i-21312312312312312'
+			}
+		],
+		'LoadBalancers': [
+			{
+				'Name': 'awseb-e-z-AWSEBLoa-SOME-LOAD-BALANCER'
+			}
+		],
+		'EnvironmentName': 'my-environment'
+	}
+}
+
+
+DESCRIBE_EVENTS_RESPONSE = {
+	'Events': [
+		{
+			'EventDate': '2018-03-12T22:14:14.292Z',
+			'Message': 'Deleting SNS topic for environment my-environment.',
+			'ApplicationName': 'application-name',
+			'EnvironmentName': 'my-environment',
+			'RequestId': '23141234-134adsfasdf-12341234',
+			'Severity': 'INFO'
+		},
+		{
+			'EventDate': '2018-03-12T22:14:11.740Z',
+			'Message': 'Using elasticbeanstalk-us-west-2-123123123123 as Amazon S3 storage bucket for environment data.',
+			'ApplicationName': 'application-name',
+			'EnvironmentName': 'my-environment',
+			'RequestId': '23141234-134adsfasdf-12341234',
+			'Severity': 'INFO'
+		},
+		{
+			'EventDate': '2018-03-12T22:14:10.897Z',
+			'Message': 'createEnvironment is starting.',
+			'ApplicationName': 'application-name',
+			'EnvironmentName': 'my-environment',
+			'RequestId': '23141234-134adsfasdf-12341234',
+			'Severity': 'INFO'
+		},
+		{
+			'EventDate': '2018-03-12T22:14:09.357Z',
+			'Message': 'createApplicationVersion completed successfully.',
+			'ApplicationName': 'application-name',
+			'VersionLabel': 'app-180313_071408',
+			'RequestId': '23141234-134adsfasdf-12341234',
+			'Severity': 'INFO'
+		},
+		{
+			'EventDate': '2018-03-12T22:14:09.269Z',
+			'Message': 'Created new Application Version: app-180313_071408',
+			'ApplicationName': 'application-name',
+			'VersionLabel': 'app-180313_071408',
+			'RequestId': '23141234-134adsfasdf-12341234',
+			'Severity': 'INFO'
+		},
+		{
+			'EventDate': '2018-03-12T22:14:09.216Z',
+			'Message': 'createApplicationVersion is starting.',
+			'ApplicationName': 'application-name',
+			'VersionLabel': 'app-180313_071408',
+			'RequestId': '23141234-134adsfasdf-12341234',
+			'Severity': 'INFO'
+		},
+		{
+			'EventDate': '2018-03-12T22:13:31.747Z',
+			'Message': 'createApplication completed successfully.',
+			'ApplicationName': 'application-name',
+			'RequestId': '23141234-134adsfasdf-12341234',
+			'Severity': 'INFO'
+		},
+		{
+			'EventDate': '2018-03-12T22:13:31.695Z',
+			'Message': 'Created new Application: application-name',
+			'ApplicationName': 'application-name',
+			'RequestId': '23141234-134adsfasdf-12341234',
+			'Severity': 'INFO'
+		},
+		{
+			'EventDate': '2018-03-12T22:13:31.511Z',
+			'Message': 'createApplication is starting.',
+			'ApplicationName': 'application-name',
+			'RequestId': '23141234-134adsfasdf-12341234',
+			'Severity': 'INFO'
+		}
+	]
+}
+
+
+DESCRIBE_ENVIRONMENTS_RESPONSE = {
+	'Environments': [
+		{
+			'ApplicationName': 'my-application',
+			'EnvironmentName': 'environment-1',
+			'VersionLabel': 'Sample Application',
+			'Status': 'Ready',
+			'Description': 'Environment created from the EB CLI using "eb create"',
+			'EnvironmentLinks': [
+
+			],
+			'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 7.1 running on 64bit Amazon Linux/2.6.5',
+			'EndpointURL': 'awseb-e-sdfsaaaasdfasdfadf4234.us-west-2.elb.amazonaws.com',
+			'SolutionStackName': '64bit Amazon Linux 2017.09 v2.6.5 running PHP 7.1',
+			'EnvironmentId': 'e-sfsdfsfasdads',
+			'CNAME': 'environment-1.us-west-2.elasticbeanstalk.com',
+			'AbortableOperationInProgress': False,
+			'Tier': {
+				'Version': '1.0',
+				'Type': 'Standard',
+				'Name': 'WebServer'
+			},
+			'Health': 'Green',
+			'DateUpdated': datetime.datetime(2018, 3, 27, 23, 47, 41, 830000, tzinfo=tz.tzutc()),
+			'DateCreated': datetime.datetime(2018, 3, 27, 23, 44, 36, 749000, tzinfo=tz.tzutc()),
+			'EnvironmentArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123123:environment/my-application/environment-1'
+		},
+		{
+			'ApplicationName': 'my-application',
+			'EnvironmentName': 'environment-2',
+			'VersionLabel': 'Sample Application',
+			'Status': 'Ready',
+			'Description': 'Environment created from the EB CLI using "eb create"',
+			'EnvironmentLinks': [
+
+			],
+			'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 5.3 running on 64bit Amazon Linux/0.1.0',
+			'EndpointURL': 'sdfsaaaasdfasdfadf4234.us-west-2.elb.amazonaws.com',
+			'SolutionStackName': '64bit Amazon Linux running PHP 5.3',
+			'EnvironmentId': 'e-sfsdfsfasdads',
+			'CNAME': 'environment-2.gpcmwngwdj.us-west-2.elasticbeanstalk.com',
+			'AbortableOperationInProgress': False,
+			'Tier': {
+				'Version': '1.0',
+				'Type': 'Standard',
+				'Name': 'WebServer'
+			},
+			'Health': 'Green',
+			'DateUpdated': datetime.datetime(2018, 3, 6, 23, 31, 6, 453000, tzinfo=tz.tzutc()),
+			'DateCreated': datetime.datetime(2018, 3, 6, 23, 24, 55, 525000, tzinfo=tz.tzutc()),
+			'EnvironmentArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123123:environment/environment-2/environment-2'
+		},
+		{
+			'ApplicationName': 'my-application',
+			'EnvironmentName': 'environment-3',
+			'VersionLabel': 'Sample Application',
+			'Status': 'Ready',
+			'Description': 'Environment created from the EB CLI using "eb create"',
+			'EnvironmentLinks': [
+
+			],
+			'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 5.3 running on 64bit Amazon Linux/0.1.0',
+			'EndpointURL': 'awseb-e-sdfsaaaasdfasdfadf4234.us-west-2.elb.amazonaws.com',
+			'SolutionStackName': '64bit Amazon Linux running PHP 5.3',
+			'EnvironmentId': 'e-sfsdfsfasdads',
+			'CNAME': 'environment-2.gpcmwngwdj.us-west-2.elasticbeanstalk.com',
+			'AbortableOperationInProgress': False,
+			'Tier': {
+				'Version': '1.0',
+				'Type': 'Standard',
+				'Name': 'WebServer'
+			},
+			'Health': 'Green',
+			'DateUpdated': datetime.datetime(2018, 3, 6, 23, 22, 9, 697000, tzinfo=tz.tzutc()),
+			'DateCreated': datetime.datetime(2018, 3, 6, 23, 16, 16, tzinfo=tz.tzutc()),
+			'EnvironmentArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123123:environment/my-application/environment-3'
 		}
 	]
 }
