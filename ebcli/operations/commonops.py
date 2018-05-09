@@ -827,10 +827,6 @@ def get_config_setting_from_branch_or_default(key_name, default=_marker):
         return fileoperations.get_config_setting('global', key_name, default=default)
 
 
-def is_cname_available(cname):
-    return elasticbeanstalk.is_cname_available(cname)
-
-
 def get_instance_ids(app_name, env_name):
     env = elasticbeanstalk.get_environment_resources(env_name)
     instances = [i['Id'] for i in env['EnvironmentResources']['Instances']]

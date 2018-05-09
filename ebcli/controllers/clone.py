@@ -65,7 +65,7 @@ class CloneController(AbstractBaseController):
             raise InvalidOptionsError(strings['worker.cname'])
 
         if cname:
-            if not commonops.is_cname_available(cname):
+            if not elasticbeanstalk.is_cname_available(cname):
                 raise AlreadyExistsError(strings['cname.unavailable'].
                                          replace('{cname}', cname))
 

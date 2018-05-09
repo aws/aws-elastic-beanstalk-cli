@@ -98,7 +98,7 @@ class TestCreate(TestCreateBase):
             self.app.run()
 
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_create__cname_is_not_unique__raises_exception(self, is_cname_available_mock, find_solution_stack_from_string_mock):
         is_cname_available_mock.return_value = False
         find_solution_stack_from_string_mock.return_value = 'PHP 7.1'
@@ -170,7 +170,7 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_interactive_standard(
             self,
@@ -221,7 +221,7 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_interactive_standard__webserver_single_instance(
             self,
@@ -270,7 +270,7 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_interactive_standard__worker_tier(
             self,
@@ -319,7 +319,7 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_interactive_standard__worker_single_instance(
             self,
@@ -366,7 +366,7 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_interactive__simulate_hitting_enter_on_all_input_prompts_to_show_defaults_will_be_picked(
             self,
@@ -445,7 +445,7 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_non_interactive_mode__all_options(
             self,
             is_cname_available_mock,
@@ -537,7 +537,7 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_create_non_interactively__with_process_flag(
             self,
             is_cname_available_mock,
@@ -577,7 +577,7 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_create__env_yaml_present__environment_name_present_in_yaml_file__group_name_is_passed(
             self,
             is_cname_available_mock,
@@ -618,7 +618,7 @@ EnvironmentName: front+""")
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_create__env_yaml_present__environment_name_present_in_yaml_file__group_name_is_passed__worker_tier(
             self,
             is_cname_available_mock,
@@ -657,7 +657,7 @@ EnvironmentName: front+""")
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_create__env_yaml_present__environment_name_present_in_yaml_file__group_name_not_specified(
             self,
             is_cname_available_mock,
@@ -691,7 +691,7 @@ EnvironmentName: front+""")
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_create__env_yaml_present__environment_name_absent_in_yaml_file__customer_is_prompted_for_input__group_suffix_discarded(
             self,
             is_cname_available_mock,
@@ -768,7 +768,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_interactively_with_database__db_argument_triggers_interactive_database_options(
             self,
@@ -836,7 +836,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_interactively_with_database__db_username_passed_in_password_requested(
             self,
@@ -901,7 +901,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_interactively_with_database__db_username_password_and_other_arguments_passed(
             self,
@@ -958,7 +958,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_non_interactively_with_database__db_username_password_and_other_arguments_passed(
             self,
@@ -1016,7 +1016,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_interactively_with_custom_vpc__vpc_argument_triggers_interactive_vpc_options(
             self,
@@ -1090,7 +1090,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_interactively_with_custom_vpc__vpc_argument_triggers_interactive_vpc_prompts__some_vpc_arguments_already_passed_in(
             self,
@@ -1148,7 +1148,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_interactively_with_database_and_vpc_arguments(
             self,
@@ -1245,7 +1245,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
-    @mock.patch('ebcli.operations.commonops.is_cname_available')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_non_interactively_with_database_and_vpc_arguments(
             self,

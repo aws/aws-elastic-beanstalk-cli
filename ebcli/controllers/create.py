@@ -151,7 +151,7 @@ class CreateController(AbstractBaseController):
         if cname and tier and Tier.looks_like_worker_tier(tier):
             raise InvalidOptionsError(strings['worker.cname'])
 
-        if cname and not commonops.is_cname_available(cname):
+        if cname and not elasticbeanstalk.is_cname_available(cname):
             raise AlreadyExistsError(
                 strings['cname.unavailable'].replace('{cname}', cname)
             )
@@ -448,7 +448,7 @@ def get_cname_from_customer(env_name):
     """
     while True:
         cname = io.prompt_for_cname(default=env_name)
-        if cname and not commonops.is_cname_available(cname):
+        if cname and not elasticbeanstalk.is_cname_available(cname):
             io.echo('That cname is not available. Please choose another.')
         else:
             break
