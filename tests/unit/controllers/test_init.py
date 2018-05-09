@@ -44,7 +44,8 @@ class TestInit(BaseControllerTest):
 
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
-    def test_init_standard(self, mock_sourcecontrol, mock_git):
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.get_application_names')
+    def test_init_standard(self, get_application_names_mock, mock_sourcecontrol, mock_git):
         """
                 testing for:
                 1. Prompt for a region
@@ -54,7 +55,7 @@ class TestInit(BaseControllerTest):
         # 1. Get Credentials: throw no region error
         # 2. Get Credentials: good
         # 3. Create app
-        self.mock_commonops.get_application_names.return_value = list()
+        get_application_names_mock.get_application_names.return_value = list()
         self.mock_operations.credentials_are_valid.side_effect = [
             NoRegionError,
             True,
@@ -95,7 +96,8 @@ class TestInit(BaseControllerTest):
 
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
-    def test_init_interactive(self, mock_sourcecontrol, mock_git):
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.get_application_names')
+    def test_init_interactive(self, get_application_names_mock, mock_sourcecontrol, mock_git):
         """
         Tests that interactive mode correctly asks for all new values
         """
@@ -107,7 +109,7 @@ class TestInit(BaseControllerTest):
         # 1. Get solution stacks
         # 2. Get solution stacks again
         # 3. Create app
-        self.mock_commonops.get_application_names.return_value = list()
+        get_application_names_mock.return_value = list()
         self.mock_operations.credentials_are_valid.return_value = True
         self.mock_eb.application_exist.return_value = False
         self.mock_commonops.create_app.return_value = 'ss-stack', 'key'
@@ -321,7 +323,14 @@ class TestInit(BaseControllerTest):
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.fileoperations')
-    def test_init_with_codebuild_buildspec_interactive_choice(self, mock_fileops, mock_sourcecontrol, mock_git):
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.get_application_names')
+    def test_init_with_codebuild_buildspec_interactive_choice(
+            self,
+            get_application_names_mock,
+            mock_fileops,
+            mock_sourcecontrol,
+            mock_git
+    ):
         """
         Tests that interactive mode correctly asks for all new values
         """
@@ -340,7 +349,7 @@ class TestInit(BaseControllerTest):
         # 1. Get solution stacks
         # 2. Get solution stacks again
         # 3. Create app
-        self.mock_commonops.get_application_names.return_value = list()
+        get_application_names_mock.get_application_names.return_value = list()
         self.mock_operations.credentials_are_valid.return_value = True
         self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = \
             self.solution
@@ -399,7 +408,14 @@ class TestInit(BaseControllerTest):
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.fileoperations')
-    def test_init_with_codebuild_buildspec_non_interactive_choice(self, mock_fileops, mock_sourcecontrol, mock_git):
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.get_application_names')
+    def test_init_with_codebuild_buildspec_non_interactive_choice(
+            self,
+            get_application_names_mock,
+            mock_fileops,
+            mock_sourcecontrol,
+            mock_git
+    ):
         """
         Tests that interactive mode correctly asks for all new values
         """
@@ -418,7 +434,7 @@ class TestInit(BaseControllerTest):
         # 1. Get solution stacks
         # 2. Get solution stacks again
         # 3. Create app
-        self.mock_commonops.get_application_names.return_value = list()
+        get_application_names_mock.return_value = list()
         self.mock_operations.credentials_are_valid.return_value = True
         self.mock_solution_stack_ops.get_solution_stack_from_customer.return_value = \
             self.solution

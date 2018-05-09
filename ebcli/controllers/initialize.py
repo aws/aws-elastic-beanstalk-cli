@@ -436,7 +436,7 @@ class InitController(AbstractBaseController):
 
 
 def _get_application_name_interactive():
-    app_list = commonops.get_application_names()
+    app_list = elasticbeanstalk.get_application_names()
     file_name = fileoperations.get_current_directory_name()
     new_app = False
     if len(app_list) > 0:

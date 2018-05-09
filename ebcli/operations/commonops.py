@@ -457,12 +457,6 @@ def open_webpage_in_browser(url, ssl=False):
         # Else exit
 
 
-def get_application_names():
-    app_list = elasticbeanstalk.get_all_applications()
-
-    return [n.name for n in app_list]
-
-
 def create_dummy_app_version(app_name):
     version_label = 'Sample Application'
     return _create_application_version(app_name, version_label, None,

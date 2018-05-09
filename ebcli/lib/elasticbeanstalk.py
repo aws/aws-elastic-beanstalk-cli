@@ -326,6 +326,12 @@ def describe_configuration_settings(app_name, env_name):
     return result['ConfigurationSettings'][0]
 
 
+def get_application_names():
+    applications = get_all_applications()
+
+    return [application.name for application in applications]
+
+
 def get_option_setting_from_environment(app_name, env_name, namespace, option):
     env = describe_configuration_settings(app_name, env_name)
     try:
