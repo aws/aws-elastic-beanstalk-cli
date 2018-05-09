@@ -588,23 +588,7 @@ def get_new_events(app_name, env_name, request_id,
     result = _make_api_call('describe_events',
                             **kwargs)
 
-    # convert to object
-    events = []
-    for event in result['Events']:
-        events.append(
-            Event(
-                app_name=event.get('ApplicationName'),
-                environment_name=event.get('EnvironmentName'),
-                event_date=event.get('EventDate'),
-                message=event.get('Message'),
-                platform=platform_arn,
-                request_id=event.get('RequestId'),
-                severity=event.get('Severity'),
-                version_label=event.get('VersionLabel')
-            )
-        )
-
-    return events
+    return Event.json_to_event_objects(result['Events'])
 
 
 def get_storage_location():

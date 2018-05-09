@@ -32,3 +32,22 @@ class Event(object):
         self.request_id = request_id
         self.severity = severity
         self.version_label = version_label
+
+    @classmethod
+    def json_to_event_objects(cls, json):
+        events = []
+        for event in json:
+            events.append(
+                Event(
+                    app_name=event.get('ApplicationName'),
+                    environment_name=event.get('EnvironmentName'),
+                    event_date=event.get('EventDate'),
+                    message=event.get('Message'),
+                    platform=event.get('PlatformArn'),
+                    request_id=event.get('RequestId'),
+                    severity=event.get('Severity'),
+                    version_label=event.get('VersionLabel')
+                )
+            )
+
+        return events
