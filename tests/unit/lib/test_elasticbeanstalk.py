@@ -16,6 +16,8 @@ import unittest
 from ebcli.lib import elasticbeanstalk
 from ebcli.objects.buildconfiguration import BuildConfiguration
 
+from .. import mock_responses
+
 
 DESCRIBE_ENVIRONMENTS_RESPONSE = {
     'Environments': [
@@ -204,3 +206,36 @@ class TestElasticBeanstalk(unittest.TestCase):
 
         self.assertEqual(1, len(environments))
         self.assertEqual('Environment', environments[0].__class__.__name__)
+
+    @mock.patch('ebcli.lib.elasticbeanstalk._make_api_call')
+    def test_get_app_version_labels(
+            self,
+            _make_api_call_mock
+    ):
+        _make_api_call_mock.return_value = mock_responses.DESCRIBE_APPLICATION_VERSIONS_RESPONSE
+
+        version_labels = elasticbeanstalk.get_app_version_labels('my-application')
+
+        self.assertEqual(
+            [
+                'version-label-1',
+                'version-label-2',
+            ],
+            version_labels
+        )
+
+    @mock.patch('ebcli.lib.elasticbeanstalk._make_api_call')
+    def test_get_app_version_labels__no_version_labels(
+            self,
+            _make_api_call_mock
+    ):
+        _make_api_call_mock.return_value = {
+            'ApplicationVersions': []
+        }
+
+        version_labels = elasticbeanstalk.get_app_version_labels('my-application')
+
+        self.assertEqual(
+            [],
+            version_labels
+        )

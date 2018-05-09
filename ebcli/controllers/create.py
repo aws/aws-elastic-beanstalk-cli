@@ -218,7 +218,7 @@ class CreateController(AbstractBaseController):
         if cmd in ['-s', '--solution']:
             io.echo(*elasticbeanstalk.get_available_solution_stacks())
         if cmd in ['-vl', '--versionlabel']:
-            io.echo(*commonops.get_app_version_labels(app_name))
+            io.echo(*elasticbeanstalk.get_app_version_labels(app_name))
 
     def form_database_object(self):
         create_db = self.app.pargs.database

@@ -1646,3 +1646,31 @@ DESCRIBE_ENVIRONMENTS_RESPONSE = {
 		}
 	]
 }
+
+
+DESCRIBE_APPLICATION_VERSIONS_RESPONSE = {
+    "ApplicationVersions": [
+        {
+            "ApplicationName": "my-application",
+            "VersionLabel": "version-label-1",
+            "Description": "update cover page",
+            "DateCreated": "2015-07-23T01:32:26.079Z",
+            "DateUpdated": "2015-07-23T01:32:26.079Z",
+            "SourceBundle": {
+                "S3Bucket": "elasticbeanstalk-us-west-2-123123123123",
+                "S3Key": "my-app/9112-stage-150723_224258.war"
+            }
+        },
+      {
+          "ApplicationName": "my-application",
+          "VersionLabel": "version-label-2",
+          "Description": "initial version",
+          "DateCreated": "2015-07-23T22:26:10.816Z",
+          "DateUpdated": "2015-07-23T22:26:10.816Z",
+          "SourceBundle": {
+              "S3Bucket": "elasticbeanstalk-us-west-2-123123123123",
+              "S3Key": "my-app/9111-stage-150723_222618.war"
+          }
+      }
+    ]
+}

@@ -17,7 +17,7 @@ from cement.utils.misc import minimal_logger
 
 from ..core import io, hooks, fileoperations
 from ..core.abstractcontroller import AbstractBaseController
-from ..lib import utils
+from ..lib import elasticbeanstalk, utils
 from ..objects.exceptions import NoEnvironmentForBranchError, \
     InvalidOptionsError
 from ..operations import commonops, deployops, composeops, solution_stack_ops
@@ -99,7 +99,7 @@ class DeployController(AbstractBaseController):
         cmd = commands[-1]
         if cmd in ['--version']:
             app_name = fileoperations.get_application_name()
-            io.echo(*commonops.get_app_version_labels(app_name))
+            io.echo(*elasticbeanstalk.get_app_version_labels(app_name))
 
     def multiple_app_deploy(self):
         missing_env_yaml = []

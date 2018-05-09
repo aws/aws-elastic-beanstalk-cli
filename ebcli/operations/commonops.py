@@ -338,11 +338,6 @@ def get_env_event_string(event, long_format=False):
         return u'{0} - {1}: {2}'.format(environment.rjust(40), severity, message)
 
 
-def get_app_version_labels(app_name):
-    app_versions = elasticbeanstalk.get_application_versions(app_name)['ApplicationVersions']
-    return [v['VersionLabel'] for v in app_versions]
-
-
 def get_app_version_s3_location(app_name, version_label):
     # Check if the application version already exists. If so get the S3 key to fetch.
     s3_key = None

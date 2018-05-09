@@ -499,6 +499,12 @@ def get_environment_names(app_name):
     return [environment.name for environment in environments]
 
 
+def get_app_version_labels(app_name):
+    app_versions = get_application_versions(app_name)['ApplicationVersions']
+
+    return [app_version['VersionLabel'] for app_version in app_versions]
+
+
 def get_environments(env_names=None):
     LOG.debug('Inside get_environments api wrapper')
     result = _make_api_call('describe_environments',
