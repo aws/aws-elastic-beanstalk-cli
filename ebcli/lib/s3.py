@@ -42,24 +42,31 @@ def upload_file(bucket, key, file_path):
                               Body=fp)
 
 
-def get_object_info(bucket, object_key):
-    result = _make_api_call('list_objects',
-                   Bucket=bucket,
-                   Prefix=object_key)
-
-    if 'Contents' not in result or len(result['Contents']) < 1:
+def __raise_if_bucket_is_empty(result):
+    if not result.get('Contents'):
         raise NotFoundError('Object not found.')
+
+
+def get_object_info(bucket, object_key):
+    result = _make_api_call(
+        'list_objects',
+        Bucket=bucket,
+        Prefix=object_key
+    )
+
+    __raise_if_bucket_is_empty(result)
 
     objects = result['Contents']
     if len(objects) == 1:
         return objects[0]
     else:
         # There is more than one result, search for correct one
-        object_key = next((o for o in objects if o['Key'] == object_key), None)
-        if object_key is None:
+        s3_object = next((s3_object for s3_object in objects if s3_object['Key'] == object_key), None)
+
+        if not s3_object:
             raise NotFoundError('Object not found.')
-        else:
-            return object_key
+
+        return s3_object
 
 
 def get_object(bucket, key):
