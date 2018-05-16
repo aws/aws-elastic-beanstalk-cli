@@ -16,9 +16,9 @@ import os
 import sys
 import shutil
 
-import unittest
 import mock
 from mock import Mock
+import unittest
 
 from ebcli.core import fileoperations
 from ebcli.objects.exceptions import NotAuthorizedError
@@ -81,11 +81,22 @@ class TestCommonOperations(unittest.TestCase):
             else:
                 shutil.rmtree('testDir')
 
-    def test_is_success_string(self):
-        self.assertTrue(commonops._is_success_string('Environment health has been set to GREEN'))
-        self.assertTrue(commonops._is_success_string('Successfully launched environment: my-env'))
-        self.assertTrue(commonops._is_success_string('Pulled logs for environment instances.'))
-        self.assertTrue(commonops._is_success_string('terminateEnvironment completed successfully.'))
+    def test_is_success_event(self):
+        self.assertTrue(commonops._is_success_event('Environment health has been set to GREEN'))
+        self.assertTrue(commonops._is_success_event('Successfully launched environment: my-env'))
+        self.assertTrue(commonops._is_success_event('Pulled logs for environment instances.'))
+        self.assertTrue(commonops._is_success_event('terminateEnvironment completed successfully.'))
+
+    def test_raise_if_error_event(self):
+        with self.assertRaises(commonops.ServiceError):
+            commonops._raise_if_error_event(
+                'Environment health has been set to RED'
+            )
+
+        with self.assertRaises(commonops.ServiceError):
+            commonops._raise_if_error_event(
+                'Failed to pull logs for environment instances.'
+            )
 
     @mock.patch('ebcli.operations.commonops.SourceControl')
     def test_return_global_default_if_no_branch_default(self, mock):

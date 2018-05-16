@@ -84,8 +84,9 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
 
                     if stream_events:
                         streamer.stream_event(get_event_string(event), safe_to_quit=safe_to_quit)
-                    # Test event message for success string
-                    if _is_success_string(event.message):
+
+                    _raise_if_error_event(event.message)
+                    if _is_success_event(event.message):
                         return
                     last_time = event.event_date
                 else:
@@ -119,8 +120,8 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                     # This can solve timing issues
                     last_time = event.event_date
 
-                # Test event message for success string
-                if _is_success_string(event.message):
+                _raise_if_error_event(event.message)
+                if _is_success_event(event.message):
                     return
     finally:
         streamer.end_stream()
@@ -220,7 +221,7 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
                         streamer.stream_event(get_env_event_string(event))
                         last_times[index] = event.event_date
 
-                    if _is_success_string(event.message):
+                    if _is_success_event(event.message):
                         successes[index] = True
     finally:
         streamer.end_stream()
@@ -228,7 +229,50 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
     io.log_error(strings['timeout.error'])
 
 
-def _is_success_string(message):
+def _raise_if_error_event(message):
+    if message == responses['event.redmessage']:
+        raise ServiceError(message)
+    if message == responses['event.failedlaunch']:
+        raise ServiceError(message)
+    if message == responses['event.faileddeploy']:
+        raise ServiceError(message)
+    if message == responses['event.failedupdate']:
+        raise ServiceError(message)
+    if message == responses['event.updatefailed']:
+        raise ServiceError(message)
+    if message.startswith(responses['event.launchbad']):
+        raise ServiceError(message)
+    if message.startswith(responses['event.updatebad']):
+        raise ServiceError(message)
+    if message.startswith(responses['logs.fail']):
+        raise ServiceError(message)
+    if message.startswith(responses['create.ecsdockerrun1']):
+        raise NotSupportedError(prompts['create.dockerrunupgrade'])
+    if message.startswith(responses['appversion.finished']) and message.endswith('FAILED.'):
+        raise ServiceError(message)
+
+
+def _is_success_event(message):
+    if message == responses['logs.pulled']:
+        return True
+    if message == responses['env.terminated']:
+        return True
+    if message == responses['env.updatesuccess']:
+        return True
+    if message == responses['env.configsuccess']:
+        return True
+    if message == responses['app.deletesuccess']:
+        return True
+    if message == responses['event.greenmessage']:
+        return True
+    if responses['logs.successtail'] in message:
+        return True
+    if responses['logs.successbundle'] in message:
+        return True
+    if responses['tags.tag_update_successful'] in message:
+        return True
+    if responses['tags.no_tags_to_update'] in message:
+        return True
     if message.startswith(responses['event.completewitherrors']):
         return True
     if message.startswith(responses['event.launched_environment']):
@@ -243,53 +287,12 @@ def _is_success_string(message):
         return True
     if message.startswith(responses['event.platformcreatesuccess']):
         return True
-    if message == responses['event.greenmessage']:
-        return True
     if message.startswith(responses['event.launchsuccess']):
-        return True
-    if message == responses['event.redmessage']:
-        raise ServiceError(message)
-    if message.startswith(responses['event.launchbad']):
-        raise ServiceError(message)
-    if message.startswith(responses['event.updatebad']):
-        raise ServiceError(message)
-    if message == responses['event.failedlaunch']:
-        raise ServiceError(message)
-    if message == responses['event.faileddeploy']:
-        raise ServiceError(message)
-    if message == responses['event.failedupdate']:
-        raise ServiceError(message)
-    if message == responses['logs.pulled']:
-        return True
-    if message.startswith(responses['logs.fail']):
-        raise ServiceError(message)
-    if message == responses['env.terminated']:
-        return True
-    if message == responses['env.updatesuccess']:
-        return True
-    if message == responses['env.configsuccess']:
-        return True
-    if message == responses['app.deletesuccess']:
-        return True
-    if responses['logs.successtail'] in message:
-        return True
-    if responses['logs.successbundle'] in message:
         return True
     if message.startswith(responses['swap.success']):
         return True
-    if message.startswith(responses['create.ecsdockerrun1']):
-        raise NotSupportedError(prompts['create.dockerrunupgrade'])
-    if message == responses['event.updatefailed']:
-        raise ServiceError(message)
-    if message.startswith(responses['appversion.finished']) and message.endswith('FAILED.'):
-        raise ServiceError(message)
     if message.startswith(responses['appversion.finished']) and message.endswith('PROCESSED.'):
         return True
-    if responses['tags.tag_update_successful'] in message:
-        return True
-    if responses['tags.no_tags_to_update'] in message:
-        return True
-
     return False
 
 
