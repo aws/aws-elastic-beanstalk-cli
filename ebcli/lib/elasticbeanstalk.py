@@ -404,6 +404,13 @@ def get_application_versions(app_name, version_labels=None, max_records=None, ne
     return result
 
 
+def application_version_exists(app_name, version_label):
+    app_versions = get_application_versions(app_name, version_labels=[version_label])['ApplicationVersions']
+
+    if len(app_versions) > 0:
+        return app_versions[0]
+
+
 def get_all_applications():
     LOG.debug('Inside get_all_applications api wrapper')
     result = _make_api_call('describe_applications')

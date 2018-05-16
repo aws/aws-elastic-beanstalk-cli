@@ -239,3 +239,40 @@ class TestElasticBeanstalk(unittest.TestCase):
             [],
             version_labels
         )
+
+    @mock.patch('ebcli.lib.elasticbeanstalk._make_api_call')
+    def test_application_version_exists(
+            self,
+            _make_api_call_mock
+    ):
+        _make_api_call_mock.return_value = mock_responses.DESCRIBE_APPLICATION_VERSIONS_RESPONSE
+
+        application_version = elasticbeanstalk.application_version_exists('my-application', 'version-label-1')
+
+        self.assertEqual(
+            {
+                "ApplicationName": "my-application",
+                "VersionLabel": "version-label-1",
+                "Description": "update cover page",
+                "DateCreated": "2015-07-23T01:32:26.079Z",
+                "DateUpdated": "2015-07-23T01:32:26.079Z",
+                "SourceBundle": {
+                    "S3Bucket": "elasticbeanstalk-us-west-2-123123123123",
+                    "S3Key": "my-app/9112-stage-150723_224258.war"
+                }
+            },
+            application_version
+        )
+
+    @mock.patch('ebcli.lib.elasticbeanstalk._make_api_call')
+    def test_application_version_exists__application_version_not_found(
+            self,
+            _make_api_call_mock
+    ):
+        _make_api_call_mock.return_value = {
+            'ApplicationVersions': []
+        }
+
+        application_version = elasticbeanstalk.application_version_exists('my-application', 'version-label-1')
+
+        self.assertIsNone(application_version)

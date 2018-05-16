@@ -342,15 +342,8 @@ def get_env_event_string(event, long_format=False):
 
 
 def get_app_version_s3_location(app_name, version_label):
-    # Check if the application version already exists. If so get the S3 key to fetch.
-    s3_key = None
-    s3_bucket = None
-    app_versions = elasticbeanstalk.get_application_versions(app_name, tuple(version_label,))['ApplicationVersions']
-    app_version = {}
-    for v in app_versions:
-        if v['VersionLabel'] == version_label:
-            app_version = v
-            break
+    s3_key, s3_bucket = None, None
+    app_version = elasticbeanstalk.application_version_exists(app_name, version_label)
 
     if app_version:
         s3_bucket = app_version['SourceBundle']['S3Bucket']
