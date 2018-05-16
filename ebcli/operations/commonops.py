@@ -809,7 +809,7 @@ def get_config_setting_from_branch_or_default(key_name, default=_marker):
         return fileoperations.get_config_setting('global', key_name, default=default)
 
 
-def get_instance_ids(app_name, env_name):
+def get_instance_ids(env_name):
     env = elasticbeanstalk.get_environment_resources(env_name)
     instances = [i['Id'] for i in env['EnvironmentResources']['Instances']]
     return instances

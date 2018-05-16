@@ -29,6 +29,8 @@ from ebcli.objects.buildconfiguration import BuildConfiguration
 from ebcli.resources.strings import strings, responses
 from ebcli.resources.statics import iam_documents, iam_attributes
 
+from .. import mock_responses
+
 
 class TestCommonOperations(unittest.TestCase):
     app_name = 'ebcli-app'
@@ -438,3 +440,15 @@ class TestCommonOperations(unittest.TestCase):
             )
 
         return events
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_environment_resources')
+    def test_get_instance_ids(
+            self,
+            get_environment_resources_mock
+    ):
+        get_environment_resources_mock.return_value = mock_responses.DESCRIBE_ENVIRONMENT_RESOURCES_RESPONSE
+
+        self.assertEqual(
+            ['i-23452345346456566', 'i-21312312312312312'],
+            commonops.get_instance_ids('some-environment-name')
+        )

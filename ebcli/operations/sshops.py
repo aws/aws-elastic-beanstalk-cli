@@ -37,7 +37,7 @@ def prepare_for_ssh(env_name, instance, keep_open, force, setup, number,
         raise InvalidOptionsError(strings['ssh.instanceandnumber'])
 
     if not instance:
-        instances = commonops.get_instance_ids(None, env_name)
+        instances = commonops.get_instance_ids(env_name)
         if number is not None:
             if number > len(instances) or number < 1:
                 raise InvalidOptionsError(

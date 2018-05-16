@@ -38,7 +38,7 @@ def list_env_names_for_app(app_name, verbose):
         io.echo('Application:', app_name)
         io.echo('    Environments:', len(env_names))
         for e in env_names:
-            instances = commonops.get_instance_ids(app_name, e)
+            instances = commonops.get_instance_ids(e)
             if e == current_env:
                 e = '* ' + e
 
