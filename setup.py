@@ -11,6 +11,7 @@ requires = [
     'cement==2.8.2',
     'colorama==0.3.7',
     'pathspec==0.5.5',
+    'python-dateutil>=2.1,<3.0.0', # use the same range that 'botocore' uses
     'pyyaml>=3.11',
     'setuptools >= 20.0',
     'docker-compose >= 1.21.2, < 1.22.0',
