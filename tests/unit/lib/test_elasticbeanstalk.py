@@ -189,7 +189,7 @@ class TestCloudWatch(unittest.TestCase):
             ]
         )
 
-        self.assertEqual(3, len(environments))
+        self.assertEqual(4, len(environments))
         self.assertEqual('Environment', environments[0].__class__.__name__)
 
     @mock.patch('ebcli.lib.elasticbeanstalk.aws.make_api_call')
@@ -1061,7 +1061,7 @@ class TestCloudWatch(unittest.TestCase):
     ):
         make_api_call_mock.return_value = mock_responses.DESCRIBE_ENVIRONMENTS_RESPONSE
         self.assertEqual(
-            {'environment-1', 'environment-2', 'environment-3'},
+            {'environment-1', 'environment-2', 'environment-3', 'environment-4'},
             set(elasticbeanstalk.get_all_environment_names())
         )
 
@@ -1072,7 +1072,7 @@ class TestCloudWatch(unittest.TestCase):
     ):
         make_api_call_mock.return_value = mock_responses.DESCRIBE_ENVIRONMENTS_RESPONSE
         self.assertEqual(
-            3,
+            4,
             len(elasticbeanstalk.get_all_environment_names())
         )
 
@@ -1143,7 +1143,7 @@ class TestCloudWatch(unittest.TestCase):
     ):
         make_api_call_mock.return_value = mock_responses.DESCRIBE_ENVIRONMENTS_RESPONSE
         self.assertEqual(
-            {'environment-2', 'environment-3', 'environment-1'},
+            {'environment-2', 'environment-3', 'environment-1', 'environment-4'},
             set(elasticbeanstalk.get_environment_names('my-application'))
         )
         make_api_call_mock.assert_called_once_with(

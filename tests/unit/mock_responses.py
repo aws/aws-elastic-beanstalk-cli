@@ -1643,6 +1643,31 @@ DESCRIBE_ENVIRONMENTS_RESPONSE = {
 			'DateUpdated': datetime.datetime(2018, 3, 6, 23, 22, 9, 697000, tzinfo=tz.tzutc()),
 			'DateCreated': datetime.datetime(2018, 3, 6, 23, 16, 16, tzinfo=tz.tzutc()),
 			'EnvironmentArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123123:environment/my-application/environment-3'
+		},
+		{
+			'ApplicationName': 'my-application',
+			'EnvironmentName': 'environment-4',
+			'VersionLabel': 'Sample Application',
+			'Status': 'Ready',
+			'Description': 'Environment created from the EB CLI using "eb create"',
+			'EnvironmentLinks': [
+
+			],
+			'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 5.3 running on 64bit Amazon Linux/0.1.0',
+			'EndpointURL': 'awseb-e-sdffsddfgdsfgfgfasdfadf4234.us-west-2.elb.amazonaws.com',
+			'SolutionStackName': '64bit Amazon Linux running PHP 5.3',
+			'EnvironmentId': 'e-sfasdgadsgsdfg',
+			'CNAME': 'environment-2.fghjfghjfghj.us-west-2.elasticbeanstalk.com',
+			'AbortableOperationInProgress': False,
+			'Tier': {
+				'Version': '1.0',
+				'Type': 'SQS/HTTP',
+				'Name': 'Worker'
+			},
+			'Health': 'Green',
+			'DateUpdated': datetime.datetime(2018, 3, 6, 23, 22, 9, 697000, tzinfo=tz.tzutc()),
+			'DateCreated': datetime.datetime(2018, 3, 6, 23, 16, 16, tzinfo=tz.tzutc()),
+			'EnvironmentArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123123:environment/my-application/environment-3'
 		}
 	]
 }
@@ -1680,30 +1705,30 @@ DESCRIBE_ENVIRONMENTS_RESPONSE__SINGLE_ENVIRONMENT = {
 
 
 DESCRIBE_APPLICATION_VERSIONS_RESPONSE = {
-    "ApplicationVersions": [
-        {
-            "ApplicationName": "my-application",
-            "VersionLabel": "version-label-1",
-            "Description": "update cover page",
-            "DateCreated": "2015-07-23T01:32:26.079Z",
-            "DateUpdated": "2015-07-23T01:32:26.079Z",
-            "SourceBundle": {
-                "S3Bucket": "elasticbeanstalk-us-west-2-123123123123",
-                "S3Key": "my-app/9112-stage-150723_224258.war"
-            }
-        },
-      {
-          "ApplicationName": "my-application",
-          "VersionLabel": "version-label-2",
-          "Description": "initial version",
-          "DateCreated": "2015-07-23T22:26:10.816Z",
-          "DateUpdated": "2015-07-23T22:26:10.816Z",
-          "SourceBundle": {
-              "S3Bucket": "elasticbeanstalk-us-west-2-123123123123",
-              "S3Key": "my-app/9111-stage-150723_222618.war"
-          }
-      }
-    ]
+	"ApplicationVersions": [
+		{
+			"ApplicationName": "my-application",
+			"VersionLabel": "version-label-1",
+			"Description": "update cover page",
+			"DateCreated": "2015-07-23T01:32:26.079Z",
+			"DateUpdated": "2015-07-23T01:32:26.079Z",
+			"SourceBundle": {
+				"S3Bucket": "elasticbeanstalk-us-west-2-123123123123",
+				"S3Key": "my-app/9112-stage-150723_224258.war"
+			}
+		},
+		{
+			"ApplicationName": "my-application",
+			"VersionLabel": "version-label-2",
+			"Description": "initial version",
+			"DateCreated": "2015-07-23T22:26:10.816Z",
+			"DateUpdated": "2015-07-23T22:26:10.816Z",
+			"SourceBundle": {
+				"S3Bucket": "elasticbeanstalk-us-west-2-123123123123",
+				"S3Key": "my-app/9111-stage-150723_222618.war"
+			}
+		}
+	]
 }
 
 
