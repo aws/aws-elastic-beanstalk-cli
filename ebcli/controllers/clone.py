@@ -91,7 +91,7 @@ class CloneController(AbstractBaseController):
 
         if tier.name.lower() == 'webserver':
             if not cname and not provided_clone_name:
-                cname = get_cname(clone_name)
+                cname = get_cname_from_customer(clone_name)
             elif not cname:
                 cname = None
 
