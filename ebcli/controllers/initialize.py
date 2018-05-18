@@ -408,6 +408,7 @@ class InitController(AbstractBaseController):
                     solution = sstack
 
                 platform_set = False
+                # TODO: Do not require a solution stack if one has already been set by this point
                 if not solution or \
                         (self.interactive and not self.app.pargs.platform):
                     if fileoperations.env_yaml_exists():
@@ -595,10 +596,10 @@ def check_credentials(profile, given_profile, given_region, interactive, force_n
         region = get_region(None, interactive, force_non_interactive)
         aws.set_region(region)
         return profile, region
-    except InvalidProfileError:
+    except InvalidProfileError as e:
         if given_profile:
             # Provided profile is invalid, raise exception
-            raise
+            raise e
         else:
             # eb-cli profile doesnt exist, revert to default
             # try again

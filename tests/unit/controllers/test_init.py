@@ -17,10 +17,12 @@ import unittest
 from pytest_socket import disable_socket, enable_socket
 import mock
 
+from ebcli.controllers import initialize
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
-from ebcli.objects.exceptions import NotInitializedError, NoRegionError, ServiceError
+from ebcli.objects.exceptions import NotInitializedError, NoRegionError, ServiceError, InvalidProfileError
 from ebcli.objects.solutionstack import SolutionStack
+from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.buildconfiguration import BuildConfiguration
 
 
@@ -309,6 +311,71 @@ class TestInit(unittest.TestCase):
 
         sourcecontrol_mock.setup_codecommit_cred_config.assert_not_called()
 
+    @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
+    @mock.patch('ebcli.controllers.initialize.SourceControl')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
+    @mock.patch('ebcli.controllers.initialize.sshops')
+    @mock.patch('ebcli.controllers.initialize.initializeops')
+    @mock.patch('ebcli.controllers.initialize.commonops')
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.old_eb_config_present')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_values_from_old_eb')
+    def test_init__get_application_information_from_old_config(
+            self,
+            get_values_from_old_eb_mock,
+            old_eb_config_present_mock,
+            elasticbeanstalk_mock,
+            commonops_mock,
+            initops_mock,
+            sshops_mock,
+            solution_stack_ops_mock,
+            sourcecontrol_mock,
+            git_mock
+    ):
+        os.remove(os.path.join('.elasticbeanstalk', 'config.yml'))
+        old_eb_config_present_mock.return_value = True
+        get_values_from_old_eb_mock.return_value = {
+            'app_name': 'my-application',
+            'access_id': 'my-access-id',
+            'secret_key': 'my-secret-key',
+            'default_env': 'default_env',
+            'platform': self.solution.name,
+            'region': 'us-east-1'
+        }
+        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = Exception
+        sshops_mock.prompt_for_ec2_keyname.return_value = Exception
+        commonops_mock.get_current_branch_environment.side_effect = NotInitializedError
+        elasticbeanstalk_mock.application_exist.return_value = False
+        commonops_mock.create_app.return_value = None, None
+        commonops_mock.get_default_keyname.return_value = ''
+        commonops_mock.get_default_region.return_value = ''
+        initops_mock.credentials_are_valid.return_value = True
+        solution_stack_ops_mock.get_default_solution_stack.return_value = ''
+
+        sourcecontrol_mock.get_source_control.return_value = git_mock
+        git_mock.is_setup.return_value = None
+
+        EB.Meta.exit_on_close = False
+        self.app = EB(argv=['init'])
+        self.app.setup()
+        self.app.run()
+        self.app.close()
+
+        initops_mock.setup_credentials.assert_called_once_with(
+            access_id='my-access-id',
+            secret_key='my-secret-key'
+        )
+        initops_mock.setup.assert_called_with(
+            'my-application',
+            'us-east-1',
+            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5',
+            dir_path=None,
+            repository=None,
+            branch=None
+        )
+
+        sourcecontrol_mock.setup_codecommit_cred_config.assert_not_called()
+
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.application_exist')
     @mock.patch('ebcli.controllers.initialize.codecommit')
@@ -364,7 +431,7 @@ class TestInit(unittest.TestCase):
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
 
         get_input_mock.side_effect = [
-            'y',  # Yes to setup CodeCommit
+            'y',  # Yes to setup codecommit
             '2',  # Pick to create new repo
             'new-repo',  # set repo name
             '2',  # Pick first option for branch
@@ -626,9 +693,13 @@ class TestInit(unittest.TestCase):
         fileoperations_mock.get_build_configuration.return_value = build_config
         fileoperations_mock.buildspec_config_header = fileoperations.buildspec_config_header
         fileoperations_mock.buildspec_name = fileoperations.buildspec_name
-        sourcecontrol_mock.setup_codecommit_remote_repo.side_effect = [
+        codecommit_mock.get_repository.side_effect = [
             ServiceError,
-            None
+            {
+                "repositoryMetadata": {
+                    "cloneUrlHttp": "https://codecommit.us-east-1.amazonaws.com/v1/repos/my-repo"
+                }
+            }
         ]
         sourcecontrol_mock.setup_existing_codecommit_branch = mock.MagicMock()
         initops_mock.get_codebuild_image_from_platform.return_value = {
@@ -645,7 +716,7 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_region.return_value = ''
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
 
-        app = EB(argv=['init', '--source', 'CodeCommit/my-repo/prod', '--region', 'us-east-1'])
+        app = EB(argv=['init', '--source', 'codecommit/my-repo/prod', '--region', 'us-east-1'])
         app.setup()
         app.run()
 
@@ -660,3 +731,904 @@ class TestInit(unittest.TestCase):
 
         sourcecontrol_mock.setup_codecommit_cred_config.assert_not_called()
         initops_mock.get_codebuild_image_from_platform.assert_called_with('PHP 5.5')
+
+
+class TestInitModule(unittest.TestCase):
+    solution = SolutionStack('64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5')
+    app_name = 'ebcli-intTest-app'
+
+    def setUp(self):
+        disable_socket()
+        self.root_dir = os.getcwd()
+        if not os.path.exists('testDir'):
+            os.mkdir('testDir')
+
+        os.chdir('testDir')
+
+        fileoperations.create_config_file(
+            self.app_name,
+            'us-west-2',
+            self.solution.name
+        )
+
+    def tearDown(self):
+        os.chdir(self.root_dir)
+        shutil.rmtree('testDir')
+
+        enable_socket()
+
+    def test_get_region_from_inputs__region_was_passed(self):
+        self.assertEqual(
+            'us-east-1',
+            initialize.get_region_from_inputs('us-east-1')
+        )
+
+    @mock.patch('ebcli.controllers.initialize.commonops.get_default_region')
+    def test_get_region_from_inputs__region_not_passed_in__default_region_found(
+            self,
+            get_default_region_mock
+    ):
+        get_default_region_mock.return_value = 'us-east-1'
+        self.assertEqual(
+            'us-east-1',
+            initialize.get_region_from_inputs(None)
+        )
+
+    @mock.patch('ebcli.controllers.initialize.commonops.get_default_region')
+    def test_get_region_from_inputs__region_not_passed_in__could_not_determine_default_region(
+            self,
+            get_default_region_mock
+    ):
+        get_default_region_mock.side_effect = NotInitializedError
+        self.assertIsNone(initialize.get_region_from_inputs(None))
+
+    @mock.patch('ebcli.controllers.initialize.get_region_from_inputs')
+    @mock.patch('ebcli.controllers.initialize.regions.get_all_regions')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
+    def test_get_region__determine_region_from_inputs(
+            self,
+            prompt_for_item_in_list_mock,
+            get_all_regions_mock,
+            get_region_from_inputs_mock
+    ):
+        get_region_from_inputs_mock.return_value = 'us-east-1'
+
+        self.assertEqual(
+            'us-east-1',
+            initialize.get_region('us-east-1', False)
+        )
+
+        get_all_regions_mock.assert_not_called()
+        prompt_for_item_in_list_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.get_region_from_inputs')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
+    def test_get_region__could_not_determine_region_from_inputs__force_non_interactive__selects_us_west_2_by_default(
+            self,
+            prompt_for_item_in_list_mock,
+            get_region_from_inputs_mock
+    ):
+        get_region_from_inputs_mock.return_value = None
+
+        self.assertEqual(
+            'us-west-2',
+            initialize.get_region(None, False, force_non_interactive=True)
+        )
+
+        prompt_for_item_in_list_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.get_region_from_inputs')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
+    def test_get_region__could_not_determine_region_from_inputs__in_interactive_mode__prompts_customer_for_region(
+            self,
+            prompt_for_item_in_list_mock,
+            get_region_from_inputs_mock
+    ):
+        get_region_from_inputs_mock.return_value = None
+        prompt_for_item_in_list_mock.return_value = initialize.regions.Region('us-west-1', 'US West (N. California)')
+
+        self.assertEqual(
+            'us-west-1',
+            initialize.get_region(None, True)
+        )
+
+    @mock.patch('ebcli.controllers.initialize.get_region_from_inputs')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
+    def test_get_region__could_not_determine_region_from_inputs__not_in_interactive_mode__prompts_customer_for_region_anyway(
+            self,
+            prompt_for_item_in_list_mock,
+            get_region_from_inputs_mock
+    ):
+        get_region_from_inputs_mock.return_value = None
+        prompt_for_item_in_list_mock.return_value = initialize.regions.Region('us-west-1', 'US West (N. California)')
+
+        self.assertEqual(
+            'us-west-1',
+            initialize.get_region(None, False)
+        )
+
+    @mock.patch('ebcli.controllers.initialize.initializeops.credentials_are_valid')
+    def test_check_credentials__credentials_are_valid(
+            self,
+            credentials_are_valid_mock
+    ):
+        credentials_are_valid_mock.return_value = True
+        self.assertEqual(
+            ('my-profile', 'us-east-1'),
+            initialize.check_credentials(
+                'my-profile',
+                'my-profile',
+                'us-east-1',
+                False,
+                False
+            )
+        )
+
+    @mock.patch('ebcli.controllers.initialize.initializeops.credentials_are_valid')
+    @mock.patch('ebcli.controllers.initialize.get_region')
+    def test_check_credentials__no_region_error_rescued(
+            self,
+            get_region_mock,
+            credentials_are_valid_mock
+    ):
+        get_region_mock.return_value = 'us-west-1'
+        credentials_are_valid_mock.side_effect = initialize.InvalidProfileError
+
+        with self.assertRaises(initialize.InvalidProfileError):
+            initialize.check_credentials(
+                'my-profile',
+                'my-profile',
+                'us-east-1',
+                False,
+                False
+            )
+
+    @mock.patch('ebcli.controllers.initialize.initializeops.credentials_are_valid')
+    @mock.patch('ebcli.controllers.initialize.get_region')
+    def test_check_credentials__invalid_profile_error_raised__profile_not_provided_as_input(
+            self,
+            get_region_mock,
+            credentials_are_valid_mock
+    ):
+        get_region_mock.return_value = 'us-west-1'
+        credentials_are_valid_mock.side_effect = [
+            InvalidProfileError,
+            None
+        ]
+
+        self.assertEqual(
+            (None, 'us-east-1'),
+            initialize.check_credentials(
+                None,
+                None,
+                'us-east-1',
+                False,
+                False
+            )
+        )
+
+    @mock.patch('ebcli.controllers.initialize.check_credentials')
+    @mock.patch('ebcli.controllers.initialize.initializeops.credentials_are_valid')
+    @mock.patch('ebcli.controllers.initialize.initializeops.setup_credentials')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    def test_set_up_credentials__credentials_not_setup(
+            self,
+            write_config_setting_mock,
+            setup_credentials_mock,
+            credentials_are_valid_mock,
+            check_credentials_mock
+    ):
+        check_credentials_mock.return_value = ['my-profile', 'us-east-1']
+        credentials_are_valid_mock.return_value = False
+
+        self.assertEqual(
+            'us-east-1',
+            initialize.set_up_credentials(
+                'my-profile',
+                'us-east-1',
+                False
+            )
+        )
+        check_credentials_mock.assert_called_once_with(
+            'my-profile',
+            'my-profile',
+            'us-east-1',
+            False,
+            False
+        )
+        setup_credentials_mock.assert_called_once()
+        write_config_setting_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.aws.set_profile')
+    @mock.patch('ebcli.controllers.initialize.check_credentials')
+    @mock.patch('ebcli.controllers.initialize.initializeops.credentials_are_valid')
+    @mock.patch('ebcli.controllers.initialize.initializeops.setup_credentials')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    def test_set_up_credentials__eb_cli_is_used_as_default_profile(
+            self,
+            write_config_setting_mock,
+            setup_credentials_mock,
+            credentials_are_valid_mock,
+            check_credentials_mock,
+            set_profile_mock
+    ):
+        check_credentials_mock.return_value = ['my-profile', 'us-east-1']
+        credentials_are_valid_mock.return_value = True
+
+        self.assertEqual(
+            'us-east-1',
+            initialize.set_up_credentials(
+                None,
+                'us-east-1',
+                False
+            )
+        )
+        check_credentials_mock.assert_called_once_with(
+            'eb-cli',
+            None,
+            'us-east-1',
+            False,
+            False
+        )
+        set_profile_mock.assert_called_once_with('eb-cli')
+        setup_credentials_mock.assert_called_once()
+        write_config_setting_mock.assert_called_once_with('global', 'profile', 'eb-cli')
+
+    @mock.patch('ebcli.controllers.initialize.aws.set_profile')
+    @mock.patch('ebcli.controllers.initialize.check_credentials')
+    @mock.patch('ebcli.controllers.initialize.initializeops.credentials_are_valid')
+    @mock.patch('ebcli.controllers.initialize.initializeops.setup_credentials')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    def test_set_up_credentials__eb_cli_is_used_as_default_profile(
+            self,
+            write_config_setting_mock,
+            setup_credentials_mock,
+            credentials_are_valid_mock,
+            check_credentials_mock,
+            set_profile_mock
+    ):
+        check_credentials_mock.return_value = ['eb-cli', 'us-east-1']
+        credentials_are_valid_mock.return_value = True
+
+        self.assertEqual(
+            'us-east-1',
+            initialize.set_up_credentials(
+                None,
+                'us-east-1',
+                False
+            )
+        )
+        check_credentials_mock.assert_called_once_with(
+            'eb-cli',
+            None,
+            'us-east-1',
+            False,
+            False
+        )
+        set_profile_mock.assert_called_once_with('eb-cli')
+        setup_credentials_mock.assert_not_called()
+        write_config_setting_mock.assert_called_once_with('global', 'profile', 'eb-cli')
+
+    @mock.patch('ebcli.controllers.initialize.codecommit.list_branches')
+    @mock.patch('ebcli.controllers.initialize.codecommit.get_repository')
+    @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
+    def test_get_branch_interactive__one_or_more_branches_already_exist_in_the_repository__initialize_with_existing_repository_and_branch(
+            self,
+            prompt_for_item_in_list_mock,
+            get_source_control_mock,
+            get_repository_mock,
+            list_branches_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_branch = mock.MagicMock(return_value='master')
+        source_control_mock.setup_codecommit_remote_repo = mock.MagicMock()
+        get_source_control_mock.return_value = source_control_mock
+        list_branches_mock.return_value = {
+            'branches': [
+                'develop',
+                'master'
+            ]
+        }
+        get_repository_mock.return_value = {
+            'repositoryMetadata': {
+                'cloneUrlHttp': 'https://git-codecommit.fake.amazonaws.com/v1/repos/my-repo'
+            }
+        }
+        prompt_for_item_in_list_mock.return_value = 2 # initialize with 'master' branch
+
+        initialize.get_branch_interactive('my-repo')
+
+        list_branches_mock.assert_called_once_with('my-repo')
+        prompt_for_item_in_list_mock.assert_called_once_with(
+            [
+                'develop',
+                'master',
+                '[ Create new Branch with local HEAD ]'
+            ],
+            default=2
+        )
+        get_repository_mock.assert_called_once_with('my-repo')
+        source_control_mock.setup_codecommit_remote_repo.assert_called_once_with(
+            remote_url='https://git-codecommit.fake.amazonaws.com/v1/repos/my-repo'
+        )
+
+    @mock.patch('ebcli.controllers.initialize.create_codecommit_branch')
+    @mock.patch('ebcli.controllers.initialize.codecommit.list_branches')
+    @mock.patch('ebcli.controllers.initialize.codecommit.get_repository')
+    @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
+    @mock.patch('ebcli.controllers.initialize.io.prompt_for_unique_name')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    def test_get_branch_interactive__one_or_more_branches_already_exist_in_the_repository__initialize_with_existing_repository_but_with_new_branch_from_HEAD(
+            self,
+            echo_mock,
+            prompt_for_unique_name_mock,
+            prompt_for_item_in_list_mock,
+            get_source_control_mock,
+            get_repository_mock,
+            list_branches_mock,
+            create_codecommit_branch_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_branch = mock.MagicMock(return_value='master')
+        source_control_mock.setup_codecommit_remote_repo = mock.MagicMock()
+        source_control_mock.setup_existing_codecommit_branch = mock.MagicMock(return_value=True)
+        get_source_control_mock.return_value = source_control_mock
+        list_branches_mock.return_value = {
+            'branches': [
+                'develop',
+                'master'
+            ]
+        }
+        get_repository_mock.return_value = {
+            'repositoryMetadata': {
+                'cloneUrlHttp': 'https://git-codecommit.fake.amazonaws.com/v1/repos/my-repo'
+            }
+        }
+        create_codecommit_branch_mock.side_effect = None
+        prompt_for_unique_name_mock.return_value = 'master2'
+        prompt_for_item_in_list_mock.return_value = '[ Create new Branch with local HEAD ]'
+
+        initialize.get_branch_interactive('my-repo')
+
+        list_branches_mock.assert_called_once_with('my-repo')
+        prompt_for_item_in_list_mock.assert_called_once_with(
+            [
+                'develop',
+                'master',
+                '[ Create new Branch with local HEAD ]'
+            ],
+            default=2
+        )
+        get_repository_mock.assert_called_once_with('my-repo')
+        source_control_mock.setup_codecommit_remote_repo.assert_called_once_with(
+            remote_url='https://git-codecommit.fake.amazonaws.com/v1/repos/my-repo'
+        )
+        echo_mock.assert_has_calls(
+            [
+                mock.call('Select a branch'),
+                mock.call(),
+                mock.call('Enter Branch Name'),
+                mock.call('***** Must have at least one commit to create a new branch with CodeCommit *****')
+            ]
+        )
+        create_codecommit_branch_mock.assert_called_once_with(source_control_mock, 'master2')
+
+    @mock.patch('ebcli.controllers.initialize.create_codecommit_branch')
+    @mock.patch('ebcli.controllers.initialize.codecommit.list_branches')
+    @mock.patch('ebcli.controllers.initialize.codecommit.get_repository')
+    @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
+    @mock.patch('ebcli.controllers.initialize.io.prompt_for_unique_name')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    def test_get_branch_interactive__repository_has_no_branches__initialize_with_new_branch_from_HEAD(
+            self,
+            echo_mock,
+            prompt_for_unique_name_mock,
+            get_source_control_mock,
+            get_repository_mock,
+            list_branches_mock,
+            create_codecommit_branch_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_branch = mock.MagicMock(return_value='master')
+        source_control_mock.setup_codecommit_remote_repo = mock.MagicMock()
+        source_control_mock.setup_existing_codecommit_branch = mock.MagicMock(return_value=True)
+        get_source_control_mock.return_value = source_control_mock
+        list_branches_mock.return_value = {
+            'branches': []
+        }
+        get_repository_mock.return_value = {
+            'repositoryMetadata': {
+                'cloneUrlHttp': 'https://git-codecommit.fake.amazonaws.com/v1/repos/my-repo'
+            }
+        }
+        create_codecommit_branch_mock.side_effect = None
+        prompt_for_unique_name_mock.return_value = 'master2'
+
+        initialize.get_branch_interactive('my-repo')
+
+        list_branches_mock.assert_called_once_with('my-repo')
+        get_repository_mock.assert_called_once_with('my-repo')
+        source_control_mock.setup_codecommit_remote_repo.assert_called_once_with(
+            remote_url='https://git-codecommit.fake.amazonaws.com/v1/repos/my-repo'
+        )
+        echo_mock.assert_has_calls(
+            [
+                mock.call(),
+                mock.call('Enter Branch Name'),
+                mock.call('***** Must have at least one commit to create a new branch with CodeCommit *****')
+            ]
+        )
+        create_codecommit_branch_mock.assert_called_once_with(source_control_mock, 'master2')
+
+    @mock.patch('ebcli.controllers.initialize.create_codecommit_branch')
+    @mock.patch('ebcli.controllers.initialize.codecommit.list_branches')
+    @mock.patch('ebcli.controllers.initialize.codecommit.get_repository')
+    @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
+    @mock.patch('ebcli.controllers.initialize.io.prompt_for_unique_name')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    def test_get_branch_interactive__one_or_more_branches_already_exist_in_the_repository__initialization_with_existing_repository_but_new_branch_from_HEAD_failed(
+            self,
+            echo_mock,
+            prompt_for_unique_name_mock,
+            prompt_for_item_in_list_mock,
+            get_source_control_mock,
+            get_repository_mock,
+            list_branches_mock,
+            create_codecommit_branch_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_branch = mock.MagicMock(return_value='master')
+        source_control_mock.setup_codecommit_remote_repo = mock.MagicMock()
+        source_control_mock.setup_existing_codecommit_branch = mock.MagicMock(return_value=True)
+        get_source_control_mock.return_value = source_control_mock
+        list_branches_mock.return_value = {
+            'branches': [
+                'develop',
+                'master'
+            ]
+        }
+        get_repository_mock.return_value = {
+            'repositoryMetadata': {
+                'cloneUrlHttp': 'https://git-codecommit.fake.amazonaws.com/v1/repos/my-repo'
+            }
+        }
+        create_codecommit_branch_mock.side_effect = initialize.ServiceError
+        prompt_for_unique_name_mock.return_value = 'master2'
+        prompt_for_item_in_list_mock.return_value = '[ Create new Branch with local HEAD ]'
+
+        initialize.get_branch_interactive('my-repo')
+
+        list_branches_mock.assert_called_once_with('my-repo')
+        prompt_for_item_in_list_mock.assert_called_once_with(
+            [
+                'develop',
+                'master',
+                '[ Create new Branch with local HEAD ]',
+            ],
+            default=2
+        )
+        get_repository_mock.assert_called_once_with('my-repo')
+        source_control_mock.setup_codecommit_remote_repo.assert_called_once_with(
+            remote_url='https://git-codecommit.fake.amazonaws.com/v1/repos/my-repo'
+        )
+        echo_mock.assert_has_calls(
+            [
+                mock.call('Select a branch'),
+                mock.call(),
+                mock.call('Enter Branch Name'),
+                mock.call('***** Must have at least one commit to create a new branch with CodeCommit *****'),
+                mock.call("Could not set CodeCommit branch with the current commit, run with '--debug' to get the full error")
+            ]
+        )
+        create_codecommit_branch_mock.assert_called_once_with(source_control_mock, 'master2')
+
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    def test_create_codecommit_branch(
+            self,
+            echo_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_commit = mock.MagicMock(return_value='ca4aebb896790302561b8b6d0276743afd70c3b6')
+
+        initialize.create_codecommit_branch(source_control_mock, 'master')
+
+        source_control_mock.setup_new_codecommit_branch.assert_called_once_with(branch_name='master')
+        echo_mock.assert_called_once_with('Successfully created branch: master')
+
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    def test_create_codecommit_branch__current_commit_could_not_be_determined__staged_files_exist(
+            self,
+            echo_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_commit = mock.MagicMock(return_value=None)
+        source_control_mock.get_list_of_staged_files.return_value = b"""ebcli/controllers/initialize.py
+    tests/unit/controllers/test_init.py
+    """
+
+        initialize.create_codecommit_branch(source_control_mock, 'master')
+
+        echo_mock.assert_called_once_with(
+            'Could not set create a commit with staged files; cannot setup CodeCommit branch without a commit'
+        )
+
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    def test_create_codecommit_branch__current_commit_could_not_be_determined__no_staged_files_exist(
+            self,
+            echo_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_commit = mock.MagicMock(return_value=None)
+        source_control_mock.get_list_of_staged_files.return_value = ''
+
+        initialize.create_codecommit_branch(source_control_mock, 'master')
+
+        echo_mock.assert_called_once_with(
+            'Successfully created branch: master'
+        )
+        source_control_mock.create_initial_commit.assert_called_once()
+
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.get_application_names')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
+    @mock.patch('ebcli.controllers.initialize.io.prompt_for_unique_name')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    def test_get_application_name_interactive__no_apps_exist__customer_is_prompted_for_new_app_name(
+            self,
+            echo_mock,
+            prompt_for_unique_name_mock,
+            prompt_for_item_in_list_mock,
+            get_current_directory_name_mock,
+            get_application_names_mock
+    ):
+        get_application_names_mock.return_value = []
+        get_current_directory_name_mock.return_value = 'my-application-dir'
+        prompt_for_unique_name_mock.return_value = 'unique-app-name'
+
+        self.assertEqual(
+            'unique-app-name',
+            initialize._get_application_name_interactive()
+        )
+
+        echo_mock.assert_has_calls(
+            [
+                mock.call(),
+                mock.call('Enter Application Name')
+            ]
+        )
+        prompt_for_unique_name_mock.assert_called_once_with(
+            'my-application-dir',
+            []
+        )
+
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.get_application_names')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
+    @mock.patch('ebcli.controllers.initialize.io.prompt_for_unique_name')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    def test_get_application_name_interactive__one_or_more_apps_exist__customer_chooses_to_create_new_app(
+            self,
+            echo_mock,
+            prompt_for_unique_name_mock,
+            prompt_for_item_in_list_mock,
+            get_current_directory_name_mock,
+            get_application_names_mock
+    ):
+        get_application_names_mock.return_value = [
+            'my-app-1',
+            'my-app-2',
+        ]
+        get_current_directory_name_mock.return_value = 'my-application-dir'
+        prompt_for_item_in_list_mock.return_value = '[ Create new Application ]'
+        prompt_for_unique_name_mock.return_value = 'unique-app-name'
+
+        self.assertEqual(
+            'unique-app-name',
+            initialize._get_application_name_interactive()
+        )
+
+        echo_mock.assert_has_calls(
+            [
+                mock.call('Select an application to use'),
+                mock.call(),
+                mock.call('Enter Application Name')
+            ]
+        )
+        prompt_for_unique_name_mock.assert_called_once_with(
+            'my-application-dir',
+            [
+                'my-app-1',
+                'my-app-2',
+                '[ Create new Application ]'
+            ]
+        )
+
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.get_application_names')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
+    @mock.patch('ebcli.controllers.initialize.io.prompt_for_unique_name')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    def test_get_application_name_interactive__one_or_more_apps_exist__customer_selects_existing_app(
+            self,
+            echo_mock,
+            prompt_for_unique_name_mock,
+            prompt_for_item_in_list_mock,
+            get_current_directory_name_mock,
+            get_application_names_mock
+    ):
+        get_application_names_mock.return_value = [
+            'my-app-1',
+            'my-app-2',
+        ]
+        get_current_directory_name_mock.return_value = 'my-application-dir'
+        prompt_for_item_in_list_mock.return_value = 'my-app-2'
+
+        self.assertEqual(
+            'my-app-2',
+            initialize._get_application_name_interactive()
+        )
+
+        echo_mock.assert_has_calls(
+            [
+                mock.call('Select an application to use'),
+            ]
+        )
+        prompt_for_unique_name_mock.assert_not_called()
+
+
+class TestInitMultipleModules(unittest.TestCase):
+    platform = PlatformVersion(
+        'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 7.1 running on 64bit Amazon Linux/2.6.5'
+    )
+
+    def setUp(self):
+        disable_socket()
+        self.root_dir = os.getcwd()
+        if not os.path.exists('testDir'):
+            os.mkdir('testDir')
+
+        os.chdir('testDir')
+
+    def tearDown(self):
+        os.chdir(self.root_dir)
+        shutil.rmtree('testDir')
+
+        enable_socket()
+
+    def test_multiple_modules__none_of_the_specified_modules_actually_exists(self):
+        app = EB(
+            argv=[
+                'init',
+                '--modules', 'module-1', 'module-2',
+            ]
+        )
+        app.setup()
+        app.run()
+
+    @mock.patch('ebcli.controllers.initialize.get_region')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.set_up_credentials')
+    @mock.patch('ebcli.controllers.initialize.commonops.create_app')
+    @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')
+    @mock.patch('ebcli.controllers.initialize.aws.set_region')
+    @mock.patch('ebcli.controllers.initialize.initializeops.setup')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test_multiple_modules__interactive_mode__solution_stack_in_env_yaml_is_used_when_available(
+            self,
+            get_solution_stack_from_customer_mock,
+            setup_mock,
+            set_region_mock,
+            pull_down_app_info_mock,
+            create_app_mock,
+            set_up_credentials_mock,
+            get_keyname_mock,
+            get_app_name_mock,
+            get_solution_stack_mock,
+            write_config_setting_mock,
+            get_region_mock
+    ):
+        os.mkdir('module-1')
+        os.mkdir('module-2')
+        with open(os.path.join('module-1', 'env.yaml'), 'w') as file:
+            file.write("""AWSConfigurationTemplateVersion: 1.1.0.0
+SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)
+        """)
+
+        get_app_name_mock.return_value = 'my-application'
+        get_region_mock.return_value = 'us-east-1'
+        set_up_credentials_mock.return_value = 'us-east-1'
+        get_solution_stack_mock.return_value = 'php7.1'
+        create_app_mock.return_value = [
+            '64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)',
+            'my-ec2-key-name'
+        ]
+        pull_down_app_info_mock.return_value = [
+            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1',
+            'my-ec2-key-name'
+        ]
+        get_solution_stack_from_customer_mock.return_value = '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1'
+        get_keyname_mock.return_value = 'my-ec2-key-name'
+
+        app = EB(
+            argv=[
+                'init',
+                '--modules', 'module-1', 'module-2',
+                '--interactive'
+            ]
+        )
+        app.setup()
+        app.run()
+
+        setup_mock.assert_has_calls(
+            [
+                mock.call('my-application', 'us-east-1', 'Multi-container Docker 1.7.1 (Generic)'),
+                mock.call('my-application', 'us-east-1', '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1')
+            ]
+        )
+        write_config_setting_mock.assert_has_calls(
+            [
+                mock.call('global', 'default_ec2_keyname', 'my-ec2-key-name'),
+                mock.call('global', 'default_ec2_keyname', 'my-ec2-key-name')
+            ]
+        )
+        create_app_mock.assert_called_once_with('my-application', default_env=None)
+        pull_down_app_info_mock.assert_called_once_with('my-application', default_env=None)
+        self.assertEqual(
+            2,
+            set_region_mock.call_count
+        )
+
+    @mock.patch('ebcli.controllers.initialize.get_region')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.set_up_credentials')
+    @mock.patch('ebcli.controllers.initialize.commonops.create_app')
+    @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')
+    @mock.patch('ebcli.controllers.initialize.aws.set_region')
+    @mock.patch('ebcli.controllers.initialize.initializeops.setup')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test_multiple_modules__interactive_mode__solution_stack_in_env_yaml_is_used_when_available(
+            self,
+            get_solution_stack_from_customer_mock,
+            setup_mock,
+            set_region_mock,
+            pull_down_app_info_mock,
+            create_app_mock,
+            set_up_credentials_mock,
+            get_keyname_mock,
+            get_app_name_mock,
+            get_solution_stack_mock,
+            write_config_setting_mock,
+            get_region_mock
+    ):
+        os.mkdir('module-1')
+        os.mkdir('module-2')
+        with open(os.path.join('module-1', 'env.yaml'), 'w') as file:
+            file.write("""AWSConfigurationTemplateVersion: 1.1.0.0
+SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)
+        """)
+
+        get_app_name_mock.return_value = 'my-application'
+        get_region_mock.return_value = 'us-east-1'
+        set_up_credentials_mock.return_value = 'us-east-1'
+        get_solution_stack_mock.return_value = 'php7.1'
+        create_app_mock.return_value = [
+            '64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)',
+            'my-ec2-key-name'
+        ]
+        pull_down_app_info_mock.return_value = [
+            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1',
+            'my-ec2-key-name'
+        ]
+        get_solution_stack_from_customer_mock.return_value = '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1'
+        get_keyname_mock.return_value = 'my-ec2-key-name'
+
+        app = EB(
+            argv=[
+                'init',
+                '--modules', 'module-1', 'module-2',
+                '--interactive'
+            ]
+        )
+        app.setup()
+        app.run()
+
+        setup_mock.assert_has_calls(
+            [
+                mock.call('my-application', 'us-east-1', 'Multi-container Docker 1.7.1 (Generic)'),
+                mock.call('my-application', 'us-east-1', '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1')
+            ]
+        )
+        write_config_setting_mock.assert_has_calls(
+            [
+                mock.call('global', 'default_ec2_keyname', 'my-ec2-key-name'),
+                mock.call('global', 'default_ec2_keyname', 'my-ec2-key-name')
+            ]
+        )
+        create_app_mock.assert_called_once_with('my-application', default_env=None)
+        pull_down_app_info_mock.assert_called_once_with('my-application', default_env=None)
+        self.assertEqual(
+            2,
+            set_region_mock.call_count
+        )
+
+    @mock.patch('ebcli.controllers.initialize.aws.set_region')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.set_up_credentials')
+    @mock.patch('ebcli.controllers.initialize.commonops.create_app')
+    @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')
+    @mock.patch('ebcli.controllers.initialize.get_region_from_inputs')
+    @mock.patch('ebcli.controllers.initialize.initializeops.setup')
+    def test_multiple_modules__interactive_mode__solution_stack_in_env_yaml_is_used_when_available(
+            self,
+            setup_mock,
+            get_region_from_inputs_mock,
+            pull_down_app_info_mock,
+            create_app_mock,
+            set_up_credentials_mock,
+            get_keyname_mock,
+            get_app_name_mock,
+            get_solution_stack_mock,
+            write_config_setting_mock,
+            set_region_mock
+    ):
+        os.mkdir('module-1')
+        os.mkdir('module-2')
+        with open(os.path.join('module-1', 'env.yaml'), 'w') as file:
+            file.write("""AWSConfigurationTemplateVersion: 1.1.0.0
+SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)
+            """)
+
+        get_app_name_mock.return_value = 'my-application'
+        get_region_from_inputs_mock.return_value = 'us-east-1'
+        set_up_credentials_mock.return_value = 'us-east-1'
+        get_solution_stack_mock.return_value = '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1'
+        create_app_mock.return_value = [
+            '64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)',
+            'my-ec2-key-name'
+        ]
+        pull_down_app_info_mock.return_value = [
+            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1',
+            'my-ec2-key-name'
+        ]
+        get_keyname_mock.return_value = 'my-ec2-key-name'
+
+        app = EB(
+            argv=[
+                'init',
+                '--modules', 'module-1', 'module-2',
+                '--platform', '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1'
+            ]
+        )
+        app.setup()
+        app.run()
+
+        setup_mock.assert_has_calls(
+            [
+                mock.call('my-application', 'us-east-1', '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1'),
+                mock.call('my-application', 'us-east-1', '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1')
+            ]
+        )
+        write_config_setting_mock.assert_has_calls(
+            [
+                mock.call('global', 'default_ec2_keyname', 'my-ec2-key-name'),
+                mock.call('global', 'default_ec2_keyname', 'my-ec2-key-name')
+            ]
+        )
+        create_app_mock.assert_called_once_with('my-application', default_env='/ni')
+        pull_down_app_info_mock.assert_called_once_with('my-application', default_env='/ni')
+        self.assertEqual(
+            2,
+            set_region_mock.call_count
+        )
