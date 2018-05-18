@@ -134,8 +134,7 @@ class TestInit(unittest.TestCase):
         initops_mock.credentials_are_valid.return_value = True
         elasticbeanstalk_mock.application_exist.return_value = False
         commonops_mock.create_app.return_value = 'ss-stack', 'key'
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = \
-            self.solution
+        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
 
         get_input_mock.side_effect = [
@@ -155,9 +154,14 @@ class TestInit(unittest.TestCase):
         app.run()
 
         # make sure setup was called correctly
-        initops_mock.setup.assert_called_with(self.app_name,
-                                                      'us-west-2',
-                                                      'PHP 5.5', branch=None, dir_path=None, repository=None)
+        initops_mock.setup.assert_called_with(
+            self.app_name,
+            'us-west-2',
+            'PHP 5.5',
+            branch=None,
+            dir_path=None,
+            repository=None
+        )
 
     @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
@@ -177,24 +181,25 @@ class TestInit(unittest.TestCase):
             git_mock
     ):
         initops_mock.credentials_are_valid.return_value = False
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = \
-            self.solution
+        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
-        commonops_mock.get_current_branch_environment.side_effect = \
-            NotInitializedError
+        commonops_mock.get_current_branch_environment.side_effect = NotInitializedError
         elasticbeanstalk_mock.application_exist.return_value = True
         commonops_mock.pull_down_app_info.return_value = 'ss-stack', 'key'
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
 
-        # Mock out source control so we don't depend on git
         sourcecontrol_mock.get_source_control.return_value = git_mock
         git_mock.is_setup.return_value = None
 
-        app = EB(argv=['init',
-                            self.app_name,
-                            '-r', 'us-west-2'])
+        EB.Meta.exit_on_close = False
+        app = EB(
+            argv=[
+                'init', self.app_name,
+                '-r', 'us-west-2'
+            ]
+        )
         app.setup()
         app.run()
 
@@ -226,13 +231,9 @@ class TestInit(unittest.TestCase):
             sourcecontrol_mock,
             git_mock
     ):
-        initops_mock.credentials_are_valid.side_effect = [
-            NoRegionError,
-            True
-        ]
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = Exception
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
-        commonops_mock.get_current_branch_environment.side_effect = NotInitializedError,
+        commonops_mock.get_current_branch_environment.side_effect = NotInitializedError
         elasticbeanstalk_mock.application_exist.return_value = True
         commonops_mock.pull_down_app_info.return_value = 'ss-stack', 'key'
         commonops_mock.get_default_keyname.return_value = ''
@@ -283,15 +284,20 @@ class TestInit(unittest.TestCase):
         initops_mock.credentials_are_valid.return_value = True
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
 
-        # Mock out source control so we don't depend on git
         sourcecontrol_mock.get_source_control.return_value = git_mock
         git_mock.is_setup.return_value = None
 
-        app = EB(argv=['init', '-p', 'ruby', '--source', 'codecommit/my-repo/prod', '--region', 'us-east-1'])
+        app = EB(
+            argv=[
+                'init',
+                '-p', 'ruby',
+                '--source', 'codecommit/my-repo/prod',
+                '--region', 'us-east-1'
+            ]
+        )
         app.setup()
         app.run()
 
-        # assert we ran the methods we intended too
         initops_mock.setup.assert_called_with(
             'ebcli-intTest-app',
             'us-east-1',
@@ -335,15 +341,26 @@ class TestInit(unittest.TestCase):
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         application_exist_mock.return_value = False
 
-        # Mocks for getting into CodeCommit interactive mode
         gitops_mock.git_management_enabled.return_value = False
 
-        codecommit_mock.list_repositories.return_value = {'repositories': [{'repositoryName': 'only-repo'}]}
-        codecommit_mock.list_branches.return_value = {'branches': ['only-branch']}
-        codecommit_mock.get_repository.return_value =\
-            {'repositoryMetadata': {'cloneUrlHttp': 'https://git-codecommit.fake.amazonaws.com/v1/repos/only-repo'}}
+        codecommit_mock.list_repositories.return_value = {
+            'repositories': [
+                {
+                    'repositoryName': 'only-repo'
+                }
+            ]
+        }
+        codecommit_mock.list_branches.return_value = {
+            'branches': [
+                'only-branch'
+            ]
+        }
+        codecommit_mock.get_repository.return_value = {
+            'repositoryMetadata': {
+                'cloneUrlHttp': 'https://git-codecommit.fake.amazonaws.com/v1/repos/only-repo'
+            }
+        }
 
-        # Mocks for setting up SSH
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
 
         get_input_mock.side_effect = [
@@ -355,21 +372,25 @@ class TestInit(unittest.TestCase):
             'n',  # Set up ssh selection
         ]
 
-        # Mock out source control so we don't depend on git
         sourcecontrol_mock.get_source_control.return_value = git_mock
         git_mock.is_setup.return_value = 'GitSetup'
         git_mock.get_current_commit.return_value = 'CommitId'
 
-        app = EB(argv=['init', '--region', 'us-east-1', 'my-app'])
+        app = EB(
+            argv=['init', '--region', 'us-east-1', 'my-app'])
         app.setup()
         app.run()
 
-        # assert we ran the methods we intended too
-        initops_mock.setup.assert_called_with('my-app',
-                                                      'us-east-1',
-                                                      'PHP 5.5', dir_path=None, repository='new-repo', branch='devo')
+        initops_mock.setup.assert_called_with(
+            'my-app',
+            'us-east-1',
+            'PHP 5.5',
+            dir_path=None,
+            repository='new-repo',
+            branch='devo'
+        )
 
-        codecommit_mock.create_repository.assert_called_once_with('new-repo','Created with EB CLI')
+        codecommit_mock.create_repository.assert_called_once_with('new-repo', 'Created with EB CLI')
         git_mock.setup_new_codecommit_branch.assert_called_once_with(branch_name='devo')
         sourcecontrol_mock.setup_new_codecommit_branch('devo')
 
@@ -400,19 +421,20 @@ class TestInit(unittest.TestCase):
         compute_type = 'BUILD_GENERAL1_SMALL'
         service_role = 'eb-test'
         timeout = 60
-        build_config = BuildConfiguration(image=None, compute_type=compute_type,
-                                          service_role=service_role, timeout=timeout)
+        build_config = BuildConfiguration(
+            image=None,
+            compute_type=compute_type,
+            service_role=service_role,
+            timeout=timeout
+        )
 
-        # First, set up config file to contain all values
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
 
         get_application_names_mock.get_application_names.return_value = list()
         initops_mock.credentials_are_valid.return_value = True
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = \
-            self.solution
+        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         fileoperations_mock.env_yaml_exists.return_value = None
 
-        # Mock out operations for Codebuild Integration
         elasticbeanstalk_mock.application_exist.return_value = False
         commonops_mock.create_app.return_value = None, None
         fileoperations_mock.build_spec_exists.return_value = True
@@ -420,12 +442,21 @@ class TestInit(unittest.TestCase):
         fileoperations_mock.buildspec_config_header = fileoperations.buildspec_config_header
         fileoperations_mock.buildspec_name = fileoperations.buildspec_name
 
-        initops_mock.get_codebuild_image_from_platform.return_value = \
-            [{u'name': u'aws/codebuild/eb-java-7-amazonlinux-64:2.1.6', u'description': u'Java 7 Running on Amazon Linux 64bit '},
-             {u'name': expected_image, u'description': u'Java 8 Running on Amazon Linux 64bit '},
-             {u'name': u'aws/codebuild/eb-ruby-1.9-amazonlinux-64:2.1.6', u'description': u'Ruby 1.9 Running on Amazon Linux 64bit '}]
+        initops_mock.get_codebuild_image_from_platform.return_value = [
+            {
+                u'name': u'aws/codebuild/eb-java-7-amazonlinux-64:2.1.6',
+                u'description': u'Java 7 Running on Amazon Linux 64bit '
+            },
+            {
+                u'name': expected_image,
+                u'description': u'Java 8 Running on Amazon Linux 64bit '
+            },
+            {
+                u'name': u'aws/codebuild/eb-ruby-1.9-amazonlinux-64:2.1.6',
+                u'description': u'Ruby 1.9 Running on Amazon Linux 64bit '
+            }
+        ]
 
-        # Mock out getting the application information
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         commonops_mock.pull_down_app_info.return_value = 'something', 'smthing'
 
@@ -437,7 +468,6 @@ class TestInit(unittest.TestCase):
             'n',  # Set up ssh selection
         ]
 
-        # Mock out source control so we don't depend on git
         sourcecontrol_mock.get_source_control.return_value = git_mock
         git_mock.is_setup.return_value = None
 
@@ -445,18 +475,26 @@ class TestInit(unittest.TestCase):
         app.setup()
         app.run()
 
-        # make sure setup was called correctly
-        initops_mock.setup.assert_called_with(self.app_name,
-                                                      'us-west-2',
-                                                      'PHP 5.5', branch=None, dir_path=None, repository=None)
+        initops_mock.setup.assert_called_with(
+            self.app_name,
+            'us-west-2',
+            'PHP 5.5',
+            branch=None,
+            dir_path=None,
+            repository=None
+        )
         initops_mock.get_codebuild_image_from_platform.assert_called_with('PHP 5.5')
 
-        write_config_calls = [mock.call('global', 'profile', 'eb-cli'),
-                              mock.call(fileoperations.buildspec_config_header,
-                                        'Image',
-                                        expected_image,
-                                        file=fileoperations.buildspec_name),
-                              mock.call('global', 'default_ec2_keyname', 'test'),]
+        write_config_calls = [
+            mock.call('global', 'profile', 'eb-cli'),
+            mock.call(
+                fileoperations.buildspec_config_header,
+                'Image',
+                expected_image,
+                file=fileoperations.buildspec_name
+            ),
+            mock.call('global', 'default_ec2_keyname', 'test'),
+        ]
         fileoperations_mock.write_config_setting.assert_has_calls(write_config_calls)
 
     @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
@@ -486,23 +524,20 @@ class TestInit(unittest.TestCase):
         compute_type = 'BUILD_GENERAL1_SMALL'
         service_role = 'eb-test'
         timeout = 60
-        build_config = BuildConfiguration(image=None, compute_type=compute_type,
-                                          service_role=service_role, timeout=timeout)
+        build_config = BuildConfiguration(
+            image=None,
+            compute_type=compute_type,
+            service_role=service_role,
+            timeout=timeout
+        )
 
-        # First, set up config file to contain all values
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
-
-        # Set up mock responses
-        # 1. Get solution stacks
-        # 2. Get solution stacks again
-        # 3. Create app
         get_application_names_mock.return_value = list()
         initops_mock.credentials_are_valid.return_value = True
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = \
             self.solution
         fileoperations_mock.env_yaml_exists.return_value = None
 
-        # Mock out operations for Codebuild Integration
         elasticbeanstalk_mock.application_exist.return_value = False
         commonops_mock.create_app.return_value = None, None
         elasticbeanstalk_mock.application_exist.return_value = False
@@ -510,10 +545,11 @@ class TestInit(unittest.TestCase):
         fileoperations_mock.buildspec_config_header = fileoperations.buildspec_config_header
         fileoperations_mock.buildspec_name = fileoperations.buildspec_name
 
-        initops_mock.get_codebuild_image_from_platform.return_value = \
-             {u'name': expected_image, u'description': u'Java 8 Running on Amazon Linux 64bit '}
+        initops_mock.get_codebuild_image_from_platform.return_value = {
+            u'name': expected_image,
+            u'description': u'Java 8 Running on Amazon Linux 64bit '
+        }
 
-        # Mock out getting the application information
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         commonops_mock.pull_down_app_info.return_value = 'something', 'smthing'
 
@@ -524,7 +560,6 @@ class TestInit(unittest.TestCase):
             'n',  # Set up ssh selection
         ]
 
-        # Mock out source control so we don't depend on git
         sourcecontrol_mock.get_source_control.return_value = git_mock
         git_mock.is_setup.return_value = None
 
@@ -532,18 +567,26 @@ class TestInit(unittest.TestCase):
         app.setup()
         app.run()
 
-        # make sure setup was called correctly
-        initops_mock.setup.assert_called_with(self.app_name,
-                                                      'us-west-2',
-                                                      'PHP 5.5', branch=None, dir_path=None, repository=None)
+        initops_mock.setup.assert_called_with(
+            self.app_name,
+            'us-west-2',
+            'PHP 5.5',
+            branch=None,
+            dir_path=None,
+            repository=None
+        )
         initops_mock.get_codebuild_image_from_platform.assert_called_with('PHP 5.5')
 
-        write_config_calls = [mock.call('global', 'profile', 'eb-cli'),
-                              mock.call(fileoperations.buildspec_config_header,
-                                        'Image',
-                                        expected_image,
-                                        file=fileoperations.buildspec_name),
-                              mock.call('global', 'default_ec2_keyname', 'test'), ]
+        write_config_calls = [
+            mock.call('global', 'profile', 'eb-cli'),
+            mock.call(
+                fileoperations.buildspec_config_header,
+                'Image',
+                expected_image,
+                file=fileoperations.buildspec_name
+            ),
+            mock.call('global', 'default_ec2_keyname', 'test'),
+        ]
         fileoperations_mock.write_config_setting.assert_has_calls(write_config_calls)
 
     @mock.patch('ebcli.controllers.initialize.codecommit')
@@ -569,8 +612,12 @@ class TestInit(unittest.TestCase):
         compute_type = 'BUILD_GENERAL1_SMALL'
         service_role = 'eb-test'
         timeout = 60
-        build_config = BuildConfiguration(image=None, compute_type=compute_type,
-                                          service_role=service_role, timeout=timeout)
+        build_config = BuildConfiguration(
+            image=None,
+            compute_type=compute_type,
+            service_role=service_role,
+            timeout=timeout
+        )
 
         codecommit_mock.side_effect = None
         fileoperations_mock.get_application_name.return_value = 'testDir'
@@ -584,13 +631,14 @@ class TestInit(unittest.TestCase):
             None
         ]
         sourcecontrol_mock.setup_existing_codecommit_branch = mock.MagicMock()
-        initops_mock.get_codebuild_image_from_platform.return_value = \
-            {u'name': expected_image, u'description': u'PHP 5.5 Running on Amazon Linux 64bit '}
+        initops_mock.get_codebuild_image_from_platform.return_value = {
+            u'name': expected_image,
+            u'description': u'PHP 5.5 Running on Amazon Linux 64bit '
+        }
 
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = Exception
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
-        commonops_mock.get_current_branch_environment.side_effect = \
-            NotInitializedError
+        commonops_mock.get_current_branch_environment.side_effect = NotInitializedError
         elasticbeanstalk_mock.application_exist.return_value = False
         commonops_mock.create_app.return_value = None, None
         commonops_mock.get_default_keyname.return_value = ''
@@ -601,7 +649,6 @@ class TestInit(unittest.TestCase):
         app.setup()
         app.run()
 
-        # assert we ran the methods we intended too
         initops_mock.setup.assert_called_with(
             'testDir',
             'us-east-1',
