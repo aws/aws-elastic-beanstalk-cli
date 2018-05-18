@@ -62,7 +62,7 @@ class DeployController(AbstractBaseController):
         self.staged = self.app.pargs.staged
         self.source = self.app.pargs.source
         self.app_name = self.get_app_name()
-        self.env_name = self.app.pargs.environment_name
+        self.env_name = self.get_env_name()
         self.version = self.app.pargs.version
         self.label = self.app.pargs.label
         self.process = self.app.pargs.process
@@ -70,15 +70,6 @@ class DeployController(AbstractBaseController):
 
         if self.version and (self.message or self.label):
             raise InvalidOptionsError(strings['deploy.invalidoptions'])
-
-        if not self.env_name:
-            self.env_name = commonops.get_current_branch_environment()
-
-        if not self.env_name:
-            self.message = strings['branch.noenv'].replace('eb {cmd}',
-                                                           self.Meta.label)
-            io.log_error(self.message)
-            raise NoEnvironmentForBranchError()
 
         # ToDo add support for deploying to multiples?
         # for arg in self.app.pargs.environment_name:
@@ -181,7 +172,8 @@ class DeployController(AbstractBaseController):
                 env_names.append(env_name)
             else:
                 io.echo(strings['deploy.noenvname'].replace('{module}', module))
-                stages_version_labels[group_name].pop(version_label)
+
+                stages_version_labels[group_name] = [v for v in stages_version_labels[group_name] if v != version_label]
 
             chdir(top_dir)
 
@@ -190,7 +182,7 @@ class DeployController(AbstractBaseController):
                 request_id = composeops.compose_no_events(app_name, stages_version_labels[stage],
                                                           group_name=stage)
                 if request_id is None:
-                    io.error("Unable to compose modules.")
+                    io.log_error("Unable to compose modules.")
                     return
 
                 commonops.wait_for_compose_events(request_id, app_name, env_names, self.timeout)
