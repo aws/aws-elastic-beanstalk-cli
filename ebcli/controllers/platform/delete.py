@@ -37,6 +37,7 @@ class GenericPlatformDeleteController(AbstractBaseController):
         cleanup = self.app.pargs.cleanup
         force = self.app.pargs.force
 
+        # TODO: raise if 'version' and 'cleanup' are both specified
         if cleanup:
             self.cleanup_platforms()
         else:
@@ -76,7 +77,7 @@ class GenericPlatformDeleteController(AbstractBaseController):
                     io.validate_action(prompts['cleanupplatform.validate'], platform_name)
 
             for failed_version in failed_versions:
-	            platformops.delete_platform_version(failed_version, force=True)
+                platformops.delete_platform_version(failed_version, force=True)
 
 
 class PlatformDeleteController(GenericPlatformDeleteController):
