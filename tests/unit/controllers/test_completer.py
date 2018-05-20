@@ -10,37 +10,50 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import os
+import shutil
 
 import mock
-
-from .basecontrollertest import BaseControllerTest
+from pytest_socket import disable_socket, enable_socket
+import unittest
 
 from ebcli.core import fileoperations
+from ebcli.core.ebcore import EB
 from ebcli.objects.solutionstack import SolutionStack
-from ebcli.objects.tier import Tier
 
 
-class TestCompleter(BaseControllerTest):
-    solution = SolutionStack('64bit Amazon Linux 2014.03 '
-                             'v1.0.6 running PHP 5.5')
-    app_name = 'ebcli-test-app'
-    tier = Tier.get_default()
+class TestCompleter(unittest.TestCase):
+    solution = SolutionStack('64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5')
+    app_name = 'ebcli-intTest-app'
 
     def setUp(self):
-        self.module_name = 'create'
-        super(TestCompleter, self).setUp()
-        fileoperations.create_config_file(self.app_name, 'us-west-2',
-                                          self.solution.name)
+        disable_socket()
+        self.root_dir = os.getcwd()
+        if not os.path.exists('testDir'):
+            os.mkdir('testDir')
 
-    def test_base_commands(self):
-        """
-        testing for base controllers
-        """
+        os.chdir('testDir')
 
-        # run cmd
-        self.run_command('completer', '--cmplt', ' ')
+        fileoperations.create_config_file(
+            self.app_name,
+            'us-west-2',
+            self.solution.name
+        )
 
-        output = set(self.mock_output.call_args[0])
+    def tearDown(self):
+        os.chdir(self.root_dir)
+        shutil.rmtree('testDir')
+
+        enable_socket()
+
+    @mock.patch('ebcli.core.io.echo')
+    def test_base_commands(
+            self,
+            echo_mock
+    ):
+        self.app = EB(argv=['completer', '--cmplt', ' '])
+        self.app.setup()
+        self.app.run()
 
         # Its best to hard code this
         # That way we can make sure this list matches exactly
@@ -71,4 +84,4 @@ class TestCompleter(BaseControllerTest):
             'tags'
             }
 
-        self.assertEqual(expected, output)
+        self.assertEqual(expected, set(echo_mock.call_args[0]))
