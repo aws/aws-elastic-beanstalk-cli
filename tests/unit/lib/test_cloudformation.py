@@ -18,38 +18,38 @@ from ebcli.lib import aws, cloudformation
 
 class TestCloudFormation(unittest.TestCase):
 
-	def test_wait_until_stack_exists__stack_does_not_exist(self):
-		describe_stacks_response = {
-			'Stacks': [
-				{
-					'StackId': 'stack_id',
-					'StackName': 'stack_name',
-					'Description': "my cloud formation stack",
-					'Parameters': []
-				}
-			]
-		}
-		aws.make_api_call = mock.MagicMock(return_value=describe_stacks_response)
+    def test_wait_until_stack_exists__stack_does_not_exist(self):
+        describe_stacks_response = {
+            'Stacks': [
+                {
+                    'StackId': 'stack_id',
+                    'StackName': 'stack_name',
+                    'Description': "my cloud formation stack",
+                    'Parameters': []
+                }
+            ]
+        }
+        aws.make_api_call = mock.MagicMock(return_value=describe_stacks_response)
 
-		with self.assertRaises(cloudformation.CFNTemplateNotFound) as exception:
-			cloudformation.wait_until_stack_exists('non_existent_stack', timeout=0)
+        with self.assertRaises(cloudformation.CFNTemplateNotFound) as exception:
+            cloudformation.wait_until_stack_exists('non_existent_stack', timeout=0)
 
-		self.assertEqual(
-			exception.exception.message,
-			"Could not find CFN stack, 'non_existent_stack'."
-		)
+        self.assertEqual(
+            exception.exception.message,
+            "Could not find CFN stack, 'non_existent_stack'."
+        )
 
-	def test_wait_until_stack_exists__stack_exists(self):
-		describe_stacks_response = {
-			'Stacks': [
-				{
-					'StackId': 'stack_id',
-					'StackName': 'stack_name',
-					'Description': "my cloud formation stack",
-					'Parameters': []
-				}
-			]
-		}
-		aws.make_api_call = mock.MagicMock(return_value=describe_stacks_response)
+    def test_wait_until_stack_exists__stack_exists(self):
+        describe_stacks_response = {
+            'Stacks': [
+                {
+                    'StackId': 'stack_id',
+                    'StackName': 'stack_name',
+                    'Description': "my cloud formation stack",
+                    'Parameters': []
+                }
+            ]
+        }
+        aws.make_api_call = mock.MagicMock(return_value=describe_stacks_response)
 
-		cloudformation.wait_until_stack_exists('stack_name')
+        cloudformation.wait_until_stack_exists('stack_name')
