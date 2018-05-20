@@ -11,79 +11,95 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import mock
+from pytest_socket import disable_socket, enable_socket
 import unittest
 
 from ebcli.lib import codebuild
 
+from .. import mock_responses
 
-class TestCodeBuild(unittest.TestCase):
-    expected_default_response = {'200'}
 
+class TestCloudWatch(unittest.TestCase):
     def setUp(self):
-        self.patcher_aws = mock.patch('ebcli.lib.codebuild.aws')
-        self.mock_codebuild_aws = self.patcher_aws.start()
+        disable_socket()
 
     def tearDown(self):
-        self.patcher_aws.stop()
+        enable_socket()
 
-    def test_get_builds(self):
-        # Set local variables
-        build_ids = ['arn:aws:codebuild:us-east-1:123456789876:build/foo-test']
+    @mock.patch('ebcli.lib.codebuild.aws.make_api_call')
+    def test_batch_get_builds(
+            self,
+            make_api_call_mock
+    ):
+        make_api_call_mock.return_value = mock_responses.BATCH_GET_BUILDS
 
-        # Mock out api calls
-        self.mock_codebuild_aws.make_api_call.return_value = self.expected_default_response
+        build_ids = [
+            'Elastic-Beanstalk-my-web-app-app-170706_000919-uUTqM:3362ef1d-584d-48c1-800a-c1c695b71562',
+            'Elastic-Beanstalk-my-web-app-app-170706_001032-OYjRZ:a4db9491-91ba-4614-b5e4-3f8d9e994a19',
+            'bad-batch-id-170706_001032-OYjRZ:a4db9491-91ba-4614-b5e4-3f8d9e994a19'
+        ]
 
-        # Make actual call
-        actual_response = codebuild.batch_get_builds(build_ids)
+        self.assertEqual(
+            mock_responses.BATCH_GET_BUILDS,
+            codebuild.batch_get_builds(build_ids)
+        )
 
-        # Assert methods were called with the right params and returned the correct values
-        self.assertEqual(self.expected_default_response, actual_response,
-                         "Expected: {0} but got: {1}".format(self.expected_default_response, actual_response))
-        self.mock_codebuild_aws.make_api_call.assert_called_with('codebuild', 'batch_get_builds',
-                                                                 ids=build_ids)
+    @mock.patch('ebcli.lib.codebuild.aws.make_api_call')
+    @mock.patch('ebcli.lib.codebuild.io.echo')
+    def test_batch_get_builds__service_error_raised(
+            self,
+            echo_mock,
+            make_api_call_mock
+    ):
+        make_api_call_mock.side_effect = codebuild.aws.ServiceError(
+            code='AccessDeniedException'
+        )
 
+        with self.assertRaises(codebuild.ServiceError):
+            codebuild.batch_get_builds(['some-build-id'])
 
-    def test_list_curated_environment_images(self):
-        # Set local variables
-        api_response = {u'platforms':
-                            [{u'languages':
-                                  [{u'images':
-                                        [{u'name': u'aws/codebuild/eb-java-7-amazonlinux-64:2.1.3', u'description': u'AWS ElasticBeanstalk - Java 7 Running on Amazon Linux 64bit v2.1.3'},
-                                         {u'name': u'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3', u'description': u'AWS ElasticBeanstalk - Java 8 Running on Amazon Linux 64bit v2.1.3'},
-                                         {u'name': u'aws/codebuild/eb-java-7-amazonlinux-64:2.1.6', u'description': u'AWS ElasticBeanstalk - Java 7 Running on Amazon Linux 64bit v2.1.6'},
-                                         {u'name': u'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6', u'description': u'AWS ElasticBeanstalk - Java 8 Running on Amazon Linux 64bit v2.1.6'}],
-                                        u'language': u'Java'},
-                                   {u'images':
-                                        [{u'name': u'aws/codebuild/eb-go-1.5-amazonlinux-64:2.1.3', u'description': u'AWS ElasticBeanstalk - Go 1.5 Running on Amazon Linux 64bit v2.1.3'},
-                                         {u'name': u'aws/codebuild/eb-go-1.5-amazonlinux-64:2.1.6', u'description': u'AWS ElasticBeanstalk - Go 1.5 Running on Amazon Linux 64bit v2.1.6'}],
-                                        u'language': u'Golang'},
-                                   {u'images':
-                                        [{u'name': u'aws/codebuild/android-java-6:24.4.1', u'description': u'AWS CodeBuild - Android 24.4.1 with java 6'},
-                                         {u'name': u'aws/codebuild/android-java-7:24.4.1', u'description': u'AWS CodeBuild - Android 24.4.1 with java 7'},
-                                         {u'name': u'aws/codebuild/android-java-8:24.4.1', u'description': u'AWS CodeBuild - Android 24.4.1 with java 8'}],
-                                        u'language': u'Android'}
-                                  ]
-                              }],
-                         'ResponseMetadata':
-                             {'date': 'Tue, 22 Nov 2016 21:36:19 GMT',
-                              'RetryAttempts': 0, 'HTTPStatusCode': 200,
-                              'RequestId': 'b47ba2d1-b0fb-11e6-a6a7-6fc6c5a33aee'}}
+        echo_mock.assert_called_once_with(
+            'EB CLI does not have the right permissions to access CodeBuild.\n'
+            'To learn more, see Docs: '
+            'https://docs-aws.amazon.com/codebuild/latest/userguide/auth-and-access-control-permissions-reference.html'
+        )
 
-        expected_response = [{u'name': u'aws/codebuild/eb-java-7-amazonlinux-64:2.1.6',
-                              u'description': u'Java 7 Running on Amazon Linux 64bit '},
-                             {u'name': u'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6',
-                              u'description': u'Java 8 Running on Amazon Linux 64bit '},
-                             {u'name': u'aws/codebuild/eb-go-1.5-amazonlinux-64:2.1.6',
-                              u'description': u'Go 1.5 Running on Amazon Linux 64bit '}]
+    @mock.patch('ebcli.lib.codebuild.aws.make_api_call')
+    def test_batch_get_builds__end_point_connection_error_raised(
+            self,
+            make_api_call_mock
+    ):
+        make_api_call_mock.side_effect = codebuild.EndpointConnectionError(endpoint_url='www.codebuild.non-existent-region.com')
 
-        # Mock out api calls
-        self.mock_codebuild_aws.make_api_call.return_value = api_response
+        with self.assertRaises(codebuild.ServiceError) as context_manager:
+            codebuild.batch_get_builds(['some-build-id'])
 
-        # Make actual call
-        actual_response = codebuild.list_curated_environment_images()
+        self.assertEqual(
+            'Elastic Beanstalk does not support AWS CodeBuild in this region.',
+            str(context_manager.exception)
+        )
 
-        # Assert methods were called with the right params and returned the correct values
-        self.assertEqual(expected_response, actual_response,
-                         "Expected response '{0}' but was: {1}".format(expected_response, actual_response))
-        self.mock_codebuild_aws.make_api_call.assert_called_with('codebuild',
-                                                                 'list_curated_environment_images')
+    @mock.patch('ebcli.lib.codebuild.aws.make_api_call')
+    def test_list_curated_environment_images(
+            self,
+            make_api_call_mock
+    ):
+        make_api_call_mock.return_value = mock_responses.LIST_CURATED_ENVIRONMENT_IMAGES_RESPONSE
+
+        self.assertEqual(
+            [
+                {
+                    'name': 'aws/codebuild/eb-java-7-amazonlinux-64:2.1.6',
+                    'description': 'Java 7 Running on Amazon Linux 64bit '
+                },
+                {
+                    'name': 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6',
+                    'description': 'Java 8 Running on Amazon Linux 64bit '
+                },
+                {
+                    'name': 'aws/codebuild/eb-go-1.5-amazonlinux-64:2.1.6',
+                    'description': 'Go 1.5 Running on Amazon Linux 64bit '
+                }
+            ],
+            codebuild.list_curated_environment_images()
+        )

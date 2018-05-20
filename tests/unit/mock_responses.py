@@ -2855,3 +2855,174 @@ DESCRIBE_LOG_STREAMS_RESPONSE = {
         },
     ]
 }
+
+
+BATCH_GET_BUILDS = {
+    "builds": [
+        {
+            "id": "Elastic-Beanstalk-my-web-app-app-170706_000919-uUTqM:3362ef1d-584d-48c1-800a-c1c695b71562",
+            "arn": "arn:aws:codebuild:us-west-2:123123123123:build/Elastic-Beanstalk-my-web-app-app-170706_000919-uUTqM:3362ef1d-584d-48c1-800a-c1c695b71562",
+            "startTime": 1499299760.483,
+            "endTime": 1499299762.231,
+            "currentPhase": "COMPLETED",
+            "buildStatus": "FAILED",
+            "projectName": "Elastic-Beanstalk-my-web-app-app-170706_000919-uUTqM",
+            "phases": [
+                {
+                    "phaseType": "SUBMITTED",
+                    "phaseStatus": "SUCCEEDED",
+                    "startTime": 1499299760.483,
+                    "endTime": 1499299761.321,
+                    "durationInSeconds": 0
+                },
+                {
+                    "phaseType": "PROVISIONING",
+                    "phaseStatus": "CLIENT_ERROR",
+                    "startTime": 1499299761.321,
+                    "endTime": 1499299762.231,
+                    "durationInSeconds": 0,
+                    "contexts": [
+                        {
+                            "statusCode": "ACCESS_DENIED",
+                            "message": "Service role arn:aws:iam::123123123123:role/service-role/codebuild-sample_maven_project-service-role does not allow AWS CodeBuild to create Amazon CloudWatch Logs log streams for build arn:aws:codebuild:us-west-2:123123123123:build/Elastic-Beanstalk-my-web-app-app-170706_001032-OYjRZ:a4db9491-91ba-4614-b5e4-3f8d9e994a19"
+                        }
+                    ]
+                },
+                {
+                    "phaseType": "COMPLETED",
+                    "startTime": 1499299762.231
+                }
+            ],
+            "source": {
+                "type": "S3",
+                "location": "elasticbeanstalk-us-west-2-123123123123/my-web-app/app-170706_000919.zip"
+            },
+            "artifacts": {
+                "location": "arn:aws:s3:::elasticbeanstalk-us-west-2-123123123123/resources/my-web-app/codebuild/codebuild-app-170706_000919.zip"
+            },
+            "environment": {
+                "type": "LINUX_CONTAINER",
+                "image": "aws/codebuild/java:openjdk-8",
+                "computeType": "BUILD_GENERAL1_SMALL",
+                "environmentVariables": [],
+                "privilegedMode": False
+            },
+            "timeoutInMinutes": 60,
+            "buildComplete": True,
+            "initiator": "some-user"
+        },
+        {
+            "id": "Elastic-Beanstalk-my-web-app-app-170706_001032-OYjRZ:a4db9491-91ba-4614-b5e4-3f8d9e994a19",
+            "arn": "arn:aws:codebuild:us-west-2:123123123123:build/Elastic-Beanstalk-my-web-app-app-170706_001032-OYjRZ:a4db9491-91ba-4614-b5e4-3f8d9e994a19",
+            "startTime": 1499299833.657,
+            "endTime": 1499299835.069,
+            "currentPhase": "COMPLETED",
+            "buildStatus": "FAILED",
+            "projectName": "Elastic-Beanstalk-my-web-app-app-170706_001032-OYjRZ",
+            "phases": [
+                {
+                    "phaseType": "SUBMITTED",
+                    "phaseStatus": "SUCCEEDED",
+                    "startTime": 1499299833.657,
+                    "endTime": 1499299834.0,
+                    "durationInSeconds": 0
+                },
+                {
+                    "phaseType": "PROVISIONING",
+                    "phaseStatus": "CLIENT_ERROR",
+                    "startTime": 1499299834.0,
+                    "endTime": 1499299835.069,
+                    "durationInSeconds": 1,
+                    "contexts": [
+                        {
+                            "statusCode": "ACCESS_DENIED",
+                            "message": "Service role arn:aws:iam::123123123123:role/service-role/codebuild-sample_maven_project-service-role does not allow AWS CodeBuild to create Amazon CloudWatch Logs log streams for build arn:aws:codebuild:us-west-2:123123123123:build/Elastic-Beanstalk-my-web-app-app-170706_001032-OYjRZ:a4db9491-91ba-4614-b5e4-3f8d9e994a19"
+                        }
+                    ]
+                },
+                {
+                    "phaseType": "COMPLETED",
+                    "startTime": 1499299835.069
+                }
+            ],
+            "source": {
+                "type": "S3",
+                "location": "elasticbeanstalk-us-west-2-123123123123/my-web-app/app-170706_001032.zip"
+            },
+            "artifacts": {
+                "location": "arn:aws:s3:::elasticbeanstalk-us-west-2-123123123123/resources/my-web-app/codebuild/codebuild-app-170706_001032.zip"
+            },
+            "environment": {
+                "type": "LINUX_CONTAINER",
+                "image": "aws/codebuild/java:openjdk-8",
+                "computeType": "BUILD_GENERAL1_SMALL",
+                "environmentVariables": [],
+                "privilegedMode": False
+            },
+            "timeoutInMinutes": 60,
+            "buildComplete": True,
+            "initiator": "some-user"
+        }
+    ],
+    "buildsNotFound": [
+        "bad-batch-id-170706_001032-OYjRZ:a4db9491-91ba-4614-b5e4-3f8d9e994a19"
+    ]
+}
+
+
+LIST_CURATED_ENVIRONMENT_IMAGES_RESPONSE = {
+    'platforms':
+        [
+            {
+                'languages': [
+                    {
+                        'images': [
+                            {
+                                'name': 'aws/codebuild/eb-java-7-amazonlinux-64:2.1.3', 'description': 'AWS ElasticBeanstalk - Java 7 Running on Amazon Linux 64bit v2.1.3'
+                            },
+                            {
+                                'name': 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3', 'description': 'AWS ElasticBeanstalk - Java 8 Running on Amazon Linux 64bit v2.1.3'
+                            },
+                            {
+                                'name': 'aws/codebuild/eb-java-7-amazonlinux-64:2.1.6', 'description': 'AWS ElasticBeanstalk - Java 7 Running on Amazon Linux 64bit v2.1.6'
+                            },
+                            {
+                                'name': 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6', 'description': 'AWS ElasticBeanstalk - Java 8 Running on Amazon Linux 64bit v2.1.6'
+                            }
+                        ],
+                        'language': 'Java'
+                    },
+                    {
+                        'images': [
+                            {
+                                'name': 'aws/codebuild/eb-go-1.5-amazonlinux-64:2.1.3', 'description': 'AWS ElasticBeanstalk - Go 1.5 Running on Amazon Linux 64bit v2.1.3'
+                            },
+                            {
+                                'name': 'aws/codebuild/eb-go-1.5-amazonlinux-64:2.1.6', 'description': 'AWS ElasticBeanstalk - Go 1.5 Running on Amazon Linux 64bit v2.1.6'
+                            }
+                        ],
+                        'language': 'Golang'
+                    },
+                    {
+                        'images': [
+                            {
+                                'name': 'aws/codebuild/android-java-6:24.4.1', 'description': 'AWS CodeBuild - Android 24.4.1 with java 6'
+                            },
+                            {
+                                'name': 'aws/codebuild/android-java-7:24.4.1', 'description': 'AWS CodeBuild - Android 24.4.1 with java 7'
+                            },
+                            {
+                                'name': 'aws/codebuild/android-java-8:24.4.1', 'description': 'AWS CodeBuild - Android 24.4.1 with java 8'
+                            }
+                        ],
+                        'language': 'Android'
+                    }
+                ]
+            }
+        ],
+    'ResponseMetadata': {
+        'date': 'Tue, 22 Nov 2016 21:36:19 GMT',
+        'RetryAttempts': 0, 'HTTPStatusCode': 200,
+        'RequestId': 'b47ba2d1-b0fb-11e6-a6a7-6fc6c5a33aee'
+    }
+}
