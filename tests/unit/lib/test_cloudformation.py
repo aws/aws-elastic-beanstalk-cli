@@ -10,26 +10,28 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-import unittest
 import mock
+from pytest_socket import  disable_socket, enable_socket
+import unittest
 
-from ebcli.lib import aws, cloudformation
+from ebcli.lib import cloudformation
+
+from .. import mock_responses
 
 
 class TestCloudFormation(unittest.TestCase):
+    def setUp(self):
+        disable_socket()
 
-    def test_wait_until_stack_exists__stack_does_not_exist(self):
-        describe_stacks_response = {
-            'Stacks': [
-                {
-                    'StackId': 'stack_id',
-                    'StackName': 'stack_name',
-                    'Description': "my cloud formation stack",
-                    'Parameters': []
-                }
-            ]
-        }
-        aws.make_api_call = mock.MagicMock(return_value=describe_stacks_response)
+    def tearDown(self):
+        enable_socket()
+
+    @mock.patch('ebcli.lib.cloudformation.aws.make_api_call')
+    def test_wait_until_stack_exists__stack_does_not_exist(
+            self,
+            make_api_call_mock
+    ):
+        make_api_call_mock.return_value = mock_responses.DESCRIBE_STACKS_RESPONSE
 
         with self.assertRaises(cloudformation.CFNTemplateNotFound) as exception:
             cloudformation.wait_until_stack_exists('non_existent_stack', timeout=0)
@@ -39,17 +41,23 @@ class TestCloudFormation(unittest.TestCase):
             "Could not find CFN stack, 'non_existent_stack'."
         )
 
-    def test_wait_until_stack_exists__stack_exists(self):
-        describe_stacks_response = {
-            'Stacks': [
-                {
-                    'StackId': 'stack_id',
-                    'StackName': 'stack_name',
-                    'Description': "my cloud formation stack",
-                    'Parameters': []
-                }
-            ]
-        }
-        aws.make_api_call = mock.MagicMock(return_value=describe_stacks_response)
+    @mock.patch('ebcli.lib.cloudformation.aws.make_api_call')
+    def test_wait_until_stack_exists__stack_exists(
+            self,
+            make_api_call_mock
+    ):
+        make_api_call_mock.return_value = mock_responses.DESCRIBE_STACKS_RESPONSE
 
         cloudformation.wait_until_stack_exists('stack_name')
+
+    @mock.patch('ebcli.lib.cloudformation.aws.make_api_call')
+    def test_get_template(
+            self,
+            make_api_call_mock
+    ):
+        make_api_call_mock.return_value = mock_responses.GET_TEMPLATE_RESPONSE
+
+        self.assertEqual(
+            mock_responses.GET_TEMPLATE_RESPONSE,
+            cloudformation.get_template('mystackname')
+        )
