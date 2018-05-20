@@ -1994,6 +1994,50 @@ GET_REPOSITORY_RESPONSE = {
     }
 }
 
+LIST_REPOSITORIES_RESPONSE = {
+    "repositories": [
+        {
+            "repositoryName": "my-repository",
+            "repositoryId": "f7579e13-b83e-4027-aaef-650c0EXAMPLE",
+        },
+        {
+            "repositoryName": "my-other-repository",
+            "repositoryId": "cfc29ac4-b0cb-44dc-9990-f6f51EXAMPLE"
+        }
+    ]
+}
+
+
+LIST_BRANCHES_RESPONSE = {
+    'branches': [
+        'development',
+        'master'
+    ]
+}
+
+GET_BRANCH_RESPONSE = {
+    "BranchInfo": {
+        "commitID": "068f60ebd5b7d9a0ad071b8a20ccdf8178491295",
+        "branchName": "master"
+    }
+}
+
+
+GET_REPOSITORY_RESPONSE = {
+    "repositoryMetadata": {
+        "creationDate": 1429203623.625,
+        "defaultBranch": "master",
+        "repositoryName": "MyDemoRepo",
+        "cloneUrlSsh": "ssh://git-codecommit.us-east-1.amazonaws.com/v1/repos/v1/repos/MyDemoRepo",
+        "lastModifiedDate": 1430783812.0869999,
+        "repositoryDescription": "My demonstration repository",
+        "cloneUrlHttp": "https://codecommit.us-east-1.amazonaws.com/v1/repos/MyDemoRepo",
+        "repositoryId": "f7579e13-b83e-4027-aaef-650c0EXAMPLE",
+        "Arn": "arn:aws:codecommit:us-east-1:80398EXAMPLE:MyDemoRepo,",
+        "accountId": "111111111111"
+    }
+}
+
 
 DESCRIBE_ACCOUNT_ATTRIBUTES_RESPONSE__WITHOUT_DEFAULT_VPC = {
     "AccountAttributes": [

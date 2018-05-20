@@ -30,6 +30,24 @@ from ..objects.exceptions import ServiceError
 LOG = minimal_logger(__name__)
 
 
+SUPPORTED_REGIONS = [
+    "ca-central-1",    # Canada (Central)
+    "us-east-1",       # US East (N. Virginia)
+    "us-east-2",       # US East (Ohio)
+    "us-west-1",       # US West (N. California)
+    "us-west-2",       # US West (Oregon)
+    "eu-west-1",       # EU (Ireland)
+    "eu-west-2",       # EU (London)
+    "eu-central-1",    # EU (Frankfurt)
+    "ap-northeast-1",  # Asia Pacific (Tokyo)
+    "ap-northeast-2",  # Asia Pacific (Seoul)
+    "ap-southeast-1",  # Asia Pacific (Singapore)
+    "ap-southeast-2",  # Asia Pacific (Sydney)
+    "ap-south-1",      # Asia Pacific (Mumbai)
+    "sa-east-1"        # South America (Sao Paulo)
+]
+
+
 def _make_api_call(operation_name, **operation_options):
     try:
         result = aws.make_api_call('codecommit', operation_name, **operation_options)
@@ -101,23 +119,7 @@ def list_branches(repo_name, next_token=None):
 
 
 def region_supported(region):
-    supported_regions = [
-        "ca-central-1",    # Canada (Central)
-        "us-east-1",       # US East (N. Virginia)
-        "us-east-2",       # US East (Ohio)
-        "us-west-1",       # US West (N. California)
-        "us-west-2",       # US West (Oregon)
-        "eu-west-1",       # EU (Ireland)
-        "eu-west-2",       # EU (London)
-        "eu-central-1",    # EU (Frankfurt)
-        "ap-northeast-1",  # Asia Pacific (Tokyo)
-        "ap-northeast-2",  # Asia Pacific (Seoul)
-        "ap-southeast-1",  # Asia Pacific (Singapore)
-        "ap-southeast-2",  # Asia Pacific (Sydney)
-        "ap-south-1",      # Asia Pacific (Mumbai)
-        "sa-east-1"        # South America (Sao Paulo)
-    ]
-    if region is not None and region in supported_regions:
+    if region is not None and region in SUPPORTED_REGIONS:
         return True
 
     return False
