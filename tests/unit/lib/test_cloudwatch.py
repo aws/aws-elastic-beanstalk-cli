@@ -10,49 +10,25 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-import unittest
 import mock
+from pytest_socket import disable_socket, enable_socket
+import unittest
 
 from ebcli.lib import cloudwatch
 
+from .. import mock_responses
+
 
 class TestCloudWatch(unittest.TestCase):
-    @mock.patch('ebcli.lib.cloudwatch.describe_log_streams')
-    def test_get_all_stream_names(self, describe_log_streams_mock):
-        describe_log_streams_mock.return_value = {
-            'logStreams': [
-                {
-                    'lastIngestionTime': 1522104918499,
-                    'firstEventTimestamp': 1522104834000,
-                    'uploadSequenceToken': '49581045816077287818028642094834630247536380630456711345',
-                    'arn': 'arn:aws:logs:us-east-1:123123123123:log-group:/aws/elasticbeanstalk/env-name/environment-health.log:log-stream:archive-health-2018-03-26',
-                    'creationTime': 1522104860498,
-                    'storedBytes': 0,
-                    'logStreamName': 'archive-health-2018-03-26',
-                    'lastEventTimestamp': 1522104864000
-                },
-                {
-                    'lastIngestionTime': 1522185082040,
-                    'firstEventTimestamp': 1522114566000,
-                    'uploadSequenceToken': '495782746617210878802139966459935713174460150927741245',
-                    'arn': 'arn:aws:logs:us-east-1:123123123123:log-group:/aws/elasticbeanstalk/env-name/environment-health.log:log-stream:archive-health-2018-03-27',
-                    'creationTime': 1522114571763,
-                    'storedBytes': 0,
-                    'logStreamName': 'archive-health-2018-03-27',
-                    'lastEventTimestamp': 1522185066000
-                },
-                {
-                    'lastIngestionTime': 1522273517592,
-                    'firstEventTimestamp': 1522214971000,
-                    'uploadSequenceToken': '4957832466795318902173372629991138882266085318618712345',
-                    'arn': 'arn:aws:logs:us-east-1:123123123123:log-group:/aws/elasticbeanstalk/env-name/environment-health.log:log-stream:archive-health-2018-03-28',
-                    'creationTime': 1522215000673,
-                    'storedBytes': 0,
-                    'logStreamName': 'archive-health-2018-03-28',
-                    'lastEventTimestamp': 1522273511000
-                },
-            ]
-        }
+    def setUp(self):
+        disable_socket()
+
+    def tearDown(self):
+        enable_socket()
+
+    @mock.patch('ebcli.lib.cloudwatch.aws.make_api_call')
+    def test_get_all_stream_names(self, make_api_call_mock):
+        make_api_call_mock.return_value = mock_responses.DESCRIBE_LOG_STREAMS_RESPONSE
 
         self.assertEqual(
             [
@@ -61,4 +37,27 @@ class TestCloudWatch(unittest.TestCase):
                 'archive-health-2018-03-28',
             ],
             cloudwatch.get_all_stream_names('some-log-group')
+        )
+
+    @mock.patch('ebcli.lib.cloudwatch.aws.make_api_call')
+    def test_get_log_events(self, make_api_call_mock):
+        cloudwatch.get_log_events(
+            'environment-health.log',
+            'archive-health-2018-03-26',
+            next_token='1234123412341234',
+            start_time='4567456745674567',
+            end_time='7890789078907890',
+            limit=10
+        )
+
+        make_api_call_mock.assert_called_once_with(
+            'logs',
+            'get_log_events',
+            endTime='7890789078907890',
+            limit=10,
+            logGroupName='environment-health.log',
+            logStreamName='archive-health-2018-03-26',
+            nextToken='1234123412341234',
+            startFromHead=False,
+            startTime='4567456745674567'
         )

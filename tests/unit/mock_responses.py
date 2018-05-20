@@ -2819,3 +2819,39 @@ LIST_TAGS_FOR_RESOURCE_RESPONSE = {
         }
     ]
 }
+
+
+DESCRIBE_LOG_STREAMS_RESPONSE = {
+    'logStreams': [
+        {
+            'lastIngestionTime': 1522104918499,
+            'firstEventTimestamp': 1522104834000,
+            'uploadSequenceToken': '49581045816077287818028642094834630247536380630456711345',
+            'arn': 'arn:aws:logs:us-east-1:123123123123:log-group:/aws/elasticbeanstalk/env-name/environment-health.log:log-stream:archive-health-2018-03-26',
+            'creationTime': 1522104860498,
+            'storedBytes': 0,
+            'logStreamName': 'archive-health-2018-03-26',
+            'lastEventTimestamp': 1522104864000
+        },
+        {
+            'lastIngestionTime': 1522185082040,
+            'firstEventTimestamp': 1522114566000,
+            'uploadSequenceToken': '495782746617210878802139966459935713174460150927741245',
+            'arn': 'arn:aws:logs:us-east-1:123123123123:log-group:/aws/elasticbeanstalk/env-name/environment-health.log:log-stream:archive-health-2018-03-27',
+            'creationTime': 1522114571763,
+            'storedBytes': 0,
+            'logStreamName': 'archive-health-2018-03-27',
+            'lastEventTimestamp': 1522185066000
+        },
+        {
+            'lastIngestionTime': 1522273517592,
+            'firstEventTimestamp': 1522214971000,
+            'uploadSequenceToken': '4957832466795318902173372629991138882266085318618712345',
+            'arn': 'arn:aws:logs:us-east-1:123123123123:log-group:/aws/elasticbeanstalk/env-name/environment-health.log:log-stream:archive-health-2018-03-28',
+            'creationTime': 1522215000673,
+            'storedBytes': 0,
+            'logStreamName': 'archive-health-2018-03-28',
+            'lastEventTimestamp': 1522273511000
+        },
+    ]
+}
