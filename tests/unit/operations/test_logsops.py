@@ -1695,3 +1695,46 @@ class TestSetupLogs(unittest.TestCase):
             """Can't find instance "i-123123a455ef666" in the environment's instance logs on CloudWatch Logs.""",
             str(context_manager.exception)
         )
+
+    @mock.patch('ebcli.operations.logsops.cloudwatch.log_group_exists')
+    @mock.patch('ebcli.operations.logsops._wait_to_poll_cloudwatch')
+    def test_wait_for_log_group_to_come_into_existence(
+            self,
+            _wait_to_poll_cloudwatch_mock,
+            log_group_exists_mock
+    ):
+        log_group_exists_mock.side_effect = [
+            False,
+            False,
+            True
+        ]
+
+        logsops.wait_for_log_group_to_come_into_existence('my-log-group')
+
+        _wait_to_poll_cloudwatch_mock.assert_has_calls(
+            [
+                mock.call(10),
+                mock.call(10)
+            ]
+        )
+
+    @mock.patch('ebcli.operations.logsops.wait_for_log_group_to_come_into_existence')
+    @mock.patch('ebcli.operations.logsops.stream_single_stream')
+    def test_stream_platform_logs(
+            self,
+            stream_single_stream_mock,
+            wait_for_log_group_to_come_into_existence
+    ):
+        logsops.stream_platform_logs('my-platform', '1.0.0')
+
+        stream_single_stream_mock.assert_called_once_with(
+            '/aws/elasticbeanstalk/platform/my-platform',
+            '1.0.0',
+            4,
+            None,
+            None
+        )
+        wait_for_log_group_to_come_into_existence.assert_called_once_with(
+            '/aws/elasticbeanstalk/platform/my-platform',
+            4
+        )

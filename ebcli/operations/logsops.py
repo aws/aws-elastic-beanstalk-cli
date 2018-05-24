@@ -621,7 +621,7 @@ def stream_platform_logs(platform_name, version, streamer=None, sleep_time=4, lo
     :return: None
     """
     log_group_name = _get_platform_builder_group_name(platform_name)
-
+    wait_for_log_group_to_come_into_existence(log_group_name, sleep_time)
     streamer = streamer or io.get_event_streamer()
 
     if log_name:
@@ -661,6 +661,11 @@ def stream_single_stream(
     get_cloudwatch_messages(log_group_name, stream_name, formatter, None, start_time, messages_handler)
 
     _wait_to_poll_cloudwatch(sleep_time)
+
+
+def wait_for_log_group_to_come_into_existence(log_group_name, sleep_time=10):
+    while not cloudwatch.log_group_exists(log_group_name):
+        _wait_to_poll_cloudwatch(sleep_time)
 
 
 def _attempt_update_symlink_to_latest_logs_retrieved(logs_location):

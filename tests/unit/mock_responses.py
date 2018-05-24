@@ -3070,3 +3070,17 @@ LIST_CURATED_ENVIRONMENT_IMAGES_RESPONSE = {
         'RequestId': 'b47ba2d1-b0fb-11e6-a6a7-6fc6c5a33aee'
     }
 }
+
+
+DESCRIBE_LOG_GROUPS_RESPONSE = {
+    "logGroups": [
+        {
+            "storedBytes": 0,
+            "metricFilterCount": 0,
+            "creationTime": 1433189500783,
+            "logGroupName": "my-logs",
+            "retentionInDays": 5,
+            "arn": "arn:aws:logs:us-west-2:0123456789012:log-group:my-logs:*"
+        }
+    ]
+}

@@ -61,3 +61,23 @@ class TestCloudWatch(unittest.TestCase):
             startFromHead=False,
             startTime='4567456745674567'
         )
+
+    @mock.patch('ebcli.lib.cloudwatch.aws.make_api_call')
+    def test_log_group_exists(
+            self,
+            make_api_call_mock
+    ):
+        make_api_call_mock.return_value = mock_responses.DESCRIBE_LOG_GROUPS_RESPONSE
+
+        self.assertTrue(cloudwatch.log_group_exists('my-log-group-name'))
+
+    @mock.patch('ebcli.lib.cloudwatch.aws.make_api_call')
+    def test_log_group_exists__log_group_does_not_exist(
+            self,
+            make_api_call_mock
+    ):
+        make_api_call_mock.return_value = {
+            'logGroups': []
+        }
+
+        self.assertFalse(cloudwatch.log_group_exists('my-log-group-name'))

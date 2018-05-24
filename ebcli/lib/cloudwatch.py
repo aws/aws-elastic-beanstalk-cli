@@ -79,3 +79,9 @@ def describe_log_streams(
         params['limit'] = limit
 
     return _make_api_call('describe_log_streams', **params)
+
+
+def log_group_exists(log_group_name):
+    response = _make_api_call('describe_log_groups', logGroupNamePrefix=log_group_name)
+
+    return len(response['logGroups']) > 0
