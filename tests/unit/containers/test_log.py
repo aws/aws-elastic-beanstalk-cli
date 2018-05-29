@@ -25,20 +25,20 @@ from ebcli.core import fileoperations
 from ebcli.resources.strings import strings
 
 
-ROOT_LOG_DIR = '.elasticbeanstalk/logs/local/'
-LATEST_SYMLINK = '.elasticbeanstalk/logs/local/latest'
-HOST_LOG = '.elasticbeanstalk/logs/local/1234567'
-CONTAINER_LOG = '/var/log'
+ROOT_LOG_DIR = os.path.join('.elasticbeanstalk', 'logs', 'local')
+LATEST_SYMLINK = os.path.join('.elasticbeanstalk', 'logs', 'local', 'latest')
+HOST_LOG = os.path.join('.elasticbeanstalk', 'logs', 'local', '1234567')
+CONTAINER_LOG = os.path.join('var', 'log')
 LOG_VOLUME_MAP = {HOST_LOG: CONTAINER_LOG}
 DOCKERRUN = {dockerrun.LOGGING_KEY: CONTAINER_LOG}
 MOCK_DATETIME = datetime(2015, 3, 18, 13, 33, 30, 254552)
 EXPECTED_DATETIME_STR = '150318_133330254552'
 EXPECTED_HOST_LOG_PATH = os.path.join(ROOT_LOG_DIR, EXPECTED_DATETIME_STR)
-EXPECTED_LOGDIR_PATH = os.path.join('/')
+EXPECTED_LOGDIR_PATH = '.'
 MOCK_LOCAL_DIRS = ['a', 'b', 'c']
 MOCK_LOCAL_LOGFILES = ['0', '1', '2']
-EXPECTED_LOCAL_LOGPATHS = ['/a/0', '/a/1', '/a/2']
-LAST_MODIFIED_FILE_PATH = '/a'
+EXPECTED_LOCAL_LOGPATHS = [os.path.join('a', '0'), os.path.join('a', '1'), os.path.join('a', '2')]
+LAST_MODIFIED_FILE_PATH = 'a'
 
 
 class TestLog(TestCase):
@@ -137,8 +137,12 @@ class TestLog(TestCase):
     @patch('ebcli.containers.log.os')
     @patch('ebcli.containers.log.io.echo')
     @patch('ebcli.containers.log.fileoperations.directory_empty')
-    def test_print_log_location_some_log_exists(self, directory_empty, echo,
-                                                os):
+    def test_print_log_location_some_log_exists(
+            self,
+            directory_empty,
+            echo,
+            os
+    ):
         timestamp = time.time()
         os.path.isdir.return_value = True
         directory_empty.return_value = False
