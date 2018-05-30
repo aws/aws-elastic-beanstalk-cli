@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-subprocess.call(
+subprocess.check_output(
     'pytest {} --cov-report term-missing --junitxml=junit-ebcli.xml --cov=ebcli --cov-report xml'.format(
         os.path.join('tests', 'unit')
     ),

@@ -11,18 +11,19 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import os
+import sys
 import shutil
 
 import mock
 from pytest_socket import disable_socket, enable_socket
 import unittest
 
-from ebcli.controllers import config
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
 from ebcli.objects.platform import PlatformVersion
 
 
+@unittest.skipIf(sys.platform.startswith('win'), 'eb local is not supported on Windows')
 class TestLocal(unittest.TestCase):
     platform = PlatformVersion(
         'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 7.1 running on 64bit Amazon Linux/2.6.5'
