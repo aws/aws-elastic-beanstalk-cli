@@ -30,34 +30,18 @@ from ..resources.strings import prompts, strings
 
 LOG = logging.getLogger(__name__)
 
-color_on = False
-
-
-def start_color():
-    global color_on
-    if not color_on and term_is_colorable():
-        colorama.init()
-        color_on = True
-    return color_on
-
 
 def term_is_colorable():
-    return sys.stdout.isatty()  # Live terminal
+    return sys.stdout.isatty()
 
 
 def bold(string):
     s = _convert_to_string(string)
-    if start_color():
+    if term_is_colorable():
+        colorama.init()
         return colorama.Style.BRIGHT + s + colorama.Style.NORMAL
     else:
         return s
-
-
-def reset_all_color():
-    if start_color():
-        return colorama.Style.RESET_ALL
-    else:
-        return ''
 
 
 def _remap_color(color):
@@ -70,7 +54,8 @@ def _remap_color(color):
 
 def color(color, string):
     s = _convert_to_string(string)
-    if start_color():
+    if term_is_colorable():
+        colorama.init()
         color = _remap_color(color)
         color_code = getattr(colorama.Fore, color.upper())
         return color_code + s + colorama.Fore.RESET
@@ -80,7 +65,8 @@ def color(color, string):
 
 def on_color(color, string):
     s = _convert_to_string(string)
-    if start_color():
+    if term_is_colorable():
+        colorama.init()
         color = _remap_color(color)
         color_code = getattr(colorama.Back, color.upper())
         return color_code + s + colorama.Back.RESET
@@ -163,10 +149,13 @@ def get_input(output, default=None):
 
     # Trim spaces
     output = next(_convert_to_strings([output]))
-    result = input(output + ': ').strip()
-    if not result:
-        result = default
-    return result
+    result = _get_input(output)
+
+    return result or default
+
+
+def _get_input(output):
+    return input(output + ': ').strip()
 
 
 def echo_with_pager(output):
