@@ -14,8 +14,9 @@
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, prompts, flag_text
 from ..core import io
+from ..lib import elasticbeanstalk
 from ..objects.exceptions import NotFoundError, NoEnvironmentForBranchError
-from ..operations import commonops, terminateops
+from ..operations import terminateops
 
 
 class TerminateController(AbstractBaseController):
