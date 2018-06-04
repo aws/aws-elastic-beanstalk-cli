@@ -2,6 +2,16 @@
 Changelog
 =========
 -------------------
+3.14.0 (2018-06-04)
+-------------------
+- Added `docker-compose` as a dependency
+- Added `python-dateutil` as a dependency
+- Removed direct dependencies on `docker`, `dockerpty`, `docopt`, `requests`, and `websocket-client`
+- Added logic to poll `logs#describe_log_groups` to wait for Custom Platform Builder log-group creation
+- Fixed `eb clone` bug which occurs while setting CNAME of cloned environment
+- Fixed `eb deploy --modules ...` bug which occurs when attempting to print failure message of `elasticbeanstalk#compose_environments`
+
+-------------------
 3.13.0 (2018-05-15)
 -------------------
 - Added ability to enable streaming environment-health logs to CloudWatch
