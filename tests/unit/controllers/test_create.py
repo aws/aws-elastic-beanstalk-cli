@@ -289,18 +289,15 @@ class TestCreate(TestCreateBase):
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
 
         env_name = 'my-awesome-env'
-        load_balancer_choice = '1'
 
         get_input_mock.side_effect = [
-            env_name,
-            load_balancer_choice,
+            env_name
         ]
 
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
             env_name=env_name,
             platform=self.solution,
-            elb_type='classic',
             tier=Tier.from_raw_string('worker'),
         )
 
@@ -312,7 +309,7 @@ class TestCreate(TestCreateBase):
         actual_environment_request = call_args[0]
 
         self.assertEnvironmentRequestsEqual(expected_environment_request, actual_environment_request)
-        self.assertEqual(2, get_input_mock.call_count)
+        self.assertEqual(1, get_input_mock.call_count)
 
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
@@ -637,7 +634,7 @@ EnvironmentName: front+""")
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
 
-        self.app = EB(argv=['create', '--tier', 'worker', '--elb-type', 'network', '--env-group-suffix', 'dev'])
+        self.app = EB(argv=['create', '--tier', 'worker', '--env-group-suffix', 'dev'])
         self.app.setup()
         self.app.run()
 
@@ -645,7 +642,6 @@ EnvironmentName: front+""")
             app_name=self.app_name,
             env_name='front-dev',
             platform=self.solution,
-            elb_type='network',
             group_name='dev',
             tier=Tier.from_raw_string('worker'),
         )
@@ -1363,7 +1359,8 @@ class TestCreateModule(unittest.TestCase):
             create.get_elb_type_from_customer(
                 interactive=True,
                 single=True,
-                region='us-west-2'
+                region='us-west-2',
+                tier=Tier.from_raw_string('webserver')
             )
         )
 
@@ -1372,7 +1369,8 @@ class TestCreateModule(unittest.TestCase):
             create.get_elb_type_from_customer(
                 interactive=False,
                 single=True,
-                region='us-west-2'
+                region='us-west-2',
+                tier=Tier.from_raw_string('webserver')
             )
         )
 
@@ -1387,7 +1385,18 @@ class TestCreateModule(unittest.TestCase):
             create.get_elb_type_from_customer(
                 interactive=True,
                 single=None,
-                region='us-west-2'
+                region='us-west-2',
+                tier=Tier.from_raw_string('webserver')
+            )
+        )
+
+    def test_get_elb_type_from_customer__interactive_mode__not_applicable_for_worker_tier(self):
+        self.assertIsNone(
+            create.get_elb_type_from_customer(
+                interactive=True,
+                single=None,
+                region='us-west-2',
+                tier=Tier.from_raw_string('worker')
             )
         )
 

@@ -166,7 +166,7 @@ class CreateController(AbstractBaseController):
         env_name = provided_env_name or get_environment_name(app_name, group)
         cname = cname or get_environment_cname(env_name, provided_env_name, tier)
         key_name = key_name or commonops.get_default_keyname()
-        elb_type = elb_type or get_elb_type_from_customer(interactive, single, region)
+        elb_type = elb_type or get_elb_type_from_customer(interactive, single, region, tier)
         database = self.form_database_object()
         vpc = self.form_vpc_object()
 
@@ -455,7 +455,7 @@ def get_cname_from_customer(env_name):
     return cname
 
 
-def get_elb_type_from_customer(interactive, single, region):
+def get_elb_type_from_customer(interactive, single, region, tier):
     """
     Prompt customer to specify the ELB type if operating in the interactive mode and
     on a load-balanced environment.
@@ -464,9 +464,10 @@ def get_elb_type_from_customer(interactive, single, region):
     :param interactive: True/False depending on whether operating in the interactive mode or not
     :param single: False/True depending on whether environment is load balanced or not
     :param region: AWS region in which in load balancer will be created
+    :param tier: the tier type of the environment
     :return: selected ELB type which is one among ['application', 'classic', 'network']
     """
-    if not interactive or single:
+    if not interactive or single or (tier and not tier.is_webserver()):
         return
 
     io.echo()

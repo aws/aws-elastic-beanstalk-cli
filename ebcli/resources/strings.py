@@ -202,6 +202,7 @@ strings = {
     'ssh.noip': 'This instance does not have a Public IP address. This is possibly because the instance is terminating.',
     # Error thrown when someone provides a cname with a worker tier
     'worker.cname': 'Worker tiers do not support a CNAME.',
+    'worker.elb_type': 'Worker tiers do not support an ELB type.',
     # Error thrown when available cname is not available
     'cname.unavailable': 'The CNAME prefix {cname} is already in use.',
     'ssh.openingport': 'INFO: Attempting to open port 22.',
