@@ -111,7 +111,7 @@ def create_health_tables(screen, platform):
     if is_windows_platform:
         cpu_table.columns += [
             Column('% user time', 12, 'User', 'right'),
-            Column('% privileged time', 20, 'System', 'right'),
+            Column('% privileged time', 20, 'Privileged', 'right'),
             Column('% idle time', 12, 'Idle', 'right'),
         ]
     else:
