@@ -9,9 +9,9 @@ import ebcli
 requires = [
     'botocore>=1.0.1',
     'cement==2.8.2',
-    'colorama==0.3.7',
+    'colorama>=0.3.9,<0.4.0',  # use the same range that 'docker-compose' uses
     'pathspec==0.5.5',
-    'python-dateutil>=2.1,<3.0.0', # use the same range that 'botocore' uses
+    'python-dateutil>=2.1,<3.0.0',  # use the same range that 'botocore' uses
     'pyyaml>=3.11',
     'setuptools >= 20.0',
     'docker-compose >= 1.21.2, < 1.22.0',
