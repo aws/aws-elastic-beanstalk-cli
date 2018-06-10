@@ -2,6 +2,13 @@
 Changelog
 =========
 -------------------
+3.14.1 (2018-06-11)
+-------------------
+- Added eu-west-3 (Paris) CodeCommit support
+- Prevented selection of ELB type in the interactive mode of `eb create` for worker-tier environments
+- Updated version of `colorama`
+
+-------------------
 3.14.0 (2018-06-04)
 -------------------
 - Added `docker-compose` as a dependency
