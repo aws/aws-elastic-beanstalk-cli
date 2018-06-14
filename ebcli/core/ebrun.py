@@ -39,13 +39,13 @@ def run_app(app):
     try:
         app.setup()
         app.run()
-
+        app.close()
     # Handle General Exceptions
     except CaughtSignal:
         io.echo()
         app.close(code=5)
     except NoEnvironmentForBranchError:
-        pass
+        app.close(code=5)
     except InvalidStateError:
         io.log_error(strings['exit.invalidstate'])
         app.close(code=3)
@@ -92,8 +92,8 @@ def run_app(app):
             io.log_info(message)
         else:
             io.log_error(message)
-    finally:
-        app.close()
+
+        app.close(code=4)
 
 
 def squash_cement_logging():

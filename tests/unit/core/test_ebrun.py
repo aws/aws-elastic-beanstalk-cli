@@ -38,6 +38,7 @@ class TestEbRun(unittest.TestCase):
         ebrun.run_app(dummy_ebcli_app)
 
         echo_mock.assert_called_with(io.bold(io.color('red', 'ERROR: {}'.format('MyDummyEBCLIException - My Exception Message'))))
+        dummy_ebcli_app.close.assert_called_once_with(code=4)
 
     @patch('ebcli.core.ebrun.io.echo')
     @patch('traceback.format_exc')
@@ -57,6 +58,7 @@ class TestEbRun(unittest.TestCase):
                 traceback_mock,
                 'INFO: My Exception Message'
             ]
+            dummy_ebcli_app.close.assert_called_once_with(code=4)
 
     @patch('ebcli.core.ebrun.io.echo')
     @patch('traceback.format_exc')
@@ -74,6 +76,7 @@ class TestEbRun(unittest.TestCase):
                 traceback_mock,
                 'INFO: My Exception Message'
             ]
+            dummy_ebcli_app.close.assert_called_once_with(code=4)
 
     @patch('ebcli.core.ebrun.io.echo')
     def test_rescue_generic_exception(
@@ -88,6 +91,7 @@ class TestEbRun(unittest.TestCase):
         echo_mock.assert_called_with(
             io.bold(io.color('red', 'ERROR: {}'.format('MyDummyGenericException - My Exception Message')))
         )
+        dummy_ebcli_app.close.assert_called_once_with(code=4)
 
     @patch('ebcli.core.ebrun.io.echo')
     @patch('traceback.format_exc')
@@ -105,6 +109,7 @@ class TestEbRun(unittest.TestCase):
                 traceback_mock,
                 'INFO: My Exception Message'
             ]
+            dummy_ebcli_app.close.assert_called_once_with(code=4)
 
     @patch('ebcli.core.ebrun.io.echo')
     @patch('traceback.format_exc')
@@ -123,6 +128,7 @@ class TestEbRun(unittest.TestCase):
                 traceback_mock,
                 'INFO: My Exception Message'
             ]
+            dummy_ebcli_app.close.assert_called_once_with(code=4)
 
     @patch('ebcli.core.ebrun.io.echo')
     def test_rescue_generic_exception__no_args(
@@ -142,6 +148,7 @@ class TestEbRun(unittest.TestCase):
                 )
             )
         )
+        dummy_ebcli_app.close.assert_called_once_with(code=4)
 
     @patch('ebcli.core.ebrun.io.echo')
     def test_rescue_AttributeError(
@@ -166,3 +173,4 @@ class TestEbRun(unittest.TestCase):
                 )
             )
         )
+        dummy_ebcli_app.close.assert_called_once_with(code=4)
