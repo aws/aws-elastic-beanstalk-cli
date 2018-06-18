@@ -11,59 +11,46 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
-import os
-import sys
-
-import ebcli.core.ebrun as ebrun
-
-# Add vendor directory to module search path
-# Need this for docker-compose
-from ebcli.core import fileoperations
-from ebcli.core.ebglobals import Constants
-
-import logging
-from argparse import SUPPRESS, ArgumentTypeError
-
+from argparse import SUPPRESS
 from cement.core import foundation, handler, hook
 from cement.utils.misc import init_defaults
-from cement.core.exc import CaughtSignal
-from botocore.compat import six
-iteritems = six.iteritems
 
-from . import ebglobals, base, io, hooks
-from ..controllers.initialize import InitController
-from ..controllers.abort import AbortController
-from ..controllers.create import CreateController
-from ..controllers.events import EventsController
-from ..controllers.logs import LogsController
-from ..controllers.deploy import DeployController
-from ..controllers.status import StatusController
-from ..controllers.terminate import TerminateController
-from ..controllers.config import ConfigController
-from ..controllers.open import OpenController
-from ..controllers.console import ConsoleController
-from ..controllers.use import UseController
-from ..controllers.scale import ScaleController
-from ..controllers.ssh import SSHController
-from ..controllers.setenv import SetEnvController
-from ..controllers.list import ListController
-from ..controllers.printenv import PrintEnvController
-from ..controllers.clone import CloneController
-from ..controllers.swap import SwapController
-from ..controllers.platform import PlatformController
-from ..controllers.health import HealthController
-from ..controllers.upgrade import UpgradeController
-from ..core.completer import CompleterController
-from ..controllers.local import LocalController
-from ..objects.exceptions import *
-from ..resources.strings import strings, flag_text
-from ..labs.controller import LabsController
-from ..controllers.codesource import CodeSourceController
-from ..controllers.restore import RestoreController
-from ..controllers.appversion import AppVersionController
-from ..controllers.lifecycle import LifecycleController
-from ..controllers.tags import TagsController
+from . import ebglobals, base, hooks
+from ebcli.controllers.abort import AbortController
+from ebcli.controllers.appversion import AppVersionController
+from ebcli.controllers.clone import CloneController
+from ebcli.controllers.codesource import CodeSourceController
+from ebcli.controllers.config import ConfigController
+from ebcli.controllers.console import ConsoleController
+from ebcli.controllers.create import CreateController
+from ebcli.controllers.deploy import DeployController
+from ebcli.controllers.events import EventsController
+from ebcli.controllers.health import HealthController
+from ebcli.controllers.initialize import InitController
+from ebcli.controllers.lifecycle import LifecycleController
+from ebcli.controllers.list import ListController
+from ebcli.controllers.local import LocalController
+from ebcli.controllers.logs import LogsController
+from ebcli.controllers.open import OpenController
+from ebcli.controllers.platform import PlatformController
+from ebcli.controllers.printenv import PrintEnvController
+from ebcli.controllers.restore import RestoreController
+from ebcli.controllers.scale import ScaleController
+from ebcli.controllers.setenv import SetEnvController
+from ebcli.controllers.ssh import SSHController
+from ebcli.controllers.status import StatusController
+from ebcli.controllers.swap import SwapController
+from ebcli.controllers.tags import TagsController
+from ebcli.controllers.terminate import TerminateController
+from ebcli.controllers.upgrade import UpgradeController
+from ebcli.controllers.use import UseController
+from ebcli.core import fileoperations
+from ebcli.core.completer import CompleterController
+from ebcli.core.ebglobals import Constants
+from ebcli.labs.controller import LabsController
+from ebcli.objects.exceptions import *
+from ebcli.resources.strings import flag_text
+import ebcli.core.ebrun as ebrun
 
 
 class EB(foundation.CementApp):
@@ -82,35 +69,35 @@ class EB(foundation.CementApp):
         hook.register('post_argument_parsing', hooks.pre_run_hook)
 
         environment_controllers = [
-            InitController,
-            PlatformController,
-            LogsController,
-            SSHController,
-            ConfigController,
-            CreateController,
-            EventsController,
-            PrintEnvController,
-            StatusController,
-            TerminateController,
-            DeployController,
-            SwapController,
-            OpenController,
-            ConsoleController,
-            ScaleController,
-            UseController,
-            SetEnvController,
-            ListController,
-            CloneController,
-            UpgradeController,
             AbortController,
-            LabsController,
-            LocalController,
-            HealthController,
-            CodeSourceController,
-            RestoreController,
             AppVersionController,
+            CloneController,
+            CodeSourceController,
+            ConfigController,
+            ConsoleController,
+            CreateController,
+            DeployController,
+            EventsController,
+            HealthController,
+            InitController,
+            LabsController,
             LifecycleController,
+            ListController,
+            LocalController,
+            LogsController,
+            OpenController,
+            PlatformController,
+            PrintEnvController,
+            RestoreController,
+            SSHController,
+            ScaleController,
+            SetEnvController,
+            StatusController,
+            SwapController,
             TagsController,
+            TerminateController,
+            UpgradeController,
+            UseController
         ]
 
         # eb <foo> commands supported in platform workspaces
@@ -118,13 +105,13 @@ class EB(foundation.CementApp):
             ConfigController,
             ConsoleController,
             EventsController,
+            HealthController,
             ListController,
             LogsController,
-            HealthController,
+            PlatformController,
             SSHController,
             StatusController,
             TerminateController,
-            PlatformController,
             UpgradeController,
         ]
 

@@ -11,36 +11,30 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
-import os
-import sys
-
-# Add vendor directory to module search path
-# Need this for docker-compose
-
-import ebcli.core.ebrun as ebrun
-
-from ebcli.controllers.platform import EBPCreateController, \
-    EBPEventsController, EBPListController, \
-    EBPStatusController, EBPUseController, EBPDeleteController, \
-    EBPInitController, EBPLogsController
-from ebcli.core import fileoperations
-from ebcli.core.ebglobals import Constants
-
-import logging
 from argparse import SUPPRESS
 
 from cement.core import foundation, handler, hook
 from cement.utils.misc import init_defaults
-from cement.core.exc import CaughtSignal
-import botocore
-from botocore.compat import six
-iteritems = six.iteritems
 
-from . import ebglobals, base, io, hooks
-from ..core.completer import CompleterController
-from ..objects.exceptions import *
-from ..resources.strings import flag_text, strings
+import ebcli.core.ebrun as ebrun
+
+from ebcli.controllers.platform import (
+    EBPCreateController,
+    EBPDeleteController,
+    EBPEventsController,
+    EBPInitController,
+    EBPListController,
+    EBPLogsController,
+    EBPStatusController,
+    EBPUseController,
+)
+from ebcli.core import fileoperations
+from ebcli.core.ebglobals import Constants
+
+from . import ebglobals, base, hooks
+from ebcli.core.completer import CompleterController
+from ebcli.objects.exceptions import *
+from ebcli.resources.strings import flag_text, strings
 
 
 class EBP(foundation.CementApp):
@@ -60,13 +54,13 @@ class EBP(foundation.CementApp):
         hook.register('post_argument_parsing', hooks.pre_run_hook)
 
         platform_controllers = [
-            EBPEventsController,
-            EBPListController,
-            EBPStatusController,
-            EBPUseController,
             EBPCreateController,
             EBPDeleteController,
+            EBPEventsController,
+            EBPListController,
             EBPLogsController,
+            EBPStatusController,
+            EBPUseController,
         ]
 
         workspace_type = fileoperations.get_workspace_type(None)
