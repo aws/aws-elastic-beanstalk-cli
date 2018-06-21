@@ -419,8 +419,8 @@ def delete_app_versions():
 
 
 def zip_append_archive(target_file, source_file):
-    zip_source = zipfile.ZipFile(source_file, 'r')
-    zip_target = zipfile.ZipFile(target_file, 'a')
+    zip_source = zipfile.ZipFile(source_file, 'r', allowZip64=True)
+    zip_target = zipfile.ZipFile(target_file, 'a', allowZip64=True)
     with warnings.catch_warnings():
         # Ignore UserWarning raised by zip module for zipping modules.
         warnings.simplefilter('ignore', category=UserWarning)
@@ -436,7 +436,7 @@ def zip_up_folder(directory, location, ignore_list=None):
     try:
         os.chdir(directory)
         io.log_info('Zipping up folder at location: ' + str(os.getcwd()))
-        zipf = zipfile.ZipFile(location, 'w', zipfile.ZIP_DEFLATED)
+        zipf = zipfile.ZipFile(location, 'w', zipfile.ZIP_DEFLATED, allowZip64=True)
         _zipdir('./', zipf, ignore_list=ignore_list)
         zipf.close()
         LOG.debug('File size: ' + str(os.path.getsize(location)))
@@ -517,7 +517,7 @@ def unzip_folder(file_location, directory):
     if not os.path.isdir(directory):
         os.makedirs(directory)
 
-    zip = zipfile.ZipFile(file_location, 'r')
+    zip = zipfile.ZipFile(file_location, 'r', allowZip64=True)
     for cur_file in zip.namelist():
         if not cur_file.endswith('/'):
             root, name = os.path.split(cur_file)

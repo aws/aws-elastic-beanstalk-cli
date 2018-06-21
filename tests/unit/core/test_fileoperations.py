@@ -462,7 +462,7 @@ class TestFileOperations(unittest.TestCase):
 
         fileoperations.zip_append_archive('target_file.zip', 'source_file.zip')
 
-        target_file_zip = zipfile.ZipFile('target_file.zip', 'r')
+        target_file_zip = zipfile.ZipFile('target_file.zip', 'r', allowZip64=True)
         self.assertEquals(['source_file.txt', 'target_file.txt'], sorted(target_file_zip.namelist()))
 
     @patch('ebcli.core.fileoperations.get_editor')
