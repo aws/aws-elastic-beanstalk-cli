@@ -93,17 +93,32 @@ class SolutionStack(object):
             if 'Preconfigured' in self.name and 'Preconfigured' not in other.name:
                 return False
 
-            if self.language_name in ['Tomcat', 'Glassfish']:
+            if self.language_name in ['Tomcat', 'GlassFish']:
                 if self.secondary_language_version != other.secondary_language_version:
                     return self.secondary_language_version > other.secondary_language_version
 
             if self.platform_version != other.platform_version:
                 return self.platform_version > other.platform_version
 
+            if 'Amazon' in self.name and 'Debian' in other.name:
+                return True
+            elif 'Debain' in self.name and 'Amazon' in other.name:
+                return False
+
             if self.operating_system_version != other.operating_system_version:
                 return self.operating_system_version > other.operating_system_version
 
-            return self.os_bitness > other.os_bitness
+            if self.os_bitness != other.os_bitness:
+                return self.os_bitness > other.os_bitness
+
+            if self.language_name == 'Ruby':
+                return 'Passenger' in self.name
+
+            if self.language_name == 'IIS':
+                # prefer to Windows Server 2016 to Windows Server Core 2016
+                return 'Windows Server Core' not in self.name
+
+            return True
         except Exception:
             return True
 
