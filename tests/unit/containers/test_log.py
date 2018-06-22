@@ -12,16 +12,17 @@
 # language governing permissions and limitations under the License.
 
 from datetime import datetime
-from mock import patch, MagicMock
-import unittest
-from unittest import TestCase
 import os
 import shutil
 import sys
 import time
 
+from mock import patch
+import pytest
+import unittest
+from unittest import TestCase
+
 from ebcli.containers import log, dockerrun
-from ebcli.core import fileoperations
 from ebcli.resources.strings import strings
 
 
@@ -134,6 +135,7 @@ class TestLog(TestCase):
 
         echo.assert_called_once_with(strings['local.logs.nologs'])
 
+    @pytest.mark.skipif(sys.platform.startswith('win'), reason='Unsupported on Windows')
     @patch('ebcli.containers.log.os')
     @patch('ebcli.containers.log.io.echo')
     @patch('ebcli.containers.log.fileoperations.directory_empty')
