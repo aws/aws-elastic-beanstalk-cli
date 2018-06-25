@@ -163,7 +163,7 @@ def move_cursor(line_num, column_num):
 
 class WindowsTerminal(object):
     def __init__(self):
-        io.start_color()
+        colorama.init()
         self.win32 = colorama.win32
         self.normal = colorama.Style.RESET_ALL
         self.bold = colorama.Style.BRIGHT
