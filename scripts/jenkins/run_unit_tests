@@ -1,9 +1,11 @@
 import os
 import subprocess
+import sys
 
 subprocess.check_call(
-    'pytest {} --cov-report term-missing --junitxml=junit-ebcli.xml --cov=ebcli --cov-report xml'.format(
-        os.path.join('tests', 'unit')
+    'pytest {unit_test_dir} --cov-report term-missing --junitxml=junit-ebcli.xml --cov={platform_path_prefix}ebcli --cov-report xml .'.format(
+        unit_test_dir=os.path.join('tests', 'unit'),
+        platform_path_prefix='.\\' if sys.platform.startswith('win') else './'
     ),
     shell=True
 )
