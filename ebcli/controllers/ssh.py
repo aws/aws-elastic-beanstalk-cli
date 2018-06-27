@@ -14,7 +14,7 @@ from ebcli.core.ebglobals import Constants
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, prompts, flag_text
 from ..core import fileoperations, io
-from ..lib import utils
+from ..lib import elasticbeanstalk
 from ..objects.exceptions import NoKeypairError, InvalidOptionsError
 from ..operations import commonops, sshops
 
@@ -63,4 +63,4 @@ class SSHController(AbstractBaseController):
             ## controller, so we only complete if its the second
             if len(commands) == 2 and commands[-1].startswith('-'):
                 app_name = fileoperations.get_application_name()
-                io.echo(elasticbeanstalk.get_environment_names(app_name))
+                io.echo(*elasticbeanstalk.get_environment_names(app_name))

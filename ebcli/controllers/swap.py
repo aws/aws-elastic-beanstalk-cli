@@ -15,7 +15,7 @@ from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text, prompts
 from ..core import io
 from ..objects.exceptions import NotSupportedError
-from ..lib import utils
+from ..lib import elasticbeanstalk, utils
 from ..operations import commonops, swapops
 
 

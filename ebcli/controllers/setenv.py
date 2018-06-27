@@ -14,6 +14,7 @@
 from ..core.abstractcontroller import AbstractBaseController
 from ..resources.strings import strings, flag_text
 from ..core import fileoperations, io
+from ..lib import elasticbeanstalk
 from ..operations import envvarops, commonops
 
 

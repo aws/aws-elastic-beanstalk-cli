@@ -19,7 +19,7 @@ from cement.core import controller
 
 from ebcli import __version__
 from ebcli.core.ebglobals import Constants
-from ebcli.lib import utils
+from ebcli.lib import elasticbeanstalk, utils
 from ebcli.core import io, fileoperations
 from ebcli.objects.exceptions import NoEnvironmentForBranchError, PlatformWorkspaceNotSupportedError, \
     ApplicationWorkspaceNotSupportedError, EBCLIException

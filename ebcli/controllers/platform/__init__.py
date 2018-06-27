@@ -10,12 +10,11 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-import io
-
 from ebcli.core import fileoperations
 from ebcli.core.ebglobals import Constants
 
 from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.core import io
 
 from ebcli.controllers.platform.list import PlatformListController, PlatformWorkspaceListController, EBPListController
 from ebcli.controllers.platform.use import PlatformSelectController, PlatformWorkspaceUseController, EBPUseController
@@ -28,7 +27,7 @@ from ebcli.controllers.platform.logs import PlatformLogsController, EBPLogsContr
 from ebcli.controllers.platform.initialize import PlatformInitController, EBPInitController
 
 from ebcli.resources.strings import strings
-from ebcli.operations import commonops, platformops, initializeops, solution_stack_ops
+
 
 class PlatformController(AbstractBaseController):
     class Meta:
