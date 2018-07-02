@@ -13,7 +13,6 @@ requires = [
     'pathspec==0.5.5',
     'python-dateutil>=2.1,<3.0.0',  # use the same range that 'botocore' uses
     'setuptools >= 20.0',
-    'docker-compose >= 1.21.2, < 1.22.0',
     'semantic_version == 2.5.0',
     'six == 1.11.0',
     'tabulate == 0.7.5',
@@ -28,6 +27,7 @@ testing_requires = [
 ]
 
 if not sys.platform.startswith('win'):
+    requires.append('docker-compose >= 1.21.2, < 1.22.0')
     requires.append('blessed>=1.9.5')
 
 try:
