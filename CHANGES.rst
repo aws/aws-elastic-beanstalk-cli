@@ -2,6 +2,17 @@
 Changelog
 =========
 -------------------
+3.14.2 (2018-07-03)
+-------------------
+- Amended solution stack precedence logic to prefer Amazon GlassFish to equivalent Debian GlassFish platforms
+- Fixed exceptions not inheriting from `EBCLIException` to force `eb` to exit with return code 4
+- Fixed ability to create application versions from directories greater than 4GB in size
+- Fixed `eb health` on Windows
+- Fixed `eb swap` failure which occurs when executing without arguments
+- Removed support for usage of the EBCLI through `py2exe`
+- Restricted `pyyaml` version to the range `>=3.10,<=3.12` to be compatible with `docker-compose` and `aws`
+
+-------------------
 3.14.1 (2018-06-11)
 -------------------
 - Added eu-west-3 (Paris) CodeCommit support
