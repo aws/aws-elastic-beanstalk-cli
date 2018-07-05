@@ -130,7 +130,9 @@ def create_environment_variables_list(environment_variables, as_option_settings=
 
 
 def print_environment_vars(environment_variables):
-    io.echo(' Environment Variables:')
+    if environment_variables:
+        io.echo(' Environment Variables:')
+
     for environment_variable, value in iteritems(environment_variables):
         environment_variable, value = utils.mask_vars(environment_variable, value)
         io.echo('    ', environment_variable, '=', value)
