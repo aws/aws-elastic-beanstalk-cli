@@ -83,7 +83,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                     env_name = event.environment_name
 
                     if stream_events:
-                        streamer.stream_event(get_event_string(event), safe_to_quit=safe_to_quit)
+                        streamer.stream_event(get_event_string(event, long_format=True), safe_to_quit=safe_to_quit)
 
                     _raise_if_error_event(event.message)
                     if _is_success_event(event.message):
@@ -115,7 +115,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
 
             for event in reversed(events):
                 if stream_events:
-                    streamer.stream_event(get_event_string(event), safe_to_quit=safe_to_quit)
+                    streamer.stream_event(get_event_string(event, long_format=True), safe_to_quit=safe_to_quit)
                     # We dont need to update last_time if we are not printing.
                     # This can solve timing issues
                     last_time = event.event_date

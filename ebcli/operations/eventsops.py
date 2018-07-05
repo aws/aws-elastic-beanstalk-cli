@@ -43,7 +43,7 @@ def follow_events(app_name, env_name, platform_arn=None):
             )
 
             for event in reversed(events):
-                message = commonops.get_event_string(event)
+                message = commonops.get_event_string(event, long_format=True)
                 streamer.stream_event(message)
                 last_time = event.event_date
 
