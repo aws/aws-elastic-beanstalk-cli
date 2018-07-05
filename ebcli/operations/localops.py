@@ -10,10 +10,8 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
 from botocore.compat import six
 cPickle = six.moves.cPickle
-import os
 
 from ..containers.envvarcollector import EnvvarCollector
 from ..containers.pathconfig import PathConfig
@@ -119,10 +117,6 @@ def _print_service_details(service_info):
     io.echo('Container running:', service_info.is_running)
     io.echo('Exposed host port(s):', exposed_host_ports_str)
     io.echo('Full local URL(s):', urls)
-
-
-def _get_cids(c):
-    return [c.get_name()] if isinstance(c, Container) else c.iter_services()
 
 
 def get_and_print_environment_vars(pathconfig=PathConfig):
