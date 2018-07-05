@@ -156,6 +156,14 @@ class CreateController(AbstractBaseController):
                 strings['cname.unavailable'].replace('{cname}', cname)
             )
 
+        if tier and Tier.looks_like_worker_tier(tier):
+            if self.app.pargs.vpc_elbpublic or self.app.pargs.vpc_elbsubnets or self.app.pargs.vpc_publicip:
+                raise InvalidOptionsError(strings['create.worker_and_incompatible_vpc_arguments'])
+
+        if (not tier or Tier.looks_like_webserver_tier(tier)) and single:
+            if self.app.pargs.vpc_elbpublic or self.app.pargs.vpc_elbsubnets:
+                raise InvalidOptionsError(strings['create.single_and_elbpublic_or_elb_subnet'])
+
         app_name = self.get_app_name()
         tags = createops.get_and_validate_tags(tags)
         envvars = get_and_validate_envars(envvars)
@@ -168,7 +176,7 @@ class CreateController(AbstractBaseController):
         key_name = key_name or commonops.get_default_keyname()
         elb_type = elb_type or get_elb_type_from_customer(interactive, single, region, tier)
         database = self.form_database_object()
-        vpc = self.form_vpc_object()
+        vpc = self.form_vpc_object(tier, single)
 
         # avoid prematurely timing out in the CLI when an environment is launched with a RDS DB
         if not timeout and database:
@@ -249,7 +257,7 @@ class CreateController(AbstractBaseController):
         else:
             return {}
 
-    def form_vpc_object(self):
+    def form_vpc_object(self, tier, single):
         vpc = self.app.pargs.vpc
         vpc_id = self.app.pargs.vpc_id
         ec2subnets = self.app.pargs.vpc_ec2subnets
@@ -264,11 +272,16 @@ class CreateController(AbstractBaseController):
             # Interactively ask for vpc settings
             io.echo()
             vpc_id = vpc_id or io.get_input(prompts['vpc.id'])
-            publicip = publicip or io.get_boolean_response(text=prompts['vpc.publicip'])
+
+            if not tier or tier.is_webserver():
+                publicip = publicip or io.get_boolean_response(text=prompts['vpc.publicip'])
             ec2subnets = ec2subnets or io.get_input(prompts['vpc.ec2subnets'])
-            elbsubnets = elbsubnets or io.get_input(prompts['vpc.elbsubnets'])
+
+            if (not tier or tier.is_webserver()) and not single:
+                elbsubnets = elbsubnets or io.get_input(prompts['vpc.elbsubnets'])
+                elbpublic = elbpublic or io.get_boolean_response(text=prompts['vpc.elbpublic'])
+
             securitygroups = securitygroups or io.get_input(prompts['vpc.securitygroups'])
-            elbpublic = elbpublic or io.get_boolean_response(text=prompts['vpc.elbpublic'])
             if database:
                 dbsubnets = dbsubnets or io.get_input(prompts['vpc.dbsubnets'])
 
@@ -276,9 +289,18 @@ class CreateController(AbstractBaseController):
             vpc_object = dict()
             vpc_object['id'] = vpc_id
             vpc_object['ec2subnets'] = ec2subnets
-            vpc_object['elbsubnets'] = elbsubnets
-            vpc_object['elbscheme'] = 'public' if elbpublic else 'internal'
-            vpc_object['publicip'] = 'true' if publicip else 'false'
+
+            if (not tier or tier.is_webserver()) and not single:
+                vpc_object['elbsubnets'] = elbsubnets
+                vpc_object['elbscheme'] = 'public' if elbpublic else 'internal'
+            else:
+                vpc_object['elbsubnets'] = None
+                vpc_object['elbscheme'] = None
+
+            if not tier or tier.is_webserver():
+                vpc_object['publicip'] = 'true' if publicip else 'false'
+            else:
+                vpc_object['publicip'] = None
             vpc_object['securitygroups'] = securitygroups
             vpc_object['dbsubnets'] = dbsubnets
             return vpc_object

@@ -81,3 +81,7 @@ class Tier(object):
     @classmethod
     def looks_like_worker_tier(cls, customer_input):
         return cls.from_raw_string(customer_input) == cls.from_raw_string('worker')
+
+    @classmethod
+    def looks_like_webserver_tier(cls, customer_input):
+        return cls.from_raw_string(customer_input) == cls.from_raw_string('webserver')

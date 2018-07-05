@@ -165,6 +165,90 @@ class TestCreate(TestCreateBase):
             str(context_manager.exception)
         )
 
+    def test_create__worker_tier_with_elbsubnets_argument(self):
+        self.app = EB(argv=['create', '--tier', 'worker', '--vpc.elbsubnets', 'my-subnet'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'You can\'t use the "--tier worker" argument with the "--vpc.publicip", "--vpc.elbsubnets", or "--vpc.elbpublic" arguments.',
+            str(context_manager.exception)
+        )
+
+    def test_create__worker_tier_with_elbpublic_argument(self):
+        self.app = EB(argv=['create', '--tier', 'worker', '--vpc.elbpublic'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'You can\'t use the "--tier worker" argument with the "--vpc.publicip", "--vpc.elbsubnets", or "--vpc.elbpublic" arguments.',
+            str(context_manager.exception)
+        )
+
+    def test_create__single_instance_webserver_tier_with_elbsubnets_argument(self):
+        self.app = EB(argv=['create', '--tier', 'webserver', '--single', '--vpc.elbsubnets', 'my-subnet'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'You can\'t use the "--single" argument with the "--vpc.elbsubnets" or "--vpc.elbpublic" arguments.',
+            str(context_manager.exception)
+        )
+
+    def test_create__single_instance_webserver_tier_with_elbpublic_argument(self):
+        self.app = EB(argv=['create', '--tier', 'webserver', '--single', '--vpc.elbpublic'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'You can\'t use the "--single" argument with the "--vpc.elbsubnets" or "--vpc.elbpublic" arguments.',
+            str(context_manager.exception)
+        )
+
+    def test_create__single_instance_webserver_tier_with_elbsubnets_argument__tier_is_not_specified(self):
+        self.app = EB(argv=['create', '--single', '--vpc.elbsubnets', 'my-subnet'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'You can\'t use the "--single" argument with the "--vpc.elbsubnets" or "--vpc.elbpublic" arguments.',
+            str(context_manager.exception)
+        )
+
+    def test_create__single_instance_webserver_tier_with_elbpublic_argument__tier_is_not_specified(self):
+        self.app = EB(argv=['create', '--single', '--vpc.elbpublic'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'You can\'t use the "--single" argument with the "--vpc.elbsubnets" or "--vpc.elbpublic" arguments.',
+            str(context_manager.exception)
+        )
+
+    def test_create__worker_tier_with_publicip_argument(self):
+        self.app = EB(argv=['create', '--tier', 'worker', '--vpc.publicip'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'You can\'t use the "--tier worker" argument with the "--vpc.publicip", "--vpc.elbsubnets", or "--vpc.elbpublic" arguments.',
+            str(context_manager.exception)
+        )
+
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
@@ -1082,6 +1166,139 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         self.assertEnvironmentRequestsEqual(expected_environment_request, actual_environment_request)
         self.assertEqual(7, get_input_mock.call_count)
         self.assertEqual(2, get_boolean_response_mock.call_count)
+
+    @mock.patch('ebcli.core.io.get_input')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
+    @mock.patch('ebcli.operations.createops.make_new_env')
+    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    def test_create_interactively_with_custom_vpc__vpc_argument_triggers_interactive_vpc_options__tier_type_worker(
+            self,
+            get_default_keyname_mock,
+            is_cname_available_mock,
+            find_solution_stack_from_string_mock,
+            get_solution_stack_from_customer_mock,
+            make_new_env_mock,
+            get_unique_environment_name_mock,
+            get_input_mock
+    ):
+        get_solution_stack_from_customer_mock.return_value = self.solution
+        find_solution_stack_from_string_mock.return_value = self.solution
+        is_cname_available_mock.return_value = True
+        get_default_keyname_mock.return_value = None
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
+
+        env_name = 'my-awesome-env'
+        vpc_id = 'my-vpc-id'
+        ec2subnets = 'subnet-1,subnet-2,subnet-3'
+        securitygroups = 'security-group-1,security-group-2'
+
+        get_input_mock.side_effect = [
+            env_name,
+            vpc_id,
+            ec2subnets,
+            securitygroups
+        ]
+
+        expected_environment_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            env_name=env_name,
+            platform=self.solution,
+            tier=Tier.from_raw_string('worker'),
+            vpc={
+                'id': 'my-vpc-id',
+                'ec2subnets': 'subnet-1,subnet-2,subnet-3',
+                'elbsubnets': None,
+                'elbscheme': None,
+                'publicip': None,
+                'securitygroups': 'security-group-1,security-group-2',
+                'dbsubnets': None
+            }
+        )
+
+        self.app = EB(argv=['create', '--vpc', '--tier', 'worker'])
+        self.app.setup()
+        self.app.run()
+
+        call_args, kwargs = make_new_env_mock.call_args
+        actual_environment_request = call_args[0]
+
+        self.assertEnvironmentRequestsEqual(expected_environment_request, actual_environment_request)
+        self.assertEqual(4, get_input_mock.call_count)
+
+    @mock.patch('ebcli.core.io.get_input')
+    @mock.patch('ebcli.controllers.create.get_unique_environment_name')
+    @mock.patch('ebcli.core.io.get_boolean_response')
+    @mock.patch('ebcli.operations.createops.make_new_env')
+    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    def test_create_interactively_with_custom_vpc__vpc_argument_triggers_interactive_vpc_options__single_instance_webserver(
+            self,
+            get_default_keyname_mock,
+            is_cname_available_mock,
+            find_solution_stack_from_string_mock,
+            get_solution_stack_from_customer_mock,
+            make_new_env_mock,
+            get_boolean_response_mock,
+            get_unique_environment_name_mock,
+            get_input_mock
+    ):
+        get_solution_stack_from_customer_mock.return_value = self.solution
+        find_solution_stack_from_string_mock.return_value = self.solution
+        is_cname_available_mock.return_value = True
+        get_default_keyname_mock.return_value = None
+        get_unique_environment_name_mock.return_value = self.app_name + '-dev'
+
+        env_name = 'my-awesome-env'
+        cname_prefix = env_name
+        load_balancer_choice = '1'
+        vpc_id = 'my-vpc-id'
+        ec2subnets = 'subnet-1,subnet-2,subnet-3'
+        is_publicip = 'y'
+        securitygroups = 'security-group-1,security-group-2'
+
+        get_input_mock.side_effect = [
+            env_name,
+            cname_prefix,
+            vpc_id,
+            ec2subnets,
+            securitygroups
+        ]
+        get_boolean_response_mock.side_effect = [
+            is_publicip,
+        ]
+
+        expected_environment_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            env_name=env_name,
+            cname=cname_prefix,
+            platform=self.solution,
+            single_instance=True,
+            vpc={
+                'id': 'my-vpc-id',
+                'ec2subnets': 'subnet-1,subnet-2,subnet-3',
+                'elbsubnets': None,
+                'elbscheme': None,
+                'publicip': 'true',
+                'securitygroups': 'security-group-1,security-group-2',
+                'dbsubnets': None
+            }
+        )
+
+        self.app = EB(argv=['create', '--vpc', '--single'])
+        self.app.setup()
+        self.app.run()
+
+        call_args, kwargs = make_new_env_mock.call_args
+        actual_environment_request = call_args[0]
+
+        self.assertEnvironmentRequestsEqual(expected_environment_request, actual_environment_request)
+        self.assertEqual(5, get_input_mock.call_count)
+        self.assertEqual(1, get_boolean_response_mock.call_count)
 
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')

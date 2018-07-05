@@ -144,6 +144,8 @@ strings = {
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" options together.',
     'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
     'create.single_and_elb_type': 'You cannot use the "--single" and "--elb-type" options together.',
+    'create.single_and_elbpublic_or_elb_subnet': 'You can\'t use the "--single" argument with the "--vpc.elbsubnets" or "--vpc.elbpublic" arguments.',
+    'create.worker_and_incompatible_vpc_arguments': 'You can\'t use the "--tier worker" argument with the "--vpc.publicip", "--vpc.elbsubnets", or "--vpc.elbpublic" arguments.',
     'create.appdoesntexist': 'The specified app {app_name} does not exist. Skipping.',
     'create.missinggroupsuffix': 'The environment name specified in env.yaml ends with a \'+\', but no group suffix was provided. Please pass the --env-group-suffix argument.',
     'create.missing_plus_sign_in_group_name': 'The environment name specified in env.yaml does not end with a \'+\', but a group suffix was provided. Please add a trailing \'+\' to the environment name',
@@ -202,7 +204,6 @@ strings = {
     'ssh.noip': 'This instance does not have a Public IP address. This is possibly because the instance is terminating.',
     # Error thrown when someone provides a cname with a worker tier
     'worker.cname': 'Worker tiers do not support a CNAME.',
-    'worker.elb_type': 'Worker tiers do not support an ELB type.',
     # Error thrown when available cname is not available
     'cname.unavailable': 'The CNAME prefix {cname} is already in use.',
     'ssh.openingport': 'INFO: Attempting to open port 22.',
