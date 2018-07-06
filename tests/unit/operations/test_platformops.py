@@ -16,7 +16,6 @@ import os
 import shutil
 
 import mock
-from mock import Mock
 from pytest_socket import disable_socket, enable_socket
 import unittest
 
@@ -286,7 +285,7 @@ class TestPlatformOperations(unittest.TestCase):
             elasticbeanstalk_mock,
             io_mock
     ):
-        platformops._version_to_arn = Mock(return_value=self.platform_arn)
+        platformops._version_to_arn = mock.Mock(return_value=self.platform_arn)
         elasticbeanstalk_mock.get_environments.return_value = []
         elasticbeanstalk_mock.delete_platform.return_value = { 'ResponseMetadata': { 'RequestId': 'request-id' } }
         
@@ -304,7 +303,7 @@ class TestPlatformOperations(unittest.TestCase):
             elasticbeanstalk_mock,
             io_mock
     ):
-        platformops._version_to_arn = Mock(return_value=self.platform_arn)
+        platformops._version_to_arn = mock.Mock(return_value=self.platform_arn)
         environments = [ 
                 Environment(name='env1', platform=PlatformVersion(self.platform_arn)),
                 Environment(name='no match', platform=PlatformVersion('arn:aws:elasticbeanstalk:us-east-1:647823116501:platform/foo/2.0.0')),
