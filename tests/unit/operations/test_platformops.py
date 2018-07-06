@@ -282,27 +282,27 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.commonops')
     def test_delete_no_environments(
             self,
-            mock_commonops,
-            mock_elasticbeanstalk,
-            mock_io
+            commonops_mock,
+            elasticbeanstalk_mock,
+            io_mock
     ):
         platformops._version_to_arn = Mock(return_value=self.platform_arn)
-        mock_elasticbeanstalk.get_environments.return_value = []
-        mock_elasticbeanstalk.delete_platform.return_value = { 'ResponseMetadata': { 'RequestId': 'request-id' } }
+        elasticbeanstalk_mock.get_environments.return_value = []
+        elasticbeanstalk_mock.delete_platform.return_value = { 'ResponseMetadata': { 'RequestId': 'request-id' } }
         
         platformops.delete_platform_version(self.platform_arn, False)
 
-        mock_elasticbeanstalk.get_environments.assert_called_with()
-        mock_elasticbeanstalk.delete_platform.assert_called_with(self.platform_arn)
+        elasticbeanstalk_mock.get_environments.assert_called_with()
+        elasticbeanstalk_mock.delete_platform.assert_called_with(self.platform_arn)
 
     @mock.patch('ebcli.operations.platformops.io')
     @mock.patch('ebcli.operations.platformops.elasticbeanstalk')
     @mock.patch('ebcli.operations.platformops.commonops')
     def test_delete_with_environments(
             self,
-            mock_commonops,
-            mock_elasticbeanstalk,
-            mock_io
+            commonops_mock,
+            elasticbeanstalk_mock,
+            io_mock
     ):
         platformops._version_to_arn = Mock(return_value=self.platform_arn)
         environments = [ 
@@ -311,16 +311,16 @@ class TestPlatformOperations(unittest.TestCase):
                 Environment(name='env2', platform=PlatformVersion(self.platform_arn))
         ]
 
-        mock_elasticbeanstalk.get_environments.return_value = environments
-        mock_elasticbeanstalk.delete_platform.return_value = { 'ResponseMetadata': { 'RequestId': 'request-id' } }
+        elasticbeanstalk_mock.get_environments.return_value = environments
+        elasticbeanstalk_mock.delete_platform.return_value = { 'ResponseMetadata': { 'RequestId': 'request-id' } }
         
         self.assertRaises(ValidationError, platformops.delete_platform_version, self.platform_arn, False)
 
-        mock_elasticbeanstalk.get_environments.assert_called_with()
+        elasticbeanstalk_mock.get_environments.assert_called_with()
 
     @mock.patch('ebcli.lib.elasticbeanstalk.list_platform_versions')
-    def test_list_custom_platform_versions__filtered_by_owner_name(self, mock_list_platform_versions):
-        mock_list_platform_versions.return_value = self.custom_platforms_list
+    def test_list_custom_platform_versions__filtered_by_owner_name(self, list_platform_versions_mock):
+        list_platform_versions_mock.return_value = self.custom_platforms_list
 
         custom_platforms = platformops.list_custom_platform_versions(
             show_status=True
@@ -341,8 +341,8 @@ class TestPlatformOperations(unittest.TestCase):
         )
 
     @mock.patch('ebcli.lib.elasticbeanstalk.list_platform_versions')
-    def test_list_custom_platform_versions__filtered_by_owner_name__display_list_without_status(self, mock_list_platform_versions):
-        mock_list_platform_versions.return_value = self.custom_platforms_list
+    def test_list_custom_platform_versions__filtered_by_owner_name__display_list_without_status(self, list_platform_versions_mock):
+        list_platform_versions_mock.return_value = self.custom_platforms_list
 
         custom_platforms = platformops.list_custom_platform_versions()
 
@@ -361,8 +361,8 @@ class TestPlatformOperations(unittest.TestCase):
         )
 
     @mock.patch('ebcli.lib.elasticbeanstalk.list_platform_versions')
-    def test_list_eb_managed_platform_versions(self, mock_list_platform_versions):
-        mock_list_platform_versions.return_value = self.eb_managed_platforms_list
+    def test_list_eb_managed_platform_versions(self, list_platform_versions_mock):
+        list_platform_versions_mock.return_value = self.eb_managed_platforms_list
 
         eb_managed_platforms = platformops.list_eb_managed_platform_versions()
 
@@ -378,9 +378,9 @@ class TestPlatformOperations(unittest.TestCase):
 
     @mock.patch('ebcli.lib.elasticbeanstalk.list_platform_versions')
     @mock.patch('ebcli.lib.elasticbeanstalk.describe_platform_version')
-    def test_describe_custom_platform_version(self, mock_describe_platform_version, mock_list_platform_versions):
-        mock_list_platform_versions.return_value = self.custom_platforms_list
-        mock_describe_platform_version.return_value = self.describe_platform_result
+    def test_describe_custom_platform_version(self, describe_platform_version_mock, list_platform_versions_mock):
+        list_platform_versions_mock.return_value = self.custom_platforms_list
+        describe_platform_version_mock.return_value = self.describe_platform_result
 
         custom_platform = platformops.describe_custom_platform_version(
             platform_name='custom-platform-1',
@@ -394,8 +394,8 @@ class TestPlatformOperations(unittest.TestCase):
         )
 
     @mock.patch('ebcli.lib.elasticbeanstalk.describe_platform_version')
-    def test_describe_custom_platform_version__platform_arn_passed_in(self, mock_describe_platform_version):
-        mock_describe_platform_version.return_value = self.describe_platform_result
+    def test_describe_custom_platform_version__platform_arn_passed_in(self, describe_platform_version_mock):
+        describe_platform_version_mock.return_value = self.describe_platform_result
 
         custom_platform = platformops.describe_custom_platform_version(
             platform_arn='arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0'
