@@ -279,13 +279,15 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.io')
     @mock.patch('ebcli.operations.platformops.elasticbeanstalk')
     @mock.patch('ebcli.operations.platformops.commonops')
+    @mock.patch('ebcli.operations.platformops._version_to_arn')
     def test_delete_no_environments(
             self,
+            _version_to_arn_mock,
             commonops_mock,
             elasticbeanstalk_mock,
             io_mock
     ):
-        platformops._version_to_arn = mock.Mock(return_value=self.platform_arn)
+        _version_to_arn_mock.return_value = self.platform_arn
         elasticbeanstalk_mock.get_environments.return_value = []
         elasticbeanstalk_mock.delete_platform.return_value = { 'ResponseMetadata': { 'RequestId': 'request-id' } }
         
@@ -297,13 +299,15 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.io')
     @mock.patch('ebcli.operations.platformops.elasticbeanstalk')
     @mock.patch('ebcli.operations.platformops.commonops')
+    @mock.patch('ebcli.operations.platformops._version_to_arn')
     def test_delete_with_environments(
             self,
+            _version_to_arn_mock,
             commonops_mock,
             elasticbeanstalk_mock,
             io_mock
     ):
-        platformops._version_to_arn = mock.Mock(return_value=self.platform_arn)
+        _version_to_arn_mock.return_value = self.platform_arn
         environments = [ 
                 Environment(name='env1', platform=PlatformVersion(self.platform_arn)),
                 Environment(name='no match', platform=PlatformVersion('arn:aws:elasticbeanstalk:us-east-1:647823116501:platform/foo/2.0.0')),
