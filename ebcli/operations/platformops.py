@@ -743,6 +743,7 @@ def _name_to_arn(platform_name):
 def _version_to_arn(platform_version):
     platform_name = fileoperations.get_platform_name()
 
+    arn = None
     if VALID_PLATFORM_VERSION_FORMAT.match(platform_version):
         arn = _get_platform_arn(platform_name, platform_version, owner=Constants.OWNED_BY_SELF)
     elif PlatformVersion.is_valid_arn(platform_version):
