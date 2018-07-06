@@ -280,7 +280,12 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.io')
     @mock.patch('ebcli.operations.platformops.elasticbeanstalk')
     @mock.patch('ebcli.operations.platformops.commonops')
-    def test_delete_no_environments(self, mock_io, mock_elasticbeanstalk, mock_commonops):
+    def test_delete_no_environments(
+            self,
+            mock_commonops,
+            mock_elasticbeanstalk,
+            mock_io
+    ):
         platformops._version_to_arn = Mock(return_value=self.platform_arn)
         mock_elasticbeanstalk.get_environments.return_value = []
         mock_elasticbeanstalk.delete_platform.return_value = { 'ResponseMetadata': { 'RequestId': 'request-id' } }
@@ -293,7 +298,12 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.io')
     @mock.patch('ebcli.operations.platformops.elasticbeanstalk')
     @mock.patch('ebcli.operations.platformops.commonops')
-    def test_delete_with_environments(self, mock_io, mock_elasticbeanstalk, mock_commonops):
+    def test_delete_with_environments(
+            self,
+            mock_commonops,
+            mock_elasticbeanstalk,
+            mock_io
+    ):
         platformops._version_to_arn = Mock(return_value=self.platform_arn)
         environments = [ 
                 Environment(name='env1', platform=PlatformVersion(self.platform_arn)),
@@ -307,8 +317,6 @@ class TestPlatformOperations(unittest.TestCase):
         self.assertRaises(ValidationError, platformops.delete_platform_version, self.platform_arn, False)
 
         mock_elasticbeanstalk.get_environments.assert_called_with()
-
-
 
     @mock.patch('ebcli.lib.elasticbeanstalk.list_platform_versions')
     def test_list_custom_platform_versions__filtered_by_owner_name(self, mock_list_platform_versions):
@@ -351,7 +359,6 @@ class TestPlatformOperations(unittest.TestCase):
             ],
             custom_platforms
         )
-
 
     @mock.patch('ebcli.lib.elasticbeanstalk.list_platform_versions')
     def test_list_eb_managed_platform_versions(self, mock_list_platform_versions):
