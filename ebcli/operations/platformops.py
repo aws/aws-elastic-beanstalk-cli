@@ -202,9 +202,6 @@ def create_platform_version(
 
     copyfile('platform.yaml', original_platform_yaml)
 
-    s3_bucket = None
-    s3_key = None
-
     try:
         # Add option settings to platform.yaml
         _enable_healthd()
@@ -368,14 +365,6 @@ def get_latest_custom_platform(platform):
         if matching_platforms:
             return PlatformVersion(matching_platforms[0])
 
-        matching_platforms = list_custom_platform_versions(
-            platform_name=platform,
-            status='Ready'
-        )
-
-        if matching_platforms:
-            return PlatformVersion(matching_platforms[0])
-
 
 def get_latest_eb_managed_platform(platform_arn):
     account_id, platform_name, platform_version = PlatformVersion.arn_to_platform(platform_arn)
@@ -401,7 +390,7 @@ def get_platforms(platform_name=None, ignored_states=None, owner=None, platform_
         if ignored_states and platform['PlatformStatus'] in ignored_states:
             continue
 
-        _, platform_name, platform_version = PlatformVersion.arn_to_platform(platform)
+        _, platform_name, platform_version = PlatformVersion.arn_to_platform(platform['PlatformArn'])
         platforms[platform_name] = platform_version
 
     return platforms
