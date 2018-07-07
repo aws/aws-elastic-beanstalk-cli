@@ -12,7 +12,7 @@ requires = [
     'colorama>=0.3.9,<0.4.0',  # use the same range that 'docker-compose' uses
     'pathspec==0.5.5',
     'python-dateutil>=2.1,<3.0.0',  # use the same range that 'botocore' uses
-    'PyYAML>=3.10,<=3.12',  # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
+    'PyYAML>=3.10,<=3.13',  # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
     'setuptools >= 20.0',
     'semantic_version == 2.5.0',
     'six == 1.11.0',
