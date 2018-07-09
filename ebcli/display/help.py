@@ -47,6 +47,7 @@ class HelpTable(Table):
         self.add_help_text(['-', '+'], 'Sort order descending/ascending')
         self.add_help_text(['P'], 'Save health snapshot data file')
         self.add_help_text(['Z'], 'Toggle color/mono mode')
+        self.add_help_text(['Q'], 'Quit this program')
 
     def set_up_views(self):
         self.add_section('')

@@ -441,7 +441,7 @@ class Screen(object):
 
     def show_help_line(self):
         if self.help_table.visible:
-            text = '(press Q or ESC to exit)'
+            text = '(press Q or ESC to return)'
         elif self.refresh:
             text = u' (Commands: {h}elp,{q}uit, {down} {up} {left} {right})'\
                 .format(h=io.bold('H'), q=io.bold('Q'),
