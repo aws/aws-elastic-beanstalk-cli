@@ -33,8 +33,8 @@ total = 1
 # Special characters
 UP_ARROW = 'Up' if sys.platform.startswith('win') else u'\u25b2'
 DOWN_ARROW = 'Dn' if sys.platform.startswith('win') else u'\u25bc'
-LEFT_ARROW = 'Left' if sys.platform.startswith('win') else u'\u25c0'
-RIGHT_ARROW = 'Right' if sys.platform.startswith('win') else u'\u25b6'
+LEFT_ARROW = 'Left' if sys.platform.startswith('win') else u'\u25c4'
+RIGHT_ARROW = 'Right' if sys.platform.startswith('win') else u'\u25ba'
 
 
 def get_terminal():
