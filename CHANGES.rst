@@ -2,6 +2,15 @@
 Changelog
 =========
 -------------------
+3.14.3 (2018-07-18)
+-------------------
+- Changed `eb health` table on non-Windows platforms to use Unicode U+25C4 and U+25BA for left and right arrow characters rather than U+25C0 and U+25B6 respectively
+- Updated `pyyaml` version requirement to the range >=3.10,<=3.13 to enable usage of the EBCLI with Python 3.7.0
+- Added logic to show UTC timestamps for all event text output of all `eb` commands which wait on the Beanstalk service
+- Fixed bug in the interactive flow of `eb create` requiring customers to specify `vpc.publicip`, `vpc.elbsubnets` and `vpc.elbpublic` arguments for `--tier` type "worker"
+- Fixed bug in the interactive flow of `eb create` requiring customers to specify `vpc.elbsubnets` and `vpc.elbpublic` arguments for single-instance environments
+
+-------------------
 3.14.2 (2018-07-03)
 -------------------
 - Amended solution stack precedence logic to prefer Amazon GlassFish to equivalent Debian GlassFish platforms
