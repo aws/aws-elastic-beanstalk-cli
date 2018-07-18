@@ -390,7 +390,7 @@ def get_platforms(platform_name=None, ignored_states=None, owner=None, platform_
         if ignored_states and platform['PlatformStatus'] in ignored_states:
             continue
 
-        _, platform_name, platform_version = PlatformVersion.arn_to_platform(platform['PlatformArn'])
+        _, platform_name, platform_version = PlatformVersion.arn_to_platform(platform)
         platforms[platform_name] = platform_version
 
     return platforms

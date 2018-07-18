@@ -1713,23 +1713,6 @@ class TestPlatformOperations(unittest.TestCase):
         get_unique_name_mock.assert_called_once_with('file_name', [])
         prompt_for_unique_name_mock.assert_called_once_with('unique-name', [])
 
-    @mock.patch('ebcli.operations.platformops.list_platform_versions')
-    def test_get_platforms(
-            self,
-            list_platform_versions_mock
-    ):
-        list_platform_versions_mock.return_value = self.custom_platforms_list
-
-        self.assertEqual(
-            {
-                'custom-platform-2': '1.0.0',
-                'custom-platform-4': '1.0.0',
-                'custom-platform-3': '1.0.0',
-                'custom-platform-1': '1.0.0'
-            },
-            platformops.get_platforms()
-        )
-
     @mock.patch('ebcli.operations.platformops.list_eb_managed_platform_versions')
     def test_get_latest_eb_managed_platform(
             self,
