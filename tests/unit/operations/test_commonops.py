@@ -12,17 +12,21 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+from datetime import datetime, timedelta
 import os
 import sys
 import shutil
 
+from dateutil import tz
 import mock
+from pytest_socket import disable_socket, enable_socket
 from mock import Mock
 import unittest
 
 from ebcli.core import fileoperations
 from ebcli.objects.exceptions import NotAuthorizedError
 from ebcli.objects.event import Event
+from ebcli.objects.environment import Environment
 from ebcli.operations import commonops
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.buildconfiguration import BuildConfiguration
@@ -53,6 +57,8 @@ class TestCommonOperations(unittest.TestCase):
                                       service_role=service_role, timeout=timeout)
 
     def setUp(self):
+        disable_socket()
+
         # set up test directory
         if not os.path.exists('testDir'):
             os.makedirs('testDir')
@@ -76,6 +82,8 @@ class TestCommonOperations(unittest.TestCase):
                                           'my-solution-stack')
 
     def tearDown(self):
+        enable_socket()
+
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
             if sys.platform.startswith('win'):
@@ -452,3 +460,1817 @@ class TestCommonOperations(unittest.TestCase):
             ['i-23452345346456566', 'i-21312312312312312'],
             commonops.get_instance_ids('some-environment-name')
         )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_new_events')
+    @mock.patch('ebcli.operations.commonops._sleep')
+    def test_wait_for_success_events(
+            self,
+            _sleep_mock,
+            get_new_events_mock
+    ):
+        create_environment_events = Event.json_to_event_objects(
+            mock_responses.CREATE_ENVIRONMENT_DESCRIBE_EVENTS['Events']
+        )
+        get_new_events_mock.side_effect = [[event] for event in reversed(create_environment_events)]
+        commonops.wait_for_success_events(create_environment_events[0].request_id)
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_new_events')
+    @mock.patch('ebcli.operations.commonops._sleep')
+    @mock.patch('ebcli.operations.commonops._timeout_reached')
+    def test_wait_for_success_events__timeout_reached(
+            self,
+            _timeout_reached_mock,
+            _sleep_mock,
+            get_new_events_mock
+    ):
+        create_environment_events = Event.json_to_event_objects(
+            mock_responses.CREATE_ENVIRONMENT_DESCRIBE_EVENTS['Events']
+        )
+        get_new_events_mock.side_effect = [[event] for event in reversed(create_environment_events)]
+
+        with self.assertRaises(commonops.TimeoutError) as context_manager:
+            commonops.wait_for_success_events(create_environment_events[0].request_id)
+
+        self.assertEqual(
+            "The EB CLI timed out after 10 minute(s). The operation might still be running. To keep viewing events, run 'eb events -f'. To set timeout duration, use '--timeout MINUTES'.",
+            str(context_manager.exception)
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_new_events')
+    @mock.patch('ebcli.operations.commonops._sleep')
+    @mock.patch('ebcli.operations.commonops._timeout_reached')
+    def test_wait_for_success_events__timeout_reached__timeout_error_message_specified(
+            self,
+            _timeout_reached_mock,
+            _sleep_mock,
+            get_new_events_mock
+    ):
+        create_environment_events = Event.json_to_event_objects(
+            mock_responses.CREATE_ENVIRONMENT_DESCRIBE_EVENTS['Events']
+        )
+        get_new_events_mock.side_effect = [[event] for event in reversed(create_environment_events)]
+
+        with self.assertRaises(commonops.TimeoutError) as context_manager:
+            commonops.wait_for_success_events(
+                create_environment_events[0].request_id,
+                timeout_error_message='timeout message'
+            )
+
+        self.assertEqual(
+            "timeout message",
+            str(context_manager.exception)
+        )
+
+    def test_wait_for_success_events__timeout_is_0__returns_immediately(self):
+        commonops.wait_for_success_events('some-request-id', timeout_in_minutes=0)
+
+    def test_wait_for_compose_events__timeout_is_0__returns_immediately(self):
+        commonops.wait_for_compose_events(
+            'some-request-id',
+            'my-application',
+            ['environment-1', 'environment-2'],
+            timeout_in_minutes=0
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_new_events')
+    @mock.patch('ebcli.operations.commonops._sleep')
+    @mock.patch('ebcli.operations.commonops._timeout_reached')
+    @mock.patch('ebcli.operations.commonops.io.log_error')
+    def test_wait_for_compose_events(
+            self,
+            log_error_mock,
+            _timeout_reached_mock,
+            _sleep_mock,
+            get_new_events_mock
+    ):
+        compose_environments_events = Event.json_to_event_objects(
+            mock_responses.COMPOSE_ENVIRONMENTS_DESCRIBE_EVENTS['Events']
+        )
+        _timeout_reached_mock.return_value = False
+        get_new_events_mock.side_effect = [[event] for event in reversed(compose_environments_events)]
+
+        commonops.wait_for_compose_events(
+            'c51aac54-01c7-4ae7-8692-d31dd990eba3',
+            'my-application',
+            ['environment-1', 'environment-2']
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_new_events')
+    @mock.patch('ebcli.operations.commonops._sleep')
+    @mock.patch('ebcli.operations.commonops._timeout_reached')
+    @mock.patch('ebcli.operations.commonops.io.log_error')
+    def test_wait_for_compose_events__timeout_is_reached(
+            self,
+            log_error_mock,
+            _timeout_reached_mock,
+            _sleep_mock,
+            get_new_events_mock
+    ):
+        compose_environments_events = Event.json_to_event_objects(
+            mock_responses.COMPOSE_ENVIRONMENTS_DESCRIBE_EVENTS['Events']
+        )
+        _timeout_reached_mock.return_value = True
+        get_new_events_mock.side_effect = [[event] for event in reversed(compose_environments_events)]
+
+        commonops.wait_for_compose_events(
+            'c51aac54-01c7-4ae7-8692-d31dd990eba3',
+            'my-application',
+            ['environment-1', 'environment-2'],
+            timeout_in_minutes=5
+        )
+
+        log_error_mock.assert_called_once_with(
+            "The EB CLI timed out after {timeout_in_minutes} minute(s). The operation might still be running. To keep viewing events, run 'eb events -f'. To set timeout duration, use '--timeout MINUTES'."
+        )
+
+    def test_sleep(self):
+        commonops._sleep(0.001)
+
+    def test_timeout_reached(self):
+        self.assertTrue(
+            commonops._timeout_reached(
+                datetime.utcnow() - timedelta(minutes=5),
+                timedelta(seconds=300)
+            )
+        )
+
+    def test_timeout_reached__false(self):
+        self.assertFalse(
+            commonops._timeout_reached(
+                datetime.utcnow() - timedelta(minutes=5),
+                timedelta(seconds=301)
+            )
+        )
+
+    def test_get_event_string(self):
+        event = Event.json_to_event_objects(
+            [
+                {
+                    'EventDate': datetime(2018, 7, 19, 21, 50, 21, 623000, tzinfo=tz.tzutc()),
+                    'Message': 'Successfully launched environment: eb-locust-example-windows-server-dev',
+                    'ApplicationName': 'eb-locust-example-windows-server',
+                    'EnvironmentName': 'eb-locust-example-windows-server-dev',
+                    'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+                    'Severity': 'INFO'
+                }
+            ]
+        )[0]
+
+        self.assertEqual(
+            'INFO: Successfully launched environment: eb-locust-example-windows-server-dev',
+            commonops.get_event_string(event)
+        )
+
+        self.assertEqual(
+            '2018-07-19 21:50:21    INFO    Successfully launched environment: eb-locust-example-windows-server-dev',
+            commonops.get_event_string(event, long_format=True)
+        )
+
+    def test_get_compose_event_string(self):
+        event = Event.json_to_event_objects(
+            [
+                {
+                    'EventDate': datetime(2018, 7, 19, 21, 50, 21, 623000, tzinfo=tz.tzutc()),
+                    'Message': 'Successfully launched environment: eb-locust-example-windows-server-dev',
+                    'ApplicationName': 'eb-locust-example-windows-server',
+                    'EnvironmentName': 'eb-locust-example-windows-server-dev',
+                    'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+                    'Severity': 'INFO'
+                }
+            ]
+        )[0]
+
+        self.assertEqual(
+            'eb-locust-example-windows-server - INFO: Successfully launched environment: eb-locust-example-windows-server-dev',
+            commonops.get_compose_event_string(event)
+        )
+
+        self.assertEqual(
+            'eb-locust-example-windows-server - 2018-07-19 21:50:21    INFO    Successfully launched environment: eb-locust-example-windows-server-dev',
+            commonops.get_compose_event_string(event, long_format=True)
+        )
+
+    def test_get_env_event_string(self):
+        event = Event.json_to_event_objects(
+            [
+                {
+                    'EventDate': datetime(2018, 7, 19, 21, 50, 21, 623000, tzinfo=tz.tzutc()),
+                    'Message': 'Successfully launched environment: eb-locust-example-windows-server-dev',
+                    'ApplicationName': 'eb-locust-example-windows-server',
+                    'EnvironmentName': 'eb-locust-example-windows-server-dev',
+                    'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+                    'Severity': 'INFO'
+                }
+            ]
+        )[0]
+
+        self.assertEqual(
+            '    eb-locust-example-windows-server-dev - INFO: Successfully launched environment: eb-locust-example-windows-server-dev',
+            commonops.get_env_event_string(event)
+        )
+
+        self.assertEqual(
+            '    eb-locust-example-windows-server-dev - 2018-07-19 21:50:21    INFO    Successfully launched environment: eb-locust-example-windows-server-dev',
+            commonops.get_env_event_string(event, long_format=True)
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.application_version_exists')
+    def test_get_app_version_s3_location__app_version_exists(
+            self,
+            application_version_exists_mock
+    ):
+        application_version_exists_mock.return_value = mock_responses.DESCRIBE_APPLICATION_VERSIONS_RESPONSE['ApplicationVersions'][0]
+
+        self.assertEqual(
+            (
+                'elasticbeanstalk-us-west-2-123123123123',
+                'my-app/9112-stage-150723_224258.war'
+            ),
+            commonops.get_app_version_s3_location('my-application', 'version-label')
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.application_version_exists')
+    def test_get_app_version_s3_location__app_version_does_not_exist(
+            self,
+            application_version_exists_mock
+    ):
+        application_version_exists_mock.return_value = []
+
+        self.assertEqual(
+            (None, None),
+            commonops.get_app_version_s3_location('my-application', 'version-label')
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.create_application')
+    @mock.patch('ebcli.operations.commonops.pull_down_app_info')
+    def test_create_app(
+            self,
+            pull_down_app_info_mock,
+            create_application_mock
+    ):
+        create_application_mock.side_effect = commonops.AlreadyExistsError
+        pull_down_app_info_mock.return_value = ('platform-arn', 'key-name')
+
+
+        self.assertEqual(
+            ('platform-arn', 'key-name'),
+            commonops.create_app('my-application', default_env='environment-1')
+        )
+
+        pull_down_app_info_mock.assert_called_once_with(
+            'my-application',
+            default_env='environment-1'
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.create_application')
+    @mock.patch('ebcli.operations.commonops.set_environment_for_current_branch')
+    @mock.patch('ebcli.operations.commonops.set_group_suffix_for_current_branch')
+    @mock.patch('ebcli.operations.commonops.io.echo')
+    @mock.patch('ebcli.operations.commonops.io.log_info')
+    def test_create_app(
+            self,
+            log_info_mock,
+            echo_mock,
+            set_group_suffix_for_current_branch_mock,
+            set_environment_for_current_branch_mock,
+            create_application_mock
+    ):
+        self.assertEqual(
+            (None, None),
+            commonops.create_app('my-application', default_env='environment-1')
+        )
+
+        create_application_mock.assert_called_once_with(
+            'my-application',
+            'Application created from the EB CLI using "eb init"'
+        )
+        set_group_suffix_for_current_branch_mock.assert_called_once_with(None)
+        set_environment_for_current_branch_mock.assert_called_once_with(None)
+        echo_mock.assert_called_once_with('Application', 'my-application', 'has been created.')
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_app_environments')
+    @mock.patch('ebcli.operations.commonops.set_environment_for_current_branch')
+    def test_pull_down_app_info__no_environments_for_application(
+            self,
+            set_environment_for_current_branch_mock,
+            get_app_environments_mock
+    ):
+        get_app_environments_mock.return_value = []
+
+        commonops.pull_down_app_info('my-application')
+
+        get_app_environments_mock.assert_called_once_with('my-application')
+        set_environment_for_current_branch_mock.assert_called_once_with(None)
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_app_environments')
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_specific_configuration_for_env')
+    @mock.patch('ebcli.operations.commonops.set_environment_for_current_branch')
+    @mock.patch('ebcli.operations.commonops.io.log_info')
+    def test_pull_down_app_info__exactly_one_environment_for_application(
+            self,
+            log_info_mock,
+            set_environment_for_current_branch_mock,
+            get_specific_configuration_for_env_mock,
+            get_app_environments_mock
+    ):
+        get_app_environments_mock.return_value = [
+            Environment.json_to_environment_objects_array(
+                mock_responses.DESCRIBE_ENVIRONMENTS_RESPONSE['Environments']
+            )[0]
+        ]
+        get_specific_configuration_for_env_mock.return_value = 'keyname'
+
+        self.assertEqual(
+            (
+                'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 7.1 running on 64bit Amazon '
+                'Linux/2.6.5',
+                'keyname'
+            ),
+            commonops.pull_down_app_info('my-application')
+        )
+
+        get_app_environments_mock.assert_called_once_with('my-application')
+        set_environment_for_current_branch_mock.assert_called_once_with('environment-1')
+        log_info_mock.assert_has_calls(
+            [
+                mock.call('Setting only environment "environment-1" as default'),
+                mock.call('Pulling down defaults from environment environment-1')
+            ]
+        )
+        get_specific_configuration_for_env_mock.assert_called_once_with(
+            'my-application',
+            'environment-1',
+            'aws:autoscaling:launchconfiguration',
+            'EC2KeyName'
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_app_environments')
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_specific_configuration_for_env')
+    @mock.patch('ebcli.operations.commonops.set_environment_for_current_branch')
+    @mock.patch('ebcli.operations.commonops.io.log_info')
+    def test_pull_down_app_info__keyname_not_found(
+            self,
+            log_info_mock,
+            set_environment_for_current_branch_mock,
+            get_specific_configuration_for_env_mock,
+            get_app_environments_mock
+    ):
+        get_app_environments_mock.return_value = [
+            Environment.json_to_environment_objects_array(
+                mock_responses.DESCRIBE_ENVIRONMENTS_RESPONSE['Environments']
+            )[0]
+        ]
+        get_specific_configuration_for_env_mock.return_value = None
+
+        self.assertEqual(
+            (
+                'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 7.1 running on 64bit Amazon Linux/2.6.5',
+                -1
+            ),
+            commonops.pull_down_app_info('my-application')
+        )
+
+        get_app_environments_mock.assert_called_once_with('my-application')
+        set_environment_for_current_branch_mock.assert_called_once_with('environment-1')
+        log_info_mock.assert_has_calls(
+            [
+                mock.call('Setting only environment "environment-1" as default'),
+                mock.call('Pulling down defaults from environment environment-1')
+            ]
+        )
+        get_specific_configuration_for_env_mock.assert_called_once_with(
+            'my-application',
+            'environment-1',
+            'aws:autoscaling:launchconfiguration',
+            'EC2KeyName'
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_app_environments')
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_specific_configuration_for_env')
+    @mock.patch('ebcli.operations.commonops.set_environment_for_current_branch')
+    @mock.patch('ebcli.operations.commonops.io.log_info')
+    def test_pull_down_app_info__multiple_environments_for_application__non_interactive_mode__first_environment_in_describe_environments_response_selected(
+            self,
+            log_info_mock,
+            set_environment_for_current_branch_mock,
+            get_specific_configuration_for_env_mock,
+            get_app_environments_mock
+    ):
+        get_app_environments_mock.return_value = Environment.json_to_environment_objects_array(
+            mock_responses.DESCRIBE_ENVIRONMENTS_RESPONSE['Environments']
+        )
+        get_specific_configuration_for_env_mock.return_value = 'keyname'
+
+        self.assertEqual(
+            (
+                'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 7.1 running on 64bit Amazon '
+                'Linux/2.6.5',
+                'keyname'
+            ),
+            commonops.pull_down_app_info('my-application', default_env='/ni')
+        )
+
+        get_app_environments_mock.assert_called_once_with('my-application')
+        set_environment_for_current_branch_mock.assert_called_once_with('environment-1')
+        log_info_mock.assert_called_once_with(
+            'Pulling down defaults from environment environment-1'
+        )
+        get_specific_configuration_for_env_mock.assert_called_once_with(
+            'my-application',
+            'environment-1',
+            'aws:autoscaling:launchconfiguration',
+            'EC2KeyName'
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_app_environments')
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_specific_configuration_for_env')
+    @mock.patch('ebcli.operations.commonops.set_environment_for_current_branch')
+    @mock.patch('ebcli.operations.commonops.io.log_info')
+    def test_pull_down_app_info__multiple_environments_for_application__non_interactive_mode__default_environment_is_valid(
+            self,
+            log_info_mock,
+            set_environment_for_current_branch_mock,
+            get_specific_configuration_for_env_mock,
+            get_app_environments_mock
+    ):
+        get_app_environments_mock.return_value = Environment.json_to_environment_objects_array(
+            mock_responses.DESCRIBE_ENVIRONMENTS_RESPONSE['Environments']
+        )
+        get_specific_configuration_for_env_mock.return_value = 'keyname'
+
+        self.assertEqual(
+            (
+                'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 5.3 running on 64bit Amazon Linux/0.1.0',
+                'keyname'
+            ),
+            commonops.pull_down_app_info('my-application', default_env='environment-2')
+        )
+
+        get_app_environments_mock.assert_called_once_with('my-application')
+        set_environment_for_current_branch_mock.assert_called_once_with('environment-2')
+        log_info_mock.assert_called_once_with(
+            'Pulling down defaults from environment environment-2'
+        )
+        get_specific_configuration_for_env_mock.assert_called_once_with(
+            'my-application',
+            'environment-2',
+            'aws:autoscaling:launchconfiguration',
+            'EC2KeyName'
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_app_environments')
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_specific_configuration_for_env')
+    @mock.patch('ebcli.operations.commonops.set_environment_for_current_branch')
+    @mock.patch('ebcli.operations.commonops.io.log_info')
+    @mock.patch('ebcli.operations.commonops.utils.prompt_for_item_in_list')
+    def test_pull_down_app_info__multiple_environments_for_application__interactive_mode(
+            self,
+            prompt_for_item_in_list_mock,
+            log_info_mock,
+            set_environment_for_current_branch_mock,
+            get_specific_configuration_for_env_mock,
+            get_app_environments_mock
+    ):
+        get_app_environments_mock.return_value = Environment.json_to_environment_objects_array(
+            mock_responses.DESCRIBE_ENVIRONMENTS_RESPONSE['Environments']
+        )
+        get_specific_configuration_for_env_mock.return_value = 'keyname'
+        prompt_for_item_in_list_mock.return_value = get_app_environments_mock.return_value[1]
+
+        self.assertEqual(
+            (
+                'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 5.3 running on 64bit Amazon Linux/0.1.0',
+                'keyname'
+            ),
+            commonops.pull_down_app_info('my-application')
+        )
+
+        get_app_environments_mock.assert_called_once_with('my-application')
+        set_environment_for_current_branch_mock.assert_called_once_with('environment-2')
+        log_info_mock.assert_called_once_with(
+            'Pulling down defaults from environment environment-2'
+        )
+        prompt_for_item_in_list_mock.assert_called_once_with(get_app_environments_mock.return_value)
+        get_specific_configuration_for_env_mock.assert_called_once_with(
+            'my-application',
+            'environment-2',
+            'aws:autoscaling:launchconfiguration',
+            'EC2KeyName'
+        )
+
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    def test_create_dummy_app_version(
+            self,
+            _create_application_version_mock
+    ):
+        commonops.create_dummy_app_version('my-application')
+
+        _create_application_version_mock.assert_called_once_with(
+            'my-application',
+            'Sample Application',
+            None,
+            None,
+            None,
+            warning=False
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.commonops.io.echo')
+    def test_create_app_version__directory_is_empty(
+            self,
+            echo_mock,
+            directory_is_empty_mock,
+            _traverse_to_project_root_mock
+    ):
+        directory_is_empty_mock.return_value = True
+
+        self.assertIsNone(commonops.create_app_version('my-application'))
+
+        echo_mock.assert_called_once_with(
+            'NOTE: The current directory does not contain any source code. '
+            'Elastic Beanstalk is launching the sample application instead.'
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_config_setting')
+    @mock.patch('ebcli.operations.commonops.get_app_version_s3_location')
+    @mock.patch('ebcli.operations.commonops.s3.get_object_info')
+    @mock.patch('ebcli.operations.commonops.fileoperations.delete_app_versions')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    def test_create_app_version__app_version_already_exists_in_s3(
+            self,
+            _create_application_version_mock,
+            delete_app_versions_mock,
+            get_object_info_mock,
+            get_app_version_s3_location_mock,
+            get_config_setting_mock,
+            get_source_control_mock,
+            directory_is_empty_mock,
+            _traverse_to_project_root_mock
+    ):
+        directory_is_empty_mock.return_value = False
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        get_source_control_mock.return_value = source_control_mock
+        get_config_setting_mock.return_value = None  # No artifacts
+        get_app_version_s3_location_mock.return_value = ('s3-bucket', 's3-key')
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+
+        self.assertEqual(
+            application_version_mock,
+            commonops.create_app_version('my-application')
+        )
+
+        get_config_setting_mock.assert_called_once_with('deploy', 'artifact')
+        get_app_version_s3_location_mock.assert_called_once_with('my-application', 'version-label')
+        get_object_info_mock.assert_called_once_with('s3-bucket', 's3-key')
+        _create_application_version_mock.assert_called_once_with(
+            'my-application',
+            'version-label',
+            'label-message',
+            's3-bucket',
+            's3-key',
+            False,
+            build_config=None
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_config_setting')
+    @mock.patch('ebcli.operations.commonops.get_app_version_s3_location')
+    @mock.patch('ebcli.operations.commonops.s3.get_object_info')
+    @mock.patch('ebcli.operations.commonops.fileoperations.delete_app_versions')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    @mock.patch('ebcli.operations.commonops._zip_up_project')
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_storage_location')
+    @mock.patch('ebcli.operations.commonops.s3.upload_application_version')
+    def test_create_app_version__app_version_does_not_exist(
+            self,
+            upload_application_version_mock,
+            get_storage_location_mock,
+            _zip_up_project_mock,
+            _create_application_version_mock,
+            delete_app_versions_mock,
+            get_object_info_mock,
+            get_app_version_s3_location_mock,
+            get_config_setting_mock,
+            get_source_control_mock,
+            directory_is_empty_mock,
+            _traverse_to_project_root_mock
+    ):
+        directory_is_empty_mock.return_value = False
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        get_source_control_mock.return_value = source_control_mock
+        get_config_setting_mock.return_value = None  # No artifacts
+        get_app_version_s3_location_mock.return_value = (None, None)
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+        _zip_up_project_mock.return_value = ('version-label', 'source-control')
+        get_storage_location_mock.return_value = 's3-bucket'
+        get_object_info_mock.side_effect = commonops.NotFoundError
+
+        self.assertEqual(
+            application_version_mock,
+            commonops.create_app_version('my-application')
+        )
+
+        get_config_setting_mock.assert_called_once_with('deploy', 'artifact')
+        upload_application_version_mock.assert_called_once_with(
+            's3-bucket',
+            'my-application/version-label',
+            'source-control'
+        )
+        get_app_version_s3_location_mock.assert_called_once_with('my-application', 'version-label')
+        get_object_info_mock.assert_called_once_with('s3-bucket', 'my-application/version-label')
+        _create_application_version_mock.assert_called_once_with(
+            'my-application',
+            'version-label',
+            'label-message',
+            's3-bucket',
+            'my-application/version-label',
+            False,
+            build_config=None
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_config_setting')
+    @mock.patch('ebcli.operations.commonops.s3.get_object_info')
+    @mock.patch('ebcli.operations.commonops.fileoperations.delete_app_versions')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_storage_location')
+    @mock.patch('ebcli.operations.commonops.s3.upload_application_version')
+    def test_create_app_version__deploy_artifact__app_version_does_not_exist__uploaded_to_s3(
+            self,
+            upload_application_version_mock,
+            get_storage_location_mock,
+            _create_application_version_mock,
+            delete_app_versions_mock,
+            get_object_info_mock,
+            get_config_setting_mock,
+            get_source_control_mock,
+            directory_is_empty_mock,
+            _traverse_to_project_root_mock
+    ):
+        directory_is_empty_mock.return_value = False
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        get_source_control_mock.return_value = source_control_mock
+        get_config_setting_mock.return_value = 'src/artifact.zip'  # No artifacts
+
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+
+        get_storage_location_mock.return_value = 's3-bucket'
+        get_object_info_mock.side_effect = commonops.NotFoundError
+
+        self.assertEqual(
+            application_version_mock,
+            commonops.create_app_version('my-application')
+        )
+
+        get_config_setting_mock.assert_called_once_with('deploy', 'artifact')
+
+        upload_application_version_mock.assert_called_once_with(
+            's3-bucket',
+            'my-application/version-label.zip',
+            'src/artifact.zip'
+        )
+        _create_application_version_mock.assert_called_once_with(
+            'my-application',
+            'version-label',
+            'label-message',
+            's3-bucket',
+            'my-application/version-label.zip',
+            False,
+            build_config=None
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_config_setting')
+    @mock.patch('ebcli.operations.commonops.get_app_version_s3_location')
+    @mock.patch('ebcli.operations.commonops.s3.get_object_info')
+    @mock.patch('ebcli.operations.commonops.fileoperations.delete_app_versions')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    @mock.patch('ebcli.operations.commonops._zip_up_project')
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_storage_location')
+    @mock.patch('ebcli.operations.commonops.s3.upload_application_version')
+    def test_create_app_version__app_version_does_not_exist__upload_to_s3_fails(
+            self,
+            upload_application_version_mock,
+            get_storage_location_mock,
+            _zip_up_project_mock,
+            _create_application_version_mock,
+            delete_app_versions_mock,
+            get_object_info_mock,
+            get_app_version_s3_location_mock,
+            get_config_setting_mock,
+            get_source_control_mock,
+            directory_is_empty_mock,
+            _traverse_to_project_root_mock
+    ):
+        directory_is_empty_mock.return_value = False
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        get_source_control_mock.return_value = source_control_mock
+        get_config_setting_mock.return_value = None  # No artifacts
+        get_app_version_s3_location_mock.return_value = (None, None)
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+        _zip_up_project_mock.return_value = ('version-label', 'source-control')
+        get_storage_location_mock.return_value = 's3-bucket'
+        get_object_info_mock.side_effect = commonops.NotFoundError
+
+        self.assertEqual(
+            application_version_mock,
+            commonops.create_app_version('my-application')
+        )
+
+        get_config_setting_mock.assert_called_once_with('deploy', 'artifact')
+        get_app_version_s3_location_mock.assert_called_once_with('my-application', 'version-label')
+        upload_application_version_mock.assert_called_once_with(
+            's3-bucket',
+            'my-application/version-label',
+            'source-control'
+        )
+        _create_application_version_mock.assert_called_once_with(
+            'my-application',
+            'version-label',
+            'label-message',
+            's3-bucket',
+            'my-application/version-label',
+            False,
+            build_config=None
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_config_setting')
+    @mock.patch('ebcli.operations.commonops.get_app_version_s3_location')
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_storage_location')
+    @mock.patch('ebcli.operations.commonops.s3.get_object_info')
+    @mock.patch('ebcli.operations.commonops.fileoperations.delete_app_versions')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    def test_create_app_version__other_arguments_passed_in(
+            self,
+            _create_application_version_mock,
+            delete_app_versions_mock,
+            get_object_info_mock,
+            get_storage_location_mock,
+            get_app_version_s3_location_mock,
+            get_config_setting_mock,
+            get_source_control_mock,
+            directory_is_empty_mock,
+            _traverse_to_project_root_mock
+    ):
+        directory_is_empty_mock.return_value = False
+        source_control_mock = mock.MagicMock()
+        get_source_control_mock.return_value = source_control_mock
+        get_config_setting_mock.return_value = None  # No artifacts
+        get_app_version_s3_location_mock.return_value = ('s3-bucket', 's3-key')
+        get_storage_location_mock.return_value = 's3-bucket'
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+        build_config_mock = mock.MagicMock()
+
+        self.assertEqual(
+            application_version_mock,
+            commonops.create_app_version(
+                'my-application',
+                label='my-version-label',
+                message='message ' * 50,
+                process=True,
+                build_config=build_config_mock
+            )
+        )
+
+        get_config_setting_mock.assert_called_once_with('deploy', 'artifact')
+        get_app_version_s3_location_mock.assert_called_once_with('my-application', 'my-version-label')
+        get_object_info_mock.assert_called_once_with('s3-bucket', 's3-key')
+        _create_application_version_mock.assert_called_once_with(
+            'my-application',
+            'my-version-label', 'message message message message message message message message message message message message message message message message message message message message message message message message mes...',
+            's3-bucket',
+            's3-key',
+            True,
+            build_config=build_config_mock
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    @mock.patch('ebcli.operations.gitops.get_default_repository')
+    def test_create_codecommit_app_version(
+            self,
+            get_default_repository_mock,
+            _create_application_version_mock,
+            get_source_control_mock,
+            _traverse_to_project_root_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_commit.return_value = '213123123'
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        get_source_control_mock.return_value = source_control_mock
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+        get_default_repository_mock.return_value = 'repository'
+
+        self.assertEqual(
+            application_version_mock,
+            commonops.create_codecommit_app_version('my-application')
+        )
+
+        _create_application_version_mock.assert_called_once_with(
+            'my-application',
+            'version-label',
+            'label-message',
+            None,
+            None,
+            False,
+            build_config=None,
+            commit_id='213123123',
+            repository='repository'
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    @mock.patch('ebcli.operations.commonops.io.log_warning')
+    @mock.patch('ebcli.operations.gitops.get_default_repository')
+    def test_create_codecommit_app_version__untracked_changes_exist(
+            self,
+            get_default_repository_mock,
+            log_warning_mock,
+            _create_application_version_mock,
+            get_source_control_mock,
+            _traverse_to_project_root_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_commit.return_value = '213123123'
+        source_control_mock.untracked_changes_exist.return_value = True
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        get_source_control_mock.return_value = source_control_mock
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+        get_default_repository_mock.return_value = 'repository'
+
+        self.assertEqual(
+            application_version_mock,
+            commonops.create_codecommit_app_version('my-application')
+        )
+
+        log_warning_mock.assert_called_once_with('You have uncommitted changes.')
+        _create_application_version_mock.assert_called_once_with(
+            'my-application',
+            'version-label',
+            'label-message',
+            None,
+            None,
+            False,
+            build_config=None,
+            commit_id='213123123',
+            repository='repository'
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    @mock.patch('ebcli.operations.commonops.io.log_warning')
+    @mock.patch('ebcli.operations.gitops.get_default_repository')
+    def test_create_codecommit_app_version__no_commits_exist_yet_in_the_directory__a_new_one_is_created(
+            self,
+            get_default_repository_mock,
+            log_warning_mock,
+            _create_application_version_mock,
+            get_source_control_mock,
+            _traverse_to_project_root_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_commit.side_effect = [None, '213123123']
+        source_control_mock.untracked_changes_exist.return_value = True
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        source_control_mock.untracked_changes_exist.return_value = False
+        get_source_control_mock.return_value = source_control_mock
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+        get_default_repository_mock.return_value = 'repository'
+
+        self.assertEqual(
+            application_version_mock,
+            commonops.create_codecommit_app_version('my-application')
+        )
+
+        log_warning_mock.assert_called_once_with(
+            'There are no commits for the current branch, attempting to '
+            'create an empty commit and launching with the sample application'
+        )
+        source_control_mock.create_initial_commit.assert_called_once()
+        _create_application_version_mock.assert_called_once_with(
+            'my-application',
+            'version-label',
+            'label-message',
+            None,
+            None,
+            False,
+            build_config=None,
+            commit_id='213123123',
+            repository='repository'
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    @mock.patch('ebcli.operations.gitops.get_default_repository')
+    def test_create_codecommit_app_version__with_arguments_eplicitly_passed(
+            self,
+            get_default_repository_mock,
+            _create_application_version_mock,
+            get_source_control_mock,
+            _traverse_to_project_root_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_commit.return_value = '213123123'
+        source_control_mock.untracked_changes_exist.return_value = True
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        get_source_control_mock.return_value = source_control_mock
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+        get_default_repository_mock.return_value = 'repository'
+        build_config_mock = mock.MagicMock()
+
+        self.assertEqual(
+            application_version_mock,
+            commonops.create_codecommit_app_version(
+                'my-application',
+                process=True,
+                label='version-label',
+                message='message ' * 50,
+                build_config=build_config_mock
+            )
+        )
+
+        _create_application_version_mock.assert_called_once_with(
+            'my-application',
+            'version-label',
+            'message message message message message message message message message message message message message message message message message message message message message message message message mes...',
+            None,
+            None,
+            True,
+            build_config=build_config_mock,
+            commit_id='213123123',
+            repository='repository'
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    @mock.patch('ebcli.operations.gitops.get_default_repository')
+    @mock.patch('ebcli.operations.commonops.io.echo')
+    @mock.patch('ebcli.operations.commonops.io.log_warning')
+    def test_create_codecommit_app_version__push_to_codecommit_failed(
+            self,
+            log_warning_mock,
+            echo_mock,
+            get_default_repository_mock,
+            _create_application_version_mock,
+            get_source_control_mock,
+            _traverse_to_project_root_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_commit.return_value = '213123123'
+        source_control_mock.untracked_changes_exist.return_value = True
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        source_control_mock.push_codecommit_code.side_effect = commonops.CommandError
+        get_source_control_mock.return_value = source_control_mock
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+        get_default_repository_mock.return_value = 'repository'
+
+        with self.assertRaises(commonops.CommandError):
+            commonops.create_codecommit_app_version('my-application')
+
+        echo_mock.assert_called_once_with(
+            'Could not push code to the CodeCommit repository:'
+        )
+
+        _create_application_version_mock.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    @mock.patch('ebcli.operations.gitops.get_default_repository')
+    def test_create_codecommit_app_version__could_not_find_default_repository_information(
+            self,
+            get_default_repository_mock,
+            _create_application_version_mock,
+            get_source_control_mock,
+            _traverse_to_project_root_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_commit.return_value = '213123123'
+        source_control_mock.untracked_changes_exist.return_value = True
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        get_source_control_mock.return_value = source_control_mock
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+        get_default_repository_mock.return_value = None
+
+        with self.assertRaises(commonops.ServiceError):
+            commonops.create_codecommit_app_version('my-application')
+
+        _create_application_version_mock.assert_not_called()
+
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.commonops.io.echo')
+    def test_create_app_version_from_source__directory_is_empty(
+            self,
+            echo_mock,
+            directory_is_empty_mock,
+            _traverse_to_project_root_mock
+    ):
+        directory_is_empty_mock.return_value = True
+
+        self.assertIsNone(
+            commonops.create_app_version_from_source(
+                'my-application',
+                'codecommit/my-repository/my-branch'
+            )
+        )
+
+        echo_mock.assert_called_once_with(
+            'NOTE: The current directory does not contain any source code. '
+            'Elastic Beanstalk is launching the sample application instead.'
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    @mock.patch('ebcli.operations.commonops.codecommit.get_branch')
+    def test_create_app_version_from_source(
+            self,
+            get_branch_mock,
+            _create_application_version_mock,
+            get_source_control_mock,
+            directory_is_empty_mock,
+            _traverse_to_project_root_mock
+    ):
+        directory_is_empty_mock.return_value = False
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        get_source_control_mock.return_value = source_control_mock
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+        get_branch_mock.return_value = {
+            'branch': {
+                'commitId': '234234123'
+            }
+        }
+
+        self.assertEqual(
+            application_version_mock,
+            commonops.create_app_version_from_source(
+                'my-application',
+                'codecommit/my-repository/my-branch'
+            )
+        )
+
+        get_branch_mock.assert_called_once_with(
+            'my-repository',
+            'my-branch'
+        )
+        _create_application_version_mock.assert_called_once_with(
+            'my-application',
+            'version-label',
+            'label-message',
+            None,
+            None,
+            False,
+            build_config=None,
+            commit_id='234234123',
+            repository='my-repository'
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    @mock.patch('ebcli.operations.commonops.codecommit.get_branch')
+    def test_create_app_version_from_source__source_is_not_a_codecommit_one(
+            self,
+            get_branch_mock,
+            _create_application_version_mock,
+            get_source_control_mock,
+            directory_is_empty_mock,
+            _traverse_to_project_root_mock
+    ):
+        directory_is_empty_mock.return_value = False
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        get_source_control_mock.return_value = source_control_mock
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+
+        with self.assertRaises(commonops.InvalidOptionsError) as context_manager:
+            commonops.create_app_version_from_source(
+                'my-application',
+                'github/my-repository/my-branch'
+            )
+
+        self.assertEqual(
+            'Source location "github" is not supported by the EBCLI',
+            str(context_manager.exception)
+        )
+        get_branch_mock.assert_not_called()
+        _create_application_version_mock.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    @mock.patch('ebcli.operations.commonops.codecommit.get_branch')
+    @mock.patch('ebcli.operations.commonops.io.log_error')
+    def test_create_app_version_from_source__failed_to_find_remote_branch(
+            self,
+            log_error_mock,
+            get_branch_mock,
+            _create_application_version_mock,
+            get_source_control_mock,
+            directory_is_empty_mock,
+            _traverse_to_project_root_mock
+    ):
+        directory_is_empty_mock.return_value = False
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        get_source_control_mock.return_value = source_control_mock
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+        get_branch_mock.side_effect = commonops.ServiceError
+
+        with self.assertRaises(commonops.ServiceError) as context_manager:
+            commonops.create_app_version_from_source(
+                'my-application',
+                'codecommit/my-repository/my-branch'
+            )
+
+        log_error_mock.assert_called_once_with(
+            "Could not get branch 'my-branch' for the repository 'my-repository' because of this error: None"
+        )
+        get_branch_mock.assert_called_once_with('my-repository', 'my-branch')
+        _create_application_version_mock.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_zip_location')
+    @mock.patch('ebcli.operations.commonops.fileoperations.file_exists')
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_ebignore_list')
+    def test_zip_up_project__file_already_exists(
+            self,
+            get_ebignore_list_mock,
+            file_exists_mock,
+            get_zip_location_mock
+    ):
+        get_zip_location_mock.return_value = 'file_path'
+        file_exists_mock.return_value = True
+        source_control_mock = mock.MagicMock()
+
+        self.assertEqual(
+            ('version-label.zip', 'file_path'),
+            commonops._zip_up_project(
+                'version-label',
+                source_control_mock
+            )
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_zip_location')
+    @mock.patch('ebcli.operations.commonops.fileoperations.file_exists')
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_ebignore_list')
+    def test_zip_up_project__file_doesnt_exist(
+            self,
+            get_ebignore_list_mock,
+            file_exists_mock,
+            get_zip_location_mock
+    ):
+        get_zip_location_mock.return_value = 'file_path'
+        file_exists_mock.return_value = False
+        source_control_mock = mock.MagicMock()
+        get_ebignore_list_mock.return_value = None
+
+        self.assertEqual(
+            ('version-label.zip', 'file_path'),
+            commonops._zip_up_project(
+                'version-label',
+                source_control_mock
+            )
+        )
+
+        source_control_mock.do_zip.assert_called_once_with('file_path', False)
+
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_zip_location')
+    @mock.patch('ebcli.operations.commonops.fileoperations.file_exists')
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_ebignore_list')
+    @mock.patch('ebcli.operations.commonops.fileoperations.zip_up_project')
+    def test_zip_up_project__file_doesnt_exist(
+            self,
+            zip_up_project_mock,
+            get_ebignore_list_mock,
+            file_exists_mock,
+            get_zip_location_mock
+    ):
+        get_zip_location_mock.return_value = 'file_path'
+        file_exists_mock.return_value = False
+        source_control_mock = mock.MagicMock()
+        get_ebignore_list_mock.return_value = ['index.html']
+
+        self.assertEqual(
+            ('version-label.zip', 'file_path'),
+            commonops._zip_up_project(
+                'version-label',
+                source_control_mock
+            )
+        )
+
+        zip_up_project_mock.assert_called_once_with('file_path', ignore_list=['index.html'])
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.update_environment')
+    @mock.patch('ebcli.operations.commonops.wait_for_success_events')
+    def test_update_environment(
+            self,
+            wait_for_success_events_mock,
+            update_environment_mock
+    ):
+        options_mock = mock.MagicMock()
+        remove_mock = mock.MagicMock()
+        template_mock = mock.MagicMock()
+        template_body_mock = mock.MagicMock()
+        solution_stack_name = 'php 7.1'
+        update_environment_mock.return_value = 'request-id'
+
+        commonops.update_environment(
+            'my-environment',
+            options_mock,
+            False,
+            remove=remove_mock,
+            template=template_mock,
+            template_body=template_body_mock,
+            solution_stack_name=solution_stack_name,
+        )
+
+        update_environment_mock.assert_called_once_with(
+            'my-environment',
+            options_mock,
+            platform_arn=None,
+            remove=remove_mock,
+            solution_stack_name='php 7.1',
+            template=template_mock,
+            template_body=template_body_mock
+        )
+        wait_for_success_events_mock.assert_called_once_with(
+            'request-id',
+            can_abort=True,
+            timeout_in_minutes=None
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.update_environment')
+    @mock.patch('ebcli.operations.commonops.wait_for_success_events')
+    @mock.patch('ebcli.operations.commonops.io.log_error')
+    def test_update_environment__invalid_state_error(
+            self,
+            log_error_mock,
+            wait_for_success_events_mock,
+            update_environment_mock
+    ):
+        options_mock = mock.MagicMock()
+        remove_mock = mock.MagicMock()
+        template_mock = mock.MagicMock()
+        template_body_mock = mock.MagicMock()
+        solution_stack_name = 'php 7.1'
+        update_environment_mock.side_effect = commonops.InvalidStateError
+
+        self.assertIsNone(
+            commonops.update_environment(
+                'my-environment',
+                options_mock,
+                False,
+                remove=remove_mock,
+                template=template_mock,
+                template_body=template_body_mock,
+                solution_stack_name=solution_stack_name,
+            )
+        )
+
+        self.assertIsNone(
+            update_environment_mock.assert_called_once_with(
+                'my-environment',
+                options_mock,
+                platform_arn=None,
+                remove=remove_mock,
+                solution_stack_name='php 7.1',
+                template=template_mock,
+                template_body=template_body_mock
+            )
+        )
+        log_error_mock.assert_called_once_with(
+            'The environment update cannot be complete at this time. Try again later.'
+        )
+        wait_for_success_events_mock.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.update_environment')
+    @mock.patch('ebcli.operations.commonops.wait_for_success_events')
+    @mock.patch('ebcli.operations.commonops.io.log_error')
+    def test_update_environment__invalid_syntax_error(
+            self,
+            log_error_mock,
+            wait_for_success_events_mock,
+            update_environment_mock
+    ):
+        options_mock = mock.MagicMock()
+        remove_mock = mock.MagicMock()
+        template_mock = mock.MagicMock()
+        template_body_mock = mock.MagicMock()
+        solution_stack_name = 'php 7.1'
+        update_environment_mock.side_effect = commonops.InvalidSyntaxError
+
+        self.assertIsNone(
+            commonops.update_environment(
+                'my-environment',
+                options_mock,
+                False,
+                remove=remove_mock,
+                template=template_mock,
+                template_body=template_body_mock,
+                solution_stack_name=solution_stack_name,
+            )
+        )
+
+        self.assertIsNone(
+            update_environment_mock.assert_called_once_with(
+                'my-environment',
+                options_mock,
+                platform_arn=None,
+                remove=remove_mock,
+                solution_stack_name='php 7.1',
+                template=template_mock,
+                template_body=template_body_mock
+            )
+        )
+        log_error_mock.assert_called_once_with(
+            'The configuration settings you provided contain an error. The environment will not be updated.\nError = '
+        )
+        wait_for_success_events_mock.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    def test_write_setting_to_current_branch__get_setting_from_current_branch(
+            self,
+            get_source_control_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_branch.return_value = 'branch-1'
+        get_source_control_mock.return_value = source_control_mock
+
+        commonops.write_setting_to_current_branch('username', 'thisismyusername')
+
+        self.assertEqual(
+            'thisismyusername',
+            commonops.get_setting_from_current_branch('username')
+        )
+
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    def test_get_setting_from_current_branch__current_branch_could_not_be_found(
+            self,
+            get_source_control_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_branch.side_effect = commonops.CommandError
+        get_source_control_mock.return_value = source_control_mock
+
+        self.assertIsNone(commonops.get_setting_from_current_branch('some-key'))
+
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_config_setting')
+    def test_get_setting_from_current_branch__current_branch_is_not_registered_in_config_yml(
+            self,
+            get_config_setting_mock,
+            get_source_control_mock
+    ):
+        get_config_setting_mock.return_value = None
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_branch.return_value = 'absent_branch'
+        get_source_control_mock.return_value = source_control_mock
+
+        self.assertIsNone(commonops.get_setting_from_current_branch('some-key'))
+
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    def test_set_environment_for_current_branch__get_current_branch_environment(
+            self,
+            get_source_control_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_branch.return_value = 'branch-1'
+        get_source_control_mock.return_value = source_control_mock
+
+        commonops.set_environment_for_current_branch('environment-1')
+
+        self.assertEqual(
+            'environment-1',
+            commonops.get_current_branch_environment()
+        )
+
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    def test_set_group_suffix_for_current_branch__get_current_branch_group_suffix(
+            self,
+            get_source_control_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_current_branch.return_value = 'branch-1'
+        get_source_control_mock.return_value = source_control_mock
+
+        commonops.set_group_suffix_for_current_branch('dev')
+
+        self.assertEqual(
+            'dev',
+            commonops.get_current_branch_group_suffix()
+        )
+
+    def test_get_default_keyname__default_keyname_is_absent(self):
+        self.assertIsNone(commonops.get_default_keyname())
+
+    def test_get_default_keyname(self):
+        fileoperations.write_keyname('aws-eb-us-west-2')
+
+        self.assertEqual(
+            'aws-eb-us-west-2',
+            commonops.get_default_keyname()
+        )
+
+    @mock.patch('ebcli.operations.commonops.get_config_setting_from_branch_or_default')
+    def test_get_default_profile__branch_default_for_profile_is_none__but_a_default_is_required(
+            self,
+            get_config_setting_from_branch_or_default_mock
+    ):
+        get_config_setting_from_branch_or_default_mock.return_value = None
+
+        self.assertEqual(
+            'default',
+            commonops.get_default_profile(require_default=True)
+        )
+        get_config_setting_from_branch_or_default_mock.assert_called_once_with('profile')
+
+    @mock.patch('ebcli.operations.commonops.get_config_setting_from_branch_or_default')
+    def test_get_default_profile__branch_default_for_profile_is_none__default_is_not_required(
+            self,
+            get_config_setting_from_branch_or_default_mock
+    ):
+        get_config_setting_from_branch_or_default_mock.return_value = None
+
+        self.assertIsNone(commonops.get_default_profile())
+        get_config_setting_from_branch_or_default_mock.assert_called_once_with('profile')
+
+
+    @mock.patch('ebcli.operations.commonops.get_config_setting_from_branch_or_default')
+    def test_get_default_profile__directory_is_not_initialized(
+            self,
+            get_config_setting_from_branch_or_default_mock
+    ):
+        get_config_setting_from_branch_or_default_mock.side_effect = commonops.NotInitializedError
+
+        self.assertIsNone(commonops.get_default_profile())
+        get_config_setting_from_branch_or_default_mock.assert_called_once_with('profile')
+
+    @mock.patch('ebcli.operations.commonops.get_config_setting_from_branch_or_default')
+    def test_get_default_region(
+            self,
+            get_config_setting_from_branch_or_default_mock
+    ):
+        get_config_setting_from_branch_or_default_mock.return_value = 'us-west-2'
+
+        self.assertEqual('us-west-2', commonops.get_default_region())
+        get_config_setting_from_branch_or_default_mock.assert_called_once_with('default_region')
+
+    @mock.patch('ebcli.operations.commonops.get_config_setting_from_branch_or_default')
+    def test_get_default_region__branch_default_for_region_is_none(
+            self,
+            get_config_setting_from_branch_or_default_mock
+    ):
+        get_config_setting_from_branch_or_default_mock.return_value = None
+
+        self.assertIsNone(commonops.get_default_region())
+        get_config_setting_from_branch_or_default_mock.assert_called_once_with('default_region')
+
+    @mock.patch('ebcli.operations.commonops.get_config_setting_from_branch_or_default')
+    def test_get_default_region__directory_is_not_initialized(
+            self,
+            get_config_setting_from_branch_or_default_mock
+    ):
+        get_config_setting_from_branch_or_default_mock.side_effect = commonops.NotInitializedError
+
+        self.assertIsNone(commonops.get_default_region())
+        get_config_setting_from_branch_or_default_mock.assert_called_once_with('default_region')
+
+    @mock.patch('ebcli.operations.commonops.ec2.get_key_pairs')
+    def test_upload_keypair_if_needed__key_name_already_exists(
+            self,
+            get_key_pairs_mock
+    ):
+        get_key_pairs_mock.return_value = mock_responses.DESCRIBE_KEY_PAIRS_RESPONSE['KeyPairs']
+
+        self.assertIsNone(commonops.upload_keypair_if_needed('key_pair_1'))
+
+    @mock.patch('ebcli.operations.commonops.ec2.get_key_pairs')
+    @mock.patch('ebcli.operations.commonops._get_public_ssh_key')
+    @mock.patch('ebcli.operations.commonops.ec2.import_key_pair')
+    def test_upload_keypair_if_needed__race_condition_in_which_key_name_is_created_through_another_client(
+            self,
+            import_key_pair_mock,
+            _get_public_ssh_key_mock,
+            get_key_pairs_mock
+    ):
+        # Creation of `keyname` on EC2 is possible concurrently through another
+        # client, but unlikely.
+        get_key_pairs_mock.return_value = mock_responses.DESCRIBE_KEY_PAIRS_RESPONSE['KeyPairs']
+        _get_public_ssh_key_mock.return_value = 'ssh-rsa BBBBBBBaC1yc2EAAAADAQABAAABAQC91'
+        import_key_pair_mock.side_effect = commonops.AlreadyExistsError
+
+        self.assertIsNone(commonops.upload_keypair_if_needed('key_pair_3'))
+
+    @mock.patch('ebcli.operations.commonops.ec2.get_key_pairs')
+    @mock.patch('ebcli.operations.commonops._get_public_ssh_key')
+    @mock.patch('ebcli.operations.commonops.ec2.import_key_pair')
+    @mock.patch('ebcli.operations.commonops.aws.get_region_name')
+    @mock.patch('ebcli.operations.commonops.io.log_warning')
+    def test_upload_keypair_if_needed(
+            self,
+            log_warning_mock,
+            get_region_name_mock,
+            import_key_pair_mock,
+            _get_public_ssh_key_mock,
+            get_key_pairs_mock
+    ):
+        # Creation of `keyname` on EC2 is possible concurrently through another
+        # client, but unlikely.
+        get_key_pairs_mock.return_value = mock_responses.DESCRIBE_KEY_PAIRS_RESPONSE['KeyPairs']
+        _get_public_ssh_key_mock.return_value = 'ssh-rsa BBBBBBBaC1yc2EAAAADAQABAAABAQC91'
+        get_region_name_mock.return_value = 'us-west-2'
+
+        self.assertIsNone(commonops.upload_keypair_if_needed('key_pair_3'))
+
+        log_warning_mock.assert_called_once_with(
+            'Uploaded SSH public key for "key_pair_3" into EC2 for region us-west-2.'
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_ssh_folder')
+    @mock.patch('ebcli.operations.commonops.exec_cmd')
+    def test_get_public_ssh_key__file_by_keypair_name_exists_in_the_ssh_dir(
+            self,
+            exec_cmd_mock,
+            get_ssh_folder_mock
+    ):
+        os.mkdir('.ssh')
+        with open(os.path.join('.ssh', 'aws-eb-us-west-2'), 'w') as keypair_file:
+            keypair_file.write("""-----BEGIN RSA PRIVATE KEY-----
+asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
+-----END RSA PRIVATE KEY-----""")
+
+        get_ssh_folder_mock.return_value = '.ssh/'
+
+        exec_cmd_mock.return_value = ('ssh-rsa BBBBBBBaC1yc2EAAAADAQABAAABAQC91', '', 0)
+
+        self.assertEqual(
+            'ssh-rsa BBBBBBBaC1yc2EAAAADAQABAAABAQC91',
+            commonops._get_public_ssh_key(
+                keypair_name='aws-eb-us-west-2'
+            )
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_ssh_folder')
+    @mock.patch('ebcli.operations.commonops.exec_cmd')
+    def test_get_public_ssh_key__file_by_keypair_name_exists_in_the_ssh_dir_but_as_a_pem_extension(
+            self,
+            exec_cmd_mock,
+            get_ssh_folder_mock
+    ):
+        os.mkdir('.ssh')
+        with open(os.path.join('.ssh', 'aws-eb-us-west-2.pem'), 'w') as keypair_file:
+            keypair_file.write("""-----BEGIN RSA PRIVATE KEY-----
+asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
+-----END RSA PRIVATE KEY-----""")
+
+        get_ssh_folder_mock.return_value = '.ssh/'
+
+        exec_cmd_mock.return_value = (
+            'ssh-rsa BBBBBBBaC1yc2EAAAADAQABAAABAQC91',
+            '',
+            0
+        )
+
+        self.assertEqual(
+            'ssh-rsa BBBBBBBaC1yc2EAAAADAQABAAABAQC91',
+            commonops._get_public_ssh_key(
+                keypair_name='aws-eb-us-west-2'
+            )
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_ssh_folder')
+    @mock.patch('ebcli.operations.commonops.exec_cmd')
+    def test_get_public_ssh_key__file_by_keypair_name_does_not_exist_in_the_ssh_dir(
+            self,
+            exec_cmd_mock,
+            get_ssh_folder_mock
+    ):
+        os.mkdir('.ssh')
+        get_ssh_folder_mock.return_value = '.ssh/'
+        exec_cmd_mock.return_value = (
+            'ssh-rsa BBBBBBBaC1yc2EAAAADAQABAAABAQC91',
+            '',
+            1
+        )
+
+        with self.assertRaises(commonops.NotSupportedError) as context_manager:
+            commonops._get_public_ssh_key(
+                keypair_name='non-existent-key-name'
+            )
+
+        self.assertEqual(
+            'The EB CLI cannot find your SSH key file for keyname "non-existent-key-name". Your SSH key file must be located in the .ssh folder in your home directory.',
+            str(context_manager.exception)
+        )
+
+    @mock.patch('ebcli.operations.commonops.fileoperations.get_ssh_folder')
+    @mock.patch('ebcli.operations.commonops.exec_cmd')
+    def test_get_public_ssh_key__file_by_keypair_name_exists_in_the_ssh_dir__ssh_keygen_generates_OSError(
+            self,
+            exec_cmd_mock,
+            get_ssh_folder_mock
+    ):
+        os.mkdir('.ssh')
+        with open(os.path.join('.ssh', 'aws-eb-us-west-2'), 'w') as keypair_file:
+            keypair_file.write("""-----BEGIN RSA PRIVATE KEY-----
+asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
+-----END RSA PRIVATE KEY-----""")
+
+        get_ssh_folder_mock.return_value = '.ssh/'
+
+        exec_cmd_mock.side_effect = OSError
+
+        with self.assertRaises(commonops.CommandError) as context_manager:
+            commonops._get_public_ssh_key(keypair_name='aws-eb-us-west-2')
+
+        self.assertEqual(
+            'SSH is not installed. You must install SSH before continuing.',
+            str(context_manager.exception)
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_application_versions')
+    @mock.patch('ebcli.operations.commonops.io.log_error')
+    @mock.patch('ebcli.operations.commonops._timeout_reached')
+    @mock.patch('ebcli.operations.commonops._sleep')
+    def test_wait_for_processed_app_versions__some_application_versions_failed_to_get_processed(
+            self,
+            _sleep_mock,
+            _timeout_reached_mock,
+            log_error_mock,
+            get_application_versions_mock
+    ):
+        _timeout_reached_mock.return_value = False
+        get_application_versions_mock.side_effect = [
+            {
+                "ApplicationVersions": []
+            },
+            {
+                "ApplicationVersions": [
+                    {
+                        "VersionLabel": "version-label-1",
+                        "Status": 'PROCESSING',
+                    },
+                    {
+                        "VersionLabel": "version-label-2",
+                        "Status": 'PROCESSING',
+                    }
+                ]
+            },
+            {
+                "ApplicationVersions": [
+                    {
+                        "VersionLabel": "version-label-1",
+                        "Status": 'PROCESSED',
+                    },
+                    {
+                        "VersionLabel": "version-label-2",
+                        "Status": 'FAILED',
+                    }
+                ]
+            },
+        ]
+
+        self.assertFalse(
+            commonops.wait_for_processed_app_versions(
+                'my-application',
+                ['version-label-1', 'version-label-2']
+            )
+        )
+        log_error_mock.assert_has_calls(
+            [
+                mock.call('Pre-processing of application version version-label-2 has failed.'),
+                mock.call('Some application versions failed to process. Unable to continue deployment.')
+            ]
+        )
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_application_versions')
+    @mock.patch('ebcli.operations.commonops.io.log_error')
+    @mock.patch('ebcli.operations.commonops._timeout_reached')
+    @mock.patch('ebcli.operations.commonops._sleep')
+    def test_wait_for_processed_app_versions__all_app_versions_successfully_processed(
+            self,
+            _sleep_mock,
+            _timeout_reached_mock,
+            log_error_mock,
+            get_application_versions_mock
+    ):
+        _timeout_reached_mock.return_value = False
+        get_application_versions_mock.side_effect = [
+            {
+                "ApplicationVersions": []
+            },
+            {
+                "ApplicationVersions": [
+                    {
+                        "VersionLabel": "version-label-1",
+                        "Status": 'PROCESSING',
+                    },
+                    {
+                        "VersionLabel": "version-label-2",
+                        "Status": 'PROCESSING',
+                    }
+                ]
+            },
+            {
+                "ApplicationVersions": [
+                    {
+                        "VersionLabel": "version-label-1",
+                        "Status": 'PROCESSED',
+                    },
+                    {
+                        "VersionLabel": "version-label-2",
+                        "Status": 'PROCESSED',
+                    }
+                ]
+            },
+        ]
+
+        self.assertTrue(
+            commonops.wait_for_processed_app_versions(
+                'my-application',
+                ['version-label-1', 'version-label-2']
+            )
+        )
+        log_error_mock.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_application_versions')
+    @mock.patch('ebcli.operations.commonops.io.log_error')
+    @mock.patch('ebcli.operations.commonops._timeout_reached')
+    @mock.patch('ebcli.operations.commonops._sleep')
+    def test_wait_for_processed_app_versions__timeout_reached(
+            self,
+            _sleep_mock,
+            _timeout_reached_mock,
+            log_error_mock,
+            get_application_versions_mock
+    ):
+        _timeout_reached_mock.return_value = True
+        get_application_versions_mock.side_effect = mock.MagicMock()
+
+        self.assertFalse(
+            commonops.wait_for_processed_app_versions(
+                'my-application',
+                ['version-label-1', 'version-label-2']
+            )
+        )
+        log_error_mock.assert_called_once_with(
+            'All application versions have not reached a "Processed" state. Unable to continue with deployment.'
+        )
+
+    def test_wait_for_processed_app_versions__no_app_versions_to_wait_for(self):
+        self.assertTrue(commonops.wait_for_processed_app_versions('my-application', []))

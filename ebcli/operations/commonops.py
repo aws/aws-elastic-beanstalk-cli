@@ -90,11 +90,11 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                         return
                     last_time = event.event_date
                 else:
-                    time.sleep(sleep_time)
+                    _sleep(sleep_time)
 
         # Get remaining events
-        while (datetime.utcnow() - start) < timediff:
-            time.sleep(sleep_time)
+        while not _timeout_reached(start, timediff):
+            _sleep(sleep_time)
 
             events = elasticbeanstalk.get_new_events(
                 app_name,
@@ -190,7 +190,7 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
 
     try:
         # Poll for events from all environments
-        while (datetime.utcnow() - start) < timediff:
+        while not _timeout_reached(start, timediff):
             # Check for success from all environments
             if all(successes):
                 return
@@ -209,7 +209,7 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
                 if successes[index]:
                     continue
 
-                time.sleep(sleep_time)
+                _sleep(sleep_time)
 
                 events_matrix[index] = elasticbeanstalk.get_new_events(
                     app_name, grouped_envs[index], None,
@@ -226,6 +226,7 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
     finally:
         streamer.end_stream()
 
+    # TODO: Must raise TimeoutError here
     io.log_error(strings['timeout.error'])
 
 
@@ -310,7 +311,7 @@ def get_event_string(event, long_format=False):
 
 
 def get_compose_event_string(event, long_format=False):
-    app_name = event.application_name
+    app_name = event.app_name
     message = event.message
     severity = event.severity
     date = event.event_date
@@ -843,7 +844,7 @@ def _get_public_ssh_key(keypair_name):
         key_material = stdout
         return key_material
     except OSError:
-        CommandError(strings['ssh.notpresent'])
+        raise CommandError(strings['ssh.notpresent'])
 
 
 def wait_for_processed_app_versions(app_name, version_labels, timeout=5):
@@ -855,8 +856,9 @@ def wait_for_processed_app_versions(app_name, version_labels, timeout=5):
         processed[version] = False
         failed[version] = False
     start_time = datetime.utcnow()
+    timediff = timedelta(seconds=timeout * 60)
     while not all([(processed[version] or failed[version]) for version in versions_to_check]):
-        if datetime.utcnow() - start_time >= timedelta(minutes=timeout):
+        if _timeout_reached(start_time, timediff):
             io.log_error(strings['appversion.processtimeout'])
             return False
         io.LOG.debug('Retrieving app versions.')
@@ -870,7 +872,7 @@ def wait_for_processed_app_versions(app_name, version_labels, timeout=5):
                 versions_to_check.remove(v['VersionLabel'])
 
             elif v['Status'] == 'FAILED':
-                failed[version] = True
+                failed[v['VersionLabel']] = True
                 io.log_error(strings['appversion.processfailed'].replace('{app_version}',
                                                                          v['VersionLabel']))
                 versions_to_check.remove(v['VersionLabel'])
@@ -878,7 +880,7 @@ def wait_for_processed_app_versions(app_name, version_labels, timeout=5):
         if all(processed.values()):
             return True
 
-        time.sleep(4)
+        _sleep(4)
 
     if any(failed.values()):
         io.log_error(strings['appversion.cannotdeploy'])
@@ -923,3 +925,11 @@ def _create_instance_role(role_name, policy_arns):
     document = iam_documents.EC2_ASSUME_ROLE_PERMISSION
     ret = iam.create_role_with_policy(role_name, document, policy_arns)
     return ret
+
+
+def _sleep(sleep_time):
+    time.sleep(sleep_time)
+
+
+def _timeout_reached(start, timediff):
+    return (datetime.utcnow() - start) >= timediff

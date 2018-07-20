@@ -1567,6 +1567,444 @@ DESCRIBE_EVENTS_RESPONSE = {
 }
 
 
+CREATE_ENVIRONMENT_DESCRIBE_EVENTS = {
+    'Events': [
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 50, 21, 623000, tzinfo=tz.tzutc()),
+            'Message': 'Successfully launched environment: eb-locust-example-windows-server-dev',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 50, 0, 909000, tzinfo=tz.tzutc()),
+            'Message': 'Environment health has transitioned from Pending to Ok. Initialization completed 26 seconds ago and took 5 minutes.',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 49, 10, tzinfo=tz.tzutc()),
+            'Message': "Nginx configuration detected in the '.ebextensions/nginx' directory. AWS Elastic Beanstalk will no longer manage the Nginx configuration for this environment.",
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 46, 20, 148000, tzinfo=tz.tzutc()),
+            'Message': 'Created Load Balancer listener named: arn:aws:elasticloadbalancing:us-west-2:123123123123:listener/app/awseb-AWSEB-1U4TIRMMNUG89/c00caf9caf7ea40a/290a651181682b7c',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 46, 20, 85000, tzinfo=tz.tzutc()),
+            'Message': 'Created load balancer named: arn:aws:elasticloadbalancing:us-west-2:123123123123:loadbalancer/app/awseb-AWSEB-1U4TIRMMNUG89/c00caf9caf7ea40a',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 46, 1, 177000, tzinfo=tz.tzutc()),
+            'Message': 'Added instance [i-015ccf443ebbdca74] to your environment.',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 45, 46, 426000, tzinfo=tz.tzutc()),
+            'Message': 'Created CloudWatch alarm named: awseb-e-3vui9m2zcq-stack-AWSEBCloudwatchAlarmLow-9678TTC8356T',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 45, 46, 386000, tzinfo=tz.tzutc()),
+            'Message': 'Created CloudWatch alarm named: awseb-e-3vui9m2zcq-stack-AWSEBCloudwatchAlarmHigh-1EIGCE53U06YR',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 45, 46, 348000, tzinfo=tz.tzutc()),
+            'Message': 'Created Auto Scaling group policy named: arn:aws:autoscaling:us-west-2:123123123123:scalingPolicy:886beef6-ee91-49f9-b2b5-a404aa1614fa:autoScalingGroupName/awseb-e-3vui9m2zcq-stack-AWSEBAutoScalingGroup-4P5RVB6OO8NU:policyName/awseb-e-3vui9m2zcq-stack-AWSEBAutoScalingScaleDownPolicy-1HFFV6G3V1BZT',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 45, 46, 297000, tzinfo=tz.tzutc()),
+            'Message': 'Created Auto Scaling group policy named: arn:aws:autoscaling:us-west-2:123123123123:scalingPolicy:9e57739d-32bc-47ba-a6b0-792e26b0c66d:autoScalingGroupName/awseb-e-3vui9m2zcq-stack-AWSEBAutoScalingGroup-4P5RVB6OO8NU:policyName/awseb-e-3vui9m2zcq-stack-AWSEBAutoScalingScaleUpPolicy-TFZ49ZB7D9HF',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 45, 30, 896000, tzinfo=tz.tzutc()),
+            'Message': 'Waiting for EC2 instances to launch. This may take a few minutes.',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 45, 30, 854000, tzinfo=tz.tzutc()),
+            'Message': 'Created Auto Scaling group named: awseb-e-3vui9m2zcq-stack-AWSEBAutoScalingGroup-4P5RVB6OO8NU',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 44, 13, 347000, tzinfo=tz.tzutc()),
+            'Message': 'Created Auto Scaling launch configuration named: awseb-e-3vui9m2zcq-stack-AWSEBAutoScalingLaunchConfiguration-1AYJSODC9NCQ0',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 44, 13, 297000, tzinfo=tz.tzutc()),
+            'Message': 'Created security group named: awseb-e-3vui9m2zcq-stack-AWSEBSecurityGroup-7S6YT48ATB9X',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 44, 13, 239000, tzinfo=tz.tzutc()),
+            'Message': 'Created security group named: sg-dc0062ac',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 44, 13, 174000, tzinfo=tz.tzutc()),
+            'Message': 'Created target group named: arn:aws:elasticloadbalancing:us-west-2:123123123123:targetgroup/awseb-AWSEB-1PK9GSYN2ELIT/8cea89f8126bd593',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 44, 1, 266000, tzinfo=tz.tzutc()),
+            'Message': 'Environment health has transitioned to Pending. Initialization in progress (running for 3 seconds). There are no instances.',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 43, 51, 685000, tzinfo=tz.tzutc()),
+            'Message': 'Using elasticbeanstalk-us-west-2-123123123123 as Amazon S3 storage bucket for environment data.',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 7, 19, 21, 43, 50, 165000, tzinfo=tz.tzutc()),
+            'Message': 'createEnvironment is starting.',
+            'ApplicationName': 'eb-locust-example-windows-server',
+            'EnvironmentName': 'eb-locust-example-windows-server-dev',
+            'RequestId': 'a28c2685-b6a0-4785-82bf-45de6451bd01',
+            'Severity': 'INFO'
+        },
+    ],
+    'NextToken': 'MTUzMjAzMjI3MzUzNzo6MDo6MTUzMjA1NTExNjcwNg==',
+    'ResponseMetadata': {
+        'RequestId': '16074038-243f-4291-b0f9-4f8c0c1afdd3',
+        'HTTPStatusCode': 200,
+        'HTTPHeaders': {
+            'content-type': 'text/xml',
+            'date': 'Fri, 20 Jul 2018 02:51:55 GMT',
+            'vary': 'Accept-Encoding',
+            'x-amzn-requestid': '16074038-243f-4291-b0f9-4f8c0c1afdd3',
+            'content-length': '48919',
+            'connection': 'keep-alive'
+        },
+        'RetryAttempts': 0
+    }
+}
+
+
+COMPOSE_ENVIRONMENTS_DESCRIBE_EVENTS = {
+    'Events': [
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 51, 55, 134000, tzinfo=tz.tzutc()),
+            'Message': 'Successfully launched environment: environment-2',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'RequestId': '2bd9b511-40bf-474e-b3da-d9e3fbd473c9',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 50, 58, 588000, tzinfo=tz.tzutc()),
+            'Message': 'Environment health has been set to GREEN',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 49, 5, 548000, tzinfo=tz.tzutc()),
+            'Message': 'Successfully launched environment: environment-1',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'RequestId': '522b30dd-c255-4174-8105-2c3d65e6ba2a',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 48, 10, 792000, tzinfo=tz.tzutc()),
+            'Message': 'Environment health has been set to GREEN',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 47, 35000, tzinfo=tz.tzutc()),
+            'Message': 'Created CloudWatch alarm named: awseb-e-kuqwnck4n8-stack-AWSEBCloudwatchAlarmLow-U5TAX4ZS6GDC',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'RequestId': '522b30dd-c255-4174-8105-2c3d65e6ba2a',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 46, 998000, tzinfo=tz.tzutc()),
+            'Message': 'Created CloudWatch alarm named: awseb-e-kuqwnck4n8-stack-AWSEBCloudwatchAlarmHigh-2ZS6IWJ4P7J8',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'RequestId': '522b30dd-c255-4174-8105-2c3d65e6ba2a',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 46, 962000, tzinfo=tz.tzutc()),
+            'Message': 'Created Auto Scaling group policy named: arn:aws:autoscaling:eu-west-1:123123123123:scalingPolicy:f283175b-46f7-4eee-909d-5caf6d9bd73e:autoScalingGroupName/awseb-e-kuqwnck4n8-stack-AWSEBAutoScalingGroup-11K53S424AJF6:policyName/awseb-e-kuqwnck4n8-stack-AWSEBAutoScalingScaleDownPolicy-E1AS0TV205OS',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'RequestId': '522b30dd-c255-4174-8105-2c3d65e6ba2a',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 46, 918000, tzinfo=tz.tzutc()),
+            'Message': 'Created Auto Scaling group policy named: arn:aws:autoscaling:eu-west-1:123123123123:scalingPolicy:dd611938-d042-4a2c-8581-3b4d089ea47c:autoScalingGroupName/awseb-e-kuqwnck4n8-stack-AWSEBAutoScalingGroup-11K53S424AJF6:policyName/awseb-e-kuqwnck4n8-stack-AWSEBAutoScalingScaleUpPolicy-59A98I46PYZ',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'RequestId': '522b30dd-c255-4174-8105-2c3d65e6ba2a',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 31, 615000, tzinfo=tz.tzutc()),
+            'Message': 'Waiting for EC2 instances to launch. This may take a few minutes.',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'RequestId': '522b30dd-c255-4174-8105-2c3d65e6ba2a',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 31, 575000, tzinfo=tz.tzutc()),
+            'Message': 'Created Auto Scaling group named: awseb-e-kuqwnck4n8-stack-AWSEBAutoScalingGroup-11K53S424AJF6',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'RequestId': '522b30dd-c255-4174-8105-2c3d65e6ba2a',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 21, 936000, tzinfo=tz.tzutc()),
+            'Message': 'Created CloudWatch alarm named: awseb-e-m43rwf82e5-stack-AWSEBCloudwatchAlarmHigh-13CM9KUNS5IXK',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'RequestId': '2bd9b511-40bf-474e-b3da-d9e3fbd473c9',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 21, 898000, tzinfo=tz.tzutc()),
+            'Message': 'Created CloudWatch alarm named: awseb-e-m43rwf82e5-stack-AWSEBCloudwatchAlarmLow-NOC6BULG0II2',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'RequestId': '2bd9b511-40bf-474e-b3da-d9e3fbd473c9',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 21, 862000, tzinfo=tz.tzutc()),
+            'Message': 'Created Auto Scaling group policy named: arn:aws:autoscaling:eu-west-1:123123123123:scalingPolicy:dca6aebe-7ba0-4b2e-82f2-3d5ce33bdc1b:autoScalingGroupName/awseb-e-m43rwf82e5-stack-AWSEBAutoScalingGroup-2C70XPER7IL1:policyName/awseb-e-m43rwf82e5-stack-AWSEBAutoScalingScaleUpPolicy-JB1U3RC26091',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'RequestId': '2bd9b511-40bf-474e-b3da-d9e3fbd473c9',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 21, 820000, tzinfo=tz.tzutc()),
+            'Message': 'Created Auto Scaling group policy named: arn:aws:autoscaling:eu-west-1:123123123123:scalingPolicy:5ec9addd-d62c-4380-97df-6a78adcc00bf:autoScalingGroupName/awseb-e-m43rwf82e5-stack-AWSEBAutoScalingGroup-2C70XPER7IL1:policyName/awseb-e-m43rwf82e5-stack-AWSEBAutoScalingScaleDownPolicy-ZBFPONHB5OKP',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'RequestId': '2bd9b511-40bf-474e-b3da-d9e3fbd473c9',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 21, 770000, tzinfo=tz.tzutc()),
+            'Message': 'Waiting for EC2 instances to launch. This may take a few minutes.',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'RequestId': '2bd9b511-40bf-474e-b3da-d9e3fbd473c9',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 21, 710000, tzinfo=tz.tzutc()),
+            'Message': 'Created Auto Scaling group named: awseb-e-m43rwf82e5-stack-AWSEBAutoScalingGroup-2C70XPER7IL1',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'RequestId': '2bd9b511-40bf-474e-b3da-d9e3fbd473c9',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 9, 111000, tzinfo=tz.tzutc()),
+            'Message': "Adding instance 'i-080ac1f6f68daed01' to your environment.",
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 9, 111000, tzinfo=tz.tzutc()),
+            'Message': "Added EC2 instance 'i-080ac1f6f68daed01' to Auto Scaling Group 'awseb-e-m43rwf82e5-stack-AWSEBAutoScalingGroup-2C70XPER7IL1'.",
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 0, 930000, tzinfo=tz.tzutc()),
+            'Message': "Added EC2 instance 'i-0994162b2dbdf8790' to Auto Scaling Group 'awseb-e-kuqwnck4n8-stack-AWSEBAutoScalingGroup-11K53S424AJF6'.",
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 47, 0, 930000, tzinfo=tz.tzutc()),
+            'Message': "Adding instance 'i-0994162b2dbdf8790' to your environment.",
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 46, 19, 475000, tzinfo=tz.tzutc()),
+            'Message': 'Created Auto Scaling launch configuration named: awseb-e-m43rwf82e5-stack-AWSEBAutoScalingLaunchConfiguration-1GDHWDRATGXLQ',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'RequestId': '2bd9b511-40bf-474e-b3da-d9e3fbd473c9',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 46, 19, 404000, tzinfo=tz.tzutc()),
+            'Message': 'Created security group named: awseb-e-m43rwf82e5-stack-AWSEBSecurityGroup-6I9U5YBPFFXJ',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'RequestId': '2bd9b511-40bf-474e-b3da-d9e3fbd473c9',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 45, 32, 583000, tzinfo=tz.tzutc()),
+            'Message': 'Created load balancer named: awseb-e-m-AWSEBLoa-19I1GLMMFDVLJ',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'RequestId': '2bd9b511-40bf-474e-b3da-d9e3fbd473c9',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 45, 28, 5000, tzinfo=tz.tzutc()),
+            'Message': 'Created Auto Scaling launch configuration named: awseb-e-kuqwnck4n8-stack-AWSEBAutoScalingLaunchConfiguration-1H04QXPJW60H5',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'RequestId': '522b30dd-c255-4174-8105-2c3d65e6ba2a',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 45, 27, 933000, tzinfo=tz.tzutc()),
+            'Message': 'Created security group named: awseb-e-kuqwnck4n8-stack-AWSEBSecurityGroup-BCO350UPOO4G',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'RequestId': '522b30dd-c255-4174-8105-2c3d65e6ba2a',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 45, 17, 207000, tzinfo=tz.tzutc()),
+            'Message': 'Created security group named: sg-4e3d1433',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'RequestId': '2bd9b511-40bf-474e-b3da-d9e3fbd473c9',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 44, 57, 342000, tzinfo=tz.tzutc()),
+            'Message': 'Using elasticbeanstalk-eu-west-1-123123123123 as Amazon S3 storage bucket for environment data.',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'RequestId': '2bd9b511-40bf-474e-b3da-d9e3fbd473c9',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 44, 57, 230000, tzinfo=tz.tzutc()),
+            'Message': 'Created load balancer named: awseb-e-k-AWSEBLoa-1UWQNX5DI2ZZT',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'RequestId': '522b30dd-c255-4174-8105-2c3d65e6ba2a',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 44, 56, 592000, tzinfo=tz.tzutc()),
+            'Message': 'createEnvironment is starting.',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-2',
+            'RequestId': '2bd9b511-40bf-474e-b3da-d9e3fbd473c9',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 44, 56, 321000, tzinfo=tz.tzutc()),
+            'Message': 'Created security group named: sg-29391054',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'RequestId': '522b30dd-c255-4174-8105-2c3d65e6ba2a',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 44, 5, 531000, tzinfo=tz.tzutc()),
+            'Message': 'Using elasticbeanstalk-eu-west-1-123123123123 as Amazon S3 storage bucket for environment data.',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'RequestId': '522b30dd-c255-4174-8105-2c3d65e6ba2a',
+            'Severity': 'INFO'
+        },
+        {
+            'EventDate': datetime.datetime(2018, 6, 15, 19, 44, 4, 648000, tzinfo=tz.tzutc()),
+            'Message': 'createEnvironment is starting.',
+            'ApplicationName': 'my-application',
+            'EnvironmentName': 'environment-1',
+            'RequestId': '522b30dd-c255-4174-8105-2c3d65e6ba2a',
+            'Severity': 'INFO'
+        },
+    ],
+    'ResponseMetadata': {
+        'RequestId': '391ae6f8-e388-4d8c-b58b-9be51b6e43cd',
+        'HTTPStatusCode': 200,
+        'HTTPHeaders': {
+            'content-type': 'text/xml',
+            'date': 'Fri, 20 Jul 2018 20:55:20 GMT',
+            'vary': 'Accept-Encoding',
+            'x-amzn-requestid': '391ae6f8-e388-4d8c-b58b-9be51b6e43cd',
+            'content-length': '38489',
+            'connection': 'keep-alive'
+        },
+        'RetryAttempts': 0
+    }
+}
+
+
 DESCRIBE_ENVIRONMENTS_RESPONSE = {
     'Environments': [
         {
