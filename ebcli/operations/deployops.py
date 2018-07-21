@@ -65,22 +65,3 @@ def deploy(app_name, env_name, version, label, message, group_name=None,
                                       timeout_in_minutes=timeout,
                                       can_abort=True,
                                       env_name=env_name)
-
-
-def deploy_no_events(app_name, env_name, version, label, message, process=False, staged=False):
-    region_name = aws.get_region_name()
-
-    io.log_info('Deploying code to ' + env_name + ' in region ' + region_name)
-
-    if version:
-        app_version_label = version
-    else:
-        # Create app version
-        app_version_label = commonops.create_app_version(
-            app_name, process=process, label=label, message=message, staged=staged)
-
-    # swap env to new app version
-    request_id = elasticbeanstalk.update_env_application_version(
-        env_name, app_version_label)
-
-    return request_id
