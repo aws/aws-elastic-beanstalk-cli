@@ -3335,6 +3335,11 @@ DESCRIBE_CONFIGURATION_SETTINGS_RESPONSE__2 = {
                     'Value': ''
                 },
                 {
+                    'Namespace': 'aws:elasticbeanstalk:application:environment',
+                    'OptionName': 'DB_USERNAME',
+                    'Value': 'root'
+                },
+                {
                     'Namespace': 'aws:elasticbeanstalk:cloudwatch:logs',
                     'OptionName': 'DeleteOnTerminate',
                     'Value': 'false'

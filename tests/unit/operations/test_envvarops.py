@@ -14,11 +14,14 @@
 # language governing permissions and limitations under the License.
 from collections import Counter
 
+import mock
+from pytest_socket import disable_socket, enable_socket
 from six import iteritems
 import unittest
 
 from ebcli.operations import envvarops
 
+from .. import mock_responses
 
 class TestEnvvarOps(unittest.TestCase):
 
@@ -26,6 +29,12 @@ class TestEnvvarOps(unittest.TestCase):
         return self.assertEqual(
             Counter(frozenset(iteritems(d)) for d in ls1),
             Counter(frozenset(iteritems(d)) for d in ls2))
+
+    def setUp(self):
+        disable_socket()
+
+    def tearDown(self):
+        enable_socket()
 
     def test_sanitize_environment_variables_from_customer_input(self):
         environment_variables_input = '  """  DB_USER"""   =     "\"  r=o\"o\'t\"\"  "   ,  DB_PAS\ = SWORD="\"pass=\'\"word\""'
@@ -205,3 +214,98 @@ class TestEnvvarOps(unittest.TestCase):
                     'foo': s
                 }
             )
+
+    @mock.patch('ebcli.operations.envvarops.elasticbeanstalk.describe_configuration_settings')
+    @mock.patch('ebcli.operations.envvarops.print_environment_vars')
+    def test_get_and_print_environment_vars(
+            self,
+            print_environment_vars_mock,
+            describe_configuration_settings_mock
+    ):
+        describe_configuration_settings_mock.return_value = mock_responses.DESCRIBE_CONFIGURATION_SETTINGS_RESPONSE__2['ConfigurationSettings'][0]
+
+        envvarops.get_and_print_environment_vars('my-application', 'environment-1')
+
+        print_environment_vars_mock.assert_called_once_with({'DB_USERNAME': 'root'})
+
+    @mock.patch('ebcli.operations.envvarops.io.echo')
+    def test_print_environment_vars__no_envvars(
+            self,
+            echo_mock
+    ):
+        envvarops.print_environment_vars({})
+
+        echo_mock.assert_not_called()
+
+    @mock.patch('ebcli.operations.envvarops.io.echo')
+    def test_print_environment_vars(
+            self,
+            echo_mock
+    ):
+        envvarops.print_environment_vars(
+            {
+                'DB_USERNAME': 'root',
+                'DB_PASSWORD': 'password'
+            }
+        )
+
+        echo_mock.assert_has_calls(
+            [
+                mock.call(' Environment Variables:'),
+                mock.call('    ', 'DB_USERNAME', '=', 'root'),
+                mock.call('    ', 'DB_PASSWORD', '=', 'password')
+            ]
+        )
+
+    @mock.patch('ebcli.operations.envvarops.elasticbeanstalk.update_environment')
+    @mock.patch('ebcli.operations.envvarops.commonops.wait_for_success_events')
+    def test_setenv(
+            self,
+            wait_for_success_events_mock,
+            update_environment_mock
+    ):
+        update_environment_mock.return_value = 'request-id'
+
+        envvarops.setenv(
+            'my-application',
+            'environment-1',
+            ['foo=bar', 'fish=good', 'trout=', 'baz='],
+            timeout=1
+        )
+
+        self.assertEqual(
+            'environment-1',
+            update_environment_mock.call_args[0][0]
+        )
+        self.assertListsOfDictsEquivalent(
+            update_environment_mock.call_args[0][1],
+            [
+                {
+                    'Namespace': 'aws:elasticbeanstalk:application:environment',
+                    'OptionName': 'foo',
+                    'Value': 'bar'
+                },
+                {
+                    'Namespace': 'aws:elasticbeanstalk:application:environment',
+                    'OptionName': 'fish',
+                    'Value': 'good'
+                }
+            ]
+        )
+        self.assertListsOfDictsEquivalent(
+            update_environment_mock.call_args[1]['remove'],
+            [
+                {
+                    'Namespace': 'aws:elasticbeanstalk:application:environment',
+                    'OptionName': 'baz'
+                },
+                {
+                    'Namespace': 'aws:elasticbeanstalk:application:environment',
+                    'OptionName': 'trout'
+                }
+            ]
+        )
+
+        wait_for_success_events_mock.assert_called_once_with(
+            'request-id', can_abort=True, timeout_in_minutes=1
+        )
