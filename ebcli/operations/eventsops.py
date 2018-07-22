@@ -47,6 +47,20 @@ def follow_events(app_name, env_name, platform_arn=None):
                 streamer.stream_event(message)
                 last_time = event.event_date
 
-            time.sleep(4)
+            _sleep()
+    except EndOfTestError:
+        pass
     finally:
         streamer.end_stream()
+
+
+def _sleep():
+    time.sleep(4)
+
+
+class EndOfTestError(EOFError):
+    """
+    Class defines exception to raise in tests to allow exiting from the infinite `while` loop.
+    Must not be raised in source code.
+    """
+    pass
