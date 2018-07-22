@@ -270,8 +270,7 @@ class TestBuildSpecOps(unittest.TestCase):
         self.assertFalse(
             buildspecops.wait_for_app_version_attribute(
                 'my-application',
-                ['version-label-1', 'version-label-2'],
-                'BuildArn'
+                ['version-label-1', 'version-label-2']
             )
         )
         log_error_mock.assert_has_calls(
@@ -328,8 +327,7 @@ class TestBuildSpecOps(unittest.TestCase):
         self.assertTrue(
             buildspecops.wait_for_app_version_attribute(
                 'my-application',
-                ['version-label-1', 'version-label-2'],
-                'BuildArn'
+                ['version-label-1', 'version-label-2']
             )
         )
         log_error_mock.assert_not_called()
@@ -352,8 +350,7 @@ class TestBuildSpecOps(unittest.TestCase):
         self.assertFalse(
             buildspecops.wait_for_app_version_attribute(
                 'my-application',
-                ['version-label-1', 'version-label-2'],
-                'BuildArn'
+                ['version-label-1', 'version-label-2']
             )
         )
         log_error_mock.assert_called_once_with(
@@ -361,4 +358,4 @@ class TestBuildSpecOps(unittest.TestCase):
         )
 
     def test_wait_for_app_version_attribute__no_app_versions_to_wait_for(self):
-        self.assertTrue(buildspecops.wait_for_app_version_attribute('my-application', [], 'BuildArn'))
+        self.assertTrue(buildspecops.wait_for_app_version_attribute('my-application', []))
