@@ -223,12 +223,142 @@ class TestBuildSpecOps(unittest.TestCase):
         # Assert we made the correct calls
         mock_get_roles.assert_called_with()
 
-    def test_wait_for_app_version_attribute_happy_case(self):
-        # Mock out methods called
-        self.mock_beanstalk.get_application_versions.return_value = self.app_version_raw_response
+    @mock.patch('ebcli.operations.buildspecops.elasticbeanstalk.get_application_versions')
+    @mock.patch('ebcli.operations.buildspecops.io.log_error')
+    @mock.patch('ebcli.operations.buildspecops._timeout_reached')
+    @mock.patch('ebcli.operations.buildspecops._sleep')
+    def test_wait_for_app_version_attribute__some_application_versions_failed_to_contain_build_arn_attribute(
+            self,
+            _sleep_mock,
+            _timeout_reached_mock,
+            log_error_mock,
+            get_application_versions_mock
+    ):
+        _sleep_mock.side_effect = None
+        _timeout_reached_mock.return_value = False
+        get_application_versions_mock.side_effect = [
+            {
+                "ApplicationVersions": []
+            },
+            {
+                "ApplicationVersions": [
+                    {
+                        "VersionLabel": "version-label-1",
+                        "Status": 'PROCESSING',
+                    },
+                    {
+                        "VersionLabel": "version-label-2",
+                        "Status": 'PROCESSING',
+                    }
+                ]
+            },
+            {
+                "ApplicationVersions": [
+                    {
+                        "VersionLabel": "version-label-1",
+                        "Status": 'PROCESSED',
+                        "BuildArn": 'codebuild-build-arn'
+                    },
+                    {
+                        "VersionLabel": "version-label-2",
+                        "Status": 'FAILED',
+                    }
+                ]
+            },
+        ]
 
-        # Make the call we want to test
-        buildspecops.wait_for_app_version_attribute(self.app_name, [self.version_label], 'BuildArn')
+        self.assertFalse(
+            buildspecops.wait_for_app_version_attribute(
+                'my-application',
+                ['version-label-1', 'version-label-2'],
+                'BuildArn'
+            )
+        )
+        log_error_mock.assert_has_calls(
+            [
+                mock.call('Application Version version-label-2 has failed to generate required attributes.')
+            ]
+        )
 
-        # Assert we made the correct calls
-        self.mock_beanstalk.get_application_versions.assert_called_with(self.app_name, [])
+    @mock.patch('ebcli.operations.buildspecops.elasticbeanstalk.get_application_versions')
+    @mock.patch('ebcli.operations.buildspecops.io.log_error')
+    @mock.patch('ebcli.operations.buildspecops._timeout_reached')
+    @mock.patch('ebcli.operations.buildspecops._sleep')
+    def test_wait_for_app_version_attribute__all_app_versions_contain_build_arn(
+            self,
+            _sleep_mock,
+            _timeout_reached_mock,
+            log_error_mock,
+            get_application_versions_mock
+    ):
+        _sleep_mock.side_effect = None
+        _timeout_reached_mock.return_value = False
+        get_application_versions_mock.side_effect = [
+            {
+                "ApplicationVersions": []
+            },
+            {
+                "ApplicationVersions": [
+                    {
+                        "VersionLabel": "version-label-1",
+                        "Status": 'PROCESSING',
+                    },
+                    {
+                        "VersionLabel": "version-label-2",
+                        "Status": 'PROCESSING',
+                    }
+                ]
+            },
+            {
+                "ApplicationVersions": [
+                    {
+                        "VersionLabel": "version-label-1",
+                        "Status": 'PROCESSED',
+                        "BuildArn": "build-arn-1"
+                    },
+                    {
+                        "VersionLabel": "version-label-2",
+                        "Status": 'PROCESSED',
+                        "BuildArn": "build-arn-2"
+                    }
+                ]
+            },
+        ]
+
+        self.assertTrue(
+            buildspecops.wait_for_app_version_attribute(
+                'my-application',
+                ['version-label-1', 'version-label-2'],
+                'BuildArn'
+            )
+        )
+        log_error_mock.assert_not_called()
+
+    @mock.patch('ebcli.operations.buildspecops.elasticbeanstalk.get_application_versions')
+    @mock.patch('ebcli.operations.buildspecops.io.log_error')
+    @mock.patch('ebcli.operations.buildspecops._timeout_reached')
+    @mock.patch('ebcli.operations.buildspecops._sleep')
+    def test_wait_for_app_version_attribute__timeout_reached(
+            self,
+            _sleep_mock,
+            _timeout_reached_mock,
+            log_error_mock,
+            get_application_versions_mock
+    ):
+        _sleep_mock.side_effect = None
+        _timeout_reached_mock.return_value = True
+        get_application_versions_mock.side_effect = mock.MagicMock()
+
+        self.assertFalse(
+            buildspecops.wait_for_app_version_attribute(
+                'my-application',
+                ['version-label-1', 'version-label-2'],
+                'BuildArn'
+            )
+        )
+        log_error_mock.assert_called_once_with(
+            'Application Version version-label-1, version-label-2 has failed to generate required attributes.'
+        )
+
+    def test_wait_for_app_version_attribute__no_app_versions_to_wait_for(self):
+        self.assertTrue(buildspecops.wait_for_app_version_attribute('my-application', [], 'BuildArn'))

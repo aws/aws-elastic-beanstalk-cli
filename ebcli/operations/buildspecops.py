@@ -100,9 +100,10 @@ def wait_for_app_version_attribute(app_name, version_labels, attribute, timeout=
         found[version] = False
         failed[version] = False
     start_time = datetime.utcnow()
+    timediff = timedelta(minutes=timeout)
     while not all([(found[version] or failed[version]) for version in versions_to_check]):
-        if datetime.utcnow() - start_time >= timedelta(minutes=timeout):
-            io.log_error(strings['appversion.attribute.failed'].replace('{app_version}', version_labels))
+        if _timeout_reached(start_time, timediff):
+            io.log_error(strings['appversion.attribute.failed'].replace('{app_version}', ', '.join(version_labels)))
             return False
         io.LOG.debug('Retrieving app versions.')
         app_versions = elasticbeanstalk.get_application_versions(app_name, versions_to_check)['ApplicationVersions']
@@ -121,9 +122,17 @@ def wait_for_app_version_attribute(app_name, version_labels, attribute, timeout=
         if all(found.values()):
             return True
 
-        time.sleep(4)
+        _sleep()
 
     if any(failed.values()):
         return False
 
     return True
+
+
+def _sleep():
+    time.sleep(4)
+
+
+def _timeout_reached(start_time, timediff):
+    return datetime.utcnow() - start_time >= timediff
