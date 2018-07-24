@@ -196,3 +196,11 @@ class WorkerQueueNotFound(EBCLIException):
 
 class DockerVersionError(Exception):
     pass
+
+
+class EndOfTestError(EOFError):
+    """
+    Class defines exception to raise in tests to allow exiting from the infinite `while` loop.
+    Must not be raised in source code.
+    """
+    pass

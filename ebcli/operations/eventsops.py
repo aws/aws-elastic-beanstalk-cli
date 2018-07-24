@@ -16,7 +16,7 @@ import os
 import time
 from ..core import io
 from ..lib import elasticbeanstalk
-from ..resources.strings import prompts
+from ..objects.exceptions import EndOfTestError
 from . import commonops
 
 
@@ -56,11 +56,3 @@ def follow_events(app_name, env_name, platform_arn=None):
 
 def _sleep():
     time.sleep(4)
-
-
-class EndOfTestError(EOFError):
-    """
-    Class defines exception to raise in tests to allow exiting from the infinite `while` loop.
-    Must not be raised in source code.
-    """
-    pass

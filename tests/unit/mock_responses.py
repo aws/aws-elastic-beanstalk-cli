@@ -3930,3 +3930,64 @@ DESCRIBE_LOG_GROUPS_RESPONSE = {
         }
     ]
 }
+
+
+LIST_OBJECTS_RESPONSE = {
+    'ResponseMetadata': {
+        'RequestId': '751065621A29D27C',
+        'HostId': 'X8PA6BclbDpIJIf41zVeJrexo2ejHDeFAxNvqH3hlxqgKOQX02xHWX0mKM3bijWf70YzWoWJcNw=',
+        'HTTPStatusCode': 200,
+        'HTTPHeaders': {
+            'x-amz-id-2': 'X8PA6BclbDpIJIf41zVeJrexo2ejHDeFAxNvqH3hlxqgKOQX02xHWX0mKM3bijWf70YzWoWJcNw=',
+            'x-amz-request-id': '751065621A29D27C',
+            'date': 'Tue, 24 Jul 2018 01:15:44 GMT',
+            'x-amz-bucket-region': 'us-east-2',
+            'content-type': 'application/xml',
+            'transfer-encoding': 'chunked',
+            'server': 'AmazonS3'
+        },
+        'RetryAttempts': 0
+    },
+    'IsTruncated': False,
+    'Marker': '',
+    'Contents': [
+        {
+            'Key': '.elasticbeanstalk',
+            'LastModified': datetime.datetime(2017, 7, 12, 21, 59, 23, tzinfo=tz.tzutc()),
+            'ETag': '"d41d8cd98f00b2042234534asdfasdff8427e"',
+            'Size': 0,
+            'StorageClass': 'STANDARD',
+            'Owner': {
+                'ID': '15a1b0d3e1e432234123412341423144d71093667b756f3435c1dcad2247c7124'
+            }
+        },
+        {
+            'Key': 'my-application/app-171205_194441.zip',
+            'LastModified': datetime.datetime(2017, 12, 5, 19, 44, 42, tzinfo=tz.tzutc()),
+            'ETag': '"4ee0f32888afdgsdfg34523552345f8494f7"',
+            'Size': 10724,
+            'StorageClass': 'STANDARD',
+            'Owner': {
+                'ID': '15a1b0d3e1e432234123412341423144d71093667b756f3435c1dcad2247c7124'
+            }
+        }
+    ]
+}
+
+
+DELETE_OBJECTS_RESPONSE = {
+    'Deleted': [
+        {
+            'Key': 'key_1',
+            'VersionId': 'version_id_1',
+            'DeleteMarker': True,
+            'DeleteMarkerVersionId': 'marker_1'
+        },
+        {
+            'Key': 'key_2',
+            'VersionId': 'version_id_2',
+            'DeleteMarker': True,
+            'DeleteMarkerVersionId': 'marker_2'
+        },
+    ],
+}

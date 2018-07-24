@@ -15,13 +15,19 @@ from __future__ import division
 import os
 from io import BytesIO
 import math
+import sys
 import threading
 
 from cement.utils.misc import minimal_logger
 
 from . import aws
-from ..objects.exceptions import NotFoundError, FileTooLargeError, UploadError
-from ..core import io
+from ..objects.exceptions import (
+    EndOfTestError,
+    NotFoundError,
+    FileTooLargeError,
+    UploadError
+)
+from ..core import fileoperations, io
 from .utils import static_var
 
 
@@ -85,13 +91,17 @@ def delete_objects(bucket, keys):
 
 
 def upload_workspace_version(bucket, key, file_path, workspace_type='Application'):
+    cwd = os.getcwd()
     try:
+        fileoperations._traverse_to_project_root()
         size = os.path.getsize(file_path)
     except OSError as err:
         if err.errno == 2:
             raise NotFoundError('{0} Version does not exist locally ({1}).'
                                 ' Try uploading the Application Version again.'.format(workspace_type, err.filename))
         raise err
+    finally:
+        os.chdir(cwd)
 
     LOG.debug('Upload {0} Version. File size = {1}'.format(workspace_type, str(size)))
     if size > 536870912:
@@ -160,8 +170,7 @@ def multithreaded_upload(bucket, key, file_path):
         # S3 requires the etag list to be sorted
         etaglist = sorted(etaglist, key=lambda k: k['PartNumber'])
 
-        # Validate we uploaded all parts
-        if len(etaglist) != total_parts:
+        if not _all_parts_were_uploaded(etaglist, total_parts):
             LOG.debug('Uploaded {0} parts, but should have uploaded {1} parts.'
                       .format(len(etaglist), total_parts))
             raise UploadError('An error occured while uploading Application Version. '
@@ -180,25 +189,30 @@ def multithreaded_upload(bucket, key, file_path):
         raise
 
 
+def _all_parts_were_uploaded(etaglist, total_parts):
+    return len(etaglist) == total_parts
+
+
 def _wait_for_threads(jobs):
     alive = True
     while alive:
         alive = False
         for j in jobs:
-            """
-            We want to wait forever for the thread to finish.
-            j.join() however is a halting call. We need to pass in a
-            time to j.join() so it is non halting. This way a user can use
-            CTRL+C to terminate the command. 2**31 is the largest number we
-            can pass into j.join()
-            """
-            try:
+            # We want to wait forever for the thread to finish.
+            # j.join() however is a blocking call. We need to pass in a
+            # time to j.join() so it is non blocking. This way a user can use
+            # CTRL+C to terminate the command. 2**31 is the largest number we
+            # can pass into j.join()
+            if sys.version_info > (3, 0):
                 timeout = threading.TIMEOUT_MAX
-            except AttributeError:  # Python 2
-                timeout = 2**16  # 18 hours should be sufficient.
-            j.join(timeout)
-            if j.isAlive():
-                alive = True
+                j.join(timeout)
+                if j.is_alive():
+                    alive = True
+            else:
+                timeout = 2**16
+                j.join(timeout)
+                if j.isAlive():
+                    alive = True
 
 
 def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id):
@@ -230,6 +244,8 @@ def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id):
                 io.update_upload_progress(progress)
                 # No errors, break out of loop
                 break
+            except EndOfTestError:
+                return
             except Exception as e:
                 # We want to swallow all exceptions or else they will be
                 # printed as a stack trace to the Console
