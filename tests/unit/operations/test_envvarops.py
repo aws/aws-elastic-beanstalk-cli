@@ -254,7 +254,8 @@ class TestEnvvarOps(unittest.TestCase):
                 mock.call(' Environment Variables:'),
                 mock.call('    ', 'DB_USERNAME', '=', 'root'),
                 mock.call('    ', 'DB_PASSWORD', '=', 'password')
-            ]
+            ],
+            any_order=True
         )
 
     @mock.patch('ebcli.operations.envvarops.elasticbeanstalk.update_environment')
