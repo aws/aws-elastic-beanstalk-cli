@@ -13,9 +13,9 @@
 
 import sys
 
-from ebcli.core import fileoperations, io
+from ebcli.core import fileoperations
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.lib import utils, aws
+from ebcli.lib import aws
 from ebcli.objects.exceptions import NotInitializedError
 from ebcli.operations import platformops, initializeops
 from ebcli.resources.strings import strings, flag_text, prompts
@@ -43,28 +43,22 @@ class GenericPlatformInitController(AbstractBaseController):
     def do_command(self):
         fileoperations.touch_config_folder()
 
-        self.interactive = self.app.pargs.interactive
+        self.interactive = self.app.pargs.interactive or not self.app.pargs.platform_name
         self.region = self.app.pargs.region
 
-        if self.interactive:
-            self.region = get_region(self.app.pargs.region, self.app.pargs.interactive)
+        if self.interactive or not self.app.pargs.platform_name:
+            self.region = get_region(self.app.pargs.region, self.interactive)
         else:
             self.region = get_region_from_inputs(self.app.pargs.region)
 
         aws.set_region(self.region)
 
         self.region = set_up_credentials(self.app.pargs.profile, self.region, self.interactive)
+        self.platform_name, version = get_platform_name_and_version(self.app.pargs.platform_name)
+        self.keyname = self.app.pargs.keyname
 
-        self.platform_name, version = self.get_platform_name_and_version()
-
-        # If interactive mode, or explicit interactive due to missing platform_name
-        if self.interactive or not self.platform_name:
-            self.keyname = self.get_keyname(self.app.pargs.keyname)
-        else:
-            self.keyname = None
-
-        if self.keyname == -1:
-            self.keyname = None
+        if not self.keyname and self.interactive:
+            self.keyname = get_keyname()
 
         initializeops.setup(
             'Custom Platform Builder',
@@ -78,49 +72,6 @@ class GenericPlatformInitController(AbstractBaseController):
 
         if version is None:
             platformops.set_workspace_to_latest()
-
-    def get_keyname(self, keyname):
-        # Get keyname from config file, if exists
-        if not keyname:
-            try:
-                keyname = commonops.get_default_keyname()
-            except NotInitializedError:
-                keyname = None
-
-        if keyname is None:
-            # Prompt for one
-            keyname = sshops.prompt_for_ec2_keyname(message=prompts['platforminit.ssh'])
-        elif keyname != -1:
-            commonops.upload_keypair_if_needed(keyname)
-
-        return keyname
-
-    def get_platform_name_and_version(self):
-        # Get app name from command line arguments
-        platform_name = self.app.pargs.platform_name
-        interactive = self.app.pargs.interactive
-        version = None
-
-        # Get app name from config file, if exists
-        if not platform_name:
-            try:
-                platform_name = fileoperations.get_platform_name(default=None)
-                version = fileoperations.get_platform_version()
-            except NotInitializedError:
-                platform_name = None
-
-        # Ask for app name
-        if not platform_name or interactive:
-            platform_name, version = platformops.get_platform_name_and_version_interactive()
-
-        if sys.version_info[0] < 3 and isinstance(platform_name, unicode):
-            try:
-                platform_name.encode('utf8')
-                platform_name = platform_name.encode('utf8')
-            except UnicodeDecodeError:
-                pass
-
-        return platform_name, version
 
 
 class PlatformInitController(GenericPlatformInitController):
@@ -141,3 +92,27 @@ class EBPInitController(GenericPlatformInitController):
     Meta.label = 'init'
     Meta.description = strings['platforminit.info']
     Meta.usage = 'ebp init <platform name> [options...]'
+
+
+def get_keyname():
+    return commonops.get_default_keyname() or sshops.prompt_for_ec2_keyname(message=prompts['platforminit.ssh'])
+
+
+def get_platform_name_and_version(platform_name):
+    version = None
+
+    if not platform_name:
+        try:
+            platform_name = fileoperations.get_platform_name(default=None)
+            version = fileoperations.get_platform_version()
+        except NotInitializedError:
+            platform_name, version = platformops.get_platform_name_and_version_interactive()
+
+    if sys.version_info[0] < 3 and isinstance(platform_name, unicode):
+        try:
+            platform_name.encode('utf8')
+            platform_name = platform_name.encode('utf8')
+        except UnicodeDecodeError:
+            pass
+
+    return platform_name, version
