@@ -29,8 +29,7 @@ def status(app_name, env_name, verbose):
         elasticbeanstalk.get_environment_resources,
         health=True
     )
-    env_dict = elasticbeanstalk.get_environment_resources(env_name)
-    _print_information_about_elb_and_instances(env_dict) if verbose else None
+    _print_information_about_elb_and_instances(env_name) if verbose else None
     _alert_if_platform_is_older_than_the_latest(env)
     _print_codecommit_repositories()
 
@@ -50,7 +49,8 @@ def _print_codecommit_repositories():
         io.echo("  Branch: " + str(default_branch))
 
 
-def _print_information_about_elb_and_instances(env_dict):
+def _print_information_about_elb_and_instances(env_name):
+    env_dict = elasticbeanstalk.get_environment_resources(env_name)
     instances = [instance['Id'] for instance in env_dict['EnvironmentResources']['Instances']]
     io.echo('  Running instances:', len(instances))
 
