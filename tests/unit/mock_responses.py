@@ -1492,6 +1492,60 @@ DESCRIBE_ENVIRONMENT_RESOURCES_RESPONSE = {
 }
 
 
+DESCRIBE_ENVIRONMENT_RESOURCES_RESPONSE__SINGLE_INSTANCE_ENVIRONMENT = {
+    "EnvironmentResources": {
+        "EnvironmentName": "vpc-tests-single",
+        "AutoScalingGroups": [
+            {
+                "Name": "awseb-e-cdad3hm9nv-stack-AWSEBAutoScalingGroup-12KTBJ0N99705"
+            }
+        ],
+        "Instances": [
+            {
+                "Id": "i-05faf37b6c7b904d7"
+            }
+        ],
+        "LaunchConfigurations": [
+            {
+                "Name": "awseb-e-cdad3hm9nv-stack-AWSEBAutoScalingLaunchConfiguration-MWZFM5O5VNW6"
+            }
+        ],
+        "LoadBalancers": [],
+        "Triggers": [],
+        "Queues": []
+    }
+}
+
+
+DESCRIBE_ENVIRONMENT_RESOURCES_RESPONSE__ELBV2_ENVIRONMENT = {
+    "EnvironmentResources": {
+        "EnvironmentName": "vpc-tests-network",
+        "AutoScalingGroups": [
+            {
+                "Name": "awseb-e-pqmmgvbwiw-stack-AWSEBAutoScalingGroup-19TXU0OXRUSAP"
+            }
+        ],
+        "Instances": [
+            {
+                "Id": "i-01641763db1c0cb47"
+            }
+        ],
+        "LaunchConfigurations": [
+            {
+                "Name": "awseb-e-pqmmgvbwiw-stack-AWSEBAutoScalingLaunchConfiguration-1HG7B5KKYJTC4"
+            }
+        ],
+        "LoadBalancers": [
+            {
+                "Name": "arn:aws:elasticloadbalancing:us-west-2:123123123123:loadbalancer/net/awseb-AWSEB-1SCRDNB3JJ0K1/01e95fc8160f13cf"
+            }
+        ],
+        "Triggers": [],
+        "Queues": []
+    }
+}
+
+
 DESCRIBE_EVENTS_RESPONSE = {
     'Events': [
         {
@@ -3990,4 +4044,79 @@ DELETE_OBJECTS_RESPONSE = {
             'DeleteMarkerVersionId': 'marker_2'
         },
     ],
+}
+
+
+DESCRIBE_TARGET_GROUPS_RESPONSE = {
+    "TargetGroups": [
+        {
+            "TargetGroupArn": "arn:aws:elasticloadbalancing:us-west-2:123123123123:targetgroup/awseb-AWSEB-179V6JWWL9HI5/e57decc4139bfdd2",
+            "TargetGroupName": "awseb-AWSEB-179V6JWWL9HI5",
+            "Protocol": "TCP",
+            "Port": 80,
+            "VpcId": "vpc-0b94a86c",
+            "HealthCheckProtocol": "TCP",
+            "HealthCheckPort": "traffic-port",
+            "HealthCheckIntervalSeconds": 10,
+            "HealthCheckTimeoutSeconds": 10,
+            "HealthyThresholdCount": 5,
+            "UnhealthyThresholdCount": 5,
+            "LoadBalancerArns": [
+                "arn:aws:elasticloadbalancing:us-west-2:123123123123:loadbalancer/net/awseb-AWSEB-1SCRDNB3JJ0K1/01e95fc8160f13cf"
+            ],
+            "TargetType": "instance"
+        }
+    ]
+}
+
+
+DESCRIBE_TARGET_HEALTH_RESPONSE = {
+    "TargetHealthDescriptions": [
+        {
+            "Target": {
+                "Id": "i-01641763db1c0cb47",
+                "Port": 80
+            },
+            "HealthCheckPort": "80",
+            "TargetHealth": {
+                "State": "healthy"
+            }
+        }
+    ]
+}
+
+
+DESCRIBE_TARGET_HEALTH_RESPONSE__REGISTRATION_IN_PROGRESS = {
+    "TargetHealthDescriptions": [
+        {
+            "Target": {
+                "Id": "i-01641763db1c0cb47",
+                "Port": 80
+            },
+            "HealthCheckPort": "80",
+            "TargetHealth": {
+                "State": "initial",
+                "Reason": "Elb.RegistrationInProgress",
+                "Description": "Target registration is in progress"
+            }
+        }
+    ]
+}
+
+
+DESCRIBE_INSTANCE_HEALTH = {
+    "InstanceStates": [
+        {
+            "InstanceId": "i-23452345346456566",
+            "ReasonCode": "N/A",
+            "State": "InService",
+            "Description": "N/A"
+        },
+        {
+            "InstanceId": "i-21312312312312312",
+            "ReasonCode": "ELB",
+            "State": "OutOfService",
+            "Description": "Instance registration is still in progress."
+        }
+    ]
 }

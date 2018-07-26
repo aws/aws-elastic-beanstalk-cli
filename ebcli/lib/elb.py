@@ -24,13 +24,13 @@ def _make_api_call(operation_name, **operation_options):
 
 
 def version(load_balancer_name):
-    if '/app/' in load_balancer_name:
+    if 'arn:aws:elasticloadbalancing' in load_balancer_name:
         return elb_names.APPLICATION_VERSION
     return elb_names.CLASSIC_VERSION
 
 
 def is_classic_load_balancer(load_balancer_name):
-    return '/app/' not in load_balancer_name
+    return 'arn:aws:elasticloadbalancing' not in load_balancer_name
 
 
 def get_health_of_instances(load_balancer_name):

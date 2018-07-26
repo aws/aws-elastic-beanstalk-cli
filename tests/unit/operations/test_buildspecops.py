@@ -12,6 +12,7 @@
 # language governing permissions and limitations under the License.
 
 import unittest
+
 import mock
 from mock import MagicMock
 import copy

@@ -10,6 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import six
 
 from ..lib import elasticbeanstalk, elb, elbv2
 from ..core import io
@@ -37,24 +38,18 @@ def status(app_name, env_name, verbose):
         instances = [i['Id'] for i in
                      env_dict['EnvironmentResources']['Instances']]
         io.echo('  Running instances:', len(instances))
-        #Get elb health
+
         try:
             load_balancer_name = [i['Name'] for i in
                                   env_dict['EnvironmentResources']['LoadBalancers']][0]
             if elb.version(load_balancer_name) == elb_names.APPLICATION_VERSION:
-                target_groups = [x['PhysicalResourceId'] for x in env_dict['EnvironmentResources']['Resources']
-                                 if elb_names.V2_RESOURCE_TYPE == x['Type'] ]
-                io.echo('  Running processes:', len(target_groups))
+                target_groups = [t['TargetGroupArn'] for t in elbv2.get_target_groups_for_load_balancer(load_balancer_name)]
                 target_group_states = elbv2.get_target_group_healths(target_groups)
 
-                for k in target_group_states: #k is tg arn
-                    process_name = [x['LogicalResourceId'] for x in env_dict['EnvironmentResources']['Resources']
-                                 if k == x['PhysicalResourceId'] ][0]
-                    if elb_names.DEFAULT_PROCESS_LOGICAL_ID == process_name:
-                        process_name = 'default'
-                    io.echo(SPACER, process_name + ':')
+                for target_group_arn, target_group_health in six.iteritems(target_group_states):
                     current_target_group_instances = []
-                    for target_group_description in target_group_states[k]['TargetHealthDescriptions']:
+                    for target_group_description in target_group_health['TargetHealthDescriptions']:
+
                         current_target_group_instances.append(target_group_description['Target']['Id'])
                         target_health = target_group_description['TargetHealth']
 
@@ -71,7 +66,7 @@ def status(app_name, env_name, verbose):
                         if i not in current_target_group_instances:
                             io.echo(SPACER * 2, i + ':', 'N/A (Not registered '
                                                     'with Target Group)')
-            else:
+            elif load_balancer_name:
                 instance_states = elb.get_health_of_instances(load_balancer_name)
                 for i in instance_states:
                     instance_id = i['InstanceId']
