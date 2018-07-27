@@ -45,10 +45,7 @@ class PlatformListController(AbstractBaseController):
             lst = sorted(set([s.pythonify() for s in solution_stacks]))
             lst.extend([PlatformVersion.get_platform_name(arn) for arn in platform_arns])
 
-        if len(lst) > 20:
-            io.echo_with_pager(os.linesep.join(lst))
-        else:
-            io.echo(*lst, sep=os.linesep)
+        echo(lst)
 
 
 class GenericPlatformListController(AbstractBaseController):
@@ -79,10 +76,7 @@ class GenericPlatformListController(AbstractBaseController):
             show_status=True
         )
 
-        if len(versions) > 20:
-            io.echo_with_pager(os.linesep.join(versions))
-        else:
-            io.echo(*versions, sep=os.linesep)
+        echo(versions)
 
 
 class PlatformWorkspaceListController(GenericPlatformListController):
@@ -99,3 +93,10 @@ class EBPListController(GenericPlatformListController):
     Meta = GenericPlatformListController.Meta.clone()
     Meta.label = 'list'
     Meta.usage = 'ebp list [options...]'
+
+
+def echo(platforms):
+    if len(platforms) > 20:
+        io.echo_with_pager(os.linesep.join(platforms))
+    else:
+        io.echo(*platforms, sep=os.linesep)
