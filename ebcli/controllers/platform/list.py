@@ -55,7 +55,6 @@ class GenericPlatformListController(AbstractBaseController):
             (['-a', '--all-platforms'], dict(action='store_true', help=flag_text['platformlist.all'])),
             (['-s', '--status'], dict(action='store', help=flag_text['platformlist.status'])),
         ]
-        epilog = strings['platformlistversions.epilog']
 
         @classmethod
         def clone(cls):

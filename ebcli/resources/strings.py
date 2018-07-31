@@ -72,7 +72,6 @@ strings = {
 
     'platformworkspacelist.info': 'Lists platform resources.',
     'platformlistversions.info': 'Lists versions of the custom platform associated with this workspace.',
-    'platformlistversions.epilog': 'You can reduce the result set by using filters.',
 
     'platformcreate.info': 'Creates platform resources.',
     'platformcreateversion.info': 'Creates a new custom platform version.',
