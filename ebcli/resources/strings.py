@@ -99,7 +99,7 @@ strings = {
                                       'Use eb platform init -i or -I to configure your instance profile.',
     'platform.info': 'Commands for managing platforms.',
     'platformshow.info': 'Shows information about current platform.',
-    'platformlist.info': 'Lists available platforms.',
+    'platformlist.info': "Lists all available platforms in application workspaces and all custom platforms in platform workspaces.",
     'platformworkspaceselect.info': 'Selects platform resources to use for this workspace.',
     'platformworkspaceselectversion.info': 'Selects the active custom platform version to use for this workspace.',
     'platformselect.info': 'Selects a default platform.',
@@ -107,7 +107,6 @@ strings = {
                              'To upgrade an environment\'s platform, type:\n'
                              '    eb upgrade',
     'platformevents.info': 'Displays events for the custom platform associated with this workspace.',
-    'platformlist.epilog': 'Shows a list of platforms for use with "eb init -p". Type "--verbose" to get the full platform name.',
     'upgrade.info': 'Updates the environment to the most recent platform version.',
     'scale.info': 'Changes the number of running instances.',
     'status.info': 'Gets environment information and status.',
@@ -170,8 +169,8 @@ strings = {
     'sstacks.notaversion': 'Elastic Beanstalk could not find any supported platforms for the given version {version}.',
     'timeout.error': "The EB CLI timed out after {timeout_in_minutes} minute(s). The operation might still be running. To keep viewing events, run 'eb events -f'. To set timeout duration, use '--timeout MINUTES'.",
     'sc.notfound': 'Git is not set up for this project. EB CLI will deploy a .zip file of the entire directory.',
-    'exit.platformworkspacenotsupported': 'This command is not supported for Platform workspaces.',
-    'exit.applicationworkspacenotsupported': 'This command is not supported for Application workspaces.',
+    'exit.platformworkspacenotsupported': 'This command is not supported outside Application workspaces.',
+    'exit.applicationworkspacenotsupported': 'This command is not supported outside Platform workspaces.',
     'exit.notsetup': 'This directory has not been set up with the EB CLI\n'
                      'You must first run "eb init".',
     'exit.noregion': 'The EB CLI cannot find a default region. Run "eb init" or use a specific region by including the "--region" option with the command.',
@@ -653,7 +652,7 @@ flag_text = {
     'platformshowversion.version': 'platform version',
 
     'platformlist.all': 'lists the versions of all platforms owned by your account',
-    'platformlist.status': 'the status that you wish to filter on (Ready, Failed, Deleting, Creating)',
+    'platformlist.status': 'the status of your custom platforms you wish to filter on (Ready, Failed, Deleting, Creating)',
 
     'platformworkspace.platform': 'platform name',
 

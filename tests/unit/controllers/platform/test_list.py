@@ -19,8 +19,13 @@ import unittest
 
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
-import ebcli.core.ebpcore
+from ebcli.lib import aws
 from ebcli.core.ebpcore import EBP
+from ebcli.objects.exceptions import (
+    ApplicationWorkspaceNotSupportedError,
+    InvalidOptionsError,
+    NotInitializedError
+)
 from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.solutionstack import SolutionStack
 
@@ -44,7 +49,7 @@ class ListTest(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
-
+        aws.set_region(None)
         enable_socket()
 
     def setup_platform_workspace(self):
@@ -231,42 +236,79 @@ class TestEBPlatformList(ListTest):
             None
         )
 
-        with self.assertRaises(SystemExit) as context_manager:
+        with self.assertRaises(NotInitializedError) as context_manager:
             app = EB(argv=['platform', 'list', '-a', '-s', 'READY'])
             app.setup()
             app.run()
 
         self.assertEqual(
-            '2',
+            'This directory has not been set up with the EB CLI\n'
+            'You must first run "eb init".',
             str(context_manager.exception)
         )
 
 
 class TestEBPList(ListTest):
-    def test_list__application_workspace__non_verbose_mode(self):
+    @mock.patch('ebcli.controllers.platform.list.platformops.get_all_platforms')
+    @mock.patch('ebcli.controllers.platform.list.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.list.io.echo')
+    def test_list__application_workspace__non_verbose_mode(
+            self,
+            echo_mock,
+            list_custom_platform_versions_mock,
+            get_all_platforms_mock
+    ):
         self.setup_application_workspace()
 
-        with self.assertRaises(ebcli.core.ebpcore.ApplicationWorkspaceNotSupportedError) as context_manager:
-            app = EBP(argv=['list'])
-            app.setup()
-            app.run()
+        get_all_platforms_mock.return_value = [
+            SolutionStack('64bit Amazon Linux 2017.09 v4.4.0 running Node.js'),
+            SolutionStack('64bit Amazon Linux 2017.09 v2.6.0 running PHP 5.4')
 
-        self.assertEqual(
-            'This command is not supported for Application workspaces.',
-            str(context_manager.exception)
+        ]
+        list_custom_platform_versions_mock.return_value = [
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.0.3',
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-5/1.3.6'
+        ]
+
+        app = EBP(argv=['list'])
+        app.setup()
+        app.run()
+
+        echo_mock.assert_called_once_with(
+            'node.js', 'php-5.4', 'custom-platform-4', 'custom-platform-5', sep='{linesep}'.format(linesep=os.linesep)
         )
 
-    def test_list__application_workspace__verbose_mode(self):
+    @mock.patch('ebcli.controllers.platform.list.platformops.get_all_platforms')
+    @mock.patch('ebcli.controllers.platform.list.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.list.io.echo')
+    def test_list__application_workspace__verbose_mode(
+            self,
+            echo_mock,
+            list_custom_platform_versions_mock,
+            get_all_platforms_mock
+    ):
         self.setup_application_workspace()
 
-        with self.assertRaises(ebcli.core.ebpcore.ApplicationWorkspaceNotSupportedError) as context_manager:
-            app = EBP(argv=['list', '--verbose'])
-            app.setup()
-            app.run()
+        get_all_platforms_mock.return_value = [
+            SolutionStack('64bit Amazon Linux 2017.09 v4.4.0 running Node.js'),
+            SolutionStack('64bit Amazon Linux 2017.09 v2.6.0 running PHP 5.4')
 
-        self.assertEqual(
-            'This command is not supported for Application workspaces.',
-            str(context_manager.exception)
+        ]
+        list_custom_platform_versions_mock.return_value = [
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.0.3',
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-5/1.3.6'
+        ]
+
+        app = EBP(argv=['list', '--verbose'])
+        app.setup()
+        app.run()
+
+        echo_mock.assert_called_once_with(
+            '64bit Amazon Linux 2017.09 v4.4.0 running Node.js',
+            '64bit Amazon Linux 2017.09 v2.6.0 running PHP 5.4',
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.0.3',
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-5/1.3.6',
+            sep='{linesep}'.format(linesep=os.linesep)
         )
 
     @mock.patch('ebcli.controllers.platform.list.fileoperations.get_platform_name')
@@ -373,12 +415,13 @@ class TestEBPList(ListTest):
             None
         )
 
-        with self.assertRaises(SystemExit) as context_manager:
+        with self.assertRaises(NotInitializedError) as context_manager:
             app = EBP(argv=['list'])
             app.setup()
             app.run()
 
         self.assertEqual(
-            '2',
+            'This directory has not been set up with the EB CLI\n'
+            'You must first run "eb init".',
             str(context_manager.exception)
         )

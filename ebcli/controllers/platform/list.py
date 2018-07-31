@@ -10,46 +10,21 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
 import os
+
 from ebcli.core import io, fileoperations
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.core.ebglobals import Constants
 from ebcli.objects.platform import PlatformVersion
+from ebcli.objects.exceptions import InvalidOptionsError
 from ebcli.operations import platformops
 from ebcli.resources.strings import strings, flag_text
 
 
-class PlatformListController(AbstractBaseController):
-    class Meta:
-        label = 'platform list'
-        aliases = ['list']
-        aliases_only = True
-        stacked_on = 'platform'
-        stacked_type = 'nested'
-        description = strings['platformlist.info']
-        usage = 'eb platform list [options...]'
-        arguments = []
-        epilog = strings['platformlist.epilog']
-
-    def do_command(self):
-        verbose = self.app.pargs.verbose
-        solution_stacks = platformops.get_all_platforms()
-
-        if verbose:
-            platform_arns = platformops.list_custom_platform_versions()
-            lst = [s.name for s in solution_stacks]
-            lst.extend(platform_arns)
-        else:
-            platform_arns = platformops.list_custom_platform_versions(platform_version='latest')
-            lst = sorted(set([s.pythonify() for s in solution_stacks]))
-            lst.extend([PlatformVersion.get_platform_name(arn) for arn in platform_arns])
-
-        echo(lst)
-
-
 class GenericPlatformListController(AbstractBaseController):
     class Meta:
+        is_platform_workspace_only_command = False
+        requires_directory_initialization = True
         description = strings['platformlistversions.info']
         arguments = [
             (['-a', '--all-platforms'], dict(action='store_true', help=flag_text['platformlist.all'])),
@@ -61,24 +36,42 @@ class GenericPlatformListController(AbstractBaseController):
             return type('Meta', cls.__bases__, dict(cls.__dict__))
 
     def do_command(self):
-        all_platforms = self.app.pargs.all_platforms
-        status = self.app.pargs.status
+        workspace_type = fileoperations.get_workspace_type(None)
+        if workspace_type == Constants.WorkSpaceTypes.PLATFORM:
+            echo(self.custom_platforms())
+        elif workspace_type == Constants.WorkSpaceTypes.APPLICATION:
+            if self.app.pargs.status:
+                raise InvalidOptionsError('You cannot use the "--status" option in application workspaces.')
+            if self.app.pargs.all_platforms:
+                raise InvalidOptionsError('You cannot use the "--all-platforms" option in application workspaces.')
 
-        if not all_platforms:
-            platform_name = fileoperations.get_platform_name()
+            echo(self.all_platforms())
+
+    def all_platforms(self):
+        solution_stacks = platformops.get_all_platforms()
+
+        if self.app.pargs.verbose:
+            platform_arns = platformops.list_custom_platform_versions()
+            versions = [s.name for s in solution_stacks]
+            versions.extend(platform_arns)
         else:
-            platform_name = None
+            platform_arns = platformops.list_custom_platform_versions(platform_version='latest')
+            versions = sorted(set([s.pythonify() for s in solution_stacks]))
+            versions.extend([PlatformVersion.get_platform_name(arn) for arn in platform_arns])
 
-        versions = platformops.list_custom_platform_versions(
+        return versions
+
+    def custom_platforms(self):
+        platform_name = None if self.app.pargs.all_platforms else fileoperations.get_platform_name()
+
+        return platformops.list_custom_platform_versions(
             platform_name=platform_name,
-            status=status,
+            status=self.app.pargs.status,
             show_status=True
         )
 
-        echo(versions)
 
-
-class PlatformWorkspaceListController(GenericPlatformListController):
+class PlatformListController(GenericPlatformListController):
     Meta = GenericPlatformListController.Meta.clone()
     Meta.label = 'platform list'
     Meta.aliases = ['list']
@@ -86,12 +79,14 @@ class PlatformWorkspaceListController(GenericPlatformListController):
     Meta.stacked_on = 'platform'
     Meta.stacked_type = 'nested'
     Meta.usage = 'eb platform list [options...]'
+    Meta.description = strings['platformlist.info']
 
 
 class EBPListController(GenericPlatformListController):
     Meta = GenericPlatformListController.Meta.clone()
     Meta.label = 'list'
     Meta.usage = 'ebp list [options...]'
+    Meta.description = 'Lists available custom platforms'
 
 
 def echo(platforms):

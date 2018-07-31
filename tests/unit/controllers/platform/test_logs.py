@@ -22,6 +22,7 @@ from ebcli.core.ebcore import EB
 import ebcli.core.ebpcore
 from ebcli.core.ebpcore import EBP
 from ebcli.controllers.platform import logs
+from ebcli.objects.exceptions import ApplicationWorkspaceNotSupportedError
 from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.solutionstack import SolutionStack
 
@@ -69,23 +70,30 @@ class TestEBPlatformLogs(LogsTest):
     def test_logs__application_workspace__command_not_applicable(self):
         self.setup_application_workspace()
 
-        with self.assertRaises(SystemExit) as context_manager:
+        with self.assertRaises(ApplicationWorkspaceNotSupportedError) as context_manager:
             app = EB(argv=['platform', 'logs'])
             app.setup()
             app.run()
 
-        self.assertEqual('2', str(context_manager.exception))
+        self.assertEqual(
+            'This command is not supported outside Platform workspaces.',
+            str(context_manager.exception)
+        )
 
     def test_logs__neutral_workspace__command_not_applicable(self):
         self.setup_application_workspace()
         fileoperations.write_config_setting('global', 'workspace', None)
 
-        with self.assertRaises(SystemExit) as context_manager:
+        with self.assertRaises(ApplicationWorkspaceNotSupportedError) as context_manager:
             app = EB(argv=['platform', 'logs'])
             app.setup()
             app.run()
 
-        self.assertEqual('2', str(context_manager.exception))
+        # This message is inappropriate since the message assumes an application workspace
+        self.assertEqual(
+            'This command is not supported outside Platform workspaces.',
+            str(context_manager.exception)
+        )
 
     @mock.patch('ebcli.controllers.platform.logs.fileoperations.get_platform_name')
     @mock.patch('ebcli.controllers.platform.logs.fileoperations.get_platform_version')
@@ -282,13 +290,13 @@ class TestEBPLogs(LogsTest):
     def test_logs__application_workspace__command_not_applicable(self):
         self.setup_application_workspace()
 
-        with self.assertRaises(ebcli.core.ebpcore.ApplicationWorkspaceNotSupportedError) as context_manager:
+        with self.assertRaises(ApplicationWorkspaceNotSupportedError) as context_manager:
             app = EBP(argv=['logs'])
             app.setup()
             app.run()
 
         self.assertEqual(
-            'This command is not supported for Application workspaces.',
+            'This command is not supported outside Platform workspaces.',
             str(context_manager.exception)
         )
 
@@ -296,14 +304,14 @@ class TestEBPLogs(LogsTest):
         self.setup_application_workspace()
         fileoperations.write_config_setting('global', 'workspace', None)
 
-        with self.assertRaises(ebcli.core.ebpcore.ApplicationWorkspaceNotSupportedError) as context_manager:
+        with self.assertRaises(ApplicationWorkspaceNotSupportedError) as context_manager:
             app = EBP(argv=['logs'])
             app.setup()
             app.run()
 
         # This message is inappropriate since the message assumes an application workspace
         self.assertEqual(
-            'This command is not supported for Application workspaces.',
+            'This command is not supported outside Platform workspaces.',
             str(context_manager.exception)
         )
 

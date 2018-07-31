@@ -24,6 +24,8 @@ from ...operations import commonops
 
 class GenericPlatformCreateController(AbstractBaseController):
     class Meta:
+        is_platform_workspace_only_command = True
+        requires_directory_initialization = True
         description = strings['platformcreateversion.info']
         arguments = [
             (['version'], dict(action='store', nargs='?', default=None, help=flag_text['platformcreateversion.version'])),

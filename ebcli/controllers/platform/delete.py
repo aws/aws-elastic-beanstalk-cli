@@ -19,6 +19,8 @@ from ebcli.resources.strings import strings, flag_text, prompts
 
 class GenericPlatformDeleteController(AbstractBaseController):
     class Meta:
+        is_platform_workspace_only_command = True
+        requires_directory_initialization = True
         description = strings['platformdeleteversion.info']
         arguments = [
             (['version'], dict(action='store', help=flag_text['platformdeleteversion.version'], nargs='?', default=None)),

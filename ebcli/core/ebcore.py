@@ -33,6 +33,15 @@ from ebcli.controllers.local import LocalController
 from ebcli.controllers.logs import LogsController
 from ebcli.controllers.open import OpenController
 from ebcli.controllers.platform import PlatformController
+from ebcli.controllers.platform.initialize import PlatformInitController
+from ebcli.controllers.platform.use import PlatformSelectController
+from ebcli.controllers.platform.list import PlatformListController
+from ebcli.controllers.platform.status import PlatformShowController, PlatformWorkspaceStatusController
+from ebcli.controllers.platform.use import PlatformWorkspaceUseController
+from ebcli.controllers.platform.create import PlatformCreateController
+from ebcli.controllers.platform.delete import PlatformDeleteController
+from ebcli.controllers.platform.events import PlatformEventsController
+from ebcli.controllers.platform.logs import PlatformLogsController
 from ebcli.controllers.printenv import PrintEnvController
 from ebcli.controllers.restore import RestoreController
 from ebcli.controllers.scale import ScaleController
@@ -44,9 +53,7 @@ from ebcli.controllers.tags import TagsController
 from ebcli.controllers.terminate import TerminateController
 from ebcli.controllers.upgrade import UpgradeController
 from ebcli.controllers.use import UseController
-from ebcli.core import fileoperations
 from ebcli.core.completer import CompleterController
-from ebcli.core.ebglobals import Constants
 from ebcli.labs.controller import LabsController
 from ebcli.objects.exceptions import *
 from ebcli.resources.strings import flag_text
@@ -97,37 +104,21 @@ class EB(foundation.CementApp):
             TagsController,
             TerminateController,
             UpgradeController,
-            UseController
+            UseController,
+            PlatformInitController,
+            PlatformShowController,
+            PlatformSelectController,
+            PlatformListController,
+            PlatformWorkspaceStatusController,
+            PlatformWorkspaceUseController,
+            PlatformCreateController,
+            PlatformDeleteController,
+            PlatformEventsController,
+            PlatformLogsController,
         ]
 
-        # eb <foo> commands supported in platform workspaces
-        platform_controllers = [
-            ConfigController,
-            ConsoleController,
-            EventsController,
-            HealthController,
-            ListController,
-            LogsController,
-            PlatformController,
-            SSHController,
-            StatusController,
-            TerminateController,
-            UpgradeController,
-        ]
-
-        if "--modules" in self.argv:
-            for c in environment_controllers:
-                c._add_to_handler(handler)
-
-        else:
-            workspace_type = fileoperations.get_workspace_type(Constants.WorkSpaceTypes.APPLICATION)
-
-            if Constants.WorkSpaceTypes.APPLICATION == workspace_type:
-                for c in environment_controllers:
-                    c._add_to_handler(handler)
-            elif Constants.WorkSpaceTypes.PLATFORM == workspace_type:
-                for c in platform_controllers:
-                    c._add_to_handler(handler)
+        for controller in environment_controllers:
+            controller._add_to_handler(handler)
 
         # Add special controllers
         handler.register(CompleterController)

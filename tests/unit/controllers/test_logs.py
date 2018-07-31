@@ -10,9 +10,14 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-import unittest
-import mock
+import os
+import shutil
 
+import mock
+from pytest_socket import disable_socket, enable_socket
+import unittest
+
+from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
 from ebcli.objects.exceptions import InvalidOptionsError
 
@@ -23,6 +28,12 @@ class TestLogs(unittest.TestCase):
     SPECIFIED_LOG_GROUP = '/aws/elasticbeanstalk/foo/specific/error.log'
 
     def setUp(self):
+        disable_socket()
+        if os.path.exists('testDir'):
+            shutil.rmtree('testDir')
+        os.mkdir('testDir')
+        self.root_dir = os.getcwd()
+        os.chdir('testDir')
         self.patcher_base_get_app = mock.patch('ebcli.controllers.logs.AbstractBaseController.get_app_name')
         self.patcher_base_get_env = mock.patch('ebcli.controllers.logs.AbstractBaseController.get_env_name')
         self.mock_base_get_app = self.patcher_base_get_app.start()
@@ -30,9 +41,22 @@ class TestLogs(unittest.TestCase):
         self.mock_base_get_app.return_value = TestLogs.APP_NAME
         self.mock_base_get_env.return_value = TestLogs.ENV_NAME
 
+        self.setup_application_workspace()
+
     def tearDown(self):
+        enable_socket()
+        os.chdir(self.root_dir)
+        shutil.rmtree('testDir')
         self.patcher_base_get_app.stop()
         self.patcher_base_get_env.stop()
+
+    def setup_application_workspace(self):
+        fileoperations.create_config_file(
+            'my-application',
+            'us-west-2',
+            'php-7.1',
+            workspace_type='Application'
+        )
 
 
 class TestTrivialInvalidArgumentCombinations(TestLogs):

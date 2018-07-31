@@ -21,6 +21,7 @@ from ebcli.resources.strings import strings, flag_text
 
 class PlatformShowController(AbstractBaseController):
     class Meta:
+        requires_directory_initialization = True
         label = 'platform show'
         aliases = ['show']
         aliases_only = True
@@ -77,6 +78,8 @@ class PlatformShowController(AbstractBaseController):
 
 class GenericPlatformStatusController(AbstractBaseController):
     class Meta:
+        is_platform_workspace_only_command = True
+        requires_directory_initialization = True
         description = strings['platformshowversion.info']
         arguments = [
             (['version'], dict(action='store', nargs='?', default=None, help=flag_text['platformshowversion.version'])),

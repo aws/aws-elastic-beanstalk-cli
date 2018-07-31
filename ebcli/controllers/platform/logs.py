@@ -12,6 +12,8 @@ from ebcli.resources.strings import strings, flag_text
 
 class GenericPlatformLogsController(AbstractBaseController):
     class Meta:
+        is_platform_workspace_only_command = True
+        requires_directory_initialization = True
         description = strings['platformlogs.info']
         arguments = [
             (['version'], dict(action='store', nargs='?', default=None, help=flag_text['platformlogs.version'])),

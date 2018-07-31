@@ -21,6 +21,7 @@ from ebcli.resources.strings import strings, flag_text
 
 class PlatformSelectController(AbstractBaseController):
     class Meta:
+        requires_directory_initialization = True
         label = 'platform select'
         aliases = ['select']
         aliases_only = True
@@ -38,6 +39,8 @@ class PlatformSelectController(AbstractBaseController):
 
 class GenericPlatformUseController(AbstractBaseController):
     class Meta:
+        is_platform_workspace_only_command = True
+        requires_directory_initialization = True
         description = strings['platformworkspaceselectversion.info']
         arguments = [
             (['platform'], dict(action='store', nargs='?', default=None, help=flag_text['platformworkspace.platform'])),

@@ -12,35 +12,67 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from argparse import SUPPRESS
+import textwrap
 
 from cement.core import foundation, handler, hook
 from cement.utils.misc import init_defaults
 
-import ebcli.core.ebrun as ebrun
-
-from ebcli.controllers.platform import (
-    EBPCreateController,
-    EBPDeleteController,
-    EBPEventsController,
-    EBPInitController,
-    EBPListController,
-    EBPLogsController,
-    EBPStatusController,
-    EBPUseController,
-)
-from ebcli.core import fileoperations
-from ebcli.core.ebglobals import Constants
-
-from . import ebglobals, base, hooks
+from ebcli.core import ebglobals, base, hooks
 from ebcli.core.completer import CompleterController
-from ebcli.objects.exceptions import *
+import ebcli.core.ebrun as ebrun
+from ebcli.controllers.platform.list import EBPListController
+from ebcli.controllers.platform.use import EBPUseController
+from ebcli.controllers.platform.status import EBPStatusController
+from ebcli.controllers.platform.create import EBPCreateController
+from ebcli.controllers.platform.delete import EBPDeleteController
+from ebcli.controllers.platform.events import EBPEventsController
+from ebcli.controllers.platform.logs import EBPLogsController
+from ebcli.controllers.platform.initialize import EBPInitController
 from ebcli.resources.strings import flag_text, strings
+
+
+class EBPBaseController(base.EbBaseController):
+    class Meta:
+        label = 'base'
+        description = strings['base.info']
+        arguments = [
+            (['--version'], dict(action='store_true',
+                                 help=flag_text['base.version'])),
+        ]
+        epilog = strings['base.epilog']
+
+    @property
+    def _help_text(self):
+        """
+        Override the equivalent method in cement.core.controller.CementControllerBase
+        to be able to separate application workspace-only commands from the platform
+        workspace-only commands.
+        """
+        command_categories = _partition_commands()
+
+        txt = self._meta.description
+        for command_category in command_categories:
+            cmd_txt = ''
+            for label in command_category[1]:
+                cmd = self._dispatch_map[label]
+                cmd_txt = cmd_txt + '  %-18s' % label
+                cmd_txt = cmd_txt + "    %s\n" % cmd['help']
+
+            txt += '''
+
+{0}:
+{1}
+
+
+            '''.format(command_category[0], cmd_txt)
+
+        return textwrap.dedent(txt)
 
 
 class EBP(foundation.CementApp):
     class Meta:
         label = 'ebp'
-        base_controller = base.EbBaseController
+        base_controller = EBPBaseController
         defaults = init_defaults('ebp', 'log.logging')
         defaults['log.logging']['level'] = 'WARN'
         config_defaults = defaults
@@ -54,6 +86,7 @@ class EBP(foundation.CementApp):
         hook.register('post_argument_parsing', hooks.pre_run_hook)
 
         platform_controllers = [
+            EBPInitController,
             EBPCreateController,
             EBPDeleteController,
             EBPEventsController,
@@ -63,19 +96,7 @@ class EBP(foundation.CementApp):
             EBPUseController,
         ]
 
-        workspace_type = fileoperations.get_workspace_type(None)
-
-        # Only load this if the the directory has not ben intialized or if it is a platform workspace
-        if not fileoperations.get_workspace_type(None) or Constants.WorkSpaceTypes.PLATFORM == workspace_type:
-            EBPInitController._add_to_handler(handler)
-
-        if Constants.WorkSpaceTypes.APPLICATION == workspace_type:
-            raise ApplicationWorkspaceNotSupportedError(strings['exit.applicationworkspacenotsupported'])
-            # raise RuntimeError("Foo")
-        elif Constants.WorkSpaceTypes.PLATFORM == workspace_type:
-            for c in platform_controllers:
-                c._add_to_handler(handler)
-                pass
+        [controller._add_to_handler(handler) for controller in platform_controllers]
 
         # Add special controllers
         handler.register(CompleterController)
@@ -92,6 +113,17 @@ class EBP(foundation.CementApp):
                      action='store_true', help=flag_text['base.noverify'])
         self.add_arg('--debugboto',  # show debug info for botocore
                      action='store_true', help=SUPPRESS)
+
+
+def _partition_commands():
+    platform_workspace_labels = ['init', 'create', 'delete', 'events', 'logs', 'status', 'use']
+
+    common_labels = ['list']
+
+    return (
+        ('platform workspace commands', platform_workspace_labels),
+        ('common commands', common_labels),
+    )
 
 
 def main():

@@ -29,6 +29,8 @@ KEYPAIR_OPTION = 'EC2KeyName'
 
 class GenericPlatformInitController(AbstractBaseController):
     class Meta:
+        is_platform_workspace_only_command = False
+        requires_directory_initialization = False
         arguments = [
             (['platform_name'], dict(help=flag_text['platforminit.name'], nargs='?', default=[])),
             (['-i', '--interactive'], dict(action='store_true', help=flag_text['init.interactive'])),

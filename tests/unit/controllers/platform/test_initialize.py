@@ -20,6 +20,7 @@ import unittest
 from ebcli.core.ebcore import EB
 from ebcli.core.ebpcore import EBP
 from ebcli.controllers.platform import initialize
+from ebcli.lib import aws
 from ebcli.objects.platform import PlatformVersion
 
 
@@ -34,6 +35,7 @@ class TestInitialize(unittest.TestCase):
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
 
+        aws.set_region(None)
         os.chdir('testDir')
 
     def tearDown(self):

@@ -10,22 +10,12 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import textwrap
+
 from ebcli.core import fileoperations
-from ebcli.core.ebglobals import Constants
-
-from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.core import io
-
-from ebcli.controllers.platform.list import PlatformListController, PlatformWorkspaceListController, EBPListController
-from ebcli.controllers.platform.use import PlatformSelectController, PlatformWorkspaceUseController, EBPUseController
-from ebcli.controllers.platform.status import PlatformShowController, PlatformWorkspaceStatusController, EBPStatusController
-from ebcli.controllers.platform.create import PlatformCreateController, EBPCreateController
-from ebcli.controllers.platform.delete import PlatformDeleteController, EBPDeleteController
-from ebcli.controllers.platform.events import PlatformEventsController, EBPEventsController
-from ebcli.controllers.platform.initialize import PlatformInitController, EBPInitController
-from ebcli.controllers.platform.logs import PlatformLogsController, EBPLogsController
-from ebcli.controllers.platform.initialize import PlatformInitController, EBPInitController
-
+from ebcli.core.ebglobals import Constants
+from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
 
 
@@ -41,28 +31,7 @@ class PlatformController(AbstractBaseController):
 
     @classmethod
     def _add_to_handler(cls, handler):
-        workspace_type = fileoperations.get_workspace_type(Constants.WorkSpaceTypes.APPLICATION)
-
         handler.register(cls)
-
-        # Only load this if the the directory has not ben intialized or if it is a platform workspace
-        if not fileoperations.get_workspace_type(None) or Constants.WorkSpaceTypes.PLATFORM == workspace_type:
-            handler.register(PlatformInitController)
-
-        # Environment specific sub commands
-        if Constants.WorkSpaceTypes.APPLICATION == workspace_type:
-            handler.register(PlatformListController)
-            handler.register(PlatformShowController)
-            handler.register(PlatformSelectController)
-        # Platform specific controllers
-        elif Constants.WorkSpaceTypes.PLATFORM == workspace_type:
-            handler.register(PlatformWorkspaceListController)
-            handler.register(PlatformWorkspaceStatusController)
-            handler.register(PlatformWorkspaceUseController)
-            handler.register(PlatformCreateController)
-            handler.register(PlatformDeleteController)
-            handler.register(PlatformEventsController)
-            handler.register(PlatformLogsController)
 
     def complete_command(self, commands):
         workspace_type = fileoperations.get_workspace_type(Constants.WorkSpaceTypes.APPLICATION)
@@ -77,3 +46,57 @@ class PlatformController(AbstractBaseController):
                 io.echo(*['create', 'delete', 'events', 'init', 'list', 'status', 'use'])
         elif len(commands) > 1:
             pass
+
+    @property
+    def _help_text(self):
+        """
+        Override the equivalent method in cement.core.controller.CementControllerBase
+        to be able to separate application workspace-only commands from the platform
+        workspace-only commands.
+        """
+        command_categories = _partition_commands()
+
+        txt = self._meta.description
+        for command_category in command_categories:
+            cmd_txt = ''
+            for label in command_category[1]:
+                cmd = self._dispatch_map[label]
+                cmd_txt = cmd_txt + '  %-18s' % cmd['aliases'][0]
+                cmd_txt = cmd_txt + "    %s\n" % cmd['help']
+
+            txt += '''
+
+{0}:
+{1}
+
+
+            '''.format(command_category[0], cmd_txt)
+
+        return textwrap.dedent(txt)
+
+
+def _partition_commands():
+    application_workspace_labels = [
+        'platform show',
+        'platform select'
+    ]
+
+    platform_workspace_labels = [
+        'platform init',
+        'platform status',
+        'platform use',
+        'platform create',
+        'platform delete',
+        'platform events',
+        'platform logs'
+    ]
+
+    common_labels = [
+        'platform list',
+    ]
+
+    return (
+        ('application workspace commands', application_workspace_labels),
+        ('platform workspace commands', platform_workspace_labels),
+        ('common commands', common_labels),
+    )
