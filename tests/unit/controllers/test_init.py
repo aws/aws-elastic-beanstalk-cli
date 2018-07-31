@@ -34,16 +34,10 @@ class TestInit(unittest.TestCase):
     def setUp(self):
         disable_socket()
         self.root_dir = os.getcwd()
-        if not os.path.exists('testDir'):
-            os.mkdir('testDir')
-
+        if os.path.exists('testDir'):
+            shutil.rmtree('testDir')
+        os.mkdir('testDir')
         os.chdir('testDir')
-
-        fileoperations.create_config_file(
-            self.app_name,
-            'us-west-2',
-            self.solution.name
-        )
 
     def tearDown(self):
         os.chdir(self.root_dir)
@@ -252,7 +246,7 @@ class TestInit(unittest.TestCase):
         app.run()
 
         initops_mock.setup.assert_called_with(
-            'ebcli-intTest-app',
+            'testDir',
             'us-west-2',
             'php',
             branch=None,
@@ -302,7 +296,7 @@ class TestInit(unittest.TestCase):
         app.run()
 
         initops_mock.setup.assert_called_with(
-            'ebcli-intTest-app',
+            'testDir',
             'us-east-1',
             'ruby',
             dir_path=None,
@@ -333,7 +327,6 @@ class TestInit(unittest.TestCase):
             sourcecontrol_mock,
             git_mock
     ):
-        os.remove(os.path.join('.elasticbeanstalk', 'config.yml'))
         old_eb_config_present_mock.return_value = True
         get_values_from_old_eb_mock.return_value = {
             'app_name': 'my-application',
@@ -658,22 +651,34 @@ class TestInit(unittest.TestCase):
         fileoperations_mock.write_config_setting.assert_has_calls(write_config_calls)
 
     @mock.patch('ebcli.controllers.initialize.codecommit')
-    @mock.patch('ebcli.controllers.initialize.fileoperations')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_application_name')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_platform_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.build_spec_exists')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_build_configuration')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.buildspec_config_header')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.buildspec_name')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     def test_init_with_codecommit_source_and_codebuild(
             self,
+            write_config_setting_mock,
+            buildspec_name_mock,
+            buildspec_config_header_mock,
+            get_build_configuration_mock,
+            build_spec_exists_mock,
+            get_platform_from_env_yaml_mock,
+            get_application_name_mock,
             elasticbeanstalk_mock,
             commonops_mock,
             initops_mock,
             sshops_mock,
             solution_stack_ops_mock,
             sourcecontrol_mock,
-            fileoperations_mock,
             codecommit_mock
     ):
         expected_image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6'
@@ -688,12 +693,12 @@ class TestInit(unittest.TestCase):
         )
 
         codecommit_mock.side_effect = None
-        fileoperations_mock.get_application_name.return_value = 'testDir'
-        fileoperations_mock.get_platform_from_env_yaml.return_value = 'PHP 5.5'
-        fileoperations_mock.build_spec_exists.return_value = True
-        fileoperations_mock.get_build_configuration.return_value = build_config
-        fileoperations_mock.buildspec_config_header = fileoperations.buildspec_config_header
-        fileoperations_mock.buildspec_name = fileoperations.buildspec_name
+        get_application_name_mock.return_value = 'testDir'
+        get_platform_from_env_yaml_mock.return_value = 'PHP 5.5'
+        build_spec_exists_mock.return_value = True
+        get_build_configuration_mock.return_value = build_config
+        buildspec_config_header_mock.return_value = fileoperations.buildspec_config_header
+        buildspec_name_mock.return_value = fileoperations.buildspec_name
         codecommit_mock.get_repository.side_effect = [
             ServiceError,
             {
@@ -708,7 +713,9 @@ class TestInit(unittest.TestCase):
             u'description': u'PHP 5.5 Running on Amazon Linux 64bit '
         }
 
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = Exception
+        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = SolutionStack(
+            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5'
+        )
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
         commonops_mock.get_current_branch_environment.side_effect = NotInitializedError
         elasticbeanstalk_mock.application_exist.return_value = False
