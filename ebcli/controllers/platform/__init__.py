@@ -57,12 +57,18 @@ class PlatformController(AbstractBaseController):
         command_categories = _partition_commands()
 
         txt = self._meta.description
+        command_help_overrides = {
+            'platform show': 'Shows information about current platform.',
+            'platform select': 'Selects a default platform.',
+            'platform init': 'Initializes your directory with the EB CLI to create and manage Platforms.',
+            'platform list': 'In a platform workspace, lists versions of the custom platform associated with this workspace. Elsewhere, lists available platforms.'
+        }
         for command_category in command_categories:
             cmd_txt = ''
             for label in command_category[1]:
                 cmd = self._dispatch_map[label]
                 cmd_txt = cmd_txt + '  %-18s' % cmd['aliases'][0]
-                cmd_txt = cmd_txt + "    %s\n" % cmd['help']
+                cmd_txt = cmd_txt + "    %s\n" % (command_help_overrides.get(label) or cmd['help'])
 
             txt += '''
 

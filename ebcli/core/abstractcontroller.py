@@ -153,7 +153,10 @@ class AbstractBaseController(controller.CementBaseController):
 
     @property
     def _help_text(self):
-        """Returns the help text displayed when '--help' is passed."""
+        """
+        Returns the help text displayed when for the commands of the type `eb <command> <subcommand>`
+        except where <command> is "platform".
+        """
         longest = 0
         def pad(label):
             padlength = longest - len(label) + 2

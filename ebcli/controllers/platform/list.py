@@ -10,6 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import argparse
 import os
 
 from ebcli.core import io, fileoperations
@@ -23,6 +24,7 @@ from ebcli.resources.strings import strings, flag_text
 
 class GenericPlatformListController(AbstractBaseController):
     class Meta:
+        argument_formatter = argparse.RawTextHelpFormatter
         is_platform_workspace_only_command = False
         requires_directory_initialization = True
         description = strings['platformlistversions.info']

@@ -12,6 +12,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from argparse import SUPPRESS
+import re
 import textwrap
 
 from cement.core import foundation, handler, hook
@@ -34,7 +35,6 @@ from ebcli.resources.strings import flag_text, strings
 class EBPBaseController(base.EbBaseController):
     class Meta:
         label = 'base'
-        description = strings['base.info']
         arguments = [
             (['--version'], dict(action='store_true',
                                  help=flag_text['base.version'])),
@@ -50,13 +50,19 @@ class EBPBaseController(base.EbBaseController):
         """
         command_categories = _partition_commands()
 
+        command_help_overrides = {
+            'show': 'Shows information about current platform.',
+            'select': 'Selects a default platform.',
+            'init': 'Initializes your directory with the EB CLI to create and manage Platforms.',
+            'list': 'In a platform workspace, lists versions of the custom platform associated with this workspace. Elsewhere, lists available platforms.'
+        }
         txt = self._meta.description
         for command_category in command_categories:
             cmd_txt = ''
             for label in command_category[1]:
                 cmd = self._dispatch_map[label]
                 cmd_txt = cmd_txt + '  %-18s' % label
-                cmd_txt = cmd_txt + "    %s\n" % cmd['help']
+                cmd_txt = cmd_txt + "    %s\n" % (command_help_overrides.get(label) or cmd['help'])
 
             txt += '''
 

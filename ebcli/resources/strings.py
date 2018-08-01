@@ -29,8 +29,11 @@ strings = {
                  'For more information on a specific command, type "eb {cmd} --help".',
     # Initial epilog (last line) that you see on 'eb --help'
     'base.epilog': 'To get started type "eb init". Then type "eb create" and "eb open"',
-    'ebpbase.info': 'Welcome to the Elastic Beanstalk Command Line Interface (EB CLI). \n'
-                 'For more information on a specific command, type "ebp {cmd} --help".',
+    'ebpbase.info': """Welcome to the Elastic Beanstalk Command Line Interface (EB CLI).
+The "ebp" command is equivalent to "eb platform". It offers sub-commands for managing platforms.
+We recommend that you use "eb platform" instead of "ebp".
+For more information on a specific command, enter "eb platform {cmd} --help".
+To get started, enter "eb platform init". Then enter "eb platform create".""",
     'ebpbase.epilog': 'To get started type "ebp init". Then type "ebp create"',
 
     # All .infos are for --help text. All .epilogs are the epilogs shown on the given command
@@ -58,7 +61,6 @@ strings = {
     'use.info': 'Sets default environment.',
     'health.info': 'Shows detailed environment health.',
     'deploy.info': 'Deploys your source code to the environment.',
-    'platforminit.info': 'Prepares your workspace to build and manage custom platforms.',
     'platformcleanup.info': 'Terminates your platform builder environment.',
     'platformset.version': 'Setting workspace platform version to:',
     'platformset.newplatform': 'New platform "%s"',
@@ -89,7 +91,8 @@ strings = {
 
     'platformdelete.events': 'Shows events for the current platform',
 
-    'platforminit.info': 'Initializes your directory with the EB CLI to create and manage Platforms.',
+    'platforminit.info': """Initializes your directory with the EB CLI to create and manage Platforms.
+(Uninitialized or platform workspace only)""",
     'platforminit.epilog': 'This command is safe when run in a previously initialized'
                    ' directory. To re-initialize with different options, '
                    'use the -i option. Note this command cannot change the workspace type'
@@ -97,15 +100,21 @@ strings = {
     'platforminit.noinstanceprofile': 'You are creating a workspace without an instance profile. Without an '
                                       'instance profile you cannot create a platform with a customized AMI. '
                                       'Use eb platform init -i or -I to configure your instance profile.',
-    'platform.info': 'Commands for managing platforms.',
-    'platformshow.info': 'Shows information about current platform.',
-    'platformlist.info': "Lists all available platforms in application workspaces and all custom platforms in platform workspaces.",
+    'platform.info': """Commands for managing platforms.
+For more information on a specific command, enter "eb platform {cmd} --help".
+To get started enter "eb platform init". Then enter "eb platform create".""",
+    'platformshow.info': """Shows information about current platform.
+(application workspace only)""",
+    'platformlist.info': """In a platform workspace, lists versions of the custom platform associated with this workspace. You can reduce the result set by using filters.
+
+Elsewhere, shows a list of platforms for use with "eb init -p". Enter "--verbose" to get the full platform name.""",
     'platformworkspaceselect.info': 'Selects platform resources to use for this workspace.',
     'platformworkspaceselectversion.info': 'Selects the active custom platform version to use for this workspace.',
-    'platformselect.info': 'Selects a default platform.',
-    'platformselect.epilog': 'This command is an alternative to "eb init -i" and "eb init -p". It does not change the platform on any existing environments.\n'
-                             'To upgrade an environment\'s platform, type:\n'
-                             '    eb upgrade',
+    'platformselect.info': """Selects a default platform.
+(application workspace only)""",
+    'platformselect.epilog': """This command is an alternative to "eb init -i" and "eb init -p". It doesn't change the platform on any existing environments.
+To upgrade an environment's platform, enter:
+    eb upgrade""",
     'platformevents.info': 'Displays events for the custom platform associated with this workspace.',
     'upgrade.info': 'Updates the environment to the most recent platform version.',
     'scale.info': 'Changes the number of running instances.',
@@ -494,7 +503,7 @@ flag_text = {
     'base.profile': 'use a specific profile from your credential file',
     'base.region': 'use a specific region',
     'general.timeout': 'timeout period in minutes',
-    'base.noverify': 'do not verify AWS SSL certificates',
+    'base.noverify': "don't verify AWS SSL certificates",
 
     # Clone
     'clone.env': 'name of environment to clone',
@@ -651,8 +660,11 @@ flag_text = {
     # Platform: Show Version
     'platformshowversion.version': 'platform version',
 
-    'platformlist.all': 'lists the versions of all platforms owned by your account',
-    'platformlist.status': 'the status of your custom platforms you wish to filter on (Ready, Failed, Deleting, Creating)',
+    'platformlist.all': """lists the versions of all platforms owned by your account
+(platform workspace only)""",
+    'platformlist.status': """the status that you wish to filter on (Ready, Failed, Deleting, Creating)
+(platform workspace only)
+""",
 
     'platformworkspace.platform': 'platform name',
 

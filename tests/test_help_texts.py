@@ -77,6 +77,8 @@ Actual:
             """usage: eb platform <command> [options...]
 
 Commands for managing platforms.
+For more information on a specific command, enter "eb platform {cmd} --help".
+To get started enter "eb platform init". Then enter "eb platform create".
 
 application workspace commands:
   show                  Shows information about current platform.
@@ -92,7 +94,7 @@ platform workspace commands:
   logs                  Retrieves logs for your custom platform build event.
 
 common commands:
-  list                  Lists all available platforms in application workspaces and all custom platforms in platform workspaces.
+  list                  In a platform workspace, lists versions of the custom platform associated with this workspace. Elsewhere, lists available platforms.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -102,7 +104,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'platform', '--help'])
         )
@@ -124,7 +126,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -M, --major-increment
                         major version increment
   -m, --minor-increment
@@ -164,7 +166,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --cleanup             remove all platform versions in the "Failed" state
   --all-platforms       enables cleanup for all of your platforms.
   --force               skip confirmation prompt
@@ -191,7 +193,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -f, --follow          wait and continue to print events as they come
 """.strip(),
             self.output_of(['eb', 'platform', 'events', '--help'])
@@ -202,6 +204,7 @@ optional arguments:
             """usage: eb platform init <platform name> [options...]
 
 Initializes your directory with the EB CLI to create and manage Platforms.
+(Uninitialized or platform workspace only)
 
 positional arguments:
   platform_name         platform name
@@ -214,7 +217,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -i, --interactive     force interactive mode
   -k KEYNAME, --keyname KEYNAME
                         default EC2 key name
@@ -228,7 +231,9 @@ This command is safe when run in a previously initialized directory. To re-initi
         self.assertEqual(
             """usage: eb platform list [options...]
 
-Lists all available platforms in application workspaces and all custom platforms in platform workspaces.
+In a platform workspace, lists versions of the custom platform associated with this workspace. You can reduce the result set by using filters.
+
+Elsewhere, shows a list of platforms for use with "eb init -p". Enter "--verbose" to get the full platform name.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -238,12 +243,12 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
-  -a, --all-platforms   lists the versions of all platforms owned by your
-                        account
+  --no-verify-ssl       don't verify AWS SSL certificates
+  -a, --all-platforms   lists the versions of all platforms owned by your account
+                        (platform workspace only)
   -s STATUS, --status STATUS
-                        the status of your custom platforms you wish to filter
-                        on (Ready, Failed, Deleting, Creating)
+                        the status that you wish to filter on (Ready, Failed, Deleting, Creating)
+                        (platform workspace only)
 """.strip(),
             self.output_of(['eb', 'platform', 'list', '--help'])
         )
@@ -265,7 +270,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --stream              enable/disable log streaming to CloudWatch Logs
 """.strip(),
             self.output_of(['eb', 'platform', 'logs', '--help'])
@@ -288,7 +293,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 
 Will display details about the current version if no version is specified.
 """.strip(),
@@ -312,7 +317,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'platform', 'use', '--help'])
         )
@@ -321,8 +326,11 @@ optional arguments:
         self.assertEqual(
             """usage: ebp (sub-commands ...) [options ...] {arguments ...}
 
-Welcome to the Elastic Beanstalk Command Line Interface (EB CLI). 
-For more information on a specific command, type "ebp {cmd} --help".
+Welcome to the Elastic Beanstalk Command Line Interface (EB CLI).
+The "ebp" command is equivalent to "eb platform". It offers sub-commands for managing platforms.
+We recommend that you use "eb platform" instead of "ebp".
+For more information on a specific command, enter "eb platform {cmd} --help".
+To get started, enter "eb platform init". Then enter "eb platform create".
 
 platform workspace commands:
   init                  Initializes your directory with the EB CLI to create and manage Platforms.
@@ -334,7 +342,7 @@ platform workspace commands:
   use                   Selects the active custom platform version to use for this workspace.
 
 common commands:
-  list                  Lists available custom platforms
+  list                  In a platform workspace, lists versions of the custom platform associated with this workspace. Elsewhere, lists available platforms.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -344,7 +352,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --version             show application/version info
 
 To get started type "ebp init". Then type "ebp create"
@@ -369,7 +377,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -M, --major-increment
                         major version increment
   -m, --minor-increment
@@ -409,7 +417,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --cleanup             remove all platform versions in the "Failed" state
   --all-platforms       enables cleanup for all of your platforms.
   --force               skip confirmation prompt
@@ -436,7 +444,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -f, --follow          wait and continue to print events as they come
 """.strip(),
             self.output_of(['ebp', 'events', '--help'])
@@ -447,6 +455,7 @@ optional arguments:
             """usage: ebp init <platform name> [options...]
 
 Initializes your directory with the EB CLI to create and manage Platforms.
+(Uninitialized or platform workspace only)
 
 positional arguments:
   platform_name         platform name
@@ -459,7 +468,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -i, --interactive     force interactive mode
   -k KEYNAME, --keyname KEYNAME
                         default EC2 key name
@@ -483,12 +492,12 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
-  -a, --all-platforms   lists the versions of all platforms owned by your
-                        account
+  --no-verify-ssl       don't verify AWS SSL certificates
+  -a, --all-platforms   lists the versions of all platforms owned by your account
+                        (platform workspace only)
   -s STATUS, --status STATUS
-                        the status of your custom platforms you wish to filter
-                        on (Ready, Failed, Deleting, Creating)
+                        the status that you wish to filter on (Ready, Failed, Deleting, Creating)
+                        (platform workspace only)
 """.strip(),
             self.output_of(['ebp', 'list', '--help'])
         )
@@ -510,7 +519,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --stream              enable/disable log streaming to CloudWatch Logs
 """.strip(),
             self.output_of(['ebp', 'logs', '--help'])
@@ -533,7 +542,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 
 Will display details about the current version if no version is specified.
 """.strip(),
@@ -557,7 +566,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['ebp', 'use', '--help'])
         )
@@ -607,7 +616,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --version             show application/version info
 
 To get started type "eb init". Then type "eb create" and "eb open"
@@ -632,7 +641,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'abort', '--help'])
         )
@@ -654,7 +663,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --delete VERSION_LABEL, -d VERSION_LABEL
                         delete the specified application version
 """.strip(),
@@ -678,7 +687,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -n CLONE_NAME, --clone_name CLONE_NAME
                         desired name for environment clone
   -c CNAME, --cname CNAME
@@ -712,7 +721,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'codesource', '--help'])
         )
@@ -748,7 +757,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -nh, --nohang         return immediately, do not wait for config to be
                         completed
   --timeout TIMEOUT     timeout period in minutes
@@ -777,7 +786,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
                          self.output_of(['eb', 'console', '--help'])
                          )
@@ -798,7 +807,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -m [MODULES [MODULES ...]], --modules [MODULES [MODULES ...]]
                         a list of modules
   -g ENV_GROUP_SUFFIX, --env-group-suffix ENV_GROUP_SUFFIX
@@ -858,7 +867,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --modules [MODULES [MODULES ...]]
                         modules to deploy
   -g ENV_GROUP_SUFFIX, --env-group-suffix ENV_GROUP_SUFFIX
@@ -896,7 +905,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -f, --follow          wait and continue to print events as they come
 """.strip(),
             self.output_of(['eb', 'events', '--help'])
@@ -919,7 +928,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --refresh             refresh
   --mono                no color
   --view {split,status,request,cpu}
@@ -944,7 +953,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -m [MODULES [MODULES ...]], --modules [MODULES [MODULES ...]]
                         module directory
   -p PLATFORM, --platform PLATFORM
@@ -983,7 +992,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'labs', '--help'])
         )
@@ -1005,7 +1014,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --num-to-leave NUM    number of unused versions to leave DEFAULT=10
   --older-than DAYS     delete only versions older than x days DEFAULT=60
   --force               don't prompt for confirmation
@@ -1030,7 +1039,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'labs', 'convert-dockerrun', '--help'])
         )
@@ -1052,7 +1061,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'labs', 'download', '--help'])
         )
@@ -1074,7 +1083,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 
 Applications and environments created from the quick link are accessible to your account only. 
 To share the link with other accounts, you must explicitly grant those accounts read access to your S3 application version .zip file.
@@ -1096,7 +1105,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --remove              remove .ebextensions
 """.strip(),
             self.output_of(['eb', 'labs', 'setup-cloudwatchlogs', '--help'])
@@ -1119,7 +1128,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --cert-file CERT_FILE
                         certificate file
   --private-key PRIVATE_KEY
@@ -1145,7 +1154,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -a, --all             show environments for all applications
 """.strip(),
             self.output_of(['eb', 'list', '--help'])
@@ -1173,7 +1182,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'local', '--help'])
         )
@@ -1192,7 +1201,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'local', 'logs', '--help'])
         )
@@ -1211,7 +1220,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'local', 'open', '--help'])
         )
@@ -1230,7 +1239,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'local', 'printenv', '--help'])
         )
@@ -1249,7 +1258,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --envvars ENVVARS     a comma-separated list of environment variables as
                         key=value pairs
   --port PORT           the host port that is exposed and mapped to the
@@ -1276,7 +1285,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 
 Use this command to set environment variables by typing a space-separated list of key=value pairs.
 """.strip(),
@@ -1297,7 +1306,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'local', 'status', '--help'])
         )
@@ -1319,7 +1328,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -a, --all             retrieve all logs
   -z, --zip             retrieve all logs as .zip
   -i INSTANCE, --instance INSTANCE
@@ -1357,7 +1366,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'open', '--help'])
         )
@@ -1367,6 +1376,7 @@ optional arguments:
             """usage: eb platform select [options...]
 
 Selects a default platform.
+(application workspace only)
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -1376,10 +1386,10 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 
-This command is an alternative to "eb init -i" and "eb init -p". It does not change the platform on any existing environments.
-To upgrade an environment's platform, type:
+This command is an alternative to "eb init -i" and "eb init -p". It doesn't change the platform on any existing environments.
+To upgrade an environment's platform, enter:
     eb upgrade
 """.strip(),
             self.output_of(['eb', 'platform', 'select', '--help'])
@@ -1390,6 +1400,7 @@ To upgrade an environment's platform, type:
             """usage: eb platform show <environment_name> [options ...]
 
 Shows information about current platform.
+(application workspace only)
 
 positional arguments:
   environment_name      environment name
@@ -1402,7 +1413,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'platform', 'show', '--help'])
         )
@@ -1424,7 +1435,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'printenv', '--help'])
         )
@@ -1446,7 +1457,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'restore', '--help'])
         )
@@ -1469,7 +1480,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -f, --force           skip confirmation prompt
   --timeout TIMEOUT     timeout period in minutes
 """.strip(),
@@ -1493,7 +1504,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -n NUMBER, --number NUMBER
                         index of instance in list
   -i INSTANCE, --instance INSTANCE
@@ -1528,7 +1539,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
 """.strip(),
             self.output_of(['eb', 'status', '--help'])
         )
@@ -1550,7 +1561,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -n DESTINATION_NAME, --destination_name DESTINATION_NAME
                         name of destination environment
 """.strip(),
@@ -1574,7 +1585,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   -l, --list            lists all environment resource tags
   -a key1=value1[,key2=value2,...], --add key1=value1[,key2=value2,...]
                         create new environment tags provided as a comma-
@@ -1606,7 +1617,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --force               skip confirmation prompt
   --ignore-links        terminate even if environment is linked
   --all                 terminate everything
@@ -1636,7 +1647,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --timeout TIMEOUT     timeout period in minutes
   --force               skip confirmation prompt
   --noroll              do not enable rolling updates before upgrade
@@ -1661,7 +1672,7 @@ optional arguments:
   --profile PROFILE     use a specific profile from your credential file
   -r REGION, --region REGION
                         use a specific region
-  --no-verify-ssl       do not verify AWS SSL certificates
+  --no-verify-ssl       don't verify AWS SSL certificates
   --source SOURCE       source of code to deploy directly; example
                         source_location/repo/branch
 """.strip(),
