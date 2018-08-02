@@ -859,42 +859,34 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.fileoperations.get_instance_profile')
     @mock.patch('ebcli.operations.platformops.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.platformops.commonops.set_environment_for_current_branch')
-    @mock.patch('ebcli.operations.platformops.commonops.wait_for_success_events')
     @mock.patch('ebcli.operations.platformops._raise_if_directory_is_empty')
     @mock.patch('ebcli.operations.platformops._raise_if_platform_definition_file_is_missing')
     @mock.patch('ebcli.operations.platformops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.platformops._get_latest_version')
     @mock.patch('ebcli.operations.platformops.elasticbeanstalk.create_platform_version')
-    @mock.patch('ebcli.operations.platformops.io.get_event_streamer')
-    @mock.patch('ebcli.operations.platformops.logsops.stream_platform_logs')
-    @mock.patch('ebcli.operations.platformops.PackerStreamFormatter')
     @mock.patch('ebcli.operations.platformops._resolve_version_number')
     @mock.patch('ebcli.operations.platformops._resolve_version_label')
     @mock.patch('ebcli.operations.platformops._upload_platform_version_to_s3_if_necessary')
     @mock.patch('ebcli.operations.platformops._resolve_s3_bucket_and_key')
+    @mock.patch('ebcli.operations.platformops.stream_platform_logs')
     def test_create_platform_version__version_not_passed_in__next_version_resolved_by_the_ebcli(
             self,
+            stream_platform_logs_mock,
             _resolve_s3_bucket_and_key_mock,
             _upload_platform_version_to_s3_if_necessary_mock,
             _resolve_version_label_mock,
             _resolve_version_number_mock,
-            packer_stream_formatter_mock,
-            stream_platform_logs_mock,
-            get_event_streamer_mock,
             create_platform_version_mock,
             _get_latest_version_mock,
             get_source_control_mock,
             _raise_if_platform_definition_file_is_missing_mock,
             _raise_if_directory_is_empty_mock,
-            wait_for_success_events_mock,
             set_environment_for_current_branch_mock,
             get_default_keyname_mock,
             get_instance_profile_mock,
             get_platform_name_mock,
             update_platform_version_mock
     ):
-        packer_stream_formatter_instance_mock = mock.MagicMock()
-        packer_stream_formatter_mock.return_value = packer_stream_formatter_instance_mock
         _raise_if_platform_definition_file_is_missing_mock.side_effect = None
         _raise_if_directory_is_empty_mock.side_effect = None
         get_default_keyname_mock.return_value = 'aws-eb-us-west-2'
@@ -913,8 +905,6 @@ class TestPlatformOperations(unittest.TestCase):
         }
         _get_latest_version_mock.return_value = '1.0.0'
         _resolve_version_number_mock.return_value = '2.0.0'
-        streamer_mock = mock.MagicMock()
-        get_event_streamer_mock.return_value = streamer_mock
 
         platformops.create_platform_version(None, True, False, False, 't2.micro')
 
@@ -934,20 +924,18 @@ class TestPlatformOperations(unittest.TestCase):
         set_environment_for_current_branch_mock.assert_called_once_with(
             'eb-custom-platform-builder-packer'
         )
-        get_event_streamer_mock.assert_called_once()
         stream_platform_logs_mock.assert_called_once_with(
+            {
+                'PlatformSummary': {
+                    'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0'
+                },
+                'ResponseMetadata': {
+                    'RequestId': 'my-request-id'
+                }
+            },
             'custom-platform-1',
             '2.0.0',
-            streamer_mock,
-            5,
-            None,
-            packer_stream_formatter_instance_mock
-        )
-        wait_for_success_events_mock.assert_called_once_with(
-            'my-request-id',
-            platform_arn='arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0',
-            streamer=streamer_mock,
-            timeout_in_minutes=30
+            None
         )
 
     @mock.patch('ebcli.operations.platformops._raise_if_directory_is_empty')
@@ -1501,6 +1489,88 @@ class TestPlatformOperations(unittest.TestCase):
         upload_platform_version_mock.assert_called_once_with('bucket', 'key', 'file_path')
         log_info_mock.assert_called_once_with('Uploading archive to s3 location: key')
         delete_app_versions_mock.assert_called_once_with()
+
+    @mock.patch('ebcli.operations.platformops.commonops.wait_for_success_events')
+    @mock.patch('ebcli.operations.platformops.logsops.io.get_event_streamer')
+    @mock.patch('ebcli.operations.platformops.threading.Thread')
+    @mock.patch('ebcli.operations.platformops.PackerStreamFormatter')
+    def test_stream_platform_logs(
+            self,
+            PackerStreamFormatter_mock,
+            Thread_mock,
+            get_event_streamer_mock,
+            wait_for_success_events_mock
+    ):
+        response = {
+            'PlatformSummary': {
+                'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0'
+            },
+            'ResponseMetadata': {
+                'RequestId': 'my-request-id'
+            }
+        }
+        streamer_mock = mock.MagicMock()
+        get_event_streamer_mock.return_value = streamer_mock
+        formatter_mock = mock.MagicMock()
+        PackerStreamFormatter_mock.return_value = formatter_mock
+        builder_events_thread_mock = mock.MagicMock()
+        Thread_mock.return_value = builder_events_thread_mock
+
+        platformops.stream_platform_logs(response, 'custom-platform-1', '2.0.0', None)
+
+        Thread_mock.assert_called_once_with(
+            args=('custom-platform-1', '2.0.0', streamer_mock, 5, None, formatter_mock),
+            target=platformops.logsops.stream_platform_logs
+        )
+        builder_events_thread_mock.start.assert_called_once_with()
+        self.assertTrue(builder_events_thread_mock.daemon)
+        wait_for_success_events_mock.assert_called_once_with(
+            'my-request-id',
+            platform_arn='arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0',
+            streamer=streamer_mock,
+            timeout_in_minutes=30
+        )
+
+    @mock.patch('ebcli.operations.platformops.commonops.wait_for_success_events')
+    @mock.patch('ebcli.operations.platformops.logsops.io.get_event_streamer')
+    @mock.patch('ebcli.operations.platformops.threading.Thread')
+    @mock.patch('ebcli.operations.platformops.PackerStreamFormatter')
+    def test_stream_platform_logs__timeout_specified(
+            self,
+            PackerStreamFormatter_mock,
+            Thread_mock,
+            get_event_streamer_mock,
+            wait_for_success_events_mock
+    ):
+        response = {
+            'PlatformSummary': {
+                'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0'
+            },
+            'ResponseMetadata': {
+                'RequestId': 'my-request-id'
+            }
+        }
+        streamer_mock = mock.MagicMock()
+        get_event_streamer_mock.return_value = streamer_mock
+        formatter_mock = mock.MagicMock()
+        PackerStreamFormatter_mock.return_value = formatter_mock
+        builder_events_thread_mock = mock.MagicMock()
+        Thread_mock.return_value = builder_events_thread_mock
+
+        platformops.stream_platform_logs(response, 'custom-platform-1', '2.0.0', 60)
+
+        Thread_mock.assert_called_once_with(
+            args=('custom-platform-1', '2.0.0', streamer_mock, 5, None, formatter_mock),
+            target=platformops.logsops.stream_platform_logs
+        )
+        builder_events_thread_mock.start.assert_called_once_with()
+        self.assertTrue(builder_events_thread_mock.daemon)
+        wait_for_success_events_mock.assert_called_once_with(
+            'my-request-id',
+            platform_arn='arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0',
+            streamer=streamer_mock,
+            timeout_in_minutes=60
+        )
 
 
 class TestPackerStreamMessage(unittest.TestCase):

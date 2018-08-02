@@ -172,25 +172,7 @@ def create_platform_version(
     fileoperations.update_platform_version(version)
     commonops.set_environment_for_current_branch(environment_name)
 
-    arn = response['PlatformSummary']['PlatformArn']
-    request_id = response['ResponseMetadata']['RequestId']
-
-    # Share streamer for platform events and builder events
-    streamer = io.get_event_streamer()
-
-    builder_events = threading.Thread(
-        target=logsops.stream_platform_logs,
-        args=(platform_name, version, streamer, 5, None, PackerStreamFormatter()))
-    builder_events.daemon = True
-
-    # Watch events from builder logs
-    builder_events.start()
-    commonops.wait_for_success_events(
-        request_id,
-        platform_arn=arn,
-        streamer=streamer,
-        timeout_in_minutes=timeout or 30
-    )
+    stream_platform_logs(response, platform_name, version, timeout)
 
 
 def delete_platform_version(platform_version, force=False):
@@ -559,6 +541,28 @@ def show_platform_events(follow, version):
         arn = _version_to_arn(version)
 
     print_events(follow=follow, platform_arn=arn, app_name=None, env_name=None)
+
+
+def stream_platform_logs(response, platform_name, version, timeout):
+    arn = response['PlatformSummary']['PlatformArn']
+    request_id = response['ResponseMetadata']['RequestId']
+
+    # Share streamer for platform events and builder events
+    streamer = io.get_event_streamer()
+
+    builder_events = threading.Thread(
+        target=logsops.stream_platform_logs,
+        args=(platform_name, version, streamer, 5, None, PackerStreamFormatter()))
+    builder_events.daemon = True
+
+    # Watch events from builder logs
+    builder_events.start()
+    commonops.wait_for_success_events(
+        request_id,
+        platform_arn=arn,
+        streamer=streamer,
+        timeout_in_minutes=timeout or 30
+    )
 
 
 def _create_app_version_zip_if_not_present_on_s3(
