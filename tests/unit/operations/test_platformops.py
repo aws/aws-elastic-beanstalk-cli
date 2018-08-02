@@ -12,6 +12,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import datetime
 import os
 import shutil
 
@@ -1002,8 +1003,10 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.io.get_event_streamer')
     @mock.patch('ebcli.operations.platformops.logsops.stream_platform_logs')
     @mock.patch('ebcli.operations.platformops.PackerStreamFormatter')
+    @mock.patch('ebcli.operations.platformops._resolve_version_label')
     def test_create_platform_version__app_version_needs_to_be_created(
             self,
+            _resolve_version_label_mock,
             packer_stream_formatter_mock,
             stream_platform_logs_mock,
             get_event_streamer_mock,
@@ -1037,9 +1040,8 @@ class TestPlatformOperations(unittest.TestCase):
         get_platform_name_mock.return_value = 'custom-platform-1'
         source_control_mock = mock.MagicMock()
         source_control_mock.untracked_changes_exist = mock.MagicMock(return_value=False)
-        version_label_mock = mock.MagicMock(return_value='my-version-label')
-        source_control_mock.get_version_label = version_label_mock
         get_source_control_mock.return_value = source_control_mock
+        _resolve_version_label_mock.return_value = 'my-version-label'
         get_app_version_s3_location_mock.return_value = [None, None]
         _zip_up_project_mock.return_value = ['s3-file-name', 's3-path']
         create_platform_version_mock.return_value = {
@@ -1116,8 +1118,10 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.logsops.stream_platform_logs')
     @mock.patch('ebcli.operations.platformops.PackerStreamFormatter')
     @mock.patch('ebcli.operations.platformops._resolve_version_number')
+    @mock.patch('ebcli.operations.platformops._resolve_version_label')
     def test_create_platform_version__version_not_passed_in__next_version_resolved_by_the_ebcli(
             self,
+            _resolve_version_label_mock,
             _resolve_version_number_mock,
             packer_stream_formatter_mock,
             stream_platform_logs_mock,
@@ -1152,7 +1156,7 @@ class TestPlatformOperations(unittest.TestCase):
         get_instance_profile_mock.return_value = 'default'
         get_platform_name_mock.return_value = 'custom-platform-1'
         get_source_control_mock.untracked_changes_exist = mock.MagicMock(return_value=False)
-        get_source_control_mock.get_version_label = mock.MagicMock(return_value='my-version-label')
+        _resolve_version_label_mock.return_value = 'my-version-label'
         get_app_version_s3_location_mock.return_value = ['s3-bucket', 's3-key']
         create_platform_version_mock.return_value = {
             'PlatformSummary': {
@@ -1222,8 +1226,10 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.io.get_event_streamer')
     @mock.patch('ebcli.operations.platformops.logsops.stream_platform_logs')
     @mock.patch('ebcli.operations.platformops.PackerStreamFormatter')
+    @mock.patch('ebcli.operations.platformops._resolve_version_label')
     def test_create_platform_version__directory_is_empty(
             self,
+            _resolve_version_label_mock,
             packer_stream_formatter_mock,
             stream_platform_logs_mock,
             get_event_streamer_mock,
@@ -1251,8 +1257,8 @@ class TestPlatformOperations(unittest.TestCase):
         get_instance_profile_mock.return_value = 'default'
         get_platform_name_mock.return_value = 'custom-platform-1'
         get_source_control_mock.untracked_changes_exist = mock.MagicMock(return_value=False)
-        get_source_control_mock.get_version_label = mock.MagicMock(return_value='my-version-label')
         get_app_version_s3_location_mock.return_value = ['s3-bucket', 's3-key']
+        _resolve_version_label_mock.return_value = 'my-version-label'
         create_platform_version_mock.return_value = {
             'PlatformSummary': {
                 'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0'
@@ -1667,6 +1673,23 @@ class TestPlatformOperations(unittest.TestCase):
 
     def test_raise_if_version_format_is_invalid__valid(self):
         platformops._raise_if_version_format_is_invalid('1.0.4')
+
+    def test_resolve_version_label(self):
+        source_control = mock.MagicMock()
+        source_control.get_version_label.return_value = 'my-version-label'
+
+        self.assertEqual('my-version-label', platformops._resolve_version_label(source_control, False))
+
+    @mock.patch('ebcli.operations.platformops._datetime_now')
+    def test_resolve_version_label__staged(
+            self,
+            _datetime_now_mock
+    ):
+        _datetime_now_mock.return_value = datetime.datetime(2018, 7, 19, 21, 50, 21, 623000)
+        source_control = mock.MagicMock()
+        source_control.get_version_label.return_value = 'my-version-label'
+
+        self.assertEqual('my-version-label-stage-180719_215021', platformops._resolve_version_label(source_control, True))
 
 
 class TestPackerStreamMessage(unittest.TestCase):

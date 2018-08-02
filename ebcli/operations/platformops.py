@@ -160,11 +160,7 @@ def create_platform_version(
     if source_control.untracked_changes_exist():
         io.log_warning(strings['sc.unstagedchanges'])
 
-    version_label = source_control.get_version_label()
-    if staged:
-        # Make a unique version label
-        timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
-        version_label = version_label + '-stage-' + timestamp
+    version_label = _resolve_version_label(source_control, staged)
 
     file_descriptor, original_platform_yaml = tempfile.mkstemp()
     os.close(file_descriptor)
@@ -611,6 +607,10 @@ def show_platform_events(follow, version):
     print_events(follow=follow, platform_arn=arn, app_name=None, env_name=None)
 
 
+def _datetime_now():
+    return datetime.now()
+
+
 def _enable_healthd():
     option_settings = []
 
@@ -716,6 +716,15 @@ def _raise_if_platform_definition_file_is_missing():
 def _raise_if_version_format_is_invalid(version):
     if not VALID_PLATFORM_VERSION_FORMAT.match(version):
         raise InvalidPlatformVersionError(strings['exit.invalidversion'])
+
+
+def _resolve_version_label(source_control, staged):
+    version_label = source_control.get_version_label()
+    if staged:
+        # Make a unique version label
+        timestamp = _datetime_now().strftime("%y%m%d_%H%M%S")
+        version_label = version_label + '-stage-' + timestamp
+    return version_label
 
 
 def _resolve_version_number(
