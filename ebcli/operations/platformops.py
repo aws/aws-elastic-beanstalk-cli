@@ -164,11 +164,6 @@ def create_platform_version(
     response = elasticbeanstalk.create_platform_version(
         platform_name, version, bucket, key, instance_profile, key_name, instance_type, vpc)
 
-
-    # TODO: Enable this once the API returns the name of the environment associated with a
-    # CreatePlatformRequest, and remove hard coded value. There is currently only one type
-    # of platform builder, we may support additional builders in the future.
-    #environment_name = response['PlatformSummary']['EnvironmentName']
     environment_name = 'eb-custom-platform-builder-packer'
 
     io.echo(colored(
