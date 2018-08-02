@@ -155,46 +155,11 @@ def create_platform_version(
     instance_profile = fileoperations.get_instance_profile(None)
     key_name = commonops.get_default_keyname()
     version = version or _resolve_version_number(platform_name, major_increment, minor_increment, patch_increment)
-
     source_control = SourceControl.get_source_control()
-    if source_control.untracked_changes_exist():
-        io.log_warning(strings['sc.unstagedchanges'])
-
+    io.log_warning(strings['sc.unstagedchanges']) if source_control.untracked_changes_exist() else None
     version_label = _resolve_version_label(source_control, staged)
-
-    file_descriptor, original_platform_yaml = tempfile.mkstemp()
-    os.close(file_descriptor)
-
-    copyfile('platform.yaml', original_platform_yaml)
-
-    try:
-        # Add option settings to platform.yaml
-        _enable_healthd()
-
-        s3_bucket, s3_key = get_app_version_s3_location(platform_name, version_label)
-
-        # Create zip file if the application version doesn't exist
-        if s3_bucket is None and s3_key is None:
-            file_name, file_path = _zip_up_project(version_label, source_control, staged=staged)
-        else:
-            file_name = None
-            file_path = None
-    finally:
-        # Restore original platform.yaml
-        move(original_platform_yaml, 'platform.yaml')
-
-    # Use existing bucket if it exists
-    bucket = elasticbeanstalk.get_storage_location() if s3_bucket is None else s3_bucket
-
-    # Use existing key if it exists
-    key = platform_name + '/' + file_name if s3_key is None else s3_key
-
-    try:
-        s3.get_object_info(bucket, key)
-        io.log_info('S3 Object already exists. Skipping upload.')
-    except NotFoundError:
-        io.log_info('Uploading archive to s3 location: ' + key)
-        s3.upload_platform_version(bucket, key, file_path)
+    bucket, key, file_path = _resolve_s3_bucket_and_key(platform_name, version_label, source_control, staged)
+    _upload_platform_version_to_s3_if_necessary(bucket, key, file_path)
 
     # Just deletes the local zip
     fileoperations.delete_app_versions()
@@ -753,6 +718,51 @@ def _resolve_version_number(
         version = "%s.%s.%s" % (major, minor, patch)
 
     return version
+
+
+def _resolve_s3_bucket_and_key(
+        platform_name,
+        version_label,
+        source_control,
+        staged
+):
+    file_descriptor, original_platform_yaml = tempfile.mkstemp()
+    os.close(file_descriptor)
+
+    copyfile('platform.yaml', original_platform_yaml)
+
+    try:
+        # Add option settings to platform.yaml
+        _enable_healthd()
+
+        s3_bucket, s3_key = get_app_version_s3_location(platform_name, version_label)
+
+        # Create zip file if the application version doesn't exist
+        if s3_bucket is None and s3_key is None:
+            file_name, file_path = _zip_up_project(version_label, source_control, staged=staged)
+        else:
+            file_name = None
+            file_path = None
+    finally:
+        # Restore original platform.yaml
+        move(original_platform_yaml, 'platform.yaml')
+
+    # Use existing bucket if it exists
+    bucket = elasticbeanstalk.get_storage_location() if s3_bucket is None else s3_bucket
+
+    # Use existing key if it exists
+    key = platform_name + '/' + file_name if s3_key is None else s3_key
+
+    return bucket, key, file_path
+
+
+def _upload_platform_version_to_s3_if_necessary(bucket, key, file_path):
+    try:
+        s3.get_object_info(bucket, key)
+        io.log_info('S3 Object already exists. Skipping upload.')
+    except NotFoundError:
+        io.log_info('Uploading archive to s3 location: ' + key)
+        s3.upload_platform_version(bucket, key, file_path)
 
 
 def _version_to_arn(platform_version):
