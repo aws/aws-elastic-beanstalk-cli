@@ -175,9 +175,6 @@ def create_platform_version(
     arn = response['PlatformSummary']['PlatformArn']
     request_id = response['ResponseMetadata']['RequestId']
 
-    if not timeout:
-        timeout = 30
-
     # Share streamer for platform events and builder events
     streamer = io.get_event_streamer()
 
@@ -192,7 +189,7 @@ def create_platform_version(
         request_id,
         platform_arn=arn,
         streamer=streamer,
-        timeout_in_minutes=timeout
+        timeout_in_minutes=timeout or 30
     )
 
 
