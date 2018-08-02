@@ -1109,8 +1109,10 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.io.get_event_streamer')
     @mock.patch('ebcli.operations.platformops.logsops.stream_platform_logs')
     @mock.patch('ebcli.operations.platformops.PackerStreamFormatter')
-    def test_create_platform_version__update_major_version(
+    @mock.patch('ebcli.operations.platformops._resolve_version_number')
+    def test_create_platform_version__version_not_passed_in__next_version_resolved_by_the_ebcli(
             self,
+            _resolve_version_number_mock,
             packer_stream_formatter_mock,
             stream_platform_logs_mock,
             get_event_streamer_mock,
@@ -1155,6 +1157,7 @@ class TestPlatformOperations(unittest.TestCase):
             }
         }
         _get_latest_version_mock.return_value = '1.0.0'
+        _resolve_version_number_mock.return_value = '2.0.0'
         streamer_mock = mock.MagicMock()
         get_event_streamer_mock.return_value = streamer_mock
 
@@ -1179,222 +1182,6 @@ class TestPlatformOperations(unittest.TestCase):
         stream_platform_logs_mock.assert_called_once_with(
             'custom-platform-1',
             '2.0.0',
-            streamer_mock,
-            5,
-            None,
-            packer_stream_formatter_instance_mock
-        )
-        wait_for_success_events_mock.assert_called_once_with(
-            'my-request-id',
-            platform_arn='arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0',
-            streamer=streamer_mock,
-            timeout_in_minutes=30
-        )
-        _enable_healthd_mock.assert_called_once()
-
-        _zip_up_project_mock.assert_not_called()
-
-    @mock.patch('ebcli.operations.platformops.fileoperations.update_platform_version')
-    @mock.patch('ebcli.operations.platformops.fileoperations.delete_app_versions')
-    @mock.patch('ebcli.operations.platformops.fileoperations._traverse_to_project_root')
-    @mock.patch('ebcli.operations.platformops.fileoperations.get_platform_name')
-    @mock.patch('ebcli.operations.platformops.fileoperations.get_instance_profile')
-    @mock.patch('ebcli.operations.platformops.commonops.get_default_keyname')
-    @mock.patch('ebcli.operations.platformops.commonops.set_environment_for_current_branch')
-    @mock.patch('ebcli.operations.platformops.commonops.wait_for_success_events')
-    @mock.patch('ebcli.operations.platformops._raise_if_directory_is_empty')
-    @mock.patch('ebcli.operations.platformops.heuristics.has_platform_definition_file')
-    @mock.patch('ebcli.operations.platformops.SourceControl.get_source_control')
-    @mock.patch('ebcli.operations.platformops.copyfile')
-    @mock.patch('ebcli.operations.platformops.move')
-    @mock.patch('ebcli.operations.platformops._get_latest_version')
-    @mock.patch('ebcli.operations.platformops._enable_healthd')
-    @mock.patch('ebcli.operations.platformops.get_app_version_s3_location')
-    @mock.patch('ebcli.operations.platformops._zip_up_project')
-    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.get_storage_location')
-    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.create_platform_version')
-    @mock.patch('ebcli.operations.platformops.s3.get_object_info')
-    @mock.patch('ebcli.operations.platformops.io.get_event_streamer')
-    @mock.patch('ebcli.operations.platformops.logsops.stream_platform_logs')
-    @mock.patch('ebcli.operations.platformops.PackerStreamFormatter')
-    def test_create_platform_version__update_minor_version(
-            self,
-            packer_stream_formatter_mock,
-            stream_platform_logs_mock,
-            get_event_streamer_mock,
-            get_object_info_mock,
-            create_platform_version_mock,
-            get_storage_location_mock,
-            _zip_up_project_mock,
-            get_app_version_s3_location_mock,
-            _enable_healthd_mock,
-            _get_latest_version_mock,
-            move_mock,
-            copyfile_mock,
-            get_source_control_mock,
-            has_platform_definition_file_mock,
-            _raise_if_directory_is_empty_mock,
-            wait_for_success_events_mock,
-            set_environment_for_current_branch_mock,
-            get_default_keyname_mock,
-            get_instance_profile_mock,
-            get_platform_name_mock,
-            _traverse_to_project_root_mock,
-            delete_app_versions_mock,
-            update_platform_version_mock
-    ):
-        packer_stream_formatter_instance_mock = mock.MagicMock()
-        packer_stream_formatter_mock.return_value = packer_stream_formatter_instance_mock
-        get_storage_location_mock.return_value = 's3-bucket'
-        has_platform_definition_file_mock.return_value = True
-        _raise_if_directory_is_empty_mock.side_effect = None
-        get_default_keyname_mock.return_value = 'aws-eb-us-west-2'
-        get_instance_profile_mock.return_value = 'default'
-        get_platform_name_mock.return_value = 'custom-platform-1'
-        get_source_control_mock.untracked_changes_exist = mock.MagicMock(return_value=False)
-        get_source_control_mock.get_version_label = mock.MagicMock(return_value='my-version-label')
-        get_app_version_s3_location_mock.return_value = ['s3-bucket', 's3-key']
-        create_platform_version_mock.return_value = {
-            'PlatformSummary': {
-                'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0'
-            },
-            'ResponseMetadata': {
-                'RequestId': 'my-request-id'
-            }
-        }
-        _get_latest_version_mock.return_value = '1.0.0'
-        streamer_mock = mock.MagicMock()
-        get_event_streamer_mock.return_value = streamer_mock
-
-        platformops.create_platform_version(None, False, True, False, 't2.micro')
-
-        get_object_info_mock.assert_called_once_with('s3-bucket', 's3-key')
-        create_platform_version_mock.assert_called_once_with(
-            'custom-platform-1',
-            '1.1.0',
-            's3-bucket',
-            's3-key',
-            'default',
-            'aws-eb-us-west-2',
-            't2.micro',
-            None
-        )
-        update_platform_version_mock.assert_called_once_with('1.1.0')
-        set_environment_for_current_branch_mock.assert_called_once_with(
-            'eb-custom-platform-builder-packer'
-        )
-        get_event_streamer_mock.assert_called_once()
-        stream_platform_logs_mock.assert_called_once_with(
-            'custom-platform-1',
-            '1.1.0',
-            streamer_mock,
-            5,
-            None,
-            packer_stream_formatter_instance_mock
-        )
-        wait_for_success_events_mock.assert_called_once_with(
-            'my-request-id',
-            platform_arn='arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0',
-            streamer=streamer_mock,
-            timeout_in_minutes=30
-        )
-        _enable_healthd_mock.assert_called_once()
-
-        _zip_up_project_mock.assert_not_called()
-
-    @mock.patch('ebcli.operations.platformops.fileoperations.update_platform_version')
-    @mock.patch('ebcli.operations.platformops.fileoperations.delete_app_versions')
-    @mock.patch('ebcli.operations.platformops.fileoperations._traverse_to_project_root')
-    @mock.patch('ebcli.operations.platformops.fileoperations.get_platform_name')
-    @mock.patch('ebcli.operations.platformops.fileoperations.get_instance_profile')
-    @mock.patch('ebcli.operations.platformops.commonops.get_default_keyname')
-    @mock.patch('ebcli.operations.platformops.commonops.set_environment_for_current_branch')
-    @mock.patch('ebcli.operations.platformops.commonops.wait_for_success_events')
-    @mock.patch('ebcli.operations.platformops._raise_if_directory_is_empty')
-    @mock.patch('ebcli.operations.platformops.heuristics.has_platform_definition_file')
-    @mock.patch('ebcli.operations.platformops.SourceControl.get_source_control')
-    @mock.patch('ebcli.operations.platformops.copyfile')
-    @mock.patch('ebcli.operations.platformops.move')
-    @mock.patch('ebcli.operations.platformops._get_latest_version')
-    @mock.patch('ebcli.operations.platformops._enable_healthd')
-    @mock.patch('ebcli.operations.platformops.get_app_version_s3_location')
-    @mock.patch('ebcli.operations.platformops._zip_up_project')
-    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.get_storage_location')
-    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.create_platform_version')
-    @mock.patch('ebcli.operations.platformops.s3.get_object_info')
-    @mock.patch('ebcli.operations.platformops.io.get_event_streamer')
-    @mock.patch('ebcli.operations.platformops.logsops.stream_platform_logs')
-    @mock.patch('ebcli.operations.platformops.PackerStreamFormatter')
-    def test_create_platform_version__update_patch_version(
-            self,
-            packer_stream_formatter_mock,
-            stream_platform_logs_mock,
-            get_event_streamer_mock,
-            get_object_info_mock,
-            create_platform_version_mock,
-            get_storage_location_mock,
-            _zip_up_project_mock,
-            get_app_version_s3_location_mock,
-            _enable_healthd_mock,
-            _get_latest_version_mock,
-            move_mock,
-            copyfile_mock,
-            get_source_control_mock,
-            has_platform_definition_file_mock,
-            _raise_if_directory_is_empty_mock,
-            wait_for_success_events_mock,
-            set_environment_for_current_branch_mock,
-            get_default_keyname_mock,
-            get_instance_profile_mock,
-            get_platform_name_mock,
-            _traverse_to_project_root_mock,
-            delete_app_versions_mock,
-            update_platform_version_mock
-    ):
-        packer_stream_formatter_instance_mock = mock.MagicMock()
-        packer_stream_formatter_mock.return_value = packer_stream_formatter_instance_mock
-        get_storage_location_mock.return_value = 's3-bucket'
-        has_platform_definition_file_mock.return_value = True
-        _raise_if_directory_is_empty_mock.side_effect = None
-        get_default_keyname_mock.return_value = 'aws-eb-us-west-2'
-        get_instance_profile_mock.return_value = 'default'
-        get_platform_name_mock.return_value = 'custom-platform-1'
-        get_source_control_mock.untracked_changes_exist = mock.MagicMock(return_value=False)
-        get_source_control_mock.get_version_label = mock.MagicMock(return_value='my-version-label')
-        get_app_version_s3_location_mock.return_value = ['s3-bucket', 's3-key']
-        create_platform_version_mock.return_value = {
-            'PlatformSummary': {
-                'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-1/1.0.0'
-            },
-            'ResponseMetadata': {
-                'RequestId': 'my-request-id'
-            }
-        }
-        _get_latest_version_mock.return_value = '1.0.0'
-        streamer_mock = mock.MagicMock()
-        get_event_streamer_mock.return_value = streamer_mock
-
-        platformops.create_platform_version(None, False, False, True, 't2.micro')
-
-        get_object_info_mock.assert_called_once_with('s3-bucket', 's3-key')
-        create_platform_version_mock.assert_called_once_with(
-            'custom-platform-1',
-            '1.0.1',
-            's3-bucket',
-            's3-key',
-            'default',
-            'aws-eb-us-west-2',
-            't2.micro',
-            None
-        )
-        update_platform_version_mock.assert_called_once_with('1.0.1')
-        set_environment_for_current_branch_mock.assert_called_once_with(
-            'eb-custom-platform-builder-packer'
-        )
-        get_event_streamer_mock.assert_called_once()
-        stream_platform_logs_mock.assert_called_once_with(
-            'custom-platform-1',
-            '1.0.1',
             streamer_mock,
             5,
             None,
@@ -1789,6 +1576,54 @@ class TestPlatformOperations(unittest.TestCase):
             str(context_manager.exception)
         )
         self.assertEqual(cwd, os.getcwd())
+
+    @mock.patch('ebcli.operations.platformops._get_latest_version')
+    def test__resolve_version_number__could_not_get_latest_version(
+            self,
+            _get_latest_version_mock
+    ):
+        _get_latest_version_mock.return_value = None
+
+        self.assertEqual(
+            '1.0.0',
+            platformops._resolve_version_number('my-custom-platform', True, False, False)
+        )
+
+    @mock.patch('ebcli.operations.platformops._get_latest_version')
+    def test__resolve_version_number__increment_major_version(
+            self,
+            _get_latest_version_mock
+    ):
+        _get_latest_version_mock.return_value = '1.0.3'
+
+        self.assertEqual(
+            '2.0.0',
+            platformops._resolve_version_number('my-custom-platform', True, False, False)
+        )
+
+    @mock.patch('ebcli.operations.platformops._get_latest_version')
+    def test__resolve_version_number__increment_minor_version(
+            self,
+            _get_latest_version_mock
+    ):
+        _get_latest_version_mock.return_value = '1.0.3'
+
+        self.assertEqual(
+            '1.1.0',
+            platformops._resolve_version_number('my-custom-platform', False, True, False)
+        )
+
+    @mock.patch('ebcli.operations.platformops._get_latest_version')
+    def test__resolve_version_number__increment_patch_version(
+            self,
+            _get_latest_version_mock
+    ):
+        _get_latest_version_mock.return_value = '1.0.3'
+
+        self.assertEqual(
+            '1.0.4',
+            platformops._resolve_version_number('my-custom-platform', False, False, True)
+        )
 
 
 class TestPackerStreamMessage(unittest.TestCase):

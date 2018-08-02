@@ -151,26 +151,7 @@ def create_platform_version(
     platform_name = fileoperations.get_platform_name()
     instance_profile = fileoperations.get_instance_profile(None)
     key_name = commonops.get_default_keyname()
-
-    if version is None:
-        version = _get_latest_version(platform_name=platform_name, owner=Constants.OWNED_BY_SELF, ignored_states=[])
-
-        if version is None:
-            version = '1.0.0'
-        else:
-            major, minor, patch = version.split('.', 3)
-
-            if major_increment:
-                major = str(int(major) + 1)
-                minor = '0'
-                patch = '0'
-            if minor_increment:
-                minor = str(int(minor) + 1)
-                patch = '0'
-            if patch_increment or not(major_increment or minor_increment):
-                patch = str(int(patch) + 1)
-
-            version = "%s.%s.%s" % (major, minor, patch)
+    version = version or _resolve_version_number(platform_name, major_increment, minor_increment, patch_increment)
 
     if not VALID_PLATFORM_VERSION_FORMAT.match(version):
         raise InvalidPlatformVersionError(strings['exit.invalidversion'])
@@ -730,6 +711,34 @@ def _raise_if_directory_is_empty():
             raise PlatformWorkspaceEmptyError(strings['exit.platformworkspaceempty'])
     finally:
         os.chdir(cwd)
+
+
+def _resolve_version_number(
+        platform_name,
+        major_increment,
+        minor_increment,
+        patch_increment
+):
+    version = _get_latest_version(platform_name=platform_name, owner=Constants.OWNED_BY_SELF, ignored_states=[])
+
+    if version is None:
+        version = '1.0.0'
+    else:
+        major, minor, patch = version.split('.', 3)
+
+        if major_increment:
+            major = str(int(major) + 1)
+            minor = '0'
+            patch = '0'
+        if minor_increment:
+            minor = str(int(minor) + 1)
+            patch = '0'
+        if patch_increment or not(major_increment or minor_increment):
+            patch = str(int(patch) + 1)
+
+        version = "%s.%s.%s" % (major, minor, patch)
+
+    return version
 
 
 def _version_to_arn(platform_version):
