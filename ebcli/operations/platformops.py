@@ -623,6 +623,15 @@ def _enable_healthd():
         stream.write(yaml.dump(platform_yaml, default_flow_style=False))
 
 
+def _generate_platform_yaml_copy():
+    file_descriptor, original_platform_yaml = tempfile.mkstemp()
+    os.close(file_descriptor)
+
+    copyfile('platform.yaml', original_platform_yaml)
+
+    return original_platform_yaml
+
+
 def _get_latest_version(platform_name=None, owner=None, ignored_states=None):
     if ignored_states is None:
         ignored_states=['Deleting', 'Failed']
@@ -726,10 +735,7 @@ def _resolve_s3_bucket_and_key(
         source_control,
         staged
 ):
-    file_descriptor, original_platform_yaml = tempfile.mkstemp()
-    os.close(file_descriptor)
-
-    copyfile('platform.yaml', original_platform_yaml)
+    platform_yaml_copy = _generate_platform_yaml_copy()
 
     try:
         # Add option settings to platform.yaml
@@ -745,7 +751,7 @@ def _resolve_s3_bucket_and_key(
             file_path = None
     finally:
         # Restore original platform.yaml
-        move(original_platform_yaml, 'platform.yaml')
+        move(platform_yaml_copy, 'platform.yaml')
 
     # Use existing bucket if it exists
     bucket = elasticbeanstalk.get_storage_location() if s3_bucket is None else s3_bucket
