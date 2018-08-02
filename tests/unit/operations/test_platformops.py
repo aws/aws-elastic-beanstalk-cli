@@ -827,12 +827,18 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.fileoperations.get_platform_name')
     @mock.patch('ebcli.operations.platformops.fileoperations.get_instance_profile')
     @mock.patch('ebcli.operations.platformops.commonops.get_default_keyname')
+    @mock.patch('ebcli.operations.platformops._raise_if_directory_is_empty')
+    @mock.patch('ebcli.operations.platformops.heuristics.has_platform_definition_file')
     def test_create_platform_version__invalid_version(
             self,
+            has_platform_definition_file_mock,
+            _raise_if_directory_is_empty_mock,
             get_default_keyname_mock,
             get_instance_profile_mock,
             get_platform_name_mock
     ):
+        _raise_if_directory_is_empty_mock.side_effect = None
+        has_platform_definition_file_mock.return_value = True
         get_default_keyname_mock.return_value = 'aws-eb-us-west-2'
         get_instance_profile_mock.return_value = 'default'
         get_platform_name_mock.return_value = 'custom-platform-1'
@@ -1163,6 +1169,7 @@ class TestPlatformOperations(unittest.TestCase):
 
         platformops.create_platform_version(None, True, False, False, 't2.micro')
 
+        _resolve_version_number_mock.assert_called_once_with('custom-platform-1', True, False, False)
         get_object_info_mock.assert_called_once_with('s3-bucket', 's3-key')
         create_platform_version_mock.assert_called_once_with(
             'custom-platform-1',

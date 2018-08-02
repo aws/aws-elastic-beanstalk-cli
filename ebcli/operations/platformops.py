@@ -148,6 +148,10 @@ def create_platform_version(
         staged=False,
         timeout=None):
 
+    _raise_if_directory_is_empty()
+    if not heuristics.has_platform_definition_file():
+        raise PlatformWorkspaceEmptyError(strings['exit.no_pdf_file'])
+
     platform_name = fileoperations.get_platform_name()
     instance_profile = fileoperations.get_instance_profile(None)
     key_name = commonops.get_default_keyname()
@@ -155,11 +159,6 @@ def create_platform_version(
 
     if not VALID_PLATFORM_VERSION_FORMAT.match(version):
         raise InvalidPlatformVersionError(strings['exit.invalidversion'])
-
-    _raise_if_directory_is_empty()
-
-    if not heuristics.has_platform_definition_file():
-        raise PlatformWorkspaceEmptyError(strings['exit.no_pdf_file'])
 
     source_control = SourceControl.get_source_control()
     if source_control.untracked_changes_exist():
