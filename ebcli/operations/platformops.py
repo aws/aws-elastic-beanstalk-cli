@@ -149,8 +149,7 @@ def create_platform_version(
         timeout=None):
 
     _raise_if_directory_is_empty()
-    if not heuristics.has_platform_definition_file():
-        raise PlatformWorkspaceEmptyError(strings['exit.no_pdf_file'])
+    _raise_if_platform_definition_file_is_missing()
 
     platform_name = fileoperations.get_platform_name()
     instance_profile = fileoperations.get_instance_profile(None)
@@ -710,6 +709,11 @@ def _raise_if_directory_is_empty():
             raise PlatformWorkspaceEmptyError(strings['exit.platformworkspaceempty'])
     finally:
         os.chdir(cwd)
+
+
+def _raise_if_platform_definition_file_is_missing():
+    if not heuristics.has_platform_definition_file():
+        raise PlatformWorkspaceEmptyError(strings['exit.no_pdf_file'])
 
 
 def _resolve_version_number(
