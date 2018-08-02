@@ -1656,6 +1656,18 @@ class TestPlatformOperations(unittest.TestCase):
 
         platformops._raise_if_platform_definition_file_is_missing()
 
+    def test_raise_if_version_format_is_invalid__invalid(self):
+        with self.assertRaises(platformops.InvalidPlatformVersionError) as context_manager:
+            platformops._raise_if_version_format_is_invalid('1.0.0.4')
+
+        self.assertEqual(
+            'Invalid version format. Only ARNs, version numbers, or platform_name/version formats are accepted.',
+            str(context_manager.exception)
+        )
+
+    def test_raise_if_version_format_is_invalid__valid(self):
+        platformops._raise_if_version_format_is_invalid('1.0.4')
+
 
 class TestPackerStreamMessage(unittest.TestCase):
     def test_raw_message__match_found(self):
