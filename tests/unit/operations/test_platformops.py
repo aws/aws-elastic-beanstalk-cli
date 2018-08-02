@@ -20,6 +20,7 @@ from pytest_socket import disable_socket, enable_socket
 import unittest
 
 
+from ebcli.core import fileoperations
 from ebcli.operations import platformops
 from ebcli.objects.exceptions import ValidationError
 from ebcli.objects.environment import Environment
@@ -876,7 +877,7 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.platformops.commonops.set_environment_for_current_branch')
     @mock.patch('ebcli.operations.platformops.commonops.wait_for_success_events')
-    @mock.patch('ebcli.operations.platformops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.platformops._raise_if_directory_is_empty')
     @mock.patch('ebcli.operations.platformops.heuristics.has_platform_definition_file')
     @mock.patch('ebcli.operations.platformops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.platformops.copyfile')
@@ -905,7 +906,7 @@ class TestPlatformOperations(unittest.TestCase):
             copyfile_mock,
             get_source_control_mock,
             has_platform_definition_file_mock,
-            directory_is_empty_mock,
+            _raise_if_directory_is_empty_mock,
             wait_for_success_events_mock,
             set_environment_for_current_branch_mock,
             get_default_keyname_mock,
@@ -919,7 +920,7 @@ class TestPlatformOperations(unittest.TestCase):
         packer_stream_formatter_mock.return_value = packer_stream_formatter_instance_mock
         get_storage_location_mock.return_value = 's3-bucket'
         has_platform_definition_file_mock.return_value = True
-        directory_is_empty_mock.return_value = False
+        _raise_if_directory_is_empty_mock.side_effect = None
         get_default_keyname_mock.return_value = 'aws-eb-us-west-2'
         get_instance_profile_mock.return_value = 'default'
         get_platform_name_mock.return_value = 'custom-platform-1'
@@ -981,7 +982,7 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.platformops.commonops.set_environment_for_current_branch')
     @mock.patch('ebcli.operations.platformops.commonops.wait_for_success_events')
-    @mock.patch('ebcli.operations.platformops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.platformops._raise_if_directory_is_empty')
     @mock.patch('ebcli.operations.platformops.heuristics.has_platform_definition_file')
     @mock.patch('ebcli.operations.platformops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.platformops.copyfile')
@@ -1010,7 +1011,7 @@ class TestPlatformOperations(unittest.TestCase):
             copyfile_mock,
             get_source_control_mock,
             has_platform_definition_file_mock,
-            directory_is_empty_mock,
+            _raise_if_directory_is_empty_mock,
             wait_for_success_events_mock,
             set_environment_for_current_branch_mock,
             get_default_keyname_mock,
@@ -1024,7 +1025,7 @@ class TestPlatformOperations(unittest.TestCase):
         packer_stream_formatter_mock.return_value = packer_stream_formatter_instance_mock
         get_storage_location_mock.return_value = 's3-bucket'
         has_platform_definition_file_mock.return_value = True
-        directory_is_empty_mock.return_value = False
+        _raise_if_directory_is_empty_mock.side_effect = None
         get_default_keyname_mock.return_value = 'aws-eb-us-west-2'
         get_instance_profile_mock.return_value = 'default'
         get_platform_name_mock.return_value = 'custom-platform-1'
@@ -1093,7 +1094,7 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.platformops.commonops.set_environment_for_current_branch')
     @mock.patch('ebcli.operations.platformops.commonops.wait_for_success_events')
-    @mock.patch('ebcli.operations.platformops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.platformops._raise_if_directory_is_empty')
     @mock.patch('ebcli.operations.platformops.heuristics.has_platform_definition_file')
     @mock.patch('ebcli.operations.platformops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.platformops.copyfile')
@@ -1124,7 +1125,7 @@ class TestPlatformOperations(unittest.TestCase):
             copyfile_mock,
             get_source_control_mock,
             has_platform_definition_file_mock,
-            directory_is_empty_mock,
+            _raise_if_directory_is_empty_mock,
             wait_for_success_events_mock,
             set_environment_for_current_branch_mock,
             get_default_keyname_mock,
@@ -1138,7 +1139,7 @@ class TestPlatformOperations(unittest.TestCase):
         packer_stream_formatter_mock.return_value = packer_stream_formatter_instance_mock
         get_storage_location_mock.return_value = 's3-bucket'
         has_platform_definition_file_mock.return_value = True
-        directory_is_empty_mock.return_value = False
+        _raise_if_directory_is_empty_mock.side_effect = None
         get_default_keyname_mock.return_value = 'aws-eb-us-west-2'
         get_instance_profile_mock.return_value = 'default'
         get_platform_name_mock.return_value = 'custom-platform-1'
@@ -1201,7 +1202,7 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.platformops.commonops.set_environment_for_current_branch')
     @mock.patch('ebcli.operations.platformops.commonops.wait_for_success_events')
-    @mock.patch('ebcli.operations.platformops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.platformops._raise_if_directory_is_empty')
     @mock.patch('ebcli.operations.platformops.heuristics.has_platform_definition_file')
     @mock.patch('ebcli.operations.platformops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.platformops.copyfile')
@@ -1232,7 +1233,7 @@ class TestPlatformOperations(unittest.TestCase):
             copyfile_mock,
             get_source_control_mock,
             has_platform_definition_file_mock,
-            directory_is_empty_mock,
+            _raise_if_directory_is_empty_mock,
             wait_for_success_events_mock,
             set_environment_for_current_branch_mock,
             get_default_keyname_mock,
@@ -1246,7 +1247,7 @@ class TestPlatformOperations(unittest.TestCase):
         packer_stream_formatter_mock.return_value = packer_stream_formatter_instance_mock
         get_storage_location_mock.return_value = 's3-bucket'
         has_platform_definition_file_mock.return_value = True
-        directory_is_empty_mock.return_value = False
+        _raise_if_directory_is_empty_mock.side_effect = None
         get_default_keyname_mock.return_value = 'aws-eb-us-west-2'
         get_instance_profile_mock.return_value = 'default'
         get_platform_name_mock.return_value = 'custom-platform-1'
@@ -1309,7 +1310,7 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.platformops.commonops.set_environment_for_current_branch')
     @mock.patch('ebcli.operations.platformops.commonops.wait_for_success_events')
-    @mock.patch('ebcli.operations.platformops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.platformops._raise_if_directory_is_empty')
     @mock.patch('ebcli.operations.platformops.heuristics.has_platform_definition_file')
     @mock.patch('ebcli.operations.platformops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.platformops.copyfile')
@@ -1340,7 +1341,7 @@ class TestPlatformOperations(unittest.TestCase):
             copyfile_mock,
             get_source_control_mock,
             has_platform_definition_file_mock,
-            directory_is_empty_mock,
+            _raise_if_directory_is_empty_mock,
             wait_for_success_events_mock,
             set_environment_for_current_branch_mock,
             get_default_keyname_mock,
@@ -1354,7 +1355,7 @@ class TestPlatformOperations(unittest.TestCase):
         packer_stream_formatter_mock.return_value = packer_stream_formatter_instance_mock
         get_storage_location_mock.return_value = 's3-bucket'
         has_platform_definition_file_mock.return_value = True
-        directory_is_empty_mock.return_value = False
+        _raise_if_directory_is_empty_mock.side_effect = None
         get_default_keyname_mock.return_value = 'aws-eb-us-west-2'
         get_instance_profile_mock.return_value = 'default'
         get_platform_name_mock.return_value = 'custom-platform-1'
@@ -1415,7 +1416,7 @@ class TestPlatformOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.platformops.fileoperations.get_instance_profile')
     @mock.patch('ebcli.operations.platformops.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.platformops.commonops.set_environment_for_current_branch')
-    @mock.patch('ebcli.operations.platformops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.platformops._raise_if_directory_is_empty')
     @mock.patch('ebcli.operations.platformops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.platformops.copyfile')
     @mock.patch('ebcli.operations.platformops.move')
@@ -1440,7 +1441,7 @@ class TestPlatformOperations(unittest.TestCase):
             move_mock,
             copyfile_mock,
             get_source_control_mock,
-            directory_is_empty_mock,
+            _raise_if_directory_is_empty_mock,
             set_environment_for_current_branch_mock,
             get_default_keyname_mock,
             get_instance_profile_mock,
@@ -1451,7 +1452,7 @@ class TestPlatformOperations(unittest.TestCase):
         packer_stream_formatter_instance_mock = mock.MagicMock()
         packer_stream_formatter_mock.return_value = packer_stream_formatter_instance_mock
         get_storage_location_mock.return_value = 's3-bucket'
-        directory_is_empty_mock.return_value = True
+        _raise_if_directory_is_empty_mock.side_effect = platformops.PlatformWorkspaceEmptyError
         get_default_keyname_mock.return_value = 'aws-eb-us-west-2'
         get_instance_profile_mock.return_value = 'default'
         get_platform_name_mock.return_value = 'custom-platform-1'
@@ -1748,6 +1749,46 @@ class TestPlatformOperations(unittest.TestCase):
             platform_name='Java 8 running on 64bit Amazon Linux',
             status='Ready'
         )
+
+    @mock.patch('ebcli.operations.platformops.heuristics.directory_is_empty')
+    def test_raise_if_directory_is_empty__directory_is_not_empty(
+            self,
+            directory_is_empty_mock
+    ):
+        fileoperations.create_config_file(
+            'my-application',
+            'us-west-2',
+            'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 7.1 running on 64bit Amazon Linux/2.6.5',
+            workspace_type='Platform'
+        )
+        cwd = os.getcwd()
+        directory_is_empty_mock.return_value = False
+
+        platformops._raise_if_directory_is_empty()
+
+        self.assertEqual(cwd, os.getcwd())
+
+    @mock.patch('ebcli.operations.platformops.heuristics.directory_is_empty')
+    def test_raise_if_directory_is_empty__directory_is_empty(
+            self,
+            directory_is_empty_mock
+    ):
+        fileoperations.create_config_file(
+            'my-application',
+            'us-west-2',
+            'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 7.1 running on 64bit Amazon Linux/2.6.5',
+            workspace_type='Platform'
+        )
+        cwd = os.getcwd()
+        directory_is_empty_mock.return_value = True
+        with self.assertRaises(platformops.PlatformWorkspaceEmptyError) as context_manager:
+            platformops._raise_if_directory_is_empty()
+
+        self.assertEqual(
+            'The current directory does not contain any Platform configuration files. Unable to create new Platform.',
+            str(context_manager.exception)
+        )
+        self.assertEqual(cwd, os.getcwd())
 
 
 class TestPackerStreamMessage(unittest.TestCase):

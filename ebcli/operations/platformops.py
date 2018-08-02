@@ -175,14 +175,7 @@ def create_platform_version(
     if not VALID_PLATFORM_VERSION_FORMAT.match(version):
         raise InvalidPlatformVersionError(strings['exit.invalidversion'])
 
-    cwd = os.getcwd()
-    fileoperations._traverse_to_project_root()
-
-    try:
-        if heuristics.directory_is_empty():
-            raise PlatformWorkspaceEmptyError(strings['exit.platformworkspaceempty'])
-    finally:
-        os.chdir(cwd)
+    _raise_if_directory_is_empty()
 
     if not heuristics.has_platform_definition_file():
         raise PlatformWorkspaceEmptyError(strings['exit.no_pdf_file'])
@@ -727,6 +720,16 @@ def _name_to_arn(platform_name):
         raise InvalidPlatformVersionError(strings['exit.nosuchplatform'])
 
     return arn
+
+
+def _raise_if_directory_is_empty():
+    cwd = os.getcwd()
+    fileoperations._traverse_to_project_root()
+    try:
+        if heuristics.directory_is_empty():
+            raise PlatformWorkspaceEmptyError(strings['exit.platformworkspaceempty'])
+    finally:
+        os.chdir(cwd)
 
 
 def _version_to_arn(platform_version):
