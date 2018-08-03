@@ -131,7 +131,8 @@ class TestInit(unittest.TestCase):
         get_application_names_mock.return_value = list()
         initops_mock.credentials_are_valid.return_value = True
         elasticbeanstalk_mock.application_exist.return_value = False
-        create_app_or_use_existing_one_mock.return_value = 'ss-stack', 'key'
+        create_app_or_use_existing_one_mock.return_value = (None, None)
+        solution_stack_ops_mock.get_default_solution_stack.side_effect = initialize.NotInitializedError
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
 
@@ -185,7 +186,7 @@ class TestInit(unittest.TestCase):
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = True
-        create_app_or_use_existing_one_mock.return_value = 'ss-stack', 'key'
+        create_app_or_use_existing_one_mock.return_value = (None, None)
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
@@ -207,7 +208,7 @@ class TestInit(unittest.TestCase):
         initops_mock.setup.assert_called_with(
             self.app_name,
             'us-west-2',
-            'ss-stack',
+            'PHP 5.5',
             branch=None,
             dir_path=None,
             repository=None
@@ -510,6 +511,7 @@ class TestInit(unittest.TestCase):
 
         get_application_names_mock.get_application_names.return_value = list()
         initops_mock.credentials_are_valid.return_value = True
+        solution_stack_ops_mock.get_default_solution_stack.side_effect = initialize.NotInitializedError
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         fileoperations_mock.env_yaml_exists.return_value = None
 
@@ -536,13 +538,11 @@ class TestInit(unittest.TestCase):
         ]
 
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
-        create_app_or_use_existing_one_mock.return_value = 'something', 'smthing'
+        create_app_or_use_existing_one_mock.return_value = (None, None)
 
         get_input_mock.side_effect = [
             '3',  # region number
             self.app_name,  # Application name
-            '2',  # Image Platform selection
-            '2',  # Platform version selection
             'n',  # Set up ssh selection
         ]
 
@@ -586,7 +586,7 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.io.get_input')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
-    def test_init__non_interactive_mode__with_codebuild_buildspec(
+    def test_init__interactive_mode__with_codebuild_buildspec(
             self,
             create_app_or_use_existing_one_mock,
             get_input_mock,
@@ -614,8 +614,8 @@ class TestInit(unittest.TestCase):
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
         get_application_names_mock.return_value = list()
         initops_mock.credentials_are_valid.return_value = True
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = \
-            self.solution
+        solution_stack_ops_mock.get_default_solution_stack.side_effect = initialize.NotInitializedError
+        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         fileoperations_mock.env_yaml_exists.return_value = None
 
         elasticbeanstalk_mock.application_exist.return_value = False
@@ -630,12 +630,11 @@ class TestInit(unittest.TestCase):
         }
 
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
-        create_app_or_use_existing_one_mock.return_value = 'something', 'smthing'
+        create_app_or_use_existing_one_mock.return_value = (None, None)
 
         get_input_mock.side_effect = [
             '3',  # region number
             self.app_name,  # Application name
-            '2',  # Platform version selection
             'n',  # Set up ssh selection
         ]
 

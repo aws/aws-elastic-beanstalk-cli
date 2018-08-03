@@ -98,15 +98,9 @@ class InitController(AbstractBaseController):
         sstack, key = create_app_or_use_existing_one(self.app_name, default_env)
         self.solution = self.solution or sstack
 
-        platform_set = False
-        if not self.solution or \
-                (self.interactive and not self.app.pargs.platform):
-            if fileoperations.env_yaml_exists():
-                self.solution = extract_solution_stack_from_env_yaml()
-                platform_set = True
-
-            if not platform_set:
-                self.solution = solution_stack_ops.get_solution_stack_from_customer().platform_shorthand
+        if fileoperations.env_yaml_exists():
+            self.solution = self.solution or extract_solution_stack_from_env_yaml()
+        self.solution = self.solution or solution_stack_ops.get_solution_stack_from_customer().platform_shorthand
 
         # Select CodeBuild image if BuildSpec is present do not prompt or show if we are non-interactive
         if fileoperations.build_spec_exists() and not self.force_non_interactive:
