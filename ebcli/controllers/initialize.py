@@ -136,7 +136,17 @@ class InitController(AbstractBaseController):
         configure_keyname(platform, keyname, keyname_of_existing_application, interactive, force_non_interactive)
         fileoperations.write_config_setting('global', 'include_git_submodules', True)
 
-    def initialize_multiple_directories(self, modules, region, interactive, force_non_interactive, keyname, profile, noverify, platform):
+    def initialize_multiple_directories(
+            self,
+            modules,
+            region,
+            interactive,
+            force_non_interactive,
+            keyname,
+            profile,
+            noverify,
+            platform
+    ):
         application_created = False
         app_name = None
         cwd = os.getcwd()
