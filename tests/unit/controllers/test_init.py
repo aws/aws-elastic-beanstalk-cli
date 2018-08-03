@@ -1510,6 +1510,25 @@ class TestInitModule(unittest.TestCase):
     def test_set_default_env__default_env_is_not_passed__non_interactive(self):
         self.assertIsNone(initialize.set_default_env(None, False, False))
 
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_platform_from_env_yaml')
+    def test_extract_solution_stack_from_env_yaml__platform_exists(
+            self,
+            get_platform_from_env_yaml_mock
+    ):
+        get_platform_from_env_yaml_mock.return_value = '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5'
+        self.assertEqual(
+            'PHP 5.5',
+            initialize.extract_solution_stack_from_env_yaml()
+        )
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_platform_from_env_yaml')
+    def test_extract_solution_stack_from_env_yaml__platform_absent(
+            self,
+            get_platform_from_env_yaml_mock
+    ):
+        get_platform_from_env_yaml_mock.return_value = None
+        self.assertIsNone(initialize.extract_solution_stack_from_env_yaml())
+
 
 class TestInitMultipleModules(unittest.TestCase):
     platform = PlatformVersion(

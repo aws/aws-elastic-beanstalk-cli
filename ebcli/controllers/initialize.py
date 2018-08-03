@@ -102,11 +102,8 @@ class InitController(AbstractBaseController):
         if not self.solution or \
                 (self.interactive and not self.app.pargs.platform):
             if fileoperations.env_yaml_exists():
-                env_yaml_platform = fileoperations.get_platform_from_env_yaml()
-                if env_yaml_platform:
-                    platform = solutionstack.SolutionStack(env_yaml_platform).platform_shorthand
-                    self.solution = platform
-                    platform_set = True
+                self.solution = extract_solution_stack_from_env_yaml()
+                platform_set = True
 
             if not platform_set:
                 self.solution = solution_stack_ops.get_solution_stack_from_customer().platform_shorthand
@@ -602,6 +599,13 @@ def set_up_credentials(given_profile, given_region, interactive, force_non_inter
         fileoperations.write_config_setting('global', 'profile', profile)
 
     return region
+
+
+def extract_solution_stack_from_env_yaml():
+    env_yaml_platform = fileoperations.get_platform_from_env_yaml()
+    if env_yaml_platform:
+        platform = solutionstack.SolutionStack(env_yaml_platform).platform_shorthand
+        return platform
 
 
 def get_region_from_inputs(region):
