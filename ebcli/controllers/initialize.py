@@ -96,9 +96,7 @@ class InitController(AbstractBaseController):
         default_env = set_default_env(default_env, self.interactive, self.force_non_interactive)
 
         sstack, key = create_app_or_use_existing_one(self.app_name, default_env)
-
-        if not self.solution:
-            self.solution = sstack
+        self.solution = self.solution or sstack
 
         platform_set = False
         if not self.solution or \
