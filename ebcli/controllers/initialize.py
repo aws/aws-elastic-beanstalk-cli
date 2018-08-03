@@ -114,9 +114,7 @@ class InitController(AbstractBaseController):
         except CommandError:
             source_control_setup = False
 
-        default_branch_exists = False
-        if gitops.git_management_enabled() and not self.interactive:
-            default_branch_exists = True
+        default_branch_exists = not not (gitops.git_management_enabled() and not self.interactive)
 
         # Warn the customer if they picked a region that CodeCommit is not supported
         codecommit_region_supported = codecommit.region_supported(self.region)
