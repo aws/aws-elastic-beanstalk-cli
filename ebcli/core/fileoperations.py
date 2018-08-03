@@ -823,6 +823,15 @@ def get_build_configuration():
     return build_configuration
 
 
+def write_buildspec_config_header(key_name, value):
+    write_config_setting(
+        buildspec_config_header,
+        key_name,
+        value,
+        file=buildspec_name
+    )
+
+
 def directory_empty(location):
     return not os.listdir(location)
 

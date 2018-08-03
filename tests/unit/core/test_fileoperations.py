@@ -968,3 +968,13 @@ aws_secret_access_key = my-secret-key""",
         os.mkdir('temp')
 
         self.assertTrue(fileoperations.directory_empty('temp'))
+
+    def test_write_buildspec_config_header(self):
+        fileoperations.write_buildspec_config_header('Image', 'image-name')
+        with open(fileoperations.buildspec_name) as buildspec:
+            self.assertEqual(
+                """eb_codebuild_settings:
+  Image: image-name
+""",
+                buildspec.read()
+            )

@@ -586,8 +586,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.io.get_input')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
+    @mock.patch('ebcli.controllers.initialize.handle_buildspec_image')
     def test_init__interactive_mode__with_codebuild_buildspec(
             self,
+            handle_buildspec_image_mock,
             create_app_or_use_existing_one_mock,
             get_input_mock,
             elasticbeanstalk_mock,
@@ -600,17 +602,6 @@ class TestInit(unittest.TestCase):
             fileoperations_mock,
             git_mock
     ):
-        expected_image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6'
-        compute_type = 'BUILD_GENERAL1_SMALL'
-        service_role = 'eb-test'
-        timeout = 60
-        build_config = BuildConfiguration(
-            image=None,
-            compute_type=compute_type,
-            service_role=service_role,
-            timeout=timeout
-        )
-
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
         get_application_names_mock.return_value = list()
         initops_mock.credentials_are_valid.return_value = True
@@ -620,14 +611,6 @@ class TestInit(unittest.TestCase):
 
         elasticbeanstalk_mock.application_exist.return_value = False
         elasticbeanstalk_mock.application_exist.return_value = False
-        fileoperations_mock.get_build_configuration.return_value = build_config
-        fileoperations_mock.buildspec_config_header = fileoperations.buildspec_config_header
-        fileoperations_mock.buildspec_name = fileoperations.buildspec_name
-
-        initops_mock.get_codebuild_image_from_platform.return_value = {
-            u'name': expected_image,
-            u'description': u'Java 8 Running on Amazon Linux 64bit '
-        }
 
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         create_app_or_use_existing_one_mock.return_value = (None, None)
@@ -653,17 +636,12 @@ class TestInit(unittest.TestCase):
             dir_path=None,
             repository=None
         )
-        initops_mock.get_codebuild_image_from_platform.assert_called_with('PHP 5.5')
+        handle_buildspec_image_mock.assert_called_once_with('PHP 5.5', False)
 
         write_config_calls = [
             mock.call('global', 'profile', 'eb-cli'),
-            mock.call(
-                fileoperations.buildspec_config_header,
-                'Image',
-                expected_image,
-                file=fileoperations.buildspec_name
-            ),
             mock.call('global', 'default_ec2_keyname', 'test'),
+            mock.call('global', 'include_git_submodules', True)
         ]
         fileoperations_mock.write_config_setting.assert_has_calls(write_config_calls)
 
@@ -676,22 +654,16 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_application_name')
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_platform_from_env_yaml')
-    @mock.patch('ebcli.controllers.initialize.fileoperations.build_spec_exists')
-    @mock.patch('ebcli.controllers.initialize.fileoperations.get_build_configuration')
-    @mock.patch('ebcli.controllers.initialize.fileoperations.buildspec_config_header')
-    @mock.patch('ebcli.controllers.initialize.fileoperations.buildspec_name')
-    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
+    @mock.patch('ebcli.controllers.initialize.handle_buildspec_image')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.build_spec_exists')
     def test_init_with_codecommit_source_and_codebuild(
             self,
+            build_spec_exists_mock,
+            handle_buildspec_image_mock,
             create_app_or_use_existing_one_mock,
             set_default_env_mock,
-            write_config_setting_mock,
-            buildspec_name_mock,
-            buildspec_config_header_mock,
-            get_build_configuration_mock,
-            build_spec_exists_mock,
             get_platform_from_env_yaml_mock,
             get_application_name_mock,
             elasticbeanstalk_mock,
@@ -702,24 +674,10 @@ class TestInit(unittest.TestCase):
             sourcecontrol_mock,
             codecommit_mock
     ):
-        expected_image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6'
-        compute_type = 'BUILD_GENERAL1_SMALL'
-        service_role = 'eb-test'
-        timeout = 60
-        build_config = BuildConfiguration(
-            image=None,
-            compute_type=compute_type,
-            service_role=service_role,
-            timeout=timeout
-        )
-
         codecommit_mock.side_effect = None
         get_application_name_mock.return_value = 'testDir'
         get_platform_from_env_yaml_mock.return_value = 'PHP 5.5'
         build_spec_exists_mock.return_value = True
-        get_build_configuration_mock.return_value = build_config
-        buildspec_config_header_mock.return_value = fileoperations.buildspec_config_header
-        buildspec_name_mock.return_value = fileoperations.buildspec_name
         codecommit_mock.get_repository.side_effect = [
             ServiceError,
             {
@@ -729,10 +687,6 @@ class TestInit(unittest.TestCase):
             }
         ]
         sourcecontrol_mock.setup_existing_codecommit_branch = mock.MagicMock()
-        initops_mock.get_codebuild_image_from_platform.return_value = {
-            u'name': expected_image,
-            u'description': u'PHP 5.5 Running on Amazon Linux 64bit '
-        }
 
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = SolutionStack(
             '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5'
@@ -759,7 +713,7 @@ class TestInit(unittest.TestCase):
         )
 
         sourcecontrol_mock.setup_codecommit_cred_config.assert_not_called()
-        initops_mock.get_codebuild_image_from_platform.assert_called_with('PHP 5.5')
+        handle_buildspec_image_mock.assert_called_once_with('PHP 5.5', False)
 
 
 class TestInitModule(unittest.TestCase):
@@ -1527,6 +1481,166 @@ class TestInitModule(unittest.TestCase):
     ):
         get_platform_from_env_yaml_mock.return_value = None
         self.assertIsNone(initialize.extract_solution_stack_from_env_yaml())
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_build_configuration')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.build_spec_exists')
+    def test_handle_buildspec_image__force_non_interactive(
+            self,
+            build_spec_exists_mock,
+            get_build_configuration_mock
+    ):
+        build_spec_exists_mock.return_value = False
+
+        self.assertIsNone(initialize.handle_buildspec_image('PHP 5.5', True))
+
+        get_build_configuration_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_build_configuration')
+    @mock.patch('ebcli.controllers.initialize.initializeops.get_codebuild_image_from_platform')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_buildspec_config_header')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.build_spec_exists')
+    def test_handle_buildspec_image__force_non_interactive(
+            self,
+            build_spec_exists_mock,
+            write_buildspec_config_header_mock,
+            get_codebuild_image_from_platform_mock,
+            get_build_configuration_mock
+    ):
+        compute_type = 'BUILD_GENERAL1_SMALL'
+        service_role = 'eb-test'
+        timeout = 60
+        build_config = BuildConfiguration(
+            image=None,
+            compute_type=compute_type,
+            service_role=service_role,
+            timeout=timeout
+        )
+        build_spec_exists_mock.return_value = True
+        get_build_configuration_mock.return_value = build_config
+
+        self.assertIsNone(initialize.handle_buildspec_image('PHP 5.5', True))
+
+        get_codebuild_image_from_platform_mock.assert_not_called()
+        write_buildspec_config_header_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_build_configuration')
+    @mock.patch('ebcli.controllers.initialize.initializeops.get_codebuild_image_from_platform')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_buildspec_config_header')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.build_spec_exists')
+    def test_handle_buildspec_image__no_image_in_buildspec(
+            self,
+            build_spec_exists_mock,
+            write_buildspec_config_header_mock,
+            get_codebuild_image_from_platform_mock,
+            get_build_configuration_mock
+    ):
+        build_spec_exists_mock.return_value = True
+        build_config = BuildConfiguration()
+        get_build_configuration_mock.return_value = build_config
+
+        self.assertIsNone(initialize.handle_buildspec_image('PHP 5.5', True))
+
+        get_codebuild_image_from_platform_mock.assert_not_called()
+        write_buildspec_config_header_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_build_configuration')
+    @mock.patch('ebcli.controllers.initialize.initializeops.get_codebuild_image_from_platform')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_buildspec_config_header')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_index_in_list')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.build_spec_exists')
+    def test_handle_buildspec_image__multiple_matching_images_for_platform(
+            self,
+            build_spec_exists_mock,
+            prompt_for_index_in_list_mock,
+            echo_mock,
+            write_buildspec_config_header_mock,
+            get_codebuild_image_from_platform_mock,
+            get_build_configuration_mock
+    ):
+        compute_type = 'BUILD_GENERAL1_SMALL'
+        service_role = 'eb-test'
+        timeout = 60
+        build_config = BuildConfiguration(
+            image=None,
+            compute_type=compute_type,
+            service_role=service_role,
+            timeout=timeout
+        )
+        build_spec_exists_mock.return_value = True
+        get_build_configuration_mock.return_value = build_config
+        get_codebuild_image_from_platform_mock.return_value = [
+            {
+                'name': 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6',
+                'description': 'Java 8 Running on Amazon Linux 64bit '
+            },
+            {
+                'name': 'aws/codebuild/eb-java-8-amazonlinux-32:2.1.6',
+                'description': 'Java 8 Running on Amazon Linux 32bit '
+            }
+        ]
+        prompt_for_index_in_list_mock.return_value = 'Java 8 Running on Amazon Linux 32bit '
+
+        self.assertIsNone(initialize.handle_buildspec_image('Java 8', False))
+
+        get_codebuild_image_from_platform_mock.assert_called_once_with('Java 8')
+        write_buildspec_config_header_mock.assert_called_once_with(
+            'Image',
+            'aws/codebuild/eb-java-8-amazonlinux-32:2.1.6'
+        )
+        echo_mock.assert_has_calls(
+            [
+                mock.call(
+                    'Could not determine best image for buildspec file please select from list.\n '
+                    'Current chosen platform: Java 8'
+                )
+            ]
+        )
+        prompt_for_index_in_list_mock.assert_called_once_with('Java 8 Running on Amazon Linux 64bit ')
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_build_configuration')
+    @mock.patch('ebcli.controllers.initialize.initializeops.get_codebuild_image_from_platform')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_buildspec_config_header')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_index_in_list')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.build_spec_exists')
+    def test_handle_buildspec_image__single_image_matches(
+            self,
+            build_spec_exists_mock,
+            prompt_for_index_in_list_mock,
+            echo_mock,
+            write_buildspec_config_header_mock,
+            get_codebuild_image_from_platform_mock,
+            get_build_configuration_mock
+    ):
+        compute_type = 'BUILD_GENERAL1_SMALL'
+        service_role = 'eb-test'
+        timeout = 60
+        build_config = BuildConfiguration(
+            image=None,
+            compute_type=compute_type,
+            service_role=service_role,
+            timeout=timeout
+        )
+        build_spec_exists_mock.return_value = True
+        get_build_configuration_mock.return_value = build_config
+        get_codebuild_image_from_platform_mock.return_value = {
+            'name': 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6',
+            'description': 'Java 8 Running on Amazon Linux 64bit '
+        }
+        prompt_for_index_in_list_mock.return_value = 'Java 8 Running on Amazon Linux 32bit '
+
+        self.assertIsNone(initialize.handle_buildspec_image('Java 8', False))
+
+        get_codebuild_image_from_platform_mock.assert_called_once_with('Java 8')
+        write_buildspec_config_header_mock.assert_called_once_with(
+            'Image',
+            'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6'
+        )
+        echo_mock.assert_called_once_with(
+            'Buildspec file is present but no image is specified; using latest image for selected platform: Java 8'
+        )
+        prompt_for_index_in_list_mock.assert_not_called()
 
 
 class TestInitMultipleModules(unittest.TestCase):

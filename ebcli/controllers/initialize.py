@@ -102,28 +102,7 @@ class InitController(AbstractBaseController):
             self.solution = self.solution or extract_solution_stack_from_env_yaml()
         self.solution = self.solution or solution_stack_ops.get_solution_stack_from_customer().platform_shorthand
 
-        # Select CodeBuild image if BuildSpec is present do not prompt or show if we are non-interactive
-        if fileoperations.build_spec_exists() and not self.force_non_interactive:
-            build_spec = fileoperations.get_build_configuration()
-            if build_spec is not None and build_spec.image is None:
-                LOG.debug("Buildspec file is present but image is does not exist. Attempting to fill best guess.")
-                platform_image = initializeops.get_codebuild_image_from_platform(self.solution)
-
-                # If the return is a dictionary then it must be a single image and we can use that automatically
-                if type(platform_image) is dict:
-                    io.echo('codebuild.latestplatform'.replace('{platform}', self.solution))
-                else:
-                    # Otherwise we have an array for images which we must prompt the customer to pick from
-                    io.echo(prompts['codebuild.getplatform'].replace('{platform}', self.solution))
-                    selected = utils.prompt_for_index_in_list(map(lambda image: image['description'], platform_image))
-                    platform_image = platform_image[selected]
-                    platform_image['name'] = utils.decode_bytes(platform_image['name'])
-
-                # Finally write the CodeBuild image back to the buildspec file
-                fileoperations.write_config_setting(fileoperations.buildspec_config_header,
-                                                    'Image',
-                                                    platform_image['name'],
-                                                    file=fileoperations.buildspec_name)
+        handle_buildspec_image(self.solution, self.force_non_interactive)
 
         # Setup code commit integration
         # Ensure that git is setup
@@ -631,6 +610,24 @@ def get_region(region_argument, interactive, force_non_interactive=False):
         region = result.name
 
     return region
+
+
+def handle_buildspec_image(solution, force_non_interactive):
+    if not fileoperations.build_spec_exists():
+        return
+
+    build_spec = fileoperations.get_build_configuration()
+    if not force_non_interactive and build_spec and build_spec.image is None:
+        LOG.debug("Buildspec file is present but image is does not exist. Attempting to fill best guess.")
+        platform_image = initializeops.get_codebuild_image_from_platform(solution)
+
+        if type(platform_image) is dict:
+            io.echo(strings['codebuild.latestplatform'].replace('{platform}', solution))
+        else:
+            io.echo(prompts['codebuild.getplatform'].replace('{platform}', solution))
+            selected = utils.prompt_for_index_in_list([image['description'] for image in platform_image][0])
+            platform_image = [image for image in platform_image if selected == image['description']][0]
+        fileoperations.write_buildspec_config_header('Image', platform_image['name'])
 
 
 def set_default_env(default_env, interactive, force_non_interactive):
