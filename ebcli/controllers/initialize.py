@@ -70,6 +70,12 @@ class InitController(AbstractBaseController):
         if self.app.pargs.platform:
             self.force_non_interactive = True
 
+        # The user specifies directories to initialize
+        self.modules = self.app.pargs.modules
+        if self.modules and len(self.modules) > 0:
+            self.initialize_multiple_directories()
+            return
+
         # Code Commit integration
         self.source = self.app.pargs.source
         source_location = None
@@ -77,12 +83,6 @@ class InitController(AbstractBaseController):
         repository = None
         if self.source is not None:
             source_location, repository, branch = utils.parse_source(self.source)
-
-        # The user specifies directories to initialize
-        self.modules = self.app.pargs.modules
-        if self.modules and len(self.modules) > 0:
-            self.initialize_multiple_directories()
-            return
 
         default_env = self.get_old_values()
         fileoperations.touch_config_folder()
