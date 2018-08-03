@@ -1538,6 +1538,186 @@ class TestInitModule(unittest.TestCase):
         )
         prompt_for_index_in_list_mock.assert_not_called()
 
+    @mock.patch('ebcli.controllers.initialize.establish_codecommit_repository')
+    @mock.patch('ebcli.controllers.initialize.establish_codecommit_branch')
+    def test_establish_codecommit_repository_and_branch(
+            self,
+            establish_codecommit_branch_mock,
+            establish_codecommit_repository_mock
+    ):
+        establish_codecommit_repository_mock.return_value = 'my-repository'
+        establish_codecommit_branch_mock.return_value = 'my-branch'
+
+        self.assertEqual(
+            ('my-repository', 'my-branch'),
+            initialize.establish_codecommit_repository_and_branch(
+                True,
+                'us-west-2',
+                False,
+                'https://codecommit.edu.git'
+            )
+        )
+
+        establish_codecommit_repository_mock.assert_called_once_with(True, False, 'https://codecommit.edu.git')
+        establish_codecommit_branch_mock.assert_called_once_with(
+            'my-repository',
+            'us-west-2',
+            False,
+            'https://codecommit.edu.git'
+        )
+
+    @mock.patch('ebcli.controllers.initialize.get_repository_interactive')
+    @mock.patch('ebcli.controllers.initialize.setup_codecommit_remote_repo')
+    def test_establish_codecommit_repository__repository_argument_is_none(
+            self,
+            setup_codecommit_remote_repo_mock,
+            get_repository_interactive_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_location = 'https://codecommit.edu.git'
+        get_repository_interactive_mock.return_value = 'my-repository'
+
+        self.assertEqual(
+            'my-repository',
+            initialize.establish_codecommit_repository(None, source_control_mock, source_location)
+        )
+
+        get_repository_interactive_mock.assert_called_once_with()
+        setup_codecommit_remote_repo_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.get_repository_interactive')
+    @mock.patch('ebcli.controllers.initialize.setup_codecommit_remote_repo')
+    @mock.patch('ebcli.controllers.initialize.create_codecommit_repository')
+    def test_establish_codecommit_repository__repository_argument_is_not_none_but_is_non_existent__repository_is_setup(
+            self,
+            create_codecommit_repository_mock,
+            setup_codecommit_remote_repo_mock,
+            get_repository_interactive_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_location = 'https://codecommit.edu.git'
+        get_repository_interactive_mock.return_value = 'my-repository'
+        setup_codecommit_remote_repo_mock.side_effect = [
+            initialize.ServiceError,
+            None
+        ]
+
+        self.assertEqual(
+            'my-repository',
+            initialize.establish_codecommit_repository('my-repository', source_control_mock, source_location)
+        )
+
+        setup_codecommit_remote_repo_mock.assert_has_calls(
+            [
+                mock.call('my-repository', source_control_mock),
+                mock.call('my-repository', source_control_mock)
+            ]
+        )
+        create_codecommit_repository_mock.assert_called_once_with('my-repository')
+        get_repository_interactive_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.get_repository_interactive')
+    @mock.patch('ebcli.controllers.initialize.setup_codecommit_remote_repo')
+    @mock.patch('ebcli.controllers.initialize.create_codecommit_repository')
+    def test_establish_codecommit_repository__repository_argument_is_not_none__repository_exists_and_is_pulled(
+            self,
+            create_codecommit_repository_mock,
+            setup_codecommit_remote_repo_mock,
+            get_repository_interactive_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_location = 'https://codecommit.edu.git'
+        get_repository_interactive_mock.return_value = 'my-repository'
+        setup_codecommit_remote_repo_mock.side_effect = None
+
+        self.assertEqual(
+            'my-repository',
+            initialize.establish_codecommit_repository('my-repository', source_control_mock, source_location)
+        )
+
+        setup_codecommit_remote_repo_mock.assert_called_once_with('my-repository', source_control_mock)
+        get_repository_interactive_mock.assert_not_called()
+        create_codecommit_repository_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.get_branch_interactive')
+    def test_establish_codecommit_branch__branch_argument_is_none(
+            self,
+            get_branch_interactive_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_location = 'https://codecommit.edu.git'
+        get_branch_interactive_mock.return_value = 'my-branch'
+        self.assertEqual(
+            'my-branch',
+            initialize.establish_codecommit_branch('my-repository', None, source_control_mock, source_location)
+        )
+        source_control_mock.setup_existing_codecommit_branch.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.codecommit.get_branch')
+    @mock.patch('ebcli.controllers.initialize.get_branch_interactive')
+    def test_establish_codecommit_branch__branch_already_exists(
+            self,
+            get_branch_interactive_mock,
+            get_branch_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_location = 'https://codecommit.edu.git'
+
+        self.assertEqual(
+            'my-branch',
+            initialize.establish_codecommit_branch('my-repository', 'my-branch', source_control_mock, source_location)
+        )
+
+        get_branch_mock.assert_called_once_with('my-repository', 'my-branch')
+        get_branch_interactive_mock.assert_not_called()
+        source_control_mock.setup_existing_codecommit_branch.assert_called_once_with('my-branch', None)
+
+    @mock.patch('ebcli.controllers.initialize.codecommit.get_branch')
+    @mock.patch('ebcli.controllers.initialize.get_branch_interactive')
+    @mock.patch('ebcli.controllers.initialize.create_codecommit_branch')
+    def test_establish_codecommit_branch__branch_does_not_exist__new_branch_created(
+            self,
+            create_codecommit_branch_mock,
+            get_branch_interactive_mock,
+            get_branch_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        source_location = 'https://codecommit.edu.git'
+        get_branch_mock.side_effect = initialize.ServiceError
+
+        self.assertEqual(
+            'my-branch',
+            initialize.establish_codecommit_branch('my-repository', 'my-branch', source_control_mock, source_location)
+        )
+
+        get_branch_mock.assert_called_once_with('my-repository', 'my-branch')
+        create_codecommit_branch_mock.assert_called_once_with(source_control_mock, 'my-branch')
+        get_branch_interactive_mock.assert_not_called()
+        source_control_mock.setup_existing_codecommit_branch.assert_called_once_with()
+
+    @mock.patch('ebcli.controllers.initialize.codecommit.get_branch')
+    @mock.patch('ebcli.controllers.initialize.get_branch_interactive')
+    @mock.patch('ebcli.controllers.initialize.create_codecommit_branch')
+    @mock.patch('ebcli.controllers.initialize.io.log_error')
+    def test_establish_codecommit_branch__branch_does_not_exist__new_branch_created(
+            self,
+            log_error_mock,
+            create_codecommit_branch_mock,
+            get_branch_interactive_mock,
+            get_branch_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        get_branch_mock.side_effect = initialize.ServiceError
+
+        with self.assertRaises(initialize.ServiceError):
+            initialize.establish_codecommit_branch('my-repository', 'my-branch', source_control_mock, None)
+
+        get_branch_mock.assert_called_once_with('my-repository', 'my-branch')
+        log_error_mock.assert_called_once_with('Branch does not exist in CodeCommit')
+        create_codecommit_branch_mock.assert_not_called()
+        get_branch_interactive_mock.assert_not_called()
+        source_control_mock.setup_existing_codecommit_branch.assert_not_called()
+
 
 class TestInitMultipleModules(unittest.TestCase):
     platform = PlatformVersion(

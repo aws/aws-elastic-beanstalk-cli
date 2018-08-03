@@ -136,34 +136,7 @@ class InitController(AbstractBaseController):
                 # Setup git config settings for code commit credentials
                 source_control.setup_codecommit_cred_config()
 
-                # Get user specified repository
-                remote_url = None
-                if repository is None:
-                    repository = get_repository_interactive()
-                else:
-                    try:
-                        setup_codecommit_remote_repo(repository, source_control)
-                    except ServiceError as ex:
-                        if source_location:
-                            create_codecommit_repository(repository)
-                            setup_codecommit_remote_repo(repository, source_control)
-                        else:
-                            io.log_error(strings['codecommit.norepo'])
-                            raise ex
-
-                # Get user specified branch
-                if branch is None:
-                    branch = get_branch_interactive(repository)
-                else:
-                    try:
-                        codecommit.get_branch(repository, branch)
-                    except ServiceError as ex:
-                        if source_location:
-                            create_codecommit_branch(source_control, branch)
-                        else:
-                            io.log_error(strings['codecommit.nobranch'])
-                            raise ex
-                    source_control.setup_existing_codecommit_branch(branch, remote_url)
+                repository, branch = establish_codecommit_repository_and_branch(repository, branch, source_control, source_location)
 
             except ValidationError:
                 LOG.debug("Denied option to use CodeCommit, continuing initialization")
@@ -625,6 +598,46 @@ def set_default_env(default_env, interactive, force_non_interactive):
             return commonops.get_current_branch_environment()
         except NotInitializedError:
             pass
+
+
+def establish_codecommit_branch(repository, branch, source_control, source_location):
+    if branch is None:
+        branch = get_branch_interactive(repository)
+    else:
+        try:
+            codecommit.get_branch(repository, branch)
+        except ServiceError as ex:
+            if source_location:
+                create_codecommit_branch(source_control, branch)
+            else:
+                io.log_error(strings['codecommit.nobranch'])
+                raise ex
+        source_control.setup_existing_codecommit_branch(branch, None)
+
+    return branch
+
+
+def establish_codecommit_repository(repository, source_control, source_location):
+    if repository is None:
+        repository = get_repository_interactive()
+    else:
+        try:
+            setup_codecommit_remote_repo(repository, source_control)
+        except ServiceError as ex:
+            if source_location:
+                create_codecommit_repository(repository)
+                setup_codecommit_remote_repo(repository, source_control)
+            else:
+                io.log_error(strings['codecommit.norepo'])
+                raise ex
+    return repository
+
+
+def establish_codecommit_repository_and_branch(repository, branch, source_control, source_location):
+    repository = establish_codecommit_repository(repository, source_control, source_location)
+    branch = establish_codecommit_branch(repository, branch, source_control, source_location)
+
+    return repository, branch
 
 
 def set_region_for_application(interactive, region, force_non_interactive):
