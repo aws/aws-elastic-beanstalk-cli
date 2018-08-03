@@ -41,8 +41,6 @@ class TestInit(unittest.TestCase):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
 
-    @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
-    @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
@@ -62,9 +60,7 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            solution_stack_ops_mock,
-            sourcecontrol_mock,
-            git_mock
+            solution_stack_ops_mock
     ):
         get_app_name_mock.return_value = 'my-application'
         initops_mock.credentials_are_valid.return_value = True
@@ -76,8 +72,6 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
-        sourcecontrol_mock.get_source_control.return_value = git_mock
-        git_mock.is_setup.return_value = None
         set_region_for_application_mock.return_value = 'us-west-2'
 
         app = EB(argv=['init'])
@@ -94,8 +88,6 @@ class TestInit(unittest.TestCase):
         )
         get_app_name_mock.assert_called_once_with([], False, False)
 
-    @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
-    @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
@@ -115,9 +107,7 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            solution_stack_ops_mock,
-            sourcecontrol_mock,
-            git_mock
+            solution_stack_ops_mock
     ):
         get_app_name_mock.return_value = 'my-application'
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
@@ -137,9 +127,6 @@ class TestInit(unittest.TestCase):
             'n',  # Set up ssh selection
         ]
 
-        sourcecontrol_mock.get_source_control.return_value = git_mock
-        git_mock.is_setup.return_value = None
-
         app = EB(argv=['init', '-i'])
         app.setup()
         app.run()
@@ -154,8 +141,6 @@ class TestInit(unittest.TestCase):
         )
         get_app_name_mock.assert_called_once_with([], True, False)
 
-    @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
-    @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
@@ -173,9 +158,7 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            solution_stack_ops_mock,
-            sourcecontrol_mock,
-            git_mock
+            solution_stack_ops_mock
     ):
         get_app_name_mock.return_value = self.app_name
         initops_mock.credentials_are_valid.return_value = False
@@ -187,9 +170,6 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
-
-        sourcecontrol_mock.get_source_control.return_value = git_mock
-        git_mock.is_setup.return_value = None
 
         EB.Meta.exit_on_close = False
         app = EB(
@@ -211,8 +191,6 @@ class TestInit(unittest.TestCase):
             repository=None
         )
 
-    @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
-    @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
@@ -230,9 +208,7 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            solution_stack_ops_mock,
-            sourcecontrol_mock,
-            git_mock
+            solution_stack_ops_mock
     ):
         get_app_name_mock.return_value = self.app_name
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = Exception
@@ -243,9 +219,6 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = 'us-west-2'
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
-
-        sourcecontrol_mock.get_source_control.return_value = git_mock
-        git_mock.is_setup.return_value = None
 
         EB.Meta.exit_on_close = False
         app = EB(argv=['init', '-p', 'php'])
@@ -261,8 +234,6 @@ class TestInit(unittest.TestCase):
             repository=None
         )
 
-    @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
-    @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
@@ -285,8 +256,6 @@ class TestInit(unittest.TestCase):
             initops_mock,
             sshops_mock,
             solution_stack_ops_mock,
-            sourcecontrol_mock,
-            git_mock
     ):
         get_app_name_mock.return_value = self.app_name
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = Exception
@@ -298,8 +267,6 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_region.return_value = ''
         initops_mock.credentials_are_valid.return_value = True
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
-        sourcecontrol_mock.get_source_control.return_value = git_mock
-        git_mock.is_setup.return_value = None
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('my-repo', 'prod/mybranch')
 
@@ -322,10 +289,8 @@ class TestInit(unittest.TestCase):
             repository='my-repo',
             branch='prod/mybranch'
         )
-        configure_codecommit_mock.assert_called_once_with('codecommit', git_mock, 'my-repo', 'prod/mybranch')
+        configure_codecommit_mock.assert_called_once_with('codecommit/my-repo/prod/mybranch')
 
-    @mock.patch('ebcli.objects.sourcecontrol.Git')
-    @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
@@ -344,8 +309,6 @@ class TestInit(unittest.TestCase):
             initops_mock,
             sshops_mock,
             solution_stack_ops_mock,
-            sourcecontrol_mock,
-            git_mock
     ):
         get_app_name_mock.return_value = 'my-app'
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
@@ -357,9 +320,6 @@ class TestInit(unittest.TestCase):
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('new-repo', 'devo')
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
-        sourcecontrol_mock.get_source_control.return_value = git_mock
-        git_mock.is_setup.return_value = 'GitSetup'
-        git_mock.get_current_commit.return_value = 'CommitId'
 
         app = EB(
             argv=['init', '--region', 'us-east-1', 'my-app'])
@@ -375,11 +335,9 @@ class TestInit(unittest.TestCase):
             branch='devo'
         )
 
-        configure_codecommit_mock.assert_called_once_with(None, git_mock, None, None)
+        configure_codecommit_mock.assert_called_once_with(None)
 
-    @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
     @mock.patch('ebcli.controllers.initialize.fileoperations')
-    @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -400,9 +358,7 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             solution_stack_ops_mock,
-            sourcecontrol_mock,
             fileoperations_mock,
-            git_mock
     ):
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = False
         set_region_for_application_mock.return_value = 'us-west-2'
@@ -415,8 +371,6 @@ class TestInit(unittest.TestCase):
         get_keyname_mock.return_value = 'test'
 
         create_app_or_use_existing_one_mock.return_value = (None, None)
-        sourcecontrol_mock.get_source_control.return_value = git_mock
-        git_mock.is_setup.return_value = None
 
         app = EB(argv=['init', '-i'])
         app.setup()
@@ -439,7 +393,6 @@ class TestInit(unittest.TestCase):
         ]
         fileoperations_mock.write_config_setting.assert_has_calls(write_config_calls)
 
-    @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
@@ -468,11 +421,7 @@ class TestInit(unittest.TestCase):
             initops_mock,
             sshops_mock,
             solution_stack_ops_mock,
-            get_source_control_mock
     ):
-        source_control_mock = mock.MagicMock()
-        get_source_control_mock.return_value = source_control_mock
-        source_control_mock.is_setup.return_value = True
         get_app_name_mock.return_value = 'testDir'
         get_platform_from_env_yaml_mock.return_value = 'PHP 5.5'
         get_keyname_mock.return_value = 'keyname'
@@ -502,12 +451,7 @@ class TestInit(unittest.TestCase):
             branch='prod'
         )
         handle_buildspec_image_mock.assert_called_once_with('PHP 5.5', False)
-        configure_codecommit_mock.assert_called_once_with(
-            'codecommit',
-            source_control_mock,
-            'my-repo',
-            'prod'
-        )
+        configure_codecommit_mock.assert_called_once_with('codecommit/my-repo/prod')
 
 
 class TestInitModule(unittest.TestCase):
@@ -1740,10 +1684,9 @@ class TestInitModule(unittest.TestCase):
             self,
             validate_action_mock
     ):
-        source_control_mock = mock.MagicMock()
         validate_action_mock.side_effect = initialize.ValidationError
 
-        initialize.configure_codecommit(None, source_control_mock, None, None)
+        initialize.configure_codecommit(None)
 
         validate_action_mock.assert_called_once_with(
             'Do you wish to continue with CodeCommit? (y/N) (default is n)',
@@ -1752,16 +1695,19 @@ class TestInitModule(unittest.TestCase):
 
     @mock.patch('ebcli.controllers.initialize.io.validate_action')
     @mock.patch('ebcli.controllers.initialize.establish_codecommit_repository_and_branch')
+    @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
     def test_configure_codecommit__source_location_not_specified__customer_opts_in(
             self,
+            get_source_control_mock,
             establish_codecommit_repository_and_branch_mock,
             validate_action_mock
     ):
         source_control_mock = mock.MagicMock()
+        get_source_control_mock.return_value = source_control_mock
         validate_action_mock.side_effect = None
         establish_codecommit_repository_and_branch_mock.return_value = ('repository', 'branch')
 
-        initialize.configure_codecommit(None, source_control_mock, None, None)
+        initialize.configure_codecommit(None)
 
         validate_action_mock.assert_called_once_with(
             'Do you wish to continue with CodeCommit? (y/N) (default is n)',
@@ -1774,16 +1720,19 @@ class TestInitModule(unittest.TestCase):
 
     @mock.patch('ebcli.controllers.initialize.io.validate_action')
     @mock.patch('ebcli.controllers.initialize.establish_codecommit_repository_and_branch')
+    @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
     def test_configure_codecommit__source_location_specified(
             self,
+            get_source_control_mock,
             establish_codecommit_repository_and_branch_mock,
             validate_action_mock,
     ):
         source_control_mock = mock.MagicMock()
+        get_source_control_mock.return_value = source_control_mock
         validate_action_mock.side_effect = None
         establish_codecommit_repository_and_branch_mock.return_value = ('repository', 'branch')
 
-        initialize.configure_codecommit('codecommit', source_control_mock, 'repository', 'branch')
+        initialize.configure_codecommit('codecommit/repository/branch')
 
         validate_action_mock.assert_not_called()
         source_control_mock.setup_codecommit_cred_config.assert_called_once_with()
@@ -1966,6 +1915,170 @@ class TestInitModule(unittest.TestCase):
 
         get_default_solution_stack_mock.assert_called_once_with()
         find_solution_stack_from_string_mock.assert_called_once_with('php-5.5')
+
+    def test_should_prompt_customer_to_opt_into_codecommit__force_non_interactive(self):
+        self.assertFalse(
+            initialize.should_prompt_customer_to_opt_into_codecommit(
+                True,
+                'us-west-2',
+                'codecommit/repository/branch'
+            )
+        )
+
+    def test_should_prompt_customer_to_opt_into_codecommit__no_source(self):
+        self.assertFalse(
+            initialize.should_prompt_customer_to_opt_into_codecommit(False, 'us-west-2', None)
+        )
+
+    @mock.patch('ebcli.controllers.initialize.codecommit.region_supported')
+    def test_should_prompt_customer_to_opt_into_codecommit__unsupported_region(
+            self,
+            region_supported_mock
+    ):
+        region_supported_mock.return_value = False
+
+        self.assertFalse(
+            initialize.should_prompt_customer_to_opt_into_codecommit(
+                False,
+                'us-west-10',
+                'codecommit/repository/branch'
+            )
+        )
+
+        region_supported_mock.assert_called_once_with()
+
+    @mock.patch('ebcli.controllers.initialize.codecommit.region_supported')
+    def test_should_prompt_customer_to_opt_into_codecommit__unsupported_region(
+            self,
+            region_supported_mock
+    ):
+        region_supported_mock.return_value = False
+
+        self.assertFalse(
+            initialize.should_prompt_customer_to_opt_into_codecommit(
+                False,
+                'us-west-10',
+                'codecommit/repository/branch'
+            )
+        )
+
+        region_supported_mock.assert_called_once_with('us-west-10')
+
+    @mock.patch('ebcli.controllers.initialize.codecommit.region_supported')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.is_git_directory_present')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    def test_should_prompt_customer_to_opt_into_codecommit__directory_is_not_git_inited(
+            self,
+            echo_mock,
+            is_git_directory_present_mock,
+            region_supported_mock
+    ):
+        region_supported_mock.return_value = True
+        is_git_directory_present_mock.return_value = False
+
+        self.assertFalse(
+            initialize.should_prompt_customer_to_opt_into_codecommit(
+                False,
+                'us-west-2',
+                'codecommit/repository/branch'
+            )
+        )
+
+        region_supported_mock.assert_called_once_with('us-west-2')
+        echo_mock.assert_called_once_with(
+            'Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization'
+        )
+
+    @mock.patch('ebcli.controllers.initialize.codecommit.region_supported')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.is_git_directory_present')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.program_is_installed')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    def test_should_prompt_customer_to_opt_into_codecommit__git_not_installed(
+            self,
+            echo_mock,
+            program_is_installed_mock,
+            is_git_directory_present_mock,
+            region_supported_mock
+    ):
+        region_supported_mock.return_value = True
+        is_git_directory_present_mock.return_value = True
+        program_is_installed_mock.return_value = False
+
+        self.assertFalse(
+            initialize.should_prompt_customer_to_opt_into_codecommit(
+                False,
+                'us-west-2',
+                'codecommit/repository/branch'
+            )
+        )
+
+        region_supported_mock.assert_called_once_with('us-west-2')
+        program_is_installed_mock.assert_called_once_with('git')
+        echo_mock.assert_called_once_with(
+            'Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization'
+        )
+
+    @mock.patch('ebcli.controllers.initialize.codecommit.region_supported')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.is_git_directory_present')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.program_is_installed')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.directory_is_already_associated_with_a_branch')
+    def test_should_prompt_customer_to_opt_into_codecommit__directory_is_already_set_up_to_use_codecommit(
+            self,
+            directory_is_already_associated_with_a_branch_mock,
+            echo_mock,
+            program_is_installed_mock,
+            is_git_directory_present_mock,
+            region_supported_mock
+    ):
+        region_supported_mock.return_value = True
+        is_git_directory_present_mock.return_value = True
+        program_is_installed_mock.return_value = True
+        directory_is_already_associated_with_a_branch_mock.return_value = True
+
+        self.assertFalse(
+            initialize.should_prompt_customer_to_opt_into_codecommit(
+                False,
+                'us-west-2',
+                'codecommit/repository/branch'
+            )
+        )
+
+        region_supported_mock.assert_called_once_with('us-west-2')
+        program_is_installed_mock.assert_called_once_with('git')
+        echo_mock.assert_not_called()
+        directory_is_already_associated_with_a_branch_mock.assert_called_once_with()
+
+    @mock.patch('ebcli.controllers.initialize.codecommit.region_supported')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.is_git_directory_present')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.program_is_installed')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.directory_is_already_associated_with_a_branch')
+    def test_should_prompt_customer_to_opt_into_codecommit__returns_true(
+            self,
+            directory_is_already_associated_with_a_branch_mock,
+            echo_mock,
+            program_is_installed_mock,
+            is_git_directory_present_mock,
+            region_supported_mock
+    ):
+        region_supported_mock.return_value = True
+        is_git_directory_present_mock.return_value = True
+        program_is_installed_mock.return_value = True
+        directory_is_already_associated_with_a_branch_mock.return_value = False
+
+        self.assertTrue(
+            initialize.should_prompt_customer_to_opt_into_codecommit(
+                False,
+                'us-west-2',
+                'codecommit/repository/branch'
+            )
+        )
+
+        region_supported_mock.assert_called_once_with('us-west-2')
+        program_is_installed_mock.assert_called_once_with('git')
+        echo_mock.assert_not_called()
+        directory_is_already_associated_with_a_branch_mock.assert_called_once_with()
 
 
 class TestInitMultipleModules(unittest.TestCase):

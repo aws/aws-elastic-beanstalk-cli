@@ -90,8 +90,6 @@ class InitController(AbstractBaseController):
             )
             return
 
-        source_location, repository, branch = utils.parse_source(source)
-
         fileoperations.touch_config_folder()
 
         region_name = set_region_for_application(interactive, region_name, force_non_interactive)
@@ -119,19 +117,14 @@ class InitController(AbstractBaseController):
 
         handle_buildspec_image(platform, force_non_interactive)
 
-        source_control = SourceControl.get_source_control()
-        default_branch_exists = not not (gitops.git_management_enabled() and not interactive)
-        if source_location and not codecommit.region_supported(region_name):
-            io.log_warning(strings['codecommit.badregion'])
-
         prompt_codecommit = should_prompt_customer_to_opt_into_codecommit(
-            default_branch_exists,
             force_non_interactive,
             region_name,
-            source_location
+            source
         )
+        repository, branch = None, None
         if prompt_codecommit:
-            repository, branch = configure_codecommit(source_location, source_control, repository, branch)
+            repository, branch = configure_codecommit(source)
         initializeops.setup(app_name, region_name, platform, dir_path=None, repository=repository, branch=branch)
         configure_keyname(platform, keyname, keyname_of_existing_application, interactive, force_non_interactive)
         fileoperations.write_config_setting('global', 'include_git_submodules', True)
@@ -371,7 +364,10 @@ def check_credentials(profile, given_profile, given_region, interactive, force_n
             return check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
 
 
-def configure_codecommit(source_location, source_control, repository, branch):
+def configure_codecommit(source):
+    source_location, repository, branch = utils.parse_source(source)
+    source_control = SourceControl.get_source_control()
+
     try:
         if not source_location:
             io.validate_action(prompts['codecommit.usecc'], "y")
@@ -406,6 +402,10 @@ def create_app_or_use_existing_one(app_name, default_env):
         return commonops.pull_down_app_info(app_name, default_env=default_env)
     else:
         return commonops.create_app(app_name, default_env=default_env)
+
+
+def directory_is_already_associated_with_a_branch():
+    return gitops.git_management_enabled()
 
 
 def set_up_credentials(given_profile, given_region, interactive, force_non_interactive=False):
@@ -598,22 +598,18 @@ def set_region_for_application(interactive, region, force_non_interactive):
 
 
 def should_prompt_customer_to_opt_into_codecommit(
-        default_branch_exists,
         force_non_interactive,
-        region,
-        source_location
+        region_name,
+        source
 ):
+    source_location, repository, branch = utils.parse_source(source)
+
     if force_non_interactive:
         return False
-    elif not codecommit.region_supported(region):
+    elif not source_location:
         return False
-    elif source_location and source_location.lower() != 'codecommit':
-        # Do not prompt if customer has already specified a code source to
-        # associate the EB workspace with
-        return False
-    elif default_branch_exists:
-        # Do not prompt if customer has already configured the EB application
-        # in the present working directory with Git
+    elif source_location and not codecommit.region_supported(region_name):
+        io.log_warning(strings['codecommit.badregion'])
         return False
     elif not fileoperations.is_git_directory_present():
         io.echo(strings['codecommit.nosc'])
@@ -621,5 +617,7 @@ def should_prompt_customer_to_opt_into_codecommit(
     elif not fileoperations.program_is_installed('git'):
         io.echo(strings['codecommit.nosc'])
         return False
-    else:
-        return True
+    elif directory_is_already_associated_with_a_branch():
+        return False
+
+    return True
