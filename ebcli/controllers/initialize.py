@@ -116,10 +116,7 @@ class InitController(AbstractBaseController):
 
         default_branch_exists = not not (gitops.git_management_enabled() and not self.interactive)
 
-        # Warn the customer if they picked a region that CodeCommit is not supported
-        codecommit_region_supported = codecommit.region_supported(self.region)
-
-        if source_location and not codecommit_region_supported:
+        if source_location and not codecommit.region_supported(self.region):
             io.log_warning(strings['codecommit.badregion'])
 
         # Prompt customer to opt into CodeCommit unless one of the follows holds:
