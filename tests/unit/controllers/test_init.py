@@ -56,8 +56,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.io.get_input')
     @mock.patch('ebcli.controllers.initialize.set_region_for_application')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
+    @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     def test_init__interactive_mode(
             self,
+            create_app_or_use_existing_one_mock,
             set_default_env_mock,
             set_region_for_application_mock,
             get_input_mock,
@@ -76,7 +78,7 @@ class TestInit(unittest.TestCase):
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = False
-        commonops_mock.create_app.return_value = None, None
+        create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
@@ -115,8 +117,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.io.get_input')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
+    @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     def test_init__force_interactive_mode_using_argument(
             self,
+            create_app_or_use_existing_one_mock,
             set_default_env_mock,
             get_input_mock,
             elasticbeanstalk_mock,
@@ -132,7 +136,7 @@ class TestInit(unittest.TestCase):
         get_application_names_mock.return_value = list()
         initops_mock.credentials_are_valid.return_value = True
         elasticbeanstalk_mock.application_exist.return_value = False
-        commonops_mock.create_app.return_value = 'ss-stack', 'key'
+        create_app_or_use_existing_one_mock.return_value = 'ss-stack', 'key'
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
 
@@ -170,8 +174,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
+    @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     def test_init_no_creds(
             self,
+            create_app_or_use_existing_one_mock,
             set_default_env_mock,
             elasticbeanstalk_mock,
             commonops_mock,
@@ -186,7 +192,7 @@ class TestInit(unittest.TestCase):
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = True
-        commonops_mock.pull_down_app_info.return_value = 'ss-stack', 'key'
+        create_app_or_use_existing_one_mock.return_value = 'ss-stack', 'key'
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
@@ -223,8 +229,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
+    @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     def test_init__force_non_interactive_mode_using_platform_argument(
             self,
+            create_app_or_use_existing_one_mock,
             set_default_env_mock,
             elasticbeanstalk_mock,
             commonops_mock,
@@ -238,7 +246,7 @@ class TestInit(unittest.TestCase):
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = True
-        commonops_mock.pull_down_app_info.return_value = 'ss-stack', 'key'
+        create_app_or_use_existing_one_mock.return_value = 'ss-stack', 'key'
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = 'us-west-2'
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
@@ -268,8 +276,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
+    @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     def test_init__non_interactive_mode__with_codecommit(
             self,
+            create_app_or_use_existing_one_mock,
             set_default_env_mock,
             elasticbeanstalk_mock,
             commonops_mock,
@@ -283,7 +293,7 @@ class TestInit(unittest.TestCase):
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = False
-        commonops_mock.create_app.return_value = None, None
+        create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
         initops_mock.credentials_are_valid.return_value = True
@@ -324,8 +334,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.fileoperations.old_eb_config_present')
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_values_from_old_eb')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
+    @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     def test_init__get_application_information_from_old_config(
             self,
+            create_app_or_use_existing_one_mock,
             set_default_env_mock,
             get_values_from_old_eb_mock,
             old_eb_config_present_mock,
@@ -350,7 +362,7 @@ class TestInit(unittest.TestCase):
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = False
-        commonops_mock.create_app.return_value = None, None
+        create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
         initops_mock.credentials_are_valid.return_value = True
@@ -390,8 +402,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.gitops')
     @mock.patch('ebcli.controllers.initialize.io.get_input')
+    @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     def test_init__interactive_mode__with_codecommit(
             self,
+            create_app_or_use_existing_one_mock,
             get_input_mock,
             gitops_mock,
             commonops_mock,
@@ -405,8 +419,7 @@ class TestInit(unittest.TestCase):
     ):
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
         initops_mock.credentials_are_valid.return_value = True
-        commonops_mock.pull_down_app_info.return_value = None, None
-        commonops_mock.create_app.return_value = None, None
+        create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = 'ec2-keyname'
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
@@ -475,8 +488,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.core.io.get_input')
+    @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     def test_init__interactive_mode__with_codebuild_buildspec(
             self,
+            create_app_or_use_existing_one_mock,
             get_input_mock,
             elasticbeanstalk_mock,
             commonops_mock,
@@ -507,7 +522,7 @@ class TestInit(unittest.TestCase):
         fileoperations_mock.env_yaml_exists.return_value = None
 
         elasticbeanstalk_mock.application_exist.return_value = False
-        commonops_mock.create_app.return_value = None, None
+        create_app_or_use_existing_one_mock.return_value = None, None
         fileoperations_mock.build_spec_exists.return_value = True
         fileoperations_mock.get_build_configuration.return_value = build_config
         fileoperations_mock.buildspec_config_header = fileoperations.buildspec_config_header
@@ -529,7 +544,7 @@ class TestInit(unittest.TestCase):
         ]
 
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
-        commonops_mock.pull_down_app_info.return_value = 'something', 'smthing'
+        create_app_or_use_existing_one_mock.return_value = 'something', 'smthing'
 
         get_input_mock.side_effect = [
             '3',  # region number
@@ -578,8 +593,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.io.get_input')
+    @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     def test_init__non_interactive_mode__with_codebuild_buildspec(
             self,
+            create_app_or_use_existing_one_mock,
             get_input_mock,
             elasticbeanstalk_mock,
             commonops_mock,
@@ -610,7 +627,6 @@ class TestInit(unittest.TestCase):
         fileoperations_mock.env_yaml_exists.return_value = None
 
         elasticbeanstalk_mock.application_exist.return_value = False
-        commonops_mock.create_app.return_value = None, None
         elasticbeanstalk_mock.application_exist.return_value = False
         fileoperations_mock.get_build_configuration.return_value = build_config
         fileoperations_mock.buildspec_config_header = fileoperations.buildspec_config_header
@@ -622,7 +638,7 @@ class TestInit(unittest.TestCase):
         }
 
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
-        commonops_mock.pull_down_app_info.return_value = 'something', 'smthing'
+        create_app_or_use_existing_one_mock.return_value = 'something', 'smthing'
 
         get_input_mock.side_effect = [
             '3',  # region number
@@ -675,8 +691,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.fileoperations.buildspec_name')
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
+    @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     def test_init_with_codecommit_source_and_codebuild(
             self,
+            create_app_or_use_existing_one_mock,
             set_default_env_mock,
             write_config_setting_mock,
             buildspec_name_mock,
@@ -731,7 +749,7 @@ class TestInit(unittest.TestCase):
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = False
-        commonops_mock.create_app.return_value = None, None
+        create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
@@ -1448,6 +1466,48 @@ class TestInitModule(unittest.TestCase):
 
         get_region_mock.assert_called_once_with(None, False, False)
         set_region_mock.assert_called_once_with('us-west-2')
+
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.application_exist')
+    @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')
+    @mock.patch('ebcli.controllers.initialize.commonops.create_app')
+    def test_create_app_or_use_existing_one__application_exists(
+            self,
+            create_app_mock,
+            pull_down_app_info_mock,
+            application_exist_mock,
+    ):
+        application_exist_mock.return_value = True
+        pull_down_app_info_mock.return_value = ('php-5.5', 'keyname')
+
+        self.assertEqual(
+            ('php-5.5', 'keyname'),
+            initialize.create_app_or_use_existing_one('app_name', 'default_env')
+        )
+
+        application_exist_mock.assert_called_once_with('app_name')
+        pull_down_app_info_mock.assert_called_once_with('app_name', default_env='default_env')
+        create_app_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.application_exist')
+    @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')
+    @mock.patch('ebcli.controllers.initialize.commonops.create_app')
+    def test_create_app_or_use_existing_one__application_does_not_exist(
+            self,
+            create_app_mock,
+            pull_down_app_info_mock,
+            application_exist_mock,
+    ):
+        application_exist_mock.return_value = False
+        create_app_mock.return_value = ('php-5.5', 'keyname')
+
+        self.assertEqual(
+            ('php-5.5', 'keyname'),
+            initialize.create_app_or_use_existing_one('app_name', 'default_env')
+        )
+
+        application_exist_mock.assert_called_once_with('app_name')
+        create_app_mock.assert_called_once_with('app_name', default_env='default_env')
+        pull_down_app_info_mock.assert_not_called()
 
 
 class TestInitMultipleModules(unittest.TestCase):

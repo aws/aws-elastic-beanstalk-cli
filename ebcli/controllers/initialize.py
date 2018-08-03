@@ -95,9 +95,7 @@ class InitController(AbstractBaseController):
 
         default_env = set_default_env(default_env, self.interactive, self.force_non_interactive)
 
-        # Create application
-        sstack, key = commonops.pull_down_app_info(self.app_name, default_env=default_env) if elasticbeanstalk.application_exist(self.app_name) \
-            else commonops.create_app(self.app_name, default_env=default_env)
+        sstack, key = create_app_or_use_existing_one(self.app_name, default_env)
 
         if not self.solution:
             self.solution = sstack
@@ -588,6 +586,13 @@ def check_credentials(profile, given_profile, given_region, interactive, force_n
             profile = None
             aws.set_profile(profile)
             return check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
+
+
+def create_app_or_use_existing_one(app_name, default_env):
+    if elasticbeanstalk.application_exist(app_name):
+        return commonops.pull_down_app_info(app_name, default_env=default_env)
+    else:
+        return commonops.create_app(app_name, default_env=default_env)
 
 
 def set_up_credentials(given_profile, given_region, interactive, force_non_interactive=False):
