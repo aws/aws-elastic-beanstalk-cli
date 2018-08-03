@@ -132,6 +132,7 @@ class TestInit(unittest.TestCase):
         initops_mock.credentials_are_valid.return_value = True
         elasticbeanstalk_mock.application_exist.return_value = False
         create_app_or_use_existing_one_mock.return_value = (None, None)
+        commonops_mock.get_default_keyname.side_effect = initialize.NotInitializedError
         solution_stack_ops_mock.get_default_solution_stack.side_effect = initialize.NotInitializedError
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
@@ -483,8 +484,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.io.get_input')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     @mock.patch('ebcli.controllers.initialize.handle_buildspec_image')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_keyname')
     def test_init__interactive_mode__with_codebuild_buildspec(
             self,
+            get_keyname_mock,
             handle_buildspec_image_mock,
             create_app_or_use_existing_one_mock,
             get_input_mock,
@@ -504,11 +507,11 @@ class TestInit(unittest.TestCase):
         solution_stack_ops_mock.get_default_solution_stack.side_effect = initialize.NotInitializedError
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         fileoperations_mock.env_yaml_exists.return_value = None
+        get_keyname_mock.return_value = 'test'
 
         elasticbeanstalk_mock.application_exist.return_value = False
         elasticbeanstalk_mock.application_exist.return_value = False
 
-        sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         create_app_or_use_existing_one_mock.return_value = (None, None)
 
         get_input_mock.side_effect = [

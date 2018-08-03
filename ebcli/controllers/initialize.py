@@ -145,7 +145,7 @@ class InitController(AbstractBaseController):
         initializeops.setup(self.app_name, self.region, self.solution, dir_path=None, repository=repository, branch=branch)
 
         if 'IIS' not in self.solution:
-            self.keyname = self.get_keyname(default=key)
+            self.keyname = self.get_keyname(self.app.pargs.keyname)
 
             if self.keyname == -1:
                 self.keyname = None
@@ -202,13 +202,7 @@ class InitController(AbstractBaseController):
 
         return solution_string
 
-    def get_keyname(self, default=None):
-        keyname = self.app.pargs.keyname
-
-        if not keyname:
-            keyname = default
-
-        # Get keyname from config file, if exists
+    def get_keyname(self, keyname):
         if not keyname:
             try:
                 keyname = commonops.get_default_keyname()
@@ -219,7 +213,7 @@ class InitController(AbstractBaseController):
             return keyname
 
         if keyname is None or \
-                (self.interactive and not self.app.pargs.keyname):
+                (self.interactive and not keyname):
             # Prompt for one
             keyname = sshops.prompt_for_ec2_keyname()
 
@@ -323,7 +317,7 @@ class InitController(AbstractBaseController):
                                     solution)
 
                 if 'IIS' not in solution:
-                    keyname = self.get_keyname(default=key)
+                    keyname = self.get_keyname(self.app.pargs.keyname)
 
                     if keyname == -1:
                         self.keyname = None
