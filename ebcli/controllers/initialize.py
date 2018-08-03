@@ -88,7 +88,6 @@ class InitController(AbstractBaseController):
         if self.app.pargs.source:
             source_location, repository, branch = utils.parse_source(self.app.pargs.source)
 
-        default_env = self.get_old_values()
         fileoperations.touch_config_folder()
 
         self.region = set_region_for_application(self.interactive, self.region, self.force_non_interactive)
@@ -105,7 +104,7 @@ class InitController(AbstractBaseController):
             fileoperations.write_config_setting('global',
                                                 'no-verify-ssl', True)
 
-        default_env = set_default_env(default_env, self.interactive, self.force_non_interactive)
+        default_env = set_default_env(self.interactive, self.force_non_interactive)
 
         sstack, keyname_of_existing_application = create_app_or_use_existing_one(self.app_name, default_env)
         self.solution = self.solution or sstack
@@ -178,31 +177,6 @@ class InitController(AbstractBaseController):
             solution_stack_ops.find_solution_stack_from_string(solution_string)
 
         return solution_string
-
-    def get_old_values(self):
-        if fileoperations.old_eb_config_present() and \
-                not fileoperations.config_file_present():
-            old_values = fileoperations.get_values_from_old_eb()
-            region = old_values['region']
-            access_id = old_values['access_id']
-            secret_key = old_values['secret_key']
-            solution_stack = old_values['platform']
-            app_name = old_values['app_name']
-            default_env = old_values['default_env']
-
-            io.echo(strings['init.getvarsfromoldeb'])
-            if self.region is None:
-                self.region = region
-            if not self.app.pargs.application_name:
-                self.app.pargs.application_name = app_name
-            if self.app.pargs.platform is None:
-                self.app.pargs.platform = solution_stack
-
-            initializeops.setup_credentials(access_id=access_id,
-                                         secret_key=secret_key)
-            return default_env
-
-        return None
 
     def initialize_multiple_directories(self, modules, region, interactive, force_non_interactive, keyname, profile, noverify):
         application_created = False
@@ -563,10 +537,7 @@ def handle_buildspec_image(solution, force_non_interactive):
         fileoperations.write_buildspec_config_header('Image', platform_image['name'])
 
 
-def set_default_env(default_env, interactive, force_non_interactive):
-    if default_env:
-        return default_env
-
+def set_default_env(interactive, force_non_interactive):
     if force_non_interactive:
         return '/ni'
 

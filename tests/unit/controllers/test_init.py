@@ -324,77 +324,6 @@ class TestInit(unittest.TestCase):
         )
         configure_codecommit_mock.assert_called_once_with('codecommit', git_mock, 'my-repo', 'prod/mybranch')
 
-    @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
-    @mock.patch('ebcli.controllers.initialize.SourceControl')
-    @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
-    @mock.patch('ebcli.controllers.initialize.sshops')
-    @mock.patch('ebcli.controllers.initialize.initializeops')
-    @mock.patch('ebcli.controllers.initialize.commonops')
-    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
-    @mock.patch('ebcli.controllers.initialize.fileoperations.old_eb_config_present')
-    @mock.patch('ebcli.controllers.initialize.fileoperations.get_values_from_old_eb')
-    @mock.patch('ebcli.controllers.initialize.set_default_env')
-    @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
-    @mock.patch('ebcli.controllers.initialize.get_keyname')
-    @mock.patch('ebcli.controllers.initialize.configure_codecommit')
-    def test_init__get_application_information_from_old_config(
-            self,
-            configure_codecommit_mock,
-            get_keyname_mock,
-            create_app_or_use_existing_one_mock,
-            set_default_env_mock,
-            get_values_from_old_eb_mock,
-            old_eb_config_present_mock,
-            elasticbeanstalk_mock,
-            commonops_mock,
-            initops_mock,
-            sshops_mock,
-            solution_stack_ops_mock,
-            sourcecontrol_mock,
-            git_mock
-    ):
-        old_eb_config_present_mock.return_value = True
-        get_values_from_old_eb_mock.return_value = {
-            'app_name': 'my-application',
-            'access_id': 'my-access-id',
-            'secret_key': 'my-secret-key',
-            'default_env': 'default_env',
-            'platform': self.solution.name,
-            'region': 'us-east-1'
-        }
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = Exception
-        sshops_mock.prompt_for_ec2_keyname.return_value = Exception
-        set_default_env_mock.return_value = None
-        elasticbeanstalk_mock.application_exist.return_value = False
-        create_app_or_use_existing_one_mock.return_value = None, None
-        commonops_mock.get_default_keyname.return_value = ''
-        commonops_mock.get_default_region.return_value = ''
-        initops_mock.credentials_are_valid.return_value = True
-        solution_stack_ops_mock.get_default_solution_stack.return_value = ''
-        get_keyname_mock.return_value = 'keyname'
-        sourcecontrol_mock.get_source_control.return_value = git_mock
-        git_mock.is_setup.return_value = None
-        configure_codecommit_mock.return_value = (None, None)
-
-        EB.Meta.exit_on_close = False
-        self.app = EB(argv=['init'])
-        self.app.setup()
-        self.app.run()
-        self.app.close()
-
-        initops_mock.setup_credentials.assert_called_once_with(
-            access_id='my-access-id',
-            secret_key='my-secret-key'
-        )
-        initops_mock.setup.assert_called_with(
-            'my-application',
-            'us-east-1',
-            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5',
-            dir_path=None,
-            repository=None,
-            branch=None
-        )
-
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
@@ -1318,16 +1247,13 @@ class TestInitModule(unittest.TestCase):
         pull_down_app_info_mock.assert_not_called()
 
     def test_set_default_env__force_non_interactive(self):
-        self.assertEqual('/ni', initialize.set_default_env(None, False, True))
+        self.assertEqual('/ni', initialize.set_default_env(False, True))
 
     def test_set_default_env__interactive_mode(self):
-        self.assertIsNone(initialize.set_default_env(None, True, False))
+        self.assertIsNone(initialize.set_default_env(True, False))
 
-    def test_set_default_env__default_env_passed(self):
-        self.assertEqual('default-env', initialize.set_default_env('default-env', True, False))
-
-    def test_set_default_env__default_env_is_not_passed__non_interactive(self):
-        self.assertIsNone(initialize.set_default_env(None, False, False))
+    def test_set_default_env__non_interactive(self):
+        self.assertIsNone(initialize.set_default_env(False, False))
 
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_platform_from_env_yaml')
     def test_extract_solution_stack_from_env_yaml__platform_exists(
