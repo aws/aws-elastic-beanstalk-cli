@@ -1925,6 +1925,48 @@ class TestInitModule(unittest.TestCase):
         get_current_directory_name_mock.assert_called_once_with()
         _get_application_name_interactive_mock.assert_not_called()
 
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_default_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.find_solution_stack_from_string')
+    def test_get_solution_stack__platform_argument_passed_in_through_the_command_line(
+            self,
+            find_solution_stack_from_string_mock,
+            get_default_solution_stack_mock
+    ):
+        initialize.get_solution_stack('php-5.5')
+
+        get_default_solution_stack_mock.assert_not_called()
+        find_solution_stack_from_string_mock.assert_called_once_with('php-5.5')
+
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_default_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.find_solution_stack_from_string')
+    def test_get_solution_stack__platform_argument_not_passed_in_through_the_command_line__application_not_previously_initialized(
+            self,
+            find_solution_stack_from_string_mock,
+            get_default_solution_stack_mock
+    ):
+        find_solution_stack_from_string_mock.return_value = self.solution
+        get_default_solution_stack_mock.return_value = None
+
+        initialize.get_solution_stack(None)
+
+        get_default_solution_stack_mock.assert_called_once_with()
+        find_solution_stack_from_string_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_default_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.find_solution_stack_from_string')
+    def test_get_solution_stack__platform_argument_not_passed_in_through_the_command_line__application_previously_initialized(
+            self,
+            find_solution_stack_from_string_mock,
+            get_default_solution_stack_mock
+    ):
+        find_solution_stack_from_string_mock.return_value = self.solution
+        get_default_solution_stack_mock.return_value = 'php-5.5'
+
+        initialize.get_solution_stack(None)
+
+        get_default_solution_stack_mock.assert_called_once_with()
+        find_solution_stack_from_string_mock.assert_called_once_with('php-5.5')
+
 
 class TestInitMultipleModules(unittest.TestCase):
     platform = PlatformVersion(
@@ -1953,7 +1995,7 @@ class TestInitMultipleModules(unittest.TestCase):
         app.run()
 
     @mock.patch('ebcli.controllers.initialize.get_region')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.get_app_name')
     @mock.patch('ebcli.controllers.initialize.configure_keyname')
     @mock.patch('ebcli.controllers.initialize.set_up_credentials')
@@ -2018,7 +2060,7 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
         self.assertEqual(2, configure_keyname_mock.call_count)
 
     @mock.patch('ebcli.controllers.initialize.aws.set_region')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.get_app_name')
     @mock.patch('ebcli.controllers.initialize.configure_keyname')
     @mock.patch('ebcli.controllers.initialize.set_up_credentials')

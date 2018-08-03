@@ -93,7 +93,7 @@ class InitController(AbstractBaseController):
 
         self.region = set_up_credentials(self.app.pargs.profile, self.region, self.interactive)
 
-        self.solution = self.get_solution_stack(self.app.pargs.platform)
+        self.solution = get_solution_stack(self.app.pargs.platform)
         self.app_name = get_app_name(
             self.app.pargs.application_name,
             self.interactive,
@@ -131,20 +131,6 @@ class InitController(AbstractBaseController):
         configure_keyname(self.solution, self.app.pargs.keyname, keyname_of_existing_application, self.interactive, self.force_non_interactive)
         fileoperations.write_config_setting('global', 'include_git_submodules', True)
 
-    def get_solution_stack(self, solution_string):
-        # Get solution stack from config file, if exists
-        if not solution_string:
-            try:
-                solution_string = solution_stack_ops.get_default_solution_stack()
-            except NotInitializedError:
-                solution_string = None
-
-        # Validate that the platform exists
-        if solution_string:
-            solution_stack_ops.find_solution_stack_from_string(solution_string)
-
-        return solution_string
-
     def initialize_multiple_directories(self, modules, region, interactive, force_non_interactive, keyname, profile, noverify, platform):
         application_created = False
         app_name = None
@@ -157,7 +143,7 @@ class InitController(AbstractBaseController):
                 # Region should be set once for all modules
                 region = region or set_region_for_application(interactive, region, force_non_interactive)
                 region = set_up_credentials(profile, region, interactive)
-                solution = self.get_solution_stack(platform)
+                solution = get_solution_stack(platform)
 
                 # App name should be set once for all modules
                 if not app_name:
@@ -500,6 +486,21 @@ def get_region(region_argument, interactive, force_non_interactive=False):
         region = result.name
 
     return region
+
+
+def get_solution_stack(solution_string):
+    # Get solution stack from config file, if exists
+    if not solution_string:
+        try:
+            solution_string = solution_stack_ops.get_default_solution_stack()
+        except NotInitializedError:
+            solution_string = None
+
+    # Validate that the platform exists
+    if solution_string:
+        solution_stack_ops.find_solution_stack_from_string(solution_string)
+
+    return solution_string
 
 
 def handle_buildspec_image(solution, force_non_interactive):
