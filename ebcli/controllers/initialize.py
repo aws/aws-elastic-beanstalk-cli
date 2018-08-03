@@ -144,14 +144,7 @@ class InitController(AbstractBaseController):
         # Initialize the whole setup
         initializeops.setup(self.app_name, self.region, self.solution, dir_path=None, repository=repository, branch=branch)
 
-        if 'IIS' not in self.solution:
-            self.keyname = get_keyname(self.app.pargs.keyname, key, self.interactive, self.force_non_interactive)
-
-            if self.keyname == -1:
-                self.keyname = None
-
-            fileoperations.write_config_setting('global', 'default_ec2_keyname',
-                                                self.keyname)
+        configure_keyname(self.solution, self.app.pargs.keyname, key, self.interactive, self.force_non_interactive)
 
         # Default to including git submodules when creating zip files through `eb create`/`eb deploy`.
         fileoperations.write_config_setting('global', 'include_git_submodules', True)
@@ -296,14 +289,7 @@ class InitController(AbstractBaseController):
                 initializeops.setup(self.app_name, self.region,
                                     solution)
 
-                if 'IIS' not in solution:
-                    keyname = get_keyname(self.app.pargs.keyname, key, self.interactive, self.force_non_interactive)
-
-                    if keyname == -1:
-                        self.keyname = None
-
-                    fileoperations.write_config_setting('global', 'default_ec2_keyname',
-                                                        keyname)
+                configure_keyname(solution, self.app.pargs.keyname, key, self.interactive, self.force_non_interactive)
                 os.chdir(cwd)
 
 
@@ -477,6 +463,20 @@ def check_credentials(profile, given_profile, given_region, interactive, force_n
             profile = None
             aws.set_profile(profile)
             return check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
+
+
+def configure_keyname(solution, keyname, keyname_of_existing_app, interactive, force_non_interactive):
+    if 'IIS' not in solution:
+        keyname = get_keyname(keyname, keyname_of_existing_app, interactive, force_non_interactive)
+
+        if keyname == -1:
+            keyname = None
+
+        fileoperations.write_config_setting(
+            'global',
+            'default_ec2_keyname',
+            keyname
+        )
 
 
 def create_app_or_use_existing_one(app_name, default_env):

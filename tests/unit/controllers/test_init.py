@@ -1809,6 +1809,46 @@ class TestInitModule(unittest.TestCase):
         )
         prompt_for_ec2_keyname_mock.assert_called_once_with()
 
+    @mock.patch('ebcli.controllers.initialize.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    def test_configure_keyname(
+            self,
+            write_config_setting_mock,
+            get_keyname_mock
+    ):
+        get_keyname_mock.return_value = 'keyname'
+
+        initialize.configure_keyname('PHP 5.5', 'keyname', None, False, False)
+
+        get_keyname_mock.assert_called_once_with('keyname', None, False, False)
+        write_config_setting_mock.assert_called_once_with('global', 'default_ec2_keyname', 'keyname')
+
+    @mock.patch('ebcli.controllers.initialize.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    def test_configure_keyname__keyname_was_not_found(
+            self,
+            write_config_setting_mock,
+            get_keyname_mock
+    ):
+        get_keyname_mock.return_value = -1
+
+        initialize.configure_keyname('PHP 5.5', None, None, False, False)
+
+        get_keyname_mock.assert_called_once_with(None, None, False, False)
+        write_config_setting_mock.assert_called_once_with('global', 'default_ec2_keyname', None)
+
+    @mock.patch('ebcli.controllers.initialize.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    def test_configure_keyname__iis_platform(
+            self,
+            write_config_setting_mock,
+            get_keyname_mock
+    ):
+        initialize.configure_keyname('IIS 10', None, None, False, False)
+
+        get_keyname_mock.assert_not_called()
+        write_config_setting_mock.assert_not_called()
+
 
 class TestInitMultipleModules(unittest.TestCase):
     platform = PlatformVersion(
@@ -1837,10 +1877,9 @@ class TestInitMultipleModules(unittest.TestCase):
         app.run()
 
     @mock.patch('ebcli.controllers.initialize.get_region')
-    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     @mock.patch('ebcli.controllers.initialize.InitController.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
-    @mock.patch('ebcli.controllers.initialize.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.configure_keyname')
     @mock.patch('ebcli.controllers.initialize.set_up_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.create_app')
     @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')
@@ -1855,10 +1894,9 @@ class TestInitMultipleModules(unittest.TestCase):
             pull_down_app_info_mock,
             create_app_mock,
             set_up_credentials_mock,
-            get_keyname_mock,
+            configure_keyname_mock,
             get_app_name_mock,
             get_solution_stack_mock,
-            write_config_setting_mock,
             get_region_mock
     ):
         os.mkdir('module-1')
@@ -1881,7 +1919,6 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
             'my-ec2-key-name'
         ]
         get_solution_stack_from_customer_mock.return_value = '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1'
-        get_keyname_mock.return_value = 'my-ec2-key-name'
 
         app = EB(
             argv=[
@@ -1899,116 +1936,30 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
                 mock.call('my-application', 'us-east-1', '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1')
             ]
         )
-        write_config_setting_mock.assert_has_calls(
-            [
-                mock.call('global', 'default_ec2_keyname', 'my-ec2-key-name'),
-                mock.call('global', 'default_ec2_keyname', 'my-ec2-key-name')
-            ]
-        )
         create_app_mock.assert_called_once_with('my-application', default_env=None)
         pull_down_app_info_mock.assert_called_once_with('my-application', default_env=None)
-        self.assertEqual(
-            2,
-            set_region_mock.call_count
-        )
-
-    @mock.patch('ebcli.controllers.initialize.get_region')
-    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_solution_stack')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
-    @mock.patch('ebcli.controllers.initialize.get_keyname')
-    @mock.patch('ebcli.controllers.initialize.set_up_credentials')
-    @mock.patch('ebcli.controllers.initialize.commonops.create_app')
-    @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')
-    @mock.patch('ebcli.controllers.initialize.aws.set_region')
-    @mock.patch('ebcli.controllers.initialize.initializeops.setup')
-    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
-    def test_multiple_modules__interactive_mode__solution_stack_in_env_yaml_is_used_when_available(
-            self,
-            get_solution_stack_from_customer_mock,
-            setup_mock,
-            set_region_mock,
-            pull_down_app_info_mock,
-            create_app_mock,
-            set_up_credentials_mock,
-            get_keyname_mock,
-            get_app_name_mock,
-            get_solution_stack_mock,
-            write_config_setting_mock,
-            get_region_mock
-    ):
-        os.mkdir('module-1')
-        os.mkdir('module-2')
-        with open(os.path.join('module-1', 'env.yaml'), 'w') as file:
-            file.write("""AWSConfigurationTemplateVersion: 1.1.0.0
-SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)
-        """)
-
-        get_app_name_mock.return_value = 'my-application'
-        get_region_mock.return_value = 'us-east-1'
-        set_up_credentials_mock.return_value = 'us-east-1'
-        get_solution_stack_mock.return_value = 'php7.1'
-        create_app_mock.return_value = [
-            '64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)',
-            'my-ec2-key-name'
-        ]
-        pull_down_app_info_mock.return_value = [
-            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1',
-            'my-ec2-key-name'
-        ]
-        get_solution_stack_from_customer_mock.return_value = '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1'
-        get_keyname_mock.return_value = 'my-ec2-key-name'
-
-        app = EB(
-            argv=[
-                'init',
-                '--modules', 'module-1', 'module-2',
-                '--interactive'
-            ]
-        )
-        app.setup()
-        app.run()
-
-        setup_mock.assert_has_calls(
-            [
-                mock.call('my-application', 'us-east-1', 'Multi-container Docker 1.7.1 (Generic)'),
-                mock.call('my-application', 'us-east-1', '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1')
-            ]
-        )
-        write_config_setting_mock.assert_has_calls(
-            [
-                mock.call('global', 'default_ec2_keyname', 'my-ec2-key-name'),
-                mock.call('global', 'default_ec2_keyname', 'my-ec2-key-name')
-            ]
-        )
-        create_app_mock.assert_called_once_with('my-application', default_env=None)
-        pull_down_app_info_mock.assert_called_once_with('my-application', default_env=None)
-        self.assertEqual(
-            2,
-            set_region_mock.call_count
-        )
+        self.assertEqual(2, set_region_mock.call_count)
+        self.assertEqual(2, configure_keyname_mock.call_count)
 
     @mock.patch('ebcli.controllers.initialize.aws.set_region')
-    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     @mock.patch('ebcli.controllers.initialize.InitController.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
-    @mock.patch('ebcli.controllers.initialize.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.configure_keyname')
     @mock.patch('ebcli.controllers.initialize.set_up_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.create_app')
     @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')
     @mock.patch('ebcli.controllers.initialize.get_region_from_inputs')
     @mock.patch('ebcli.controllers.initialize.initializeops.setup')
-    def test_multiple_modules__interactive_mode__solution_stack_in_env_yaml_is_used_when_available(
+    def test_multiple_modules__interactive_mode__solution_stack_is_passed_through_command_line(
             self,
             setup_mock,
             get_region_from_inputs_mock,
             pull_down_app_info_mock,
             create_app_mock,
             set_up_credentials_mock,
-            get_keyname_mock,
+            configure_keyname_mock,
             get_app_name_mock,
             get_solution_stack_mock,
-            write_config_setting_mock,
             set_region_mock
     ):
         os.mkdir('module-1')
@@ -2030,7 +1981,6 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
             '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1',
             'my-ec2-key-name'
         ]
-        get_keyname_mock.return_value = 'my-ec2-key-name'
 
         app = EB(
             argv=[
@@ -2048,15 +1998,10 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
                 mock.call('my-application', 'us-east-1', '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1')
             ]
         )
-        write_config_setting_mock.assert_has_calls(
-            [
-                mock.call('global', 'default_ec2_keyname', 'my-ec2-key-name'),
-                mock.call('global', 'default_ec2_keyname', 'my-ec2-key-name')
-            ]
-        )
         create_app_mock.assert_called_once_with('my-application', default_env='/ni')
         pull_down_app_info_mock.assert_called_once_with('my-application', default_env='/ni')
         self.assertEqual(
             2,
             set_region_mock.call_count
         )
+        self.assertEqual(2, configure_keyname_mock.call_count)
