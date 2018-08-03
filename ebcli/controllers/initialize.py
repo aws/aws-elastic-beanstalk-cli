@@ -90,7 +90,7 @@ class InitController(AbstractBaseController):
 
         region_name = set_region_for_application(interactive, region_name, force_non_interactive)
 
-        region_name = set_up_credentials(profile, region_name, interactive)
+        set_up_credentials(profile, region_name, interactive)
 
         app_name = get_app_name(
             app_name,
@@ -146,7 +146,7 @@ class InitController(AbstractBaseController):
 
                 # Region should be set once for all modules
                 region = region or set_region_for_application(interactive, region, force_non_interactive)
-                region = set_up_credentials(profile, region, interactive)
+                set_up_credentials(profile, region, interactive)
                 solution = get_solution_stack(platform)
 
                 # App name should be set once for all modules
@@ -412,14 +412,12 @@ def set_up_credentials(given_profile, given_region, interactive, force_non_inter
         profile = 'eb-cli'
         aws.set_profile(profile)
 
-    profile, region = check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
+    profile, _ = check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
 
     if not initializeops.credentials_are_valid():
         initializeops.setup_credentials()
     else:
         fileoperations.write_config_setting('global', 'profile', profile)
-
-    return region
 
 
 def extract_solution_stack_from_env_yaml():
