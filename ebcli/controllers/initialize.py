@@ -73,7 +73,15 @@ class InitController(AbstractBaseController):
         # The user specifies directories to initialize
         self.modules = self.app.pargs.modules
         if self.modules and len(self.modules) > 0:
-            self.initialize_multiple_directories()
+            self.initialize_multiple_directories(
+                self.modules,
+                self.region,
+                self.interactive,
+                self.force_non_interactive,
+                self.app.pargs.keyname,
+                self.app.pargs.profile,
+                self.noverify
+            )
             return
 
         source_location, branch, repository = None, None, None
@@ -95,7 +103,7 @@ class InitController(AbstractBaseController):
 
         default_env = set_default_env(default_env, self.interactive, self.force_non_interactive)
 
-        sstack, key = create_app_or_use_existing_one(self.app_name, default_env)
+        sstack, keyname_of_existing_application = create_app_or_use_existing_one(self.app_name, default_env)
         self.solution = self.solution or sstack
 
         if fileoperations.env_yaml_exists():
@@ -118,7 +126,7 @@ class InitController(AbstractBaseController):
         if prompt_codecommit:
             repository, branch = configure_codecommit(source_location, source_control, repository, branch)
         initializeops.setup(self.app_name, self.region, self.solution, dir_path=None, repository=repository, branch=branch)
-        configure_keyname(self.solution, self.app.pargs.keyname, key, self.interactive, self.force_non_interactive)
+        configure_keyname(self.solution, self.app.pargs.keyname, keyname_of_existing_application, self.interactive, self.force_non_interactive)
         fileoperations.write_config_setting('global', 'include_git_submodules', True)
 
     def get_app_name(self):
@@ -192,76 +200,56 @@ class InitController(AbstractBaseController):
 
         return None
 
-    def initialize_multiple_directories(self):
+    def initialize_multiple_directories(self, modules, region, interactive, force_non_interactive, keyname, profile, noverify):
         application_created = False
-        self.app_name = None
+        app_name = None
         cwd = os.getcwd()
-        for module in self.modules:
+        for module in modules:
             if os.path.exists(module) and os.path.isdir(module):
                 os.chdir(module)
                 fileoperations.touch_config_folder()
 
                 # Region should be set once for all modules
-                if not self.region:
-                    if self.interactive:
-                        self.region = get_region(self.region, self.interactive, self.force_non_interactive)
-                    else:
-                        self.region = get_region_from_inputs(self.app.pargs.region)
-                    aws.set_region(self.region)
-
-                self.region = set_up_credentials(self.app.pargs.profile, self.region, self.interactive)
-
+                region = region or set_region_for_application(interactive, region, force_non_interactive)
+                region = set_up_credentials(profile, region, interactive)
                 solution = self.get_solution_stack()
 
                 # App name should be set once for all modules
-                if not self.app_name:
+                if not app_name:
                     # Switching back to the root dir will suggest the root dir name
                     # as the application name
                     os.chdir(cwd)
-                    self.app_name = self.get_app_name()
+                    app_name = self.get_app_name()
                     os.chdir(module)
 
-                if self.noverify:
-                    fileoperations.write_config_setting('global',
-                                                        'no-verify-ssl', True)
+                if noverify:
+                    fileoperations.write_config_setting('global', 'no-verify-ssl', True)
 
-                default_env = None
-
-                if self.force_non_interactive:
-                    default_env = '/ni'
+                default_env = '/ni' if force_non_interactive else None
 
                 if not application_created:
-                    sstack, key = commonops.create_app(self.app_name,
-                                                       default_env=default_env)
+                    sstack, keyname_of_existing_application = commonops.create_app(
+                        app_name,
+                        default_env=default_env
+                    )
                     application_created = True
                 else:
-                    sstack, key = commonops.pull_down_app_info(self.app_name,
-                                                               default_env=default_env)
+                    sstack, keyname_of_existing_application = commonops.pull_down_app_info(
+                        app_name,
+                        default_env=default_env
+                    )
 
                 io.echo('\n--- Configuring module: {0} ---'.format(module))
 
-                if not solution:
-                    solution = sstack
+                solution = solution or sstack
 
-                platform_set = False
-                # TODO: Do not require a solution stack if one has already been set by this point
-                if not solution or \
-                        (self.interactive and not self.app.pargs.platform):
-                    if fileoperations.env_yaml_exists():
-                        env_yaml_platform = fileoperations.get_platform_from_env_yaml()
-                        if env_yaml_platform:
-                            platform = solutionstack.SolutionStack(env_yaml_platform).platform_shorthand
-                            solution = platform
-                            io.echo(strings['init.usingenvyamlplatform'].replace('{platform}', platform))
-                            platform_set = True
-
-                    if not platform_set:
-                        solution = solution_stack_ops.get_solution_stack_from_customer()
-
-                initializeops.setup(self.app_name, self.region,
-                                    solution)
-
-                configure_keyname(solution, self.app.pargs.keyname, key, self.interactive, self.force_non_interactive)
+                if not solution and fileoperations.env_yaml_exists():
+                    solution = extract_solution_stack_from_env_yaml()
+                    if solution:
+                        io.echo(strings['init.usingenvyamlplatform'].replace('{platform}', solution))
+                solution = solution or solution_stack_ops.get_solution_stack_from_customer()
+                initializeops.setup(app_name, region, solution)
+                configure_keyname(solution, keyname, keyname_of_existing_application, interactive, force_non_interactive)
                 os.chdir(cwd)
 
 

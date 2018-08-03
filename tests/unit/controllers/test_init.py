@@ -1938,7 +1938,7 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
         get_app_name_mock.return_value = 'my-application'
         get_region_mock.return_value = 'us-east-1'
         set_up_credentials_mock.return_value = 'us-east-1'
-        get_solution_stack_mock.return_value = 'php7.1'
+        get_solution_stack_mock.return_value = None
         create_app_mock.return_value = [
             '64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)',
             'my-ec2-key-name'
@@ -1961,7 +1961,7 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
 
         setup_mock.assert_has_calls(
             [
-                mock.call('my-application', 'us-east-1', 'Multi-container Docker 1.7.1 (Generic)'),
+                mock.call('my-application', 'us-east-1', '64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)'),
                 mock.call('my-application', 'us-east-1', '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1')
             ]
         )
