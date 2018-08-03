@@ -533,10 +533,12 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.handle_buildspec_image')
     @mock.patch('ebcli.controllers.initialize.fileoperations.build_spec_exists')
     @mock.patch('ebcli.controllers.initialize.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.should_prompt_customer_to_opt_into_codecommit')
     @mock.patch('ebcli.controllers.initialize.configure_codecommit')
     def test_init_with_codecommit_source_and_codebuild(
             self,
             configure_codecommit_mock,
+            should_prompt_customer_to_opt_into_codecommit_mock,
             get_keyname_mock,
             build_spec_exists_mock,
             handle_buildspec_image_mock,
@@ -568,6 +570,7 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
+        should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('my-repo', 'prod')
 
         app = EB(argv=['init', '--source', 'codecommit/my-repo/prod', '--region', 'us-east-1'])

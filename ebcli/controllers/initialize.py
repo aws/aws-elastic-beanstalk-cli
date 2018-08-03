@@ -104,18 +104,8 @@ class InitController(AbstractBaseController):
 
         handle_buildspec_image(self.solution, self.force_non_interactive)
 
-        # Setup code commit integration
-        # Ensure that git is setup
         source_control = SourceControl.get_source_control()
-        try:
-            source_control_setup = source_control.is_setup()
-            if source_control_setup is None:
-                source_control_setup = False
-        except CommandError:
-            source_control_setup = False
-
         default_branch_exists = not not (gitops.git_management_enabled() and not self.interactive)
-
         if source_location and not codecommit.region_supported(self.region):
             io.log_warning(strings['codecommit.badregion'])
 
@@ -123,8 +113,7 @@ class InitController(AbstractBaseController):
             default_branch_exists,
             self.force_non_interactive,
             self.region,
-            source_location,
-            source_control_setup
+            source_location
         )
         if prompt_codecommit:
             repository, branch = configure_codecommit(source_location, source_control, repository, branch)
@@ -456,10 +445,12 @@ def configure_codecommit(source_location, source_control, repository, branch):
         # Setup git config settings for code commit credentials
         source_control.setup_codecommit_cred_config()
 
-        return establish_codecommit_repository_and_branch(repository, branch, source_control, source_location)
+        repository, branch = establish_codecommit_repository_and_branch(repository, branch, source_control, source_location)
 
     except ValidationError:
         LOG.debug("Denied option to use CodeCommit, continuing initialization")
+
+    return repository, branch
 
 
 def configure_keyname(solution, keyname, keyname_of_existing_app, interactive, force_non_interactive):
@@ -648,8 +639,7 @@ def should_prompt_customer_to_opt_into_codecommit(
         default_branch_exists,
         force_non_interactive,
         region,
-        source_location,
-        source_control_setup
+        source_location
 ):
     if force_non_interactive:
         return False
@@ -663,9 +653,11 @@ def should_prompt_customer_to_opt_into_codecommit(
         # Do not prompt if customer has already configured the EB application
         # in the present working directory with Git
         return False
-    elif not source_control_setup:
-        if source_location:
-            io.echo(strings['codecommit.nosc'])
+    elif not fileoperations.is_git_directory_present():
+        io.echo(strings['codecommit.nosc'])
+        return False
+    elif not fileoperations.program_is_installed('git'):
+        io.echo(strings['codecommit.nosc'])
         return False
     else:
         return True
