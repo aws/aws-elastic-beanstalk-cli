@@ -96,7 +96,11 @@ class InitController(AbstractBaseController):
         self.region = set_up_credentials(self.app.pargs.profile, self.region, self.interactive)
 
         self.solution = self.get_solution_stack()
-        self.app_name = self.get_app_name()
+        self.app_name = self.get_app_name(
+            self.app.pargs.application_name,
+            self.interactive,
+            self.force_non_interactive
+        )
         if self.noverify:
             fileoperations.write_config_setting('global',
                                                 'no-verify-ssl', True)
@@ -129,9 +133,9 @@ class InitController(AbstractBaseController):
         configure_keyname(self.solution, self.app.pargs.keyname, keyname_of_existing_application, self.interactive, self.force_non_interactive)
         fileoperations.write_config_setting('global', 'include_git_submodules', True)
 
-    def get_app_name(self):
+    def get_app_name(self, customer_specified_app_name, interactive, force_non_interactive):
         # Get app name from command line arguments
-        app_name = self.app.pargs.application_name
+        app_name = customer_specified_app_name
 
         # Get app name from config file, if exists
         if not app_name:
@@ -140,13 +144,13 @@ class InitController(AbstractBaseController):
             except NotInitializedError:
                 app_name = None
 
-        if not app_name and self.force_non_interactive:
+        if not app_name and force_non_interactive:
             # Choose defaults
             app_name = fileoperations.get_current_directory_name()
 
         # Ask for app name
         if not app_name or \
-                (self.interactive and not self.app.pargs.application_name):
+                (interactive and not customer_specified_app_name):
             app_name = _get_application_name_interactive()
 
         if sys.version_info[0] < 3 and isinstance(app_name, unicode):
@@ -219,7 +223,7 @@ class InitController(AbstractBaseController):
                     # Switching back to the root dir will suggest the root dir name
                     # as the application name
                     os.chdir(cwd)
-                    app_name = self.get_app_name()
+                    app_name = self.get_app_name(None, interactive, force_non_interactive)
                     os.chdir(module)
 
                 if noverify:

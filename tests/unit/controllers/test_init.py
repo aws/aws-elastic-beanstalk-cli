@@ -43,32 +43,30 @@ class TestInit(unittest.TestCase):
 
     @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
-    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.get_application_names')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
-    @mock.patch('ebcli.controllers.initialize.io.get_input')
     @mock.patch('ebcli.controllers.initialize.set_region_for_application')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
     def test_init__interactive_mode(
             self,
+            get_app_name_mock,
             create_app_or_use_existing_one_mock,
             set_default_env_mock,
             set_region_for_application_mock,
-            get_input_mock,
             elasticbeanstalk_mock,
             commonops_mock,
             initops_mock,
             sshops_mock,
             solution_stack_ops_mock,
-            get_application_names_mock,
             sourcecontrol_mock,
             git_mock
     ):
-        get_application_names_mock.get_application_names.return_value = list()
+        get_app_name_mock.return_value = 'my-application'
         initops_mock.credentials_are_valid.return_value = True
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
@@ -82,29 +80,22 @@ class TestInit(unittest.TestCase):
         git_mock.is_setup.return_value = None
         set_region_for_application_mock.return_value = 'us-west-2'
 
-        get_input_mock.side_effect = [
-            self.app_name,  # Application name
-            '2',  # Platform selection
-            '2',  # Platform version selection
-            'n',  # Set up ssh selection
-        ]
-
         app = EB(argv=['init'])
         app.setup()
         app.run()
 
         initops_mock.setup.assert_called_with(
-            self.app_name,
+            'my-application',
             'us-west-2',
             'PHP 5.5',
             branch=None,
             dir_path=None,
             repository=None
         )
+        get_app_name_mock.assert_called_once_with([], False, False)
 
     @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
-    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.get_application_names')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
@@ -113,8 +104,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.io.get_input')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
     def test_init__force_interactive_mode_using_argument(
             self,
+            get_app_name_mock,
             create_app_or_use_existing_one_mock,
             set_default_env_mock,
             get_input_mock,
@@ -123,12 +116,11 @@ class TestInit(unittest.TestCase):
             initops_mock,
             sshops_mock,
             solution_stack_ops_mock,
-            get_application_names_mock,
             sourcecontrol_mock,
             git_mock
     ):
+        get_app_name_mock.return_value = 'my-application'
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
-        get_application_names_mock.return_value = list()
         initops_mock.credentials_are_valid.return_value = True
         elasticbeanstalk_mock.application_exist.return_value = False
         create_app_or_use_existing_one_mock.return_value = (None, None)
@@ -153,13 +145,14 @@ class TestInit(unittest.TestCase):
         app.run()
 
         initops_mock.setup.assert_called_with(
-            self.app_name,
+            'my-application',
             'us-west-2',
             'PHP 5.5',
             branch=None,
             dir_path=None,
             repository=None
         )
+        get_app_name_mock.assert_called_once_with([], True, False)
 
     @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
@@ -170,8 +163,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
     def test_init_no_creds(
             self,
+            get_app_name_mock,
             create_app_or_use_existing_one_mock,
             set_default_env_mock,
             elasticbeanstalk_mock,
@@ -182,6 +177,7 @@ class TestInit(unittest.TestCase):
             sourcecontrol_mock,
             git_mock
     ):
+        get_app_name_mock.return_value = self.app_name
         initops_mock.credentials_are_valid.return_value = False
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
@@ -224,8 +220,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
     def test_init__force_non_interactive_mode_using_platform_argument(
             self,
+            get_app_name_mock,
             create_app_or_use_existing_one_mock,
             set_default_env_mock,
             elasticbeanstalk_mock,
@@ -236,6 +234,7 @@ class TestInit(unittest.TestCase):
             sourcecontrol_mock,
             git_mock
     ):
+        get_app_name_mock.return_value = self.app_name
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = Exception
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
         set_default_env_mock.return_value = None
@@ -254,7 +253,7 @@ class TestInit(unittest.TestCase):
         app.run()
 
         initops_mock.setup.assert_called_with(
-            'testDir',
+            'ebcli-intTest-app',
             'us-west-2',
             'php',
             branch=None,
@@ -273,8 +272,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     @mock.patch('ebcli.controllers.initialize.should_prompt_customer_to_opt_into_codecommit')
     @mock.patch('ebcli.controllers.initialize.configure_codecommit')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
     def test_init__non_interactive_mode__with_codecommit(
             self,
+            get_app_name_mock,
             configure_codecommit_mock,
             should_prompt_customer_to_opt_into_codecommit_mock,
             create_app_or_use_existing_one_mock,
@@ -287,6 +288,7 @@ class TestInit(unittest.TestCase):
             sourcecontrol_mock,
             git_mock
     ):
+        get_app_name_mock.return_value = self.app_name
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = Exception
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
         set_default_env_mock.return_value = None
@@ -313,7 +315,7 @@ class TestInit(unittest.TestCase):
         app.run()
 
         initops_mock.setup.assert_called_with(
-            'testDir',
+            'ebcli-intTest-app',
             'us-east-1',
             'ruby',
             dir_path=None,
@@ -394,37 +396,35 @@ class TestInit(unittest.TestCase):
         )
 
     @mock.patch('ebcli.objects.sourcecontrol.Git')
-    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.application_exist')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
-    @mock.patch('ebcli.controllers.initialize.io.get_input')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     @mock.patch('ebcli.controllers.initialize.should_prompt_customer_to_opt_into_codecommit')
     @mock.patch('ebcli.controllers.initialize.configure_codecommit')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
     def test_init__interactive_mode__with_codecommit(
             self,
+            get_app_name_mock,
             configure_codecommit_mock,
             should_prompt_customer_to_opt_into_codecommit_mock,
             create_app_or_use_existing_one_mock,
-            get_input_mock,
             commonops_mock,
             initops_mock,
             sshops_mock,
             solution_stack_ops_mock,
             sourcecontrol_mock,
-            application_exist_mock,
             git_mock
     ):
+        get_app_name_mock.return_value = 'my-app'
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
         initops_mock.credentials_are_valid.return_value = True
         create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = 'ec2-keyname'
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
-        application_exist_mock.return_value = False
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('new-repo', 'devo')
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
@@ -451,50 +451,41 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
     @mock.patch('ebcli.controllers.initialize.fileoperations')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
-    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.get_application_names')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
-    @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
-    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
-    @mock.patch('ebcli.controllers.initialize.io.get_input')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     @mock.patch('ebcli.controllers.initialize.handle_buildspec_image')
     @mock.patch('ebcli.controllers.initialize.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.set_region_for_application')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.should_prompt_customer_to_opt_into_codecommit')
     def test_init__interactive_mode__with_codebuild_buildspec(
             self,
+            should_prompt_customer_to_opt_into_codecommit_mock,
+            get_app_name_mock,
+            set_region_for_application_mock,
             get_keyname_mock,
             handle_buildspec_image_mock,
             create_app_or_use_existing_one_mock,
-            get_input_mock,
-            elasticbeanstalk_mock,
             commonops_mock,
             initops_mock,
-            sshops_mock,
             solution_stack_ops_mock,
-            get_application_names_mock,
             sourcecontrol_mock,
             fileoperations_mock,
             git_mock
     ):
+        should_prompt_customer_to_opt_into_codecommit_mock.return_value = False
+        set_region_for_application_mock.return_value = 'us-west-2'
+        get_app_name_mock.return_value = self.app_name
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
-        get_application_names_mock.return_value = list()
         initops_mock.credentials_are_valid.return_value = True
         solution_stack_ops_mock.get_default_solution_stack.side_effect = initialize.NotInitializedError
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         fileoperations_mock.env_yaml_exists.return_value = None
         get_keyname_mock.return_value = 'test'
 
-        elasticbeanstalk_mock.application_exist.return_value = False
-        elasticbeanstalk_mock.application_exist.return_value = False
-
         create_app_or_use_existing_one_mock.return_value = (None, None)
-
-        get_input_mock.side_effect = [
-            '3',  # region number
-            self.app_name,  # Application name
-            'n',  # Set up ssh selection
-        ]
 
         sourcecontrol_mock.get_source_control.return_value = git_mock
         git_mock.is_setup.return_value = None
@@ -526,26 +517,24 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
-    @mock.patch('ebcli.controllers.initialize.fileoperations.get_application_name')
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_platform_from_env_yaml')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     @mock.patch('ebcli.controllers.initialize.handle_buildspec_image')
-    @mock.patch('ebcli.controllers.initialize.fileoperations.build_spec_exists')
     @mock.patch('ebcli.controllers.initialize.get_keyname')
     @mock.patch('ebcli.controllers.initialize.should_prompt_customer_to_opt_into_codecommit')
     @mock.patch('ebcli.controllers.initialize.configure_codecommit')
+    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
     def test_init_with_codecommit_source_and_codebuild(
             self,
+            get_app_name_mock,
             configure_codecommit_mock,
             should_prompt_customer_to_opt_into_codecommit_mock,
             get_keyname_mock,
-            build_spec_exists_mock,
             handle_buildspec_image_mock,
             create_app_or_use_existing_one_mock,
             set_default_env_mock,
             get_platform_from_env_yaml_mock,
-            get_application_name_mock,
             elasticbeanstalk_mock,
             commonops_mock,
             initops_mock,
@@ -556,9 +545,8 @@ class TestInit(unittest.TestCase):
         source_control_mock = mock.MagicMock()
         get_source_control_mock.return_value = source_control_mock
         source_control_mock.is_setup.return_value = True
-        get_application_name_mock.return_value = 'testDir'
+        get_app_name_mock.return_value = 'testDir'
         get_platform_from_env_yaml_mock.return_value = 'PHP 5.5'
-        build_spec_exists_mock.return_value = True
         get_keyname_mock.return_value = 'keyname'
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = SolutionStack(
             '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5'
