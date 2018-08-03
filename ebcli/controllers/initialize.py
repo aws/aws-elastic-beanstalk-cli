@@ -126,27 +126,10 @@ class InitController(AbstractBaseController):
             source_location,
             source_control_setup
         )
-
-        # Prompt for interactive CodeCommit
         if prompt_codecommit:
-            try:
-                if not source_location:
-                    io.validate_action(prompts['codecommit.usecc'], "y")
-
-                # Setup git config settings for code commit credentials
-                source_control.setup_codecommit_cred_config()
-
-                repository, branch = establish_codecommit_repository_and_branch(repository, branch, source_control, source_location)
-
-            except ValidationError:
-                LOG.debug("Denied option to use CodeCommit, continuing initialization")
-
-        # Initialize the whole setup
+            repository, branch = configure_codecommit(source_location, source_control, repository, branch)
         initializeops.setup(self.app_name, self.region, self.solution, dir_path=None, repository=repository, branch=branch)
-
         configure_keyname(self.solution, self.app.pargs.keyname, key, self.interactive, self.force_non_interactive)
-
-        # Default to including git submodules when creating zip files through `eb create`/`eb deploy`.
         fileoperations.write_config_setting('global', 'include_git_submodules', True)
 
     def get_app_name(self):
@@ -463,6 +446,20 @@ def check_credentials(profile, given_profile, given_region, interactive, force_n
             profile = None
             aws.set_profile(profile)
             return check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
+
+
+def configure_codecommit(source_location, source_control, repository, branch):
+    try:
+        if not source_location:
+            io.validate_action(prompts['codecommit.usecc'], "y")
+
+        # Setup git config settings for code commit credentials
+        source_control.setup_codecommit_cred_config()
+
+        return establish_codecommit_repository_and_branch(repository, branch, source_control, source_location)
+
+    except ValidationError:
+        LOG.debug("Denied option to use CodeCommit, continuing initialization")
 
 
 def configure_keyname(solution, keyname, keyname_of_existing_app, interactive, force_non_interactive):

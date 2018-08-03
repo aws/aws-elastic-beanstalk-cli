@@ -271,8 +271,12 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
+    @mock.patch('ebcli.controllers.initialize.should_prompt_customer_to_opt_into_codecommit')
+    @mock.patch('ebcli.controllers.initialize.configure_codecommit')
     def test_init__non_interactive_mode__with_codecommit(
             self,
+            configure_codecommit_mock,
+            should_prompt_customer_to_opt_into_codecommit_mock,
             create_app_or_use_existing_one_mock,
             set_default_env_mock,
             elasticbeanstalk_mock,
@@ -292,9 +296,10 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_region.return_value = ''
         initops_mock.credentials_are_valid.return_value = True
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
-
         sourcecontrol_mock.get_source_control.return_value = git_mock
         git_mock.is_setup.return_value = None
+        should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
+        configure_codecommit_mock.return_value = ('my-repo', 'prod/mybranch')
 
         app = EB(
             argv=[
@@ -315,8 +320,7 @@ class TestInit(unittest.TestCase):
             repository='my-repo',
             branch='prod/mybranch'
         )
-
-        sourcecontrol_mock.setup_codecommit_cred_config.assert_not_called()
+        configure_codecommit_mock.assert_called_once_with('codecommit', git_mock, 'my-repo', 'prod/mybranch')
 
     @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
@@ -330,8 +334,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     @mock.patch('ebcli.controllers.initialize.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.configure_codecommit')
     def test_init__get_application_information_from_old_config(
             self,
+            configure_codecommit_mock,
             get_keyname_mock,
             create_app_or_use_existing_one_mock,
             set_default_env_mock,
@@ -364,9 +370,9 @@ class TestInit(unittest.TestCase):
         initops_mock.credentials_are_valid.return_value = True
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
         get_keyname_mock.return_value = 'keyname'
-
         sourcecontrol_mock.get_source_control.return_value = git_mock
         git_mock.is_setup.return_value = None
+        configure_codecommit_mock.return_value = (None, None)
 
         EB.Meta.exit_on_close = False
         self.app = EB(argv=['init'])
@@ -387,30 +393,28 @@ class TestInit(unittest.TestCase):
             branch=None
         )
 
-        sourcecontrol_mock.setup_codecommit_cred_config.assert_not_called()
-
     @mock.patch('ebcli.objects.sourcecontrol.Git')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.application_exist')
-    @mock.patch('ebcli.controllers.initialize.codecommit')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
-    @mock.patch('ebcli.controllers.initialize.gitops')
     @mock.patch('ebcli.controllers.initialize.io.get_input')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
+    @mock.patch('ebcli.controllers.initialize.should_prompt_customer_to_opt_into_codecommit')
+    @mock.patch('ebcli.controllers.initialize.configure_codecommit')
     def test_init__interactive_mode__with_codecommit(
             self,
+            configure_codecommit_mock,
+            should_prompt_customer_to_opt_into_codecommit_mock,
             create_app_or_use_existing_one_mock,
             get_input_mock,
-            gitops_mock,
             commonops_mock,
             initops_mock,
             sshops_mock,
             solution_stack_ops_mock,
             sourcecontrol_mock,
-            codecommit_mock,
             application_exist_mock,
             git_mock
     ):
@@ -421,38 +425,9 @@ class TestInit(unittest.TestCase):
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         application_exist_mock.return_value = False
-
-        gitops_mock.git_management_enabled.return_value = False
-
-        codecommit_mock.list_repositories.return_value = {
-            'repositories': [
-                {
-                    'repositoryName': 'only-repo'
-                }
-            ]
-        }
-        codecommit_mock.list_branches.return_value = {
-            'branches': [
-                'only-branch'
-            ]
-        }
-        codecommit_mock.get_repository.return_value = {
-            'repositoryMetadata': {
-                'cloneUrlHttp': 'https://git-codecommit.fake.amazonaws.com/v1/repos/only-repo'
-            }
-        }
-
+        should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
+        configure_codecommit_mock.return_value = ('new-repo', 'devo')
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
-
-        get_input_mock.side_effect = [
-            'y',  # Yes to setup codecommit
-            '2',  # Pick to create new repo
-            'new-repo',  # set repo name
-            '2',  # Pick first option for branch
-            'devo',  #
-            'n',  # Set up ssh selection
-        ]
-
         sourcecontrol_mock.get_source_control.return_value = git_mock
         git_mock.is_setup.return_value = 'GitSetup'
         git_mock.get_current_commit.return_value = 'CommitId'
@@ -471,9 +446,7 @@ class TestInit(unittest.TestCase):
             branch='devo'
         )
 
-        codecommit_mock.create_repository.assert_called_once_with('new-repo', 'Created with EB CLI')
-        git_mock.setup_new_codecommit_branch.assert_called_once_with(branch_name='devo')
-        sourcecontrol_mock.setup_new_codecommit_branch('devo')
+        configure_codecommit_mock.assert_called_once_with(None, git_mock, None, None)
 
     @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
     @mock.patch('ebcli.controllers.initialize.fileoperations')
@@ -547,8 +520,7 @@ class TestInit(unittest.TestCase):
         ]
         fileoperations_mock.write_config_setting.assert_has_calls(write_config_calls)
 
-    @mock.patch('ebcli.controllers.initialize.codecommit')
-    @mock.patch('ebcli.controllers.initialize.SourceControl')
+    @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
@@ -561,8 +533,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.handle_buildspec_image')
     @mock.patch('ebcli.controllers.initialize.fileoperations.build_spec_exists')
     @mock.patch('ebcli.controllers.initialize.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.configure_codecommit')
     def test_init_with_codecommit_source_and_codebuild(
             self,
+            configure_codecommit_mock,
             get_keyname_mock,
             build_spec_exists_mock,
             handle_buildspec_image_mock,
@@ -575,24 +549,15 @@ class TestInit(unittest.TestCase):
             initops_mock,
             sshops_mock,
             solution_stack_ops_mock,
-            sourcecontrol_mock,
-            codecommit_mock
+            get_source_control_mock
     ):
-        codecommit_mock.side_effect = None
+        source_control_mock = mock.MagicMock()
+        get_source_control_mock.return_value = source_control_mock
+        source_control_mock.is_setup.return_value = True
         get_application_name_mock.return_value = 'testDir'
         get_platform_from_env_yaml_mock.return_value = 'PHP 5.5'
         build_spec_exists_mock.return_value = True
-        codecommit_mock.get_repository.side_effect = [
-            ServiceError,
-            {
-                "repositoryMetadata": {
-                    "cloneUrlHttp": "https://codecommit.us-east-1.amazonaws.com/v1/repos/my-repo"
-                }
-            }
-        ]
-        sourcecontrol_mock.setup_existing_codecommit_branch = mock.MagicMock()
         get_keyname_mock.return_value = 'keyname'
-
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = SolutionStack(
             '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5'
         )
@@ -603,6 +568,7 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
+        configure_codecommit_mock.return_value = ('my-repo', 'prod')
 
         app = EB(argv=['init', '--source', 'codecommit/my-repo/prod', '--region', 'us-east-1'])
         app.setup()
@@ -616,9 +582,13 @@ class TestInit(unittest.TestCase):
             repository='my-repo',
             branch='prod'
         )
-
-        sourcecontrol_mock.setup_codecommit_cred_config.assert_not_called()
         handle_buildspec_image_mock.assert_called_once_with('PHP 5.5', False)
+        configure_codecommit_mock.assert_called_once_with(
+            'codecommit',
+            source_control_mock,
+            'my-repo',
+            'prod'
+        )
 
 
 class TestInitModule(unittest.TestCase):
@@ -1848,6 +1818,62 @@ class TestInitModule(unittest.TestCase):
 
         get_keyname_mock.assert_not_called()
         write_config_setting_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.io.validate_action')
+    def test_configure_codecommit__source_location_not_specified__customer_opts_out(
+            self,
+            validate_action_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        validate_action_mock.side_effect = initialize.ValidationError
+
+        initialize.configure_codecommit(None, source_control_mock, None, None)
+
+        validate_action_mock.assert_called_once_with(
+            'Do you wish to continue with CodeCommit? (y/N) (default is n)',
+            'y'
+        )
+
+    @mock.patch('ebcli.controllers.initialize.io.validate_action')
+    @mock.patch('ebcli.controllers.initialize.establish_codecommit_repository_and_branch')
+    def test_configure_codecommit__source_location_not_specified__customer_opts_in(
+            self,
+            establish_codecommit_repository_and_branch_mock,
+            validate_action_mock
+    ):
+        source_control_mock = mock.MagicMock()
+        validate_action_mock.side_effect = None
+        establish_codecommit_repository_and_branch_mock.return_value = ('repository', 'branch')
+
+        initialize.configure_codecommit(None, source_control_mock, None, None)
+
+        validate_action_mock.assert_called_once_with(
+            'Do you wish to continue with CodeCommit? (y/N) (default is n)',
+            'y'
+        )
+        source_control_mock.setup_codecommit_cred_config.assert_called_once_with()
+        establish_codecommit_repository_and_branch_mock.assert_called_once_with(
+            None, None, source_control_mock, None
+        )
+
+    @mock.patch('ebcli.controllers.initialize.io.validate_action')
+    @mock.patch('ebcli.controllers.initialize.establish_codecommit_repository_and_branch')
+    def test_configure_codecommit__source_location_specified(
+            self,
+            establish_codecommit_repository_and_branch_mock,
+            validate_action_mock,
+    ):
+        source_control_mock = mock.MagicMock()
+        validate_action_mock.side_effect = None
+        establish_codecommit_repository_and_branch_mock.return_value = ('repository', 'branch')
+
+        initialize.configure_codecommit('codecommit', source_control_mock, 'repository', 'branch')
+
+        validate_action_mock.assert_not_called()
+        source_control_mock.setup_codecommit_cred_config.assert_called_once_with()
+        establish_codecommit_repository_and_branch_mock.assert_called_once_with(
+            'repository', 'branch', source_control_mock, 'codecommit'
+        )
 
 
 class TestInitMultipleModules(unittest.TestCase):
