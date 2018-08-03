@@ -327,10 +327,9 @@ def check_source(value):
 
 
 def parse_source(source):
+    source_location, repository, branch = None, None, None
     if source:
         split_source = source.split('/')
-        repository, branch = '', ''
-
         source_location = split_source[0].lower()
         raise_if_source_location_is_not_codecommit(source_location)
 
@@ -338,7 +337,7 @@ def parse_source(source):
             repository = split_source[1]
             branch = '/'.join(split_source[2:])
 
-        return source_location, repository, branch
+    return source_location, repository, branch
 
 
 def raise_if_source_location_is_not_codecommit(source_location):

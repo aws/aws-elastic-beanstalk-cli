@@ -98,7 +98,7 @@ class TestUtils(TestCase):
 
     def test_parse_source__source_is_blank(self):
         self.assertEqual(
-            None,
+            (None, None, None),
             utils.parse_source('')
         )
 
@@ -112,7 +112,7 @@ class TestUtils(TestCase):
 
     def test_parse_source__source_location_is_specified__repository_and_branch_are_not(self):
         self.assertEqual(
-            ('codecommit', '', ''),
+            ('codecommit', None, None),
             utils.parse_source('codecommit')
         )
 

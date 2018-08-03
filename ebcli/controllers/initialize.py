@@ -84,9 +84,7 @@ class InitController(AbstractBaseController):
             )
             return
 
-        source_location, branch, repository = None, None, None
-        if self.app.pargs.source:
-            source_location, repository, branch = utils.parse_source(self.app.pargs.source)
+        source_location, repository, branch = utils.parse_source(self.app.pargs.source)
 
         fileoperations.touch_config_folder()
 
