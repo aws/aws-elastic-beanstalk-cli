@@ -119,25 +119,13 @@ class InitController(AbstractBaseController):
         if source_location and not codecommit.region_supported(self.region):
             io.log_warning(strings['codecommit.badregion'])
 
-        # Prompt customer to opt into CodeCommit unless one of the follows holds:
-        if self.force_non_interactive:
-            prompt_codecommit = False
-        elif not codecommit.region_supported(self.region):
-            prompt_codecommit = False
-        elif source_location and source_location.lower() != 'codecommit':
-            # Do not prompt if customer has already specified a code source to
-            # associate the EB workspace with
-            prompt_codecommit = False
-        elif default_branch_exists:
-            # Do not prompt if customer has already configured the EB application
-            # in the present working directory with Git
-            prompt_codecommit = False
-        elif not source_control_setup:
-            if source_location:
-                io.echo(strings['codecommit.nosc'])
-            prompt_codecommit = False
-        else:
-            prompt_codecommit = True
+        prompt_codecommit = should_prompt_customer_to_opt_into_codecommit(
+            default_branch_exists,
+            self.force_non_interactive,
+            self.region,
+            source_location,
+            source_control_setup
+        )
 
         # Prompt for interactive CodeCommit
         if prompt_codecommit:
@@ -647,3 +635,30 @@ def set_region_for_application(interactive, region, force_non_interactive):
     aws.set_region(region)
 
     return region
+
+
+def should_prompt_customer_to_opt_into_codecommit(
+        default_branch_exists,
+        force_non_interactive,
+        region,
+        source_location,
+        source_control_setup
+):
+    if force_non_interactive:
+        return False
+    elif not codecommit.region_supported(region):
+        return False
+    elif source_location and source_location.lower() != 'codecommit':
+        # Do not prompt if customer has already specified a code source to
+        # associate the EB workspace with
+        return False
+    elif default_branch_exists:
+        # Do not prompt if customer has already configured the EB application
+        # in the present working directory with Git
+        return False
+    elif not source_control_setup:
+        if source_location:
+            io.echo(strings['codecommit.nosc'])
+        return False
+    else:
+        return True
