@@ -80,7 +80,8 @@ class InitController(AbstractBaseController):
                 self.force_non_interactive,
                 self.app.pargs.keyname,
                 self.app.pargs.profile,
-                self.noverify
+                self.noverify,
+                self.app.pargs.platform
             )
             return
 
@@ -92,7 +93,7 @@ class InitController(AbstractBaseController):
 
         self.region = set_up_credentials(self.app.pargs.profile, self.region, self.interactive)
 
-        self.solution = self.get_solution_stack()
+        self.solution = self.get_solution_stack(self.app.pargs.platform)
         self.app_name = get_app_name(
             self.app.pargs.application_name,
             self.interactive,
@@ -130,10 +131,7 @@ class InitController(AbstractBaseController):
         configure_keyname(self.solution, self.app.pargs.keyname, keyname_of_existing_application, self.interactive, self.force_non_interactive)
         fileoperations.write_config_setting('global', 'include_git_submodules', True)
 
-    def get_solution_stack(self):
-        # Get solution stack from command line arguments
-        solution_string = self.app.pargs.platform
-
+    def get_solution_stack(self, solution_string):
         # Get solution stack from config file, if exists
         if not solution_string:
             try:
@@ -147,7 +145,7 @@ class InitController(AbstractBaseController):
 
         return solution_string
 
-    def initialize_multiple_directories(self, modules, region, interactive, force_non_interactive, keyname, profile, noverify):
+    def initialize_multiple_directories(self, modules, region, interactive, force_non_interactive, keyname, profile, noverify, platform):
         application_created = False
         app_name = None
         cwd = os.getcwd()
@@ -159,7 +157,7 @@ class InitController(AbstractBaseController):
                 # Region should be set once for all modules
                 region = region or set_region_for_application(interactive, region, force_non_interactive)
                 region = set_up_credentials(profile, region, interactive)
-                solution = self.get_solution_stack()
+                solution = self.get_solution_stack(platform)
 
                 # App name should be set once for all modules
                 if not app_name:
