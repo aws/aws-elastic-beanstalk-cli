@@ -582,10 +582,7 @@ def establish_codecommit_repository_and_branch(repository, branch, source_contro
 
 
 def set_region_for_application(interactive, region, force_non_interactive):
-    if interactive or (not region and not force_non_interactive):
-        region = get_region(region, interactive, force_non_interactive)
-    else:
-        region = get_region_from_inputs(region)
+    region = get_region(region, interactive, force_non_interactive)
     aws.set_region(region)
 
     return region
