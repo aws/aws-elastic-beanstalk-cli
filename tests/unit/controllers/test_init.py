@@ -51,7 +51,7 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.set_region_for_application')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.get_app_name')
     def test_init__interactive_mode(
             self,
             get_app_name_mock,
@@ -104,7 +104,7 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.io.get_input')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.get_app_name')
     def test_init__force_interactive_mode_using_argument(
             self,
             get_app_name_mock,
@@ -163,7 +163,7 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.get_app_name')
     def test_init_no_creds(
             self,
             get_app_name_mock,
@@ -220,7 +220,7 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.get_app_name')
     def test_init__force_non_interactive_mode_using_platform_argument(
             self,
             get_app_name_mock,
@@ -272,7 +272,7 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     @mock.patch('ebcli.controllers.initialize.should_prompt_customer_to_opt_into_codecommit')
     @mock.patch('ebcli.controllers.initialize.configure_codecommit')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.get_app_name')
     def test_init__non_interactive_mode__with_codecommit(
             self,
             get_app_name_mock,
@@ -333,7 +333,7 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     @mock.patch('ebcli.controllers.initialize.should_prompt_customer_to_opt_into_codecommit')
     @mock.patch('ebcli.controllers.initialize.configure_codecommit')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.get_app_name')
     def test_init__interactive_mode__with_codecommit(
             self,
             get_app_name_mock,
@@ -387,7 +387,7 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.handle_buildspec_image')
     @mock.patch('ebcli.controllers.initialize.get_keyname')
     @mock.patch('ebcli.controllers.initialize.set_region_for_application')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.get_app_name')
     @mock.patch('ebcli.controllers.initialize.should_prompt_customer_to_opt_into_codecommit')
     def test_init__interactive_mode__with_codebuild_buildspec(
             self,
@@ -415,7 +415,6 @@ class TestInit(unittest.TestCase):
         get_keyname_mock.return_value = 'test'
 
         create_app_or_use_existing_one_mock.return_value = (None, None)
-
         sourcecontrol_mock.get_source_control.return_value = git_mock
         git_mock.is_setup.return_value = None
 
@@ -453,7 +452,7 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.get_keyname')
     @mock.patch('ebcli.controllers.initialize.should_prompt_customer_to_opt_into_codecommit')
     @mock.patch('ebcli.controllers.initialize.configure_codecommit')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.get_app_name')
     def test_init_with_codecommit_source_and_codebuild(
             self,
             get_app_name_mock,
@@ -1792,6 +1791,140 @@ class TestInitModule(unittest.TestCase):
             'repository', 'branch', source_control_mock, 'codecommit'
         )
 
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_application_name')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize._get_application_name_interactive')
+    def test_get_app_name__app_name_passed_in_as_positional_argument__interactive_mode(
+            self,
+            _get_application_name_interactive_mock,
+            get_current_directory_name_mock,
+            get_application_name_mock
+    ):
+        self.assertEqual(
+            'my-application',
+            initialize.get_app_name('my-application', True, False)
+        )
+
+        get_application_name_mock.assert_not_called()
+        get_current_directory_name_mock.assert_not_called()
+        _get_application_name_interactive_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_application_name')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize._get_application_name_interactive')
+    def test_get_app_name__app_name_passed_in_as_positional_argument__force_non_interactive_mode(
+            self,
+            _get_application_name_interactive_mock,
+            get_current_directory_name_mock,
+            get_application_name_mock
+    ):
+        self.assertEqual(
+            'my-application',
+            initialize.get_app_name('my-application', True, False)
+        )
+
+        get_application_name_mock.assert_not_called()
+        get_current_directory_name_mock.assert_not_called()
+        _get_application_name_interactive_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_application_name')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize._get_application_name_interactive')
+    def test_get_app_name__app_name_passed_in_as_positional_argument__neither_platform_nor_interactive_arguments_were_specified(
+            self,
+            _get_application_name_interactive_mock,
+            get_current_directory_name_mock,
+            get_application_name_mock
+    ):
+        self.assertEqual(
+            'my-application',
+            initialize.get_app_name('my-application', False, False)
+        )
+
+        get_application_name_mock.assert_not_called()
+        get_current_directory_name_mock.assert_not_called()
+        _get_application_name_interactive_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_application_name')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize._get_application_name_interactive')
+    def test_get_app_name__app_name_not_passed__interactive_mode__directory_not_previously_initialized(
+            self,
+            _get_application_name_interactive_mock,
+            get_current_directory_name_mock,
+            get_application_name_mock
+    ):
+        get_application_name_mock.side_effect = initialize.NotInitializedError
+        _get_application_name_interactive_mock.return_value = 'my-application'
+        self.assertEqual(
+            'my-application',
+            initialize.get_app_name(None, True, False)
+        )
+
+        get_application_name_mock.assert_called_once_with(default=None)
+        get_current_directory_name_mock.assert_not_called()
+        _get_application_name_interactive_mock.assert_called_once_with()
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_application_name')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize._get_application_name_interactive')
+    def test_get_app_name__app_name_not_passed__interactive_mode__directory_previously_initialized_but_customer_is_prompted_for_name_anyway(
+            self,
+            _get_application_name_interactive_mock,
+            get_current_directory_name_mock,
+            get_application_name_mock
+    ):
+        get_application_name_mock.return_value = 'my-app'
+        _get_application_name_interactive_mock.return_value = 'my-application'
+        self.assertEqual(
+            'my-application',
+            initialize.get_app_name(None, True, False)
+        )
+
+        get_application_name_mock.assert_called_once_with(default=None)
+        get_current_directory_name_mock.assert_not_called()
+        _get_application_name_interactive_mock.assert_called_once_with()
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_application_name')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize._get_application_name_interactive')
+    def test_get_app_name__app_name_not_passed__force_non_interactive_mode__directory_not_previously_initialized(
+            self,
+            _get_application_name_interactive_mock,
+            get_current_directory_name_mock,
+            get_application_name_mock
+    ):
+        get_application_name_mock.side_effect = initialize.NotInitializedError
+        get_current_directory_name_mock.return_value = 'my-application-dir'
+        self.assertEqual(
+            'my-application-dir',
+            initialize.get_app_name(None, False, True)
+        )
+
+        get_application_name_mock.assert_called_once_with(default=None)
+        get_current_directory_name_mock.assert_called_once_with()
+        _get_application_name_interactive_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_application_name')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize._get_application_name_interactive')
+    def test_get_app_name__app_name_not_passed__force_non_interactive_mode__directory_previously_initialized_but_customer_is_prompted_for_name_anyway(
+            self,
+            _get_application_name_interactive_mock,
+            get_current_directory_name_mock,
+            get_application_name_mock
+    ):
+        get_application_name_mock.return_value = 'my-application'
+        get_current_directory_name_mock.return_value = 'my-application-dir'
+        self.assertEqual(
+            'my-application',
+            initialize.get_app_name(None, False, True)
+        )
+
+        get_application_name_mock.assert_called_once_with(default=None)
+        get_current_directory_name_mock.assert_not_called()
+        _get_application_name_interactive_mock.assert_not_called()
+
 
 class TestInitMultipleModules(unittest.TestCase):
     platform = PlatformVersion(
@@ -1821,7 +1954,7 @@ class TestInitMultipleModules(unittest.TestCase):
 
     @mock.patch('ebcli.controllers.initialize.get_region')
     @mock.patch('ebcli.controllers.initialize.InitController.get_solution_stack')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.get_app_name')
     @mock.patch('ebcli.controllers.initialize.configure_keyname')
     @mock.patch('ebcli.controllers.initialize.set_up_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.create_app')
@@ -1886,7 +2019,7 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
 
     @mock.patch('ebcli.controllers.initialize.aws.set_region')
     @mock.patch('ebcli.controllers.initialize.InitController.get_solution_stack')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
+    @mock.patch('ebcli.controllers.initialize.get_app_name')
     @mock.patch('ebcli.controllers.initialize.configure_keyname')
     @mock.patch('ebcli.controllers.initialize.set_up_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.create_app')
