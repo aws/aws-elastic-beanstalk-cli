@@ -45,7 +45,9 @@ class EbBaseController(controller.CementBaseController):
 
     @property
     def _help_text(self):
-        """Returns the help text displayed when '--help' is passed."""
+        """
+        Prints the output of `eb --help`
+        """
         longest = 0
         def pad(label):
             padlength = longest - len(label) + 2
