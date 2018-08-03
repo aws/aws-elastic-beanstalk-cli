@@ -83,11 +83,7 @@ class InitController(AbstractBaseController):
         default_env = self.get_old_values()
         fileoperations.touch_config_folder()
 
-        if self.interactive:
-            self.region = get_region(self.region, self.interactive, self.force_non_interactive)
-        else:
-            self.region = get_region_from_inputs(self.region)
-        aws.set_region(self.region)
+        self.region = set_region_for_application(self.interactive, self.region, self.force_non_interactive)
 
         self.region = set_up_credentials(self.app.pargs.profile, self.region, self.interactive)
 
@@ -649,5 +645,15 @@ def get_region(region_argument, interactive, force_non_interactive=False):
         region_list = regions.get_all_regions()
         result = utils.prompt_for_item_in_list(region_list, default=3)
         region = result.name
+
+    return region
+
+
+def set_region_for_application(interactive, region, force_non_interactive):
+    if interactive:
+        region = get_region(region, interactive, force_non_interactive)
+    else:
+        region = get_region_from_inputs(region)
+    aws.set_region(region)
 
     return region

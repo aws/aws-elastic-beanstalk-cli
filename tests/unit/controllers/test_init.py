@@ -54,8 +54,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
     @mock.patch('ebcli.controllers.initialize.io.get_input')
+    @mock.patch('ebcli.controllers.initialize.set_region_for_application')
     def test_init__interactive_mode(
             self,
+            set_region_for_application_mock,
             get_input_mock,
             elasticbeanstalk_mock,
             commonops_mock,
@@ -67,11 +69,7 @@ class TestInit(unittest.TestCase):
             git_mock
     ):
         get_application_names_mock.get_application_names.return_value = list()
-        initops_mock.credentials_are_valid.side_effect = [
-            NoRegionError,
-            True,
-        ]
-
+        initops_mock.credentials_are_valid.return_value = True
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         commonops_mock.get_current_branch_environment.side_effect = NotInitializedError
@@ -82,9 +80,9 @@ class TestInit(unittest.TestCase):
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
         sourcecontrol_mock.get_source_control.return_value = git_mock
         git_mock.is_setup.return_value = None
+        set_region_for_application_mock.return_value = 'us-west-2'
 
         get_input_mock.side_effect = [
-            '3',  # region number
             self.app_name,  # Application name
             '2',  # Platform selection
             '2',  # Platform version selection
@@ -1385,6 +1383,40 @@ class TestInitModule(unittest.TestCase):
             ]
         )
         prompt_for_unique_name_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.get_region_from_inputs')
+    @mock.patch('ebcli.controllers.initialize.aws.set_region')
+    def test_set_region_for_application(
+            self,
+            set_region_mock,
+            get_region_from_inputs_mock
+    ):
+        get_region_from_inputs_mock.return_value = 'us-west-2'
+
+        self.assertEqual(
+            'us-west-2',
+            initialize.set_region_for_application(False, 'us-west-2', False)
+        )
+
+        get_region_from_inputs_mock.assert_called_once_with('us-west-2')
+        set_region_mock.assert_called_once_with('us-west-2')
+
+    @mock.patch('ebcli.controllers.initialize.get_region')
+    @mock.patch('ebcli.controllers.initialize.aws.set_region')
+    def test_set_region_for_application__interactive(
+            self,
+            set_region_mock,
+            get_region_mock
+    ):
+        get_region_mock.return_value = 'us-west-2'
+
+        self.assertEqual(
+            'us-west-2',
+            initialize.set_region_for_application(True, 'us-west-2', False)
+        )
+
+        get_region_mock.assert_called_once_with('us-west-2', True, False)
+        set_region_mock.assert_called_once_with('us-west-2')
 
 
 class TestInitMultipleModules(unittest.TestCase):
