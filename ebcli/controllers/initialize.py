@@ -93,17 +93,7 @@ class InitController(AbstractBaseController):
             fileoperations.write_config_setting('global',
                                                 'no-verify-ssl', True)
 
-        if not default_env and not self.interactive:
-            # try to get default env from config file if exists
-            try:
-                default_env = commonops.get_current_branch_environment()
-            except NotInitializedError:
-                default_env = None
-        elif self.interactive:
-            default_env = None
-
-        if self.force_non_interactive:
-            default_env = '/ni'
+        default_env = set_default_env(default_env, self.interactive, self.force_non_interactive)
 
         # Create application
         sstack, key = commonops.pull_down_app_info(self.app_name, default_env=default_env) if elasticbeanstalk.application_exist(self.app_name) \
@@ -647,6 +637,17 @@ def get_region(region_argument, interactive, force_non_interactive=False):
         region = result.name
 
     return region
+
+
+def set_default_env(default_env, interactive, force_non_interactive):
+    if force_non_interactive:
+        return '/ni'
+
+    if not default_env and not interactive:
+        try:
+            return commonops.get_current_branch_environment()
+        except NotInitializedError:
+            pass
 
 
 def set_region_for_application(interactive, region, force_non_interactive):
