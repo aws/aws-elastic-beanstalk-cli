@@ -76,13 +76,9 @@ class InitController(AbstractBaseController):
             self.initialize_multiple_directories()
             return
 
-        # Code Commit integration
-        self.source = self.app.pargs.source
-        source_location = None
-        branch = None
-        repository = None
-        if self.source is not None:
-            source_location, repository, branch = utils.parse_source(self.source)
+        source_location, branch, repository = None, None, None
+        if self.app.pargs.source:
+            source_location, repository, branch = utils.parse_source(self.app.pargs.source)
 
         default_env = self.get_old_values()
         fileoperations.touch_config_folder()
@@ -173,7 +169,7 @@ class InitController(AbstractBaseController):
         # Warn the customer if they picked a region that CodeCommit is not supported
         codecommit_region_supported = codecommit.region_supported(self.region)
 
-        if self.source is not None and not codecommit_region_supported:
+        if source_location and not codecommit_region_supported:
             io.log_warning(strings['codecommit.badregion'])
 
         # Prompt customer to opt into CodeCommit unless one of the follows holds:
@@ -181,7 +177,7 @@ class InitController(AbstractBaseController):
             prompt_codecommit = False
         elif not codecommit.region_supported(self.region):
             prompt_codecommit = False
-        elif self.source and source_location.lower() != 'codecommit':
+        elif source_location and source_location.lower() != 'codecommit':
             # Do not prompt if customer has already specified a code source to
             # associate the EB workspace with
             prompt_codecommit = False
@@ -199,7 +195,7 @@ class InitController(AbstractBaseController):
             else:
                 io.echo(strings['codecommit.ccwarning'])
                 try:
-                    if not self.source:
+                    if not source_location:
                         io.validate_action(prompts['codecommit.usecc'], "y")
 
                     # Setup git config settings for code commit credentials
@@ -213,7 +209,7 @@ class InitController(AbstractBaseController):
                         try:
                             setup_codecommit_remote_repo(repository, source_control)
                         except ServiceError as ex:
-                            if self.source:
+                            if source_location:
                                 create_codecommit_repository(repository)
                                 setup_codecommit_remote_repo(repository, source_control)
                             else:
@@ -227,7 +223,7 @@ class InitController(AbstractBaseController):
                         try:
                             codecommit.get_branch(repository, branch)
                         except ServiceError as ex:
-                            if self.source:
+                            if source_location:
                                 create_codecommit_branch(source_control, branch)
                             else:
                                 io.log_error(strings['codecommit.nobranch'])
