@@ -145,7 +145,7 @@ class InitController(AbstractBaseController):
         initializeops.setup(self.app_name, self.region, self.solution, dir_path=None, repository=repository, branch=branch)
 
         if 'IIS' not in self.solution:
-            self.keyname = self.get_keyname(self.app.pargs.keyname)
+            self.keyname = get_keyname(self.app.pargs.keyname, key, self.interactive, self.force_non_interactive)
 
             if self.keyname == -1:
                 self.keyname = None
@@ -201,26 +201,6 @@ class InitController(AbstractBaseController):
             solution_stack_ops.find_solution_stack_from_string(solution_string)
 
         return solution_string
-
-    def get_keyname(self, keyname):
-        if not keyname:
-            try:
-                keyname = commonops.get_default_keyname()
-            except NotInitializedError:
-                keyname = None
-
-        if self.force_non_interactive and not self.interactive:
-            return keyname
-
-        if keyname is None or \
-                (self.interactive and not keyname):
-            # Prompt for one
-            keyname = sshops.prompt_for_ec2_keyname()
-
-        elif keyname != -1:
-            commonops.upload_keypair_if_needed(keyname)
-
-        return keyname
 
     def get_old_values(self):
         if fileoperations.old_eb_config_present() and \
@@ -317,7 +297,7 @@ class InitController(AbstractBaseController):
                                     solution)
 
                 if 'IIS' not in solution:
-                    keyname = self.get_keyname(self.app.pargs.keyname)
+                    keyname = get_keyname(self.app.pargs.keyname, key, self.interactive, self.force_non_interactive)
 
                     if keyname == -1:
                         self.keyname = None
@@ -529,6 +509,28 @@ def extract_solution_stack_from_env_yaml():
     if env_yaml_platform:
         platform = solutionstack.SolutionStack(env_yaml_platform).platform_shorthand
         return platform
+
+
+def get_keyname(keyname, keyname_of_existing_app, interactive, force_non_interactive):
+    keyname = keyname or keyname_of_existing_app
+    if not keyname:
+        try:
+            keyname = commonops.get_default_keyname()
+        except NotInitializedError:
+            keyname = None
+
+    if force_non_interactive and not interactive:
+        return keyname
+
+    if keyname is None or \
+            (interactive and not keyname):
+        # Prompt for one
+        keyname = sshops.prompt_for_ec2_keyname()
+
+    elif keyname != -1:
+        commonops.upload_keypair_if_needed(keyname)
+
+    return keyname
 
 
 def get_region_from_inputs(region):

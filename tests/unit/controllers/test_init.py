@@ -484,7 +484,7 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.io.get_input')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     @mock.patch('ebcli.controllers.initialize.handle_buildspec_image')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.get_keyname')
     def test_init__interactive_mode__with_codebuild_buildspec(
             self,
             get_keyname_mock,
@@ -1721,6 +1721,78 @@ class TestInitModule(unittest.TestCase):
         get_branch_interactive_mock.assert_not_called()
         source_control_mock.setup_existing_codecommit_branch.assert_not_called()
 
+    def test_get_keyname__keyname_passed_through_command_line__force_non_interactive(self):
+        self.assertEqual(
+            'keyname',
+            initialize.get_keyname('keyname', 'previously-chosen-keyname', False, True)
+        )
+
+    @mock.patch('ebcli.controllers.initialize.commonops.upload_keypair_if_needed')
+    def test_get_keyname__keyname_passed_through_command_line__interactive(
+            self,
+            upload_keypair_if_needed_mock
+    ):
+        self.assertEqual(
+            'keyname',
+            initialize.get_keyname('keyname', 'previously-chosen-keyname', True, False)
+        )
+        upload_keypair_if_needed_mock.assert_called_once_with('keyname')
+
+    def test_get_keyname__keyname_not_passed_through_command_line__using_previously_set_keyname__force_non_interactive(self):
+        self.assertEqual(
+            'previously-chosen-keyname',
+            initialize.get_keyname(None, 'previously-chosen-keyname', False, True)
+        )
+
+    @mock.patch('ebcli.controllers.initialize.commonops.upload_keypair_if_needed')
+    def test_get_keyname__keyname_not_passed_through_command_line__using_previously_set_keyname__interactive(
+            self,
+            upload_keypair_if_needed_mock
+    ):
+        self.assertEqual(
+            'previously-chosen-keyname',
+            initialize.get_keyname(None, 'previously-chosen-keyname', True, False)
+        )
+        upload_keypair_if_needed_mock.assert_called_once_with('previously-chosen-keyname')
+
+    @mock.patch('ebcli.controllers.initialize.commonops.get_default_keyname')
+    def test_get_keyname__use_default_keyname__force_non_interactive(
+            self,
+            get_default_keyname_mock
+    ):
+        get_default_keyname_mock.return_value = 'keyname'
+        self.assertEqual(
+            'keyname',
+            initialize.get_keyname(None, None, False, True)
+        )
+
+    @mock.patch('ebcli.controllers.initialize.commonops.get_default_keyname')
+    @mock.patch('ebcli.controllers.initialize.commonops.upload_keypair_if_needed')
+    def test_get_keyname__use_default_keyname__interactive(
+            self,
+            upload_keypair_if_needed_mock,
+            get_default_keyname_mock
+    ):
+        get_default_keyname_mock.return_value = 'keyname'
+
+        self.assertEqual(
+            'keyname',
+            initialize.get_keyname(None, None, True, False)
+        )
+        upload_keypair_if_needed_mock.assert_called_once_with('keyname')
+
+    @mock.patch('ebcli.controllers.initialize.sshops.prompt_for_ec2_keyname')
+    def test_get_keyname__prompt_for_ec2_keyname(
+            self,
+            prompt_for_ec2_keyname_mock
+    ):
+        prompt_for_ec2_keyname_mock.return_value = 'keyname'
+        self.assertEqual(
+            'keyname',
+            initialize.get_keyname(None, None, True, False)
+        )
+        prompt_for_ec2_keyname_mock.assert_called_once_with()
+
 
 class TestInitMultipleModules(unittest.TestCase):
     platform = PlatformVersion(
@@ -1752,7 +1824,7 @@ class TestInitMultipleModules(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     @mock.patch('ebcli.controllers.initialize.InitController.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.get_keyname')
     @mock.patch('ebcli.controllers.initialize.set_up_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.create_app')
     @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')
@@ -1828,7 +1900,7 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     @mock.patch('ebcli.controllers.initialize.InitController.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.get_keyname')
     @mock.patch('ebcli.controllers.initialize.set_up_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.create_app')
     @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')
@@ -1904,7 +1976,7 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     @mock.patch('ebcli.controllers.initialize.InitController.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.InitController.get_app_name')
-    @mock.patch('ebcli.controllers.initialize.InitController.get_keyname')
+    @mock.patch('ebcli.controllers.initialize.get_keyname')
     @mock.patch('ebcli.controllers.initialize.set_up_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.create_app')
     @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')
