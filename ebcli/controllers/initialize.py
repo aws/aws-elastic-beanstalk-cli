@@ -61,74 +61,79 @@ class InitController(AbstractBaseController):
 
     def do_command(self):
         # get arguments
-        self.interactive = self.app.pargs.interactive
-        self.region = self.app.pargs.region
-        self.noverify = self.app.pargs.no_verify_ssl
-        self.force_non_interactive = False
+        interactive = self.app.pargs.interactive
+        region_name = self.app.pargs.region
+        noverify = self.app.pargs.no_verify_ssl
+        keyname = self.app.pargs.keyname
+        force_non_interactive = False
+        profile = self.app.pargs.profile
+        platform = self.app.pargs.platform
+        source = self.app.pargs.source
+        app_name = self.app.pargs.application_name
+        modules = self.app.pargs.modules
 
         # Determine if the customer is avoiding interactive mode by setting the platform flag
-        if self.app.pargs.platform:
-            self.force_non_interactive = True
+        if platform:
+            force_non_interactive = True
 
         # The user specifies directories to initialize
-        self.modules = self.app.pargs.modules
-        if self.modules and len(self.modules) > 0:
+        if modules and len(modules) > 0:
             self.initialize_multiple_directories(
-                self.modules,
-                self.region,
-                self.interactive,
-                self.force_non_interactive,
-                self.app.pargs.keyname,
-                self.app.pargs.profile,
-                self.noverify,
-                self.app.pargs.platform
+                modules,
+                region_name,
+                interactive,
+                force_non_interactive,
+                keyname,
+                profile,
+                noverify,
+                platform
             )
             return
 
-        source_location, repository, branch = utils.parse_source(self.app.pargs.source)
+        source_location, repository, branch = utils.parse_source(source)
 
         fileoperations.touch_config_folder()
 
-        self.region = set_region_for_application(self.interactive, self.region, self.force_non_interactive)
+        region_name = set_region_for_application(interactive, region_name, force_non_interactive)
 
-        self.region = set_up_credentials(self.app.pargs.profile, self.region, self.interactive)
+        region_name = set_up_credentials(profile, region_name, interactive)
 
-        self.solution = get_solution_stack(self.app.pargs.platform)
-        self.app_name = get_app_name(
-            self.app.pargs.application_name,
-            self.interactive,
-            self.force_non_interactive
+        platform = get_solution_stack(platform)
+        app_name = get_app_name(
+            app_name,
+            interactive,
+            force_non_interactive
         )
-        if self.noverify:
+        if noverify:
             fileoperations.write_config_setting('global',
                                                 'no-verify-ssl', True)
 
-        default_env = set_default_env(self.interactive, self.force_non_interactive)
+        default_env = set_default_env(interactive, force_non_interactive)
 
-        sstack, keyname_of_existing_application = create_app_or_use_existing_one(self.app_name, default_env)
-        self.solution = self.solution or sstack
+        sstack, keyname_of_existing_application = create_app_or_use_existing_one(app_name, default_env)
+        platform = platform or sstack
 
         if fileoperations.env_yaml_exists():
-            self.solution = self.solution or extract_solution_stack_from_env_yaml()
-        self.solution = self.solution or solution_stack_ops.get_solution_stack_from_customer().platform_shorthand
+            platform = platform or extract_solution_stack_from_env_yaml()
+        platform = platform or solution_stack_ops.get_solution_stack_from_customer().platform_shorthand
 
-        handle_buildspec_image(self.solution, self.force_non_interactive)
+        handle_buildspec_image(platform, force_non_interactive)
 
         source_control = SourceControl.get_source_control()
-        default_branch_exists = not not (gitops.git_management_enabled() and not self.interactive)
-        if source_location and not codecommit.region_supported(self.region):
+        default_branch_exists = not not (gitops.git_management_enabled() and not interactive)
+        if source_location and not codecommit.region_supported(region_name):
             io.log_warning(strings['codecommit.badregion'])
 
         prompt_codecommit = should_prompt_customer_to_opt_into_codecommit(
             default_branch_exists,
-            self.force_non_interactive,
-            self.region,
+            force_non_interactive,
+            region_name,
             source_location
         )
         if prompt_codecommit:
             repository, branch = configure_codecommit(source_location, source_control, repository, branch)
-        initializeops.setup(self.app_name, self.region, self.solution, dir_path=None, repository=repository, branch=branch)
-        configure_keyname(self.solution, self.app.pargs.keyname, keyname_of_existing_application, self.interactive, self.force_non_interactive)
+        initializeops.setup(app_name, region_name, platform, dir_path=None, repository=repository, branch=branch)
+        configure_keyname(platform, keyname, keyname_of_existing_application, interactive, force_non_interactive)
         fileoperations.write_config_setting('global', 'include_git_submodules', True)
 
     def initialize_multiple_directories(self, modules, region, interactive, force_non_interactive, keyname, profile, noverify, platform):
