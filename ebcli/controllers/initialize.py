@@ -10,8 +10,6 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
-import sys
 import os.path
 
 from cement.utils.misc import minimal_logger
@@ -23,7 +21,6 @@ from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.objects import solutionstack, region as regions
 from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.exceptions import(
-    CommandError,
     InvalidProfileError,
     NoRegionError,
     NotInitializedError,
