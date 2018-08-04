@@ -57,7 +57,6 @@ class InitController(AbstractBaseController):
         epilog = strings['init.epilog']
 
     def do_command(self):
-        # get arguments
         interactive = self.app.pargs.interactive
         region_name = self.app.pargs.region
         noverify = self.app.pargs.no_verify_ssl
