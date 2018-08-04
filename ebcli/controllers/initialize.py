@@ -92,7 +92,6 @@ class InitController(AbstractBaseController):
 
         region_name = set_up_credentials(profile, region_name, interactive)
 
-        platform = get_solution_stack(platform)
         app_name = get_app_name(
             app_name,
             interactive,
@@ -105,6 +104,7 @@ class InitController(AbstractBaseController):
         default_env = set_default_env(interactive, force_non_interactive)
 
         sstack, keyname_of_existing_application = create_app_or_use_existing_one(app_name, default_env)
+        platform = get_solution_stack(platform)
         platform = platform or sstack
 
         if fileoperations.env_yaml_exists():
