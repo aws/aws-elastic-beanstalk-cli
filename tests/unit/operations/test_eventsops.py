@@ -11,7 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import datetime
-
+import os
 
 from dateutil import tz
 import mock
@@ -129,9 +129,13 @@ class TestEventOps(unittest.TestCase):
 
         get_new_events_mock.assert_called_once_with('my-application', 'environment-1', None, platform_arn=None)
         echo_with_pager_mock.assert_called_once_with(
-"""2018-07-19 21:49:10    INFO    Nginx configuration detected in the '.ebextensions/nginx' directory. AWS Elastic Beanstalk will no longer manage the Nginx configuration for this environment.
-2018-07-19 21:50:00    INFO    Environment health has transitioned from Pending to Ok. Initialization completed 26 seconds ago and took 5 minutes.
-2018-07-19 21:50:21    INFO    Successfully launched environment: eb-locust-example-windows-server-dev"""
+            os.linesep.join(
+                [
+                    "2018-07-19 21:49:10    INFO    Nginx configuration detected in the '.ebextensions/nginx' directory. AWS Elastic Beanstalk will no longer manage the Nginx configuration for this environment.",
+                    '2018-07-19 21:50:00    INFO    Environment health has transitioned from Pending to Ok. Initialization completed 26 seconds ago and took 5 minutes.',
+                    '2018-07-19 21:50:21    INFO    Successfully launched environment: eb-locust-example-windows-server-dev',
+                ]
+            )
         )
 
     @mock.patch('ebcli.operations.eventsops.follow_events')
