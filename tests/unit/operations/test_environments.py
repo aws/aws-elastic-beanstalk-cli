@@ -10,13 +10,13 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
 from mock import patch
 
-from .baseoperationstest import BaseOperationsTest
 from ebcli.operations import createops
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.requests import CreateEnvironmentRequest
+
+from ..baseinttest import BaseOperationsTest
 
 
 class TestCreateEnvironment(BaseOperationsTest):

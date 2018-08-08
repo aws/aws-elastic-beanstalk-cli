@@ -10,15 +10,11 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-import pytest
-
-from .baseinttest import BaseIntegrationTest
 
 from ebcli.core import fileoperations
-from ebcli.objects.solutionstack import SolutionStack
-from ebcli.operations import commonops, solution_stack_ops
+from ebcli.operations import commonops
 from ebcli.resources.strings import prompts
-
+from tests.unit.baseinttest import BaseIntegrationTest
 from . import mockservice
 
 

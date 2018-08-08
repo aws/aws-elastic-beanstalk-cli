@@ -22,7 +22,6 @@ requires = [
 
 testing_requires = [
     'mock>=2.0.0',
-    'nose>=1.3.7'
     'pytest>=3.03',
     'pytest_socket',
 ]

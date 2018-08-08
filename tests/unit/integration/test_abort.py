@@ -11,13 +11,10 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from .baseinttest import BaseIntegrationTest
-
 from ebcli.core import fileoperations
-from ebcli.operations import commonops
-from ebcli.resources.strings import prompts
 from ebcli.objects.exceptions import NotFoundError
-
+from ebcli.operations import commonops
+from tests.unit.baseinttest import BaseIntegrationTest
 from . import mockservice
 
 
