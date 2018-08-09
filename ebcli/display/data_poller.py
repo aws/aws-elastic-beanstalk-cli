@@ -90,9 +90,6 @@ class DataPoller(object):
         LOG.debug('EnvironmentHealth-data:{}'.format(environment_health))
         LOG.debug('InstanceHealth-data:{}'.format(instance_health))
 
-        if environment_health.get('RefreshedAt'):
-            environment_health['RefreshedAt'] += self._account_for_clock_drift(environment_health['ResponseMetadata']['date'])
-
         token = instance_health.get('NextToken', None)
 
         # Collapse data into flatter tables/dicts

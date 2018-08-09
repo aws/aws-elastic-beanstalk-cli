@@ -109,7 +109,7 @@ class TestDataPoller(unittest.TestCase):
 			'Color': 'Green',
 			'EnvironmentName': 'health-tests-test-1',
 			'HealthStatus': 'Ok',
-			'RefreshedAt': datetime.datetime(2018, 3, 12, 22, 20, 1, tzinfo=tz.tzutc()),
+			'RefreshedAt': datetime.datetime(2018, 3, 12, 22, 19, 1, tzinfo=tz.tzutc()),
 			'ResponseMetadata': {
 				'HTTPStatusCode': 200,
 				'RequestId': 'fc611309-224f-489c-af04-c21e4cc70100',
