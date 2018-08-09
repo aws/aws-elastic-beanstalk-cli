@@ -3199,6 +3199,11 @@ DESCRIBE_CONFIGURATION_SETTINGS_RESPONSE__2 = {
             'DeploymentStatus': 'deployed',
             'DateCreated': datetime.datetime(2018, 7, 5, 19, 39, 35, tzinfo=tz.tzutc()),
             'DateUpdated': datetime.datetime(2018, 7, 5, 19, 39, 35, tzinfo=tz.tzutc()),
+            'Tier': {
+                'Type': 'Standard',
+                'Name': 'WebServer',
+                'Version': '1.0'
+            },
             'OptionSettings': [
                 {
                     'ResourceName': 'AWSEBAutoScalingGroup',

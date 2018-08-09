@@ -13,7 +13,7 @@
 from collections import defaultdict
 import time
 from datetime import datetime, timedelta
-from dateutil import tz
+from dateutil import tz, parser
 import locale
 import threading
 import traceback
@@ -56,15 +56,6 @@ class DataPoller(object):
         data_poller_thread = threading.Thread(target=self._poll_for_health_data)
         data_poller_thread.daemon = True
         data_poller_thread.start()
-
-    @staticmethod
-    def _account_for_clock_drift(datetime_str):
-        time = datetime.strptime(datetime_str, '%a, %d %b %Y %H:%M:%S %Z')
-        delta = utils.get_delta_from_now_and_datetime(time)
-        LOG.debug(u'Clock offset={0}'.format(delta))
-        LOG.debug(delta)
-
-        return delta
 
     @staticmethod
     def _get_sleep_time(refresh_time):
@@ -249,6 +240,8 @@ def format_time_since(timestamp):
     if not timestamp:
         return '-'
 
+    if isinstance(timestamp, str):
+        timestamp = parser.parse(timestamp)
     delta = _datetime_utcnow_wrapper() - timestamp
 
     days = delta.days
