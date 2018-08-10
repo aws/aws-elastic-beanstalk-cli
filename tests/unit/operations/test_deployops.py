@@ -125,19 +125,19 @@ class TestDeployOperations(unittest.TestCase):
 
         # Make the actual call
         deployops.deploy(self.app_name, self.env_name, None, self.app_version_name, self.description,
-                         source=given_source)
+                         source=given_source, timeout=10)
 
         # Assert methods were called with the right params and returned the correct values
         mock_commonops.create_app_version_from_source.assert_called_with(self.app_name, given_source, process=False,
                                                              label=self.app_version_name, message=self.description,
                                                              build_config=None)
-        mock_commonops.wait_for_processed_app_versions.assert_called_with(self.app_name, [self.app_version_name])
+        mock_commonops.wait_for_processed_app_versions.assert_called_with(self.app_name, [self.app_version_name], timeout=10)
         mock_beanstalk.update_env_application_version.assert_called_with(self.env_name, self.app_version_name, None)
         mock_commonops.wait_for_success_events.assert_called_with(
             self.request_id,
             can_abort=True,
             env_name='ebcli-env',
-            timeout_in_minutes=5
+            timeout_in_minutes=10
         )
 
     @mock.patch('ebcli.operations.deployops.elasticbeanstalk')
@@ -167,7 +167,7 @@ class TestDeployOperations(unittest.TestCase):
         mock_commonops.create_codecommit_app_version.assert_called_with(self.app_name, process=False,
                                                                         label=self.app_version_name,
                                                                         message=self.description, build_config=None)
-        mock_commonops.wait_for_processed_app_versions.assert_called_with(self.app_name, [self.app_version_name])
+        mock_commonops.wait_for_processed_app_versions.assert_called_with(self.app_name, [self.app_version_name], timeout=5)
         mock_beanstalk.update_env_application_version.assert_called_with(self.env_name, self.app_version_name, None)
         mock_commonops.wait_for_success_events.assert_called_with(
             self.request_id,

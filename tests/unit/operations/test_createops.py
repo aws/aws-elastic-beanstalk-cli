@@ -684,7 +684,7 @@ Actual error: """,
         )
         create_app_version_mock.return_value = 'version-label-1'
 
-        createops.make_new_env(env_request, process_app_version=True)
+        createops.make_new_env(env_request, process_app_version=True, timeout=10)
 
         create_environment_result_mock.print_env_details.assert_called_once_with(
             createops.io.echo,
@@ -692,12 +692,13 @@ Actual error: """,
             createops.elasticbeanstalk.get_environment_resources,
             health=False
         )
-        wait_for_success_events_mock.assert_called_once_with('request-id', timeout_in_minutes=None)
+        wait_for_success_events_mock.assert_called_once_with('request-id', timeout_in_minutes=10)
         create_env_mock.assert_called_once_with(env_request, interactive=True)
         upload_keypair_if_needed_mock.assert_called_once_with('aws-eb-us-west-2')
         wait_for_processed_app_versions_mock.assert_called_once_with(
             'my-application',
-            ['version-label-1']
+            ['version-label-1'],
+            timeout=10
         )
         create_app_version_mock.assert_called_once_with(
             'my-application',
@@ -753,11 +754,12 @@ Actual error: """,
         )
         create_app_version_mock.return_value = 'version-label-1'
 
-        createops.make_new_env(env_request, process_app_version=True)
+        createops.make_new_env(env_request, process_app_version=True, timeout=5)
 
         wait_for_processed_app_versions_mock.assert_called_once_with(
             'my-application',
-            ['version-label-1']
+            ['version-label-1'],
+            timeout=5
         )
         create_app_version_mock.assert_called_once_with(
             'my-application',
@@ -838,7 +840,8 @@ Actual error: """,
         upload_keypair_if_needed_mock.assert_called_once_with('aws-eb-us-west-2')
         wait_for_processed_app_versions_mock.assert_called_once_with(
             'my-application',
-            ['version-label-1']
+            ['version-label-1'],
+            timeout=None
         )
         log_info_mock.assert_has_calls(
             [
@@ -922,7 +925,8 @@ Actual error: """,
         upload_keypair_if_needed_mock.assert_called_once_with('aws-eb-us-west-2')
         wait_for_processed_app_versions_mock.assert_called_once_with(
             'my-application',
-            ['version-label-1']
+            ['version-label-1'],
+            timeout=None
         )
         log_info_mock.assert_has_calls(
             [

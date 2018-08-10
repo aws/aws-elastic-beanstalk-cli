@@ -23,7 +23,7 @@ from . import commonops
 def compose(app_name, version_labels, grouped_env_names, group_name=None,
             nohang=False, timeout=None):
 
-    success = commonops.wait_for_processed_app_versions(app_name, version_labels)
+    success = commonops.wait_for_processed_app_versions(app_name, version_labels, timeout=timeout)
     if not success:
         return
 

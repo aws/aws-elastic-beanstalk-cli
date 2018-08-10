@@ -117,13 +117,15 @@ class TestComposeOps(unittest.TestCase):
                 'my-application',
                 ['version-label-1', 'version-label-2'],
                 ['environment-1', 'environment-2'],
-                group_name='dev'
+                group_name='dev',
+                timeout=6
             )
         )
 
         wait_for_processed_app_versions_mock.assert_called_once_with(
             'my-application',
-            ['version-label-1', 'version-label-2']
+            ['version-label-1', 'version-label-2'],
+            timeout=6
         )
         compose_apps_mock.assert_not_called()
 
@@ -144,13 +146,15 @@ class TestComposeOps(unittest.TestCase):
                 'my-application',
                 ['version-label-1', 'version-label-2'],
                 ['environment-1', 'environment-2'],
-                group_name='dev'
+                group_name='dev',
+                timeout=10
             )
         )
 
         wait_for_processed_app_versions_mock.assert_called_once_with(
             'my-application',
-            ['version-label-1', 'version-label-2']
+            ['version-label-1', 'version-label-2'],
+            timeout=10
         )
         compose_apps_mock.assert_called_once_with(
             'my-application',
@@ -167,7 +171,7 @@ class TestComposeOps(unittest.TestCase):
                 'environment-1',
                 'environment-2'
             ],
-            None
+            10
         )
 
     @mock.patch('ebcli.operations.composeops.commonops.wait_for_processed_app_versions')
@@ -194,7 +198,8 @@ class TestComposeOps(unittest.TestCase):
 
         wait_for_processed_app_versions_mock.assert_called_once_with(
             'my-application',
-            ['version-label-1', 'version-label-2']
+            ['version-label-1', 'version-label-2'],
+            timeout=None
         )
         compose_apps_mock.assert_called_once_with(
             'my-application',
