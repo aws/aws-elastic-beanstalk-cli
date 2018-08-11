@@ -2,6 +2,12 @@
 Changelog
 =========
 -------------------
+3.14.4 (2018-08-14)
+-------------------
+- Fixed `eb platform --help` and `ebp --help` usage texts to show all available commands and subcommands regardless of workspace type
+- Fixed `eb create` and `eb deploy` behaviour in cases where customer-specified timeout values are rejected
+
+-------------------
 3.14.3 (2018-07-18)
 -------------------
 - Changed `eb health` table on non-Windows platforms to use Unicode U+25C4 and U+25BA for left and right arrow characters rather than U+25C0 and U+25B6 respectively
