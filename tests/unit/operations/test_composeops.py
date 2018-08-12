@@ -199,7 +199,7 @@ class TestComposeOps(unittest.TestCase):
         wait_for_processed_app_versions_mock.assert_called_once_with(
             'my-application',
             ['version-label-1', 'version-label-2'],
-            timeout=None
+            timeout=10
         )
         compose_apps_mock.assert_called_once_with(
             'my-application',

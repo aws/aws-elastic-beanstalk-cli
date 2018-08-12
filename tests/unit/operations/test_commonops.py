@@ -2272,5 +2272,25 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
             'All application versions have not reached a "Processed" state. Unable to continue with deployment.'
         )
 
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_application_versions')
+    @mock.patch('ebcli.operations.commonops.io.log_error')
+    def test_wait_for_processed_app_versions__timeout_is_0_seconds(
+            self,
+            log_error_mock,
+            get_application_versions_mock
+    ):
+        get_application_versions_mock.side_effect = mock.MagicMock()
+
+        self.assertFalse(
+            commonops.wait_for_processed_app_versions(
+                'my-application',
+                ['version-label-1', 'version-label-2'],
+                timeout=0
+            )
+        )
+        log_error_mock.assert_called_once_with(
+            'All application versions have not reached a "Processed" state. Unable to continue with deployment.'
+        )
+
     def test_wait_for_processed_app_versions__no_app_versions_to_wait_for(self):
         self.assertTrue(commonops.wait_for_processed_app_versions('my-application', []))

@@ -87,7 +87,7 @@ def make_new_env(
             success = commonops.wait_for_processed_app_versions(
                 env_request.app_name,
                 [env_request.version_label],
-                timeout=timeout
+                timeout=timeout or 5
             )
             if not success:
                 return

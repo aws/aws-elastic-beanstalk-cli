@@ -87,7 +87,7 @@ class TestBuildSpecOps(unittest.TestCase):
         buildspecops.stream_build_configuration_app_version_creation(self.app_name, self.version_label, build_spec)
 
         # Assert we made the correct calls
-        mock_wait_attribute.assert_called_with(self.app_name, [self.version_label], 'BuildArn', timeout=1)
+        mock_wait_attribute.assert_called_with(self.app_name, [self.version_label], timeout=1)
         self.mock_beanstalk.get_application_versions.assert_called_with(self.app_name,
                                                                         version_labels=[self.version_label])
         self.mock_codebuild.batch_get_builds.assert_called_with(
@@ -121,7 +121,7 @@ class TestBuildSpecOps(unittest.TestCase):
         buildspecops.stream_build_configuration_app_version_creation(self.app_name, self.version_label, build_spec)
 
         # Assert we made the correct calls
-        mock_wait_attribute.assert_called_with(self.app_name, [self.version_label], 'BuildArn', timeout=1)
+        mock_wait_attribute.assert_called_with(self.app_name, [self.version_label], timeout=1)
         self.mock_beanstalk.get_application_versions.assert_called_with(self.app_name,
                                                                         version_labels=[self.version_label])
         self.mock_codebuild.batch_get_builds.assert_called_with(
@@ -158,7 +158,7 @@ class TestBuildSpecOps(unittest.TestCase):
                           self.app_name, self.version_label, build_spec)
 
         # Assert we made the correct calls
-        mock_wait_attribute.assert_called_with(self.app_name, [self.version_label], 'BuildArn', timeout=1)
+        mock_wait_attribute.assert_called_with(self.app_name, [self.version_label], timeout=1)
         self.mock_beanstalk.get_application_versions.assert_called_with(self.app_name,
                                                                         version_labels=[self.version_label])
         self.mock_codebuild.batch_get_builds.assert_not_called()

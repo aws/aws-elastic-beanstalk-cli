@@ -2,10 +2,10 @@
 Changelog
 =========
 -------------------
-3.14.4 (2018-08-14)
+3.14.4 (2018-08-16)
 -------------------
 - Fixed `eb platform --help` and `ebp --help` usage texts to show all available commands and subcommands regardless of workspace type
-- Fixed `eb create` and `eb deploy` behaviour in cases where customer-specified timeout values are rejected
+- Fixed `eb create` and `eb deploy` behavior in cases where customer-specified timeout values are rejected
 
 -------------------
 3.14.3 (2018-07-18)

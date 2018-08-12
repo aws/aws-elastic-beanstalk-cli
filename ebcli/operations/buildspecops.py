@@ -26,7 +26,7 @@ LOG = minimal_logger(__name__)
 
 def stream_build_configuration_app_version_creation(app_name, app_version_label, build_spec):
     # Get the CloudWatch logs link
-    successfully_generated = wait_for_app_version_attribute(app_name, [app_version_label], 'BuildArn', timeout=1)
+    successfully_generated = wait_for_app_version_attribute(app_name, [app_version_label], timeout=1)
     app_version_response = elasticbeanstalk.get_application_versions(app_name, version_labels=[app_version_label])['ApplicationVersions']
 
     build_response = codebuild.batch_get_builds([app_version_response[0]['BuildArn']]) \

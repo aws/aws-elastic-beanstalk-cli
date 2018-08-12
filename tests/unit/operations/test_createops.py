@@ -841,7 +841,7 @@ Actual error: """,
         wait_for_processed_app_versions_mock.assert_called_once_with(
             'my-application',
             ['version-label-1'],
-            timeout=None
+            timeout=5
         )
         log_info_mock.assert_has_calls(
             [
@@ -926,7 +926,7 @@ Actual error: """,
         wait_for_processed_app_versions_mock.assert_called_once_with(
             'my-application',
             ['version-label-1'],
-            timeout=None
+            timeout=5
         )
         log_info_mock.assert_has_calls(
             [

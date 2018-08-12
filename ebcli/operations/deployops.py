@@ -55,7 +55,7 @@ def deploy(app_name, env_name, version, label, message, group_name=None,
         success = commonops.wait_for_processed_app_versions(
             app_name,
             [app_version_label],
-            timeout=timeout
+            timeout=timeout or 5
         )
         if not success:
             return
