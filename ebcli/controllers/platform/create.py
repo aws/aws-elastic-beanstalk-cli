@@ -36,7 +36,8 @@ class GenericPlatformCreateController(AbstractBaseController):
             (['-ip', '--instance_profile'], dict(action='store', help=flag_text['platformcreate.instanceprofile'])),
             (['--vpc.id'], dict(dest='vpc_id', help=flag_text['platformcreateversion.vpc.id'])),
             (['--vpc.subnets'], dict(dest='vpc_subnets', help=flag_text['platformcreateversion.vpc.subnets'])),
-            (['--vpc.publicip'], dict(action='store_true', dest='vpc_publicip', help=flag_text['platformcreateversion.vpc.publicip']))
+            (['--vpc.publicip'], dict(action='store_true', dest='vpc_publicip', help=flag_text['platformcreateversion.vpc.publicip'])),
+            (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
         ]
         epilog = strings['platformcreateversion.epilog']
 
@@ -53,7 +54,9 @@ class GenericPlatformCreateController(AbstractBaseController):
             self.app.pargs.minor_increment,
             self.app.pargs.patch_increment,
             self.app.pargs.instance_type,
-            { 'id': self.app.pargs.vpc_id, 'subnets': self.app.pargs.vpc_subnets, 'publicip': self.app.pargs.vpc_publicip })
+            { 'id': self.app.pargs.vpc_id, 'subnets': self.app.pargs.vpc_subnets, 'publicip': self.app.pargs.vpc_publicip },
+            timeout=self.app.pargs.timeout
+        )
 
     def get_instance_profile(self):
         # Check to see if it was specified on the command line

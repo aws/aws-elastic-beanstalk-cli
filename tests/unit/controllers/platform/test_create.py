@@ -74,7 +74,8 @@ class TestEBPlatform(TestCreate):
                 'id': None,
                 'subnets': None,
                 'publicip': False
-            }
+            },
+            timeout=None
         )
 
     @mock.patch('ebcli.controllers.platform.create.fileoperations.get_instance_profile')
@@ -100,7 +101,8 @@ class TestEBPlatform(TestCreate):
                 'id': None,
                 'subnets': None,
                 'publicip': False
-            }
+            },
+            timeout=None
         )
 
     @mock.patch('ebcli.controllers.platform.create.fileoperations.get_instance_profile')
@@ -135,7 +137,35 @@ class TestEBPlatform(TestCreate):
                 'id': 'vpc-123124',
                 'subnets': 'subnet-123123,subnet-2334545',
                 'publicip': True
-            }
+            },
+            timeout=None
+        )
+
+    @mock.patch('ebcli.controllers.platform.create.fileoperations.get_instance_profile')
+    @mock.patch('ebcli.controllers.platform.create.create_platform_version')
+    def test_create__pass_timeout(
+            self,
+            create_platform_version_mock,
+            get_instance_profile_mock
+    ):
+        get_instance_profile_mock.return_value = 'my-instance-profile'
+
+        app = EB(argv=['platform', 'create', '1.1.1', '-M', '-m', '-p', '--timeout', '10'])
+        app.setup()
+        app.run()
+
+        create_platform_version_mock.assert_called_once_with(
+            '1.1.1',
+            True,
+            True,
+            True,
+            None,
+            {
+                'id': None,
+                'subnets': None,
+                'publicip': False
+            },
+            timeout=10
         )
 
 
@@ -163,7 +193,8 @@ class TestEBP(TestCreate):
                 'id': None,
                 'subnets': None,
                 'publicip': False
-            }
+            },
+            timeout=None
         )
 
     @mock.patch('ebcli.controllers.platform.create.fileoperations.get_instance_profile')
@@ -189,7 +220,8 @@ class TestEBP(TestCreate):
                 'id': None,
                 'subnets': None,
                 'publicip': False
-            }
+            },
+            timeout=None
         )
 
     @mock.patch('ebcli.controllers.platform.create.fileoperations.get_instance_profile')
@@ -223,5 +255,33 @@ class TestEBP(TestCreate):
                 'id': 'vpc-123124',
                 'subnets': 'subnet-123123,subnet-2334545',
                 'publicip': True
-            }
+            },
+            timeout=None
+        )
+
+    @mock.patch('ebcli.controllers.platform.create.fileoperations.get_instance_profile')
+    @mock.patch('ebcli.controllers.platform.create.create_platform_version')
+    def test_create__pass_timeout(
+            self,
+            create_platform_version_mock,
+            get_instance_profile_mock
+    ):
+        get_instance_profile_mock.return_value = 'my-instance-profile'
+
+        app = EBP(argv=['create', '1.1.1', '-M', '-m', '-p', '--timeout', '10'])
+        app.setup()
+        app.run()
+
+        create_platform_version_mock.assert_called_once_with(
+            '1.1.1',
+            True,
+            True,
+            True,
+            None,
+            {
+                'id': None,
+                'subnets': None,
+                'publicip': False
+            },
+            timeout=10
         )
