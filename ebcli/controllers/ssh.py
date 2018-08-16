@@ -11,12 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from ebcli.core.ebglobals import Constants
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, prompts, flag_text
-from ..core import fileoperations, io
-from ..lib import elasticbeanstalk
-from ..objects.exceptions import NoKeypairError, InvalidOptionsError
-from ..operations import commonops, sshops
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings, prompts, flag_text
+from ebcli.core import fileoperations, io
+from ebcli.lib import elasticbeanstalk
+from ebcli.objects.exceptions import NoKeypairError, InvalidOptionsError
+from ebcli.operations import commonops, sshops
 
 
 class SSHController(AbstractBaseController):

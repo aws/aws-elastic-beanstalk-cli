@@ -11,12 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..core import io
-from ..core.abstractcontroller import AbstractBaseController
-from ..containers import factory, log, compat
-from ..containers.container_viewmodel import ContainerViewModel
-from ..operations import localops
-from ..resources.strings import strings, flag_text
+from ebcli.core import io
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.containers import factory, log, compat
+from ebcli.containers.container_viewmodel import ContainerViewModel
+from ebcli.operations import localops
+from ebcli.resources.strings import strings, flag_text
 
 
 class LocalController(AbstractBaseController):

@@ -22,10 +22,10 @@ from botocore.auth import SigV4Auth
 from botocore.awsrequest import AWSRequest
 from cement.utils.misc import minimal_logger
 
-from . import aws
-from ..core import io
-from ..lib import utils
-from ..objects.exceptions import ServiceError
+from ebcli.lib import aws
+from ebcli.core import io
+from ebcli.lib import utils
+from ebcli.objects.exceptions import ServiceError
 
 LOG = minimal_logger(__name__)
 

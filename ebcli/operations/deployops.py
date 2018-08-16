@@ -12,10 +12,10 @@
 # language governing permissions and limitations under the License.
 from cement.utils.misc import minimal_logger
 
-from . import commonops
-from ..core import io, fileoperations
-from ..lib import elasticbeanstalk, aws
-from ..operations import gitops, buildspecops
+from ebcli.operations import commonops
+from ebcli.core import io, fileoperations
+from ebcli.lib import elasticbeanstalk, aws
+from ebcli.operations import gitops, buildspecops
 
 LOG = minimal_logger(__name__)
 

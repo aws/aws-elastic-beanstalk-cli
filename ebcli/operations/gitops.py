@@ -16,7 +16,7 @@ from ebcli.lib import codecommit
 from ebcli.objects.exceptions import CommandError, ValidationError
 from ebcli.objects.sourcecontrol import SourceControl
 
-from . import commonops
+from ebcli.operations import commonops
 
 LOG = minimal_logger(__name__)
 
@@ -109,7 +109,7 @@ def initialize_codecommit():
         source_control.setup_codecommit_cred_config()
 
         # Get user desired repository
-        from ..controllers import initialize
+        from ebcli.controllers import initialize
         repository = initialize.get_repository_interactive()
         branch = initialize.get_branch_interactive(repository)
 

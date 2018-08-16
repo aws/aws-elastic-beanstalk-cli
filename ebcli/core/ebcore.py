@@ -15,7 +15,7 @@ from argparse import SUPPRESS
 from cement.core import foundation, handler, hook
 from cement.utils.misc import init_defaults
 
-from . import ebglobals, base, hooks
+from ebcli.core import ebglobals, base, hooks
 from ebcli.controllers.abort import AbortController
 from ebcli.controllers.appversion import AppVersionController
 from ebcli.controllers.clone import CloneController

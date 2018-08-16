@@ -1,8 +1,8 @@
 from botocore.compat import six
 
-from . import commands, compat
-from .abstractcontainer import AbstractContainer
-from ..lib import utils
+from ebcli.containers import commands, compat
+from ebcli.containers.abstractcontainer import AbstractContainer
+from ebcli.lib import utils
 
 
 class ContainerViewModel(object):

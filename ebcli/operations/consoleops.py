@@ -11,9 +11,9 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..lib import utils, elasticbeanstalk, aws
-from ..objects.exceptions import NotSupportedError
-from . import commonops
+from ebcli.lib import utils, elasticbeanstalk, aws
+from ebcli.objects.exceptions import NotSupportedError
+from ebcli.operations import commonops
 
 
 def open_console(app_name, env_name):

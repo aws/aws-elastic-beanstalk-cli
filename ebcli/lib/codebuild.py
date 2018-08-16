@@ -15,9 +15,9 @@ import re
 
 from cement.utils.misc import minimal_logger
 
-from . import aws
-from ..core import io
-from ..objects.exceptions import ServiceError
+from ebcli.lib import aws
+from ebcli.core import io
+from ebcli.objects.exceptions import ServiceError
 from botocore.exceptions import EndpointConnectionError
 
 LOG = minimal_logger(__name__)

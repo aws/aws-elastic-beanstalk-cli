@@ -11,9 +11,9 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..core import fileoperations
-from ..objects.exceptions import ValidationError
-from ..resources.strings import strings
+from ebcli.core import fileoperations
+from ebcli.objects.exceptions import ValidationError
+from ebcli.resources.strings import strings
 
 
 AUTH_BUCKET_KEY = 'Bucket'

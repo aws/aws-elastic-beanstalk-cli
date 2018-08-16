@@ -11,12 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from . import commands
-from . import containerops
-from . import dockerrun
-from . import log
-from .abstractcontainer import AbstractContainer
-from ..objects.exceptions import ValidationError
+from ebcli.containers import commands
+from ebcli.containers import containerops
+from ebcli.containers import dockerrun
+from ebcli.containers import log
+from ebcli.containers.abstractcontainer import AbstractContainer
+from ebcli.objects.exceptions import ValidationError
 
 
 class PreconfiguredContainer(AbstractContainer):

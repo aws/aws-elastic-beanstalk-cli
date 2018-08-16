@@ -11,12 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, flag_text, prompts
-from ..core import io
-from ..objects.exceptions import NotSupportedError
-from ..lib import elasticbeanstalk, utils
-from ..operations import commonops, swapops
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings, flag_text, prompts
+from ebcli.core import io
+from ebcli.objects.exceptions import NotSupportedError
+from ebcli.lib import elasticbeanstalk, utils
+from ebcli.operations import commonops, swapops
 
 
 class SwapController(AbstractBaseController):

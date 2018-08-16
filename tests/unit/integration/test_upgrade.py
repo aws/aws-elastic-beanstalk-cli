@@ -15,7 +15,7 @@ from ebcli.core import fileoperations
 from ebcli.operations import commonops
 from ebcli.resources.strings import prompts
 from tests.unit.baseinttest import BaseIntegrationTest
-from . import mockservice
+from tests.unit.integration import mockservice
 
 
 class TestUpgrade(BaseIntegrationTest):

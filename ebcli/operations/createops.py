@@ -28,7 +28,7 @@ from ebcli.objects.exceptions import (
     TimeoutError
 )
 from ebcli.resources.strings import strings, responses, prompts
-from ..resources.statics import iam_attributes
+from ebcli.resources.statics import iam_attributes
 import json
 
 LOG = minimal_logger(__name__)

@@ -1,10 +1,10 @@
 from datetime import datetime
 import os
 
-from . import dockerrun
-from ..core import fileoperations, io
-from ..lib import utils
-from ..resources.strings import strings
+from ebcli.containers import dockerrun
+from ebcli.core import fileoperations, io
+from ebcli.lib import utils
+from ebcli.resources.strings import strings
 
 
 HOST_LOGS_DIRNAME = 'local'

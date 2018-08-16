@@ -13,15 +13,15 @@
 import argparse
 import os
 
-from ..core import io, fileoperations, hooks
-from ..core.abstractcontroller import AbstractBaseController
-from ..lib import elasticbeanstalk, utils
-from ..objects.exceptions import NotFoundError, AlreadyExistsError, \
+from ebcli.core import io, fileoperations, hooks
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.lib import elasticbeanstalk, utils
+from ebcli.objects.exceptions import NotFoundError, AlreadyExistsError, \
     InvalidOptionsError
 from ebcli.objects.solutionstack import SolutionStack
-from ..objects.requests import CreateEnvironmentRequest
-from ..objects.tier import Tier
-from ..operations import (
+from ebcli.objects.requests import CreateEnvironmentRequest
+from ebcli.objects.tier import Tier
+from ebcli.operations import (
     commonops,
     composeops,
     createops,
@@ -29,8 +29,8 @@ from ..operations import (
     saved_configs,
     solution_stack_ops
 )
-from ..resources.strings import strings, prompts, flag_text
-from ..resources.statics import elb_names
+from ebcli.resources.strings import strings, prompts, flag_text
+from ebcli.resources.statics import elb_names
 
 class CreateController(AbstractBaseController):
     class Meta:

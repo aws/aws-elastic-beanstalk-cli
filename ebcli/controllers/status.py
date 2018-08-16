@@ -12,9 +12,9 @@
 # language governing permissions and limitations under the License.
 
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..operations import statusops, commonops
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings
+from ebcli.operations import statusops, commonops
 
 
 class StatusController(AbstractBaseController):

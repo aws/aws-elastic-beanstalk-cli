@@ -6,11 +6,11 @@ from semantic_version import Version
 
 from cement.utils.misc import minimal_logger
 
-from . import commands
-from ..core import io, fileoperations
-from ..lib import heuristics, utils
-from ..resources.strings import strings
-from ..objects.exceptions import CommandError
+from ebcli.containers import commands
+from ebcli.core import io, fileoperations
+from ebcli.lib import heuristics, utils
+from ebcli.resources.strings import strings
+from ebcli.objects.exceptions import CommandError
 
 
 LOG = minimal_logger(__name__)

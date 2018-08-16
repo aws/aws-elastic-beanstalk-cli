@@ -14,9 +14,9 @@
 import os
 import shutil
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, flag_text
-from ..core import io, fileoperations
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings, flag_text
+from ebcli.core import io, fileoperations
 
 
 CWFILES_DIRNAME = 'cloudwatchfiles'

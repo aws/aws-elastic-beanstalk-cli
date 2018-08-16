@@ -13,12 +13,12 @@
 from botocore.compat import six
 cPickle = six.moves.cPickle
 
-from ..containers.envvarcollector import EnvvarCollector
-from ..containers.pathconfig import PathConfig
-from ..core import fileoperations, io
-from ..lib import utils
-from ..operations import commonops, envvarops
-from ..resources.strings import strings
+from ebcli.containers.envvarcollector import EnvvarCollector
+from ebcli.containers.pathconfig import PathConfig
+from ebcli.core import fileoperations, io
+from ebcli.lib import utils
+from ebcli.operations import commonops, envvarops
+from ebcli.resources.strings import strings
 
 
 class LocalState(object):

@@ -15,10 +15,10 @@ import json
 from botocore.compat import six
 from cement.utils.misc import minimal_logger
 
-from ..core import fileoperations
-from ..lib import utils
-from ..objects.exceptions import ValidationError, CommandError
-from ..resources.strings import strings
+from ebcli.core import fileoperations
+from ebcli.lib import utils
+from ebcli.objects.exceptions import ValidationError, CommandError
+from ebcli.resources.strings import strings
 
 
 EXPOSE_CMD = 'EXPOSE'

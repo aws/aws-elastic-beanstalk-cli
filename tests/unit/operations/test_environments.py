@@ -12,14 +12,15 @@
 # language governing permissions and limitations under the License.
 from mock import patch
 
+
 from ebcli.operations import createops
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.requests import CreateEnvironmentRequest
 
-from ..baseinttest import BaseOperationsTest
+from .. import baseinttest
 
 
-class TestCreateEnvironment(BaseOperationsTest):
+class TestCreateEnvironment(baseinttest.BaseOperationsTest):
     module_name = 'createops'
 
     @patch('ebcli.operations.createops.elasticbeanstalk.get_all_environment_names')

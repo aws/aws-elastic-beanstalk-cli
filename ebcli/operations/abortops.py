@@ -11,8 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..lib import elasticbeanstalk
-from ..core import io
+from ebcli.lib import elasticbeanstalk
+from ebcli.core import io
 
 
 def get_abortable_envs(app_name):

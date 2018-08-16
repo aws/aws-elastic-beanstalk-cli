@@ -22,7 +22,7 @@ import colorama
 from cement.core.exc import CaughtSignal
 from cement.utils.misc import minimal_logger
 
-from ..core import io, ebglobals
+from ebcli.core import io, ebglobals
 
 LOG = minimal_logger(__name__)
 

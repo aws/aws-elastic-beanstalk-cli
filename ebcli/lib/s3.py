@@ -20,15 +20,15 @@ import threading
 
 from cement.utils.misc import minimal_logger
 
-from . import aws
-from ..objects.exceptions import (
+from ebcli.lib import aws
+from ebcli.objects.exceptions import (
     EndOfTestError,
     NotFoundError,
     FileTooLargeError,
     UploadError
 )
-from ..core import fileoperations, io
-from .utils import static_var
+from ebcli.core import fileoperations, io
+from ebcli.lib.utils import static_var
 
 
 LOG = minimal_logger(__name__)

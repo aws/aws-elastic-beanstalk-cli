@@ -16,7 +16,7 @@ import sys
 
 from decimal import InvalidOperation
 from ebcli.objects.platform import PlatformVersion
-from . import term
+from ebcli.display import term
 import errno
 import pprint
 from datetime import timedelta, datetime

@@ -1,4 +1,4 @@
-from ..core import fileoperations
+from ebcli.core import fileoperations
 
 
 class PathConfig(object):

@@ -13,11 +13,11 @@
 
 import time
 
-from ..lib import elasticbeanstalk
-from ..core import io
-from ..objects.exceptions import TimeoutError
-from ..resources.strings import strings
-from . import commonops
+from ebcli.lib import elasticbeanstalk
+from ebcli.core import io
+from ebcli.objects.exceptions import TimeoutError
+from ebcli.resources.strings import strings
+from ebcli.operations import commonops
 
 
 def compose(app_name, version_labels, grouped_env_names, group_name=None,

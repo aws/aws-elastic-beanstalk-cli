@@ -12,12 +12,12 @@
 # language governing permissions and limitations under the License.
 from cement.utils.misc import minimal_logger
 
-from ..lib import utils
-from ..objects.exceptions import NotFoundError
-from ..objects.sourcecontrol import SourceControl
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, flag_text
-from ..operations import useops, gitops
+from ebcli.lib import utils
+from ebcli.objects.exceptions import NotFoundError
+from ebcli.objects.sourcecontrol import SourceControl
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings, flag_text
+from ebcli.operations import useops, gitops
 
 LOG = minimal_logger(__name__)
 

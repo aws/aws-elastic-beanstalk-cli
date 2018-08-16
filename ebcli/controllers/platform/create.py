@@ -19,7 +19,7 @@ from ebcli.objects.exceptions import NotInitializedError, NotAuthorizedError, Al
 from ebcli.operations.platformops import create_platform_version
 from ebcli.resources.strings import strings, flag_text, prompts
 from ebcli.resources.statics import iam_attributes, iam_documents
-from ...operations import commonops
+from ebcli.operations import commonops
 
 
 class GenericPlatformCreateController(AbstractBaseController):

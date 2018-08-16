@@ -11,10 +11,10 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from . import dockerrun
-from .abstractcontainer import AbstractContainer
-from ..objects.exceptions import NotFoundError
-from ..resources.strings import strings
+from ebcli.containers import dockerrun
+from ebcli.containers.abstractcontainer import AbstractContainer
+from ebcli.objects.exceptions import NotFoundError
+from ebcli.resources.strings import strings
 
 
 class GenericContainer(AbstractContainer):

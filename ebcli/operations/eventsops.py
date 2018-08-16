@@ -14,10 +14,10 @@
 import os
 
 import time
-from ..core import io
-from ..lib import elasticbeanstalk
-from ..objects.exceptions import EndOfTestError
-from . import commonops
+from ebcli.core import io
+from ebcli.lib import elasticbeanstalk
+from ebcli.objects.exceptions import EndOfTestError
+from ebcli.operations import commonops
 
 
 def print_events(app_name, env_name, follow, platform_arn=None):

@@ -13,7 +13,7 @@
 
 from os import path
 
-from ..core import fileoperations
+from ebcli.core import fileoperations
 
 
 CONTAINER_CONFIG_FILENAME = 'container_config.json'

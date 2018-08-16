@@ -15,11 +15,11 @@ import re
 
 from cement.utils.misc import minimal_logger
 
-from ..core import fileoperations, io
-from ..lib import elasticbeanstalk, heuristics, aws, codebuild
-from ..objects.exceptions import CredentialsError, NotAuthorizedError
-from ..objects.sourcecontrol import SourceControl
-from ..resources.strings import strings
+from ebcli.core import fileoperations, io
+from ebcli.lib import elasticbeanstalk, heuristics, aws, codebuild
+from ebcli.objects.exceptions import CredentialsError, NotAuthorizedError
+from ebcli.objects.sourcecontrol import SourceControl
+from ebcli.resources.strings import strings
 from ebcli.core.ebglobals import Constants
 
 LOG = minimal_logger(__name__)

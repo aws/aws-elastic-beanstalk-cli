@@ -15,7 +15,7 @@ from ebcli.core import fileoperations
 from ebcli.objects.exceptions import NotFoundError
 from ebcli.operations import commonops
 from tests.unit.baseinttest import BaseIntegrationTest
-from . import mockservice
+from tests.unit.integration import mockservice
 
 
 class TestAbort(BaseIntegrationTest):

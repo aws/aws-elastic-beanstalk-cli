@@ -13,9 +13,9 @@
 
 from cement.core import controller, handler
 
-from ..core import io
-from ..lib import aws
-from ..operations import commonops
+from ebcli.core import io
+from ebcli.lib import aws
+from ebcli.operations import commonops
 
 
 class CompleterController(controller.CementBaseController):

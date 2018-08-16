@@ -12,9 +12,9 @@
 # language governing permissions and limitations under the License.
 
 
-from ..core import io
-from .table import Table, Column
-from . import term
+from ebcli.core import io
+from ebcli.display.table import Table, Column
+from ebcli.display import term
 
 
 class HelpTable(Table):

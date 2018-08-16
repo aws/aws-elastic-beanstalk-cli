@@ -25,14 +25,14 @@ from botocore.loaders import Loader
 from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
-from .botopatch import apply_patches
-from .utils import static_var
-from ..core import fileoperations
-from ..objects.exceptions import ServiceError, NotAuthorizedError, \
+from ebcli.lib.botopatch import apply_patches
+from ebcli.lib.utils import static_var
+from ebcli.core import fileoperations
+from ebcli.objects.exceptions import ServiceError, NotAuthorizedError, \
     CredentialsError, NoRegionError,  ValidationError, \
     InvalidProfileError, ConnectionError, AlreadyExistsError, NotFoundError, \
     NotAuthorizedInRegionError
-from ..resources.strings import strings
+from ebcli.resources.strings import strings
 
 LOG = minimal_logger(__name__)
 
@@ -84,7 +84,7 @@ def set_profile(profile):
 def get_profile():
     if _profile is not None:
         return _profile
-    from ..operations import commonops
+    from ebcli.operations import commonops
     return commonops.get_default_profile(require_default=True)
 
 def set_region(region_name):

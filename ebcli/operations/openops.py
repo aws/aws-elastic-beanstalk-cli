@@ -11,9 +11,9 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..resources.statics import namespaces, option_names
-from ..lib import elasticbeanstalk
-from . import commonops
+from ebcli.resources.statics import namespaces, option_names
+from ebcli.lib import elasticbeanstalk
+from ebcli.operations import commonops
 
 
 def open_app(app_name, env_name):

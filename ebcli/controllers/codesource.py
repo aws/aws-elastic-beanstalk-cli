@@ -10,12 +10,12 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from ..lib import utils
-from ..core import io
+from ebcli.lib import utils
+from ebcli.core import io
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, flag_text, prompts
-from ..operations import gitops
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings, flag_text, prompts
+from ebcli.operations import gitops
 
 
 class CodeSourceController(AbstractBaseController):

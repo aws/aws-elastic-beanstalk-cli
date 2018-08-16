@@ -11,8 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from .. core import io
-from . import term
+from ebcli. core import io
+from ebcli.display import term
 
 from cement.utils.misc import minimal_logger
 

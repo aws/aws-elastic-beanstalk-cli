@@ -13,11 +13,11 @@
 
 import os
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..core import io, fileoperations
-from ..containers import dockerrun
-from ..objects.exceptions import NotFoundError, NotSupportedError
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings
+from ebcli.core import io, fileoperations
+from ebcli.containers import dockerrun
+from ebcli.objects.exceptions import NotFoundError, NotSupportedError
 
 DOCKERRUN_FILENAME = 'Dockerrun.aws.json'
 

@@ -17,20 +17,20 @@ import time
 from datetime import datetime, timedelta
 import platform
 
-from ..core.fileoperations import _marker
+from ebcli.core.fileoperations import _marker
 
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
 from botocore.compat import six
 
 from ebcli.operations import buildspecops
-from ..core import fileoperations, io
-from ..lib import aws, ec2, elasticbeanstalk, heuristics, iam, s3, utils, codecommit
-from ..lib.aws import InvalidParameterValueError
-from ..objects.exceptions import *
-from ..objects.sourcecontrol import SourceControl, NoSC
-from ..resources.strings import strings, responses, prompts
-from ..resources.statics import iam_documents, iam_attributes
+from ebcli.core import fileoperations, io
+from ebcli.lib import aws, ec2, elasticbeanstalk, heuristics, iam, s3, utils, codecommit
+from ebcli.lib.aws import InvalidParameterValueError
+from ebcli.objects.exceptions import *
+from ebcli.objects.sourcecontrol import SourceControl, NoSC
+from ebcli.resources.strings import strings, responses, prompts
+from ebcli.resources.statics import iam_documents, iam_attributes
 
 LOG = minimal_logger(__name__)
 
@@ -576,7 +576,7 @@ def create_codecommit_app_version(app_name, process=False, label=None, message=N
 
     # Get additional arguments for deploying code commit and poll
     #  for the commit to propagate to code commit.
-    from . import gitops
+    from ebcli.operations import gitops
     repository = gitops.get_default_repository()
     commit_id = source_control.get_current_commit()
 

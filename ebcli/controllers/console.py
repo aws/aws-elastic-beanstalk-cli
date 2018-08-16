@@ -11,9 +11,9 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..operations import consoleops
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings
+from ebcli.operations import consoleops
 
 
 class ConsoleController(AbstractBaseController):

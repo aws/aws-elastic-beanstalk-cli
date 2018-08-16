@@ -13,10 +13,10 @@
 
 import time
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..core import io
-from ..operations import healthops
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings
+from ebcli.core import io
+from ebcli.operations import healthops
 
 
 class HealthController(AbstractBaseController):

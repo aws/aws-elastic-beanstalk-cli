@@ -13,19 +13,19 @@
 from cement.utils.misc import minimal_logger
 
 from ebcli.objects.platform import PlatformVersion
-from . import containerops
-from . import dockerrun
+from ebcli.containers import containerops
+from ebcli.containers import dockerrun
 
-from .envvarcollector import EnvvarCollector
-from .pathconfig import PathConfig
-from .fshandler import ContainerFSHandler, MultiContainerFSHandler
-from .generic_container import GenericContainer
-from .multicontainer import MultiContainer
-from .preconfigured_container import PreconfiguredContainer
-from ..objects.exceptions import NotSupportedError, NotFoundError, \
+from ebcli.containers.envvarcollector import EnvvarCollector
+from ebcli.containers.pathconfig import PathConfig
+from ebcli.containers.fshandler import ContainerFSHandler, MultiContainerFSHandler
+from ebcli.containers.generic_container import GenericContainer
+from ebcli.containers.multicontainer import MultiContainer
+from ebcli.containers.preconfigured_container import PreconfiguredContainer
+from ebcli.objects.exceptions import NotSupportedError, NotFoundError, \
         NotInitializedError
-from ..operations import platformops, solution_stack_ops
-from ..resources.strings import strings
+from ebcli.operations import platformops, solution_stack_ops
+from ebcli.resources.strings import strings
 
 
 LOG = minimal_logger(__name__)

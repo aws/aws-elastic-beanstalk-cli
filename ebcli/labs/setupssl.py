@@ -16,14 +16,14 @@ import subprocess
 
 from cement.utils.misc import minimal_logger
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..core import io, fileoperations
-from ..lib import elasticbeanstalk, iam, utils
-from ..objects.exceptions import NotFoundError, InvalidOptionsError, \
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings
+from ebcli.core import io, fileoperations
+from ebcli.lib import elasticbeanstalk, iam, utils
+from ebcli.objects.exceptions import NotFoundError, InvalidOptionsError, \
     CommandError, NotSupportedError
-from ..operations import commonops
-from ..resources.statics import namespaces, option_names
+from ebcli.operations import commonops
+from ebcli.resources.statics import namespaces, option_names
 
 LOG = minimal_logger(__name__)
 

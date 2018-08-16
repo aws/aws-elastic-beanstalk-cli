@@ -14,11 +14,11 @@
 import os
 import re
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..objects.exceptions import NotFoundError
-from ..core import io, fileoperations
-from ..lib import elasticbeanstalk, s3, heuristics, cloudformation, utils
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings
+from ebcli.objects.exceptions import NotFoundError
+from ebcli.core import io, fileoperations
+from ebcli.lib import elasticbeanstalk, s3, heuristics, cloudformation, utils
 
 
 class DownloadController(AbstractBaseController):

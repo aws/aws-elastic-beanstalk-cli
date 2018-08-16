@@ -11,12 +11,12 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, prompts
-from ..objects.exceptions import NotFoundError
-from ..core import io
-from ..lib import utils
-from ..operations import abortops
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings, prompts
+from ebcli.objects.exceptions import NotFoundError
+from ebcli.core import io
+from ebcli.lib import utils
+from ebcli.operations import abortops
 
 
 class AbortController(AbstractBaseController):

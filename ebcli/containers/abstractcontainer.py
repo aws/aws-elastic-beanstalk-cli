@@ -14,11 +14,11 @@
 import abc
 import hashlib
 
-from . import commands
-from . import dockerrun
-from . import log
-from ..objects.exceptions import CommandError
-from ..lib import utils
+from ebcli.containers import commands
+from ebcli.containers import dockerrun
+from ebcli.containers import log
+from ebcli.objects.exceptions import CommandError
+from ebcli.lib import utils
 
 
 class AbstractContainer(object):

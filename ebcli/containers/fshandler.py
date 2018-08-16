@@ -2,16 +2,16 @@ import os
 import shutil
 import yaml
 
-from . import commands
-from . import compose
-from . import containerops
-from . import dockerrun
-from . import log
-from .envvarcollector import EnvvarCollector
-from ..core import fileoperations
-from ..lib import s3
-from ..operations.localops import LocalState
-from ..resources.strings import docker_ignore
+from ebcli.containers import commands
+from ebcli.containers import compose
+from ebcli.containers import containerops
+from ebcli.containers import dockerrun
+from ebcli.containers import log
+from ebcli.containers.envvarcollector import EnvvarCollector
+from ebcli.core import fileoperations
+from ebcli.lib import s3
+from ebcli.operations.localops import LocalState
+from ebcli.resources.strings import docker_ignore
 
 
 class ContainerFSHandler(object):

@@ -13,18 +13,18 @@
 
 from cement.utils.misc import minimal_logger
 
-from ..lib import elasticbeanstalk
-from ..display.data_poller import DataPoller
-from ..display.screen import Screen
-from ..display.traditional import TraditionalHealthScreen, TraditionalHealthDataPoller
-from ..display.help import HelpTable, ViewlessHelpTable
-from ..display import term
-from ..display.table import Column, Table
-from ..display.specialtables import RequestTable, StatusTable
+from ebcli.lib import elasticbeanstalk
+from ebcli.display.data_poller import DataPoller
+from ebcli.display.screen import Screen
+from ebcli.display.traditional import TraditionalHealthScreen, TraditionalHealthDataPoller
+from ebcli.display.help import HelpTable, ViewlessHelpTable
+from ebcli.display import term
+from ebcli.display.table import Column, Table
+from ebcli.display.specialtables import RequestTable, StatusTable
 from ebcli.objects.platform import PlatformVersion
-from ..objects.exceptions import NotSupportedError
-from ..objects.solutionstack import SolutionStack
-from ..resources.statics import namespaces, option_names, option_values
+from ebcli.objects.exceptions import NotSupportedError
+from ebcli.objects.solutionstack import SolutionStack
+from ebcli.resources.statics import namespaces, option_names, option_values
 
 LOG = minimal_logger(__name__)
 

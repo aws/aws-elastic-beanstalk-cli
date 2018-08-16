@@ -26,7 +26,7 @@ from ebcli.objects.exceptions import (
 )
 from ebcli.resources.statics import logs_operations_constants
 
-from .. import mock_logs
+from tests.unit import mock_logs
 
 
 class TestLogsOperations(unittest.TestCase):

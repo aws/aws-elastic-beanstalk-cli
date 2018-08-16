@@ -11,15 +11,15 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from ebcli.objects.platform import PlatformVersion
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, flag_text, prompts
-from ..core import io
-from ..operations import cloneops, commonops, solution_stack_ops
-from ..lib import utils, elasticbeanstalk
-from ..controllers.create import get_cname_from_customer, get_and_validate_envars
-from ..operations.createops import get_and_validate_tags
-from ..objects.exceptions import InvalidOptionsError, AlreadyExistsError
-from ..objects.requests import CloneEnvironmentRequest
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings, flag_text, prompts
+from ebcli.core import io
+from ebcli.operations import cloneops, commonops, solution_stack_ops
+from ebcli.lib import utils, elasticbeanstalk
+from ebcli.controllers.create import get_cname_from_customer, get_and_validate_envars
+from ebcli.operations.createops import get_and_validate_tags
+from ebcli.objects.exceptions import InvalidOptionsError, AlreadyExistsError
+from ebcli.objects.requests import CloneEnvironmentRequest
 
 
 class CloneController(AbstractBaseController):

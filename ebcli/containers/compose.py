@@ -2,8 +2,7 @@ import os
 
 from botocore.compat import six
 
-from . import log
-from .envvarcollector import EnvvarCollector
+from ebcli.containers.envvarcollector import EnvvarCollector
 
 
 AWSEB_LOGS = 'awseb-logs-'

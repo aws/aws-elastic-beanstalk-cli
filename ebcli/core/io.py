@@ -24,9 +24,9 @@ from botocore.compat import six
 from six import print_
 from six.moves import input
 
-from ..core import ebglobals
-from ..objects.exceptions import ValidationError
-from ..resources.strings import prompts, strings
+from ebcli.core import ebglobals
+from ebcli.objects.exceptions import ValidationError
+from ebcli.resources.strings import prompts, strings
 
 LOG = logging.getLogger(__name__)
 

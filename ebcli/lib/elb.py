@@ -12,9 +12,9 @@
 # language governing permissions and limitations under the License.
 from cement.utils.misc import minimal_logger
 
-from ..lib import aws
-from ..objects.exceptions import ServiceError, NotFoundError
-from ..resources.statics import elb_names
+from ebcli.lib import aws
+from ebcli.objects.exceptions import ServiceError, NotFoundError
+from ebcli.resources.statics import elb_names
 
 LOG = minimal_logger(__name__)
 

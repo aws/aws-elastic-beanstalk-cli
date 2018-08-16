@@ -13,7 +13,7 @@ iteritems = six.iteritems
 
 from cement.core.exc import CaughtSignal
 
-from . import io
+from ebcli.core import io
 from ebcli.objects.exceptions import *
 from ebcli.resources.strings import strings
 

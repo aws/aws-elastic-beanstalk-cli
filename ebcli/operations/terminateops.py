@@ -14,12 +14,12 @@ from collections import defaultdict
 
 from botocore.compat import six
 
-from ..lib import elasticbeanstalk, s3
-from ..resources.strings import prompts
-from ..core import io, fileoperations
-from ..objects.sourcecontrol import SourceControl
-from ..objects.exceptions import NotAuthorizedError
-from . import commonops
+from ebcli.lib import elasticbeanstalk, s3
+from ebcli.resources.strings import prompts
+from ebcli.core import io, fileoperations
+from ebcli.objects.sourcecontrol import SourceControl
+from ebcli.objects.exceptions import NotAuthorizedError
+from ebcli.operations import commonops
 
 
 def terminate(

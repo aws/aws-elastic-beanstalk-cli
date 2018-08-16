@@ -17,8 +17,8 @@ import sys
 from cement.core import controller
 
 from ebcli import __version__
-from ..resources.strings import strings, flag_text
-from ..core import io
+from ebcli.resources.strings import strings, flag_text
+from ebcli.core import io
 
 class EbBaseController(controller.CementBaseController):
     """

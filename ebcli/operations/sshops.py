@@ -16,11 +16,11 @@ import os
 
 from cement.utils.misc import minimal_logger
 
-from ..lib import ec2, utils
-from ..objects.exceptions import NoKeypairError, NotFoundError, CommandError, InvalidOptionsError
-from ..resources.strings import strings, prompts
-from ..core import io, fileoperations
-from . import commonops
+from ebcli.lib import ec2, utils
+from ebcli.objects.exceptions import NoKeypairError, NotFoundError, CommandError, InvalidOptionsError
+from ebcli.resources.strings import strings, prompts
+from ebcli.core import io, fileoperations
+from ebcli.operations import commonops
 
 
 LOG = minimal_logger(__name__)

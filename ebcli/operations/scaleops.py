@@ -11,11 +11,11 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..lib import elasticbeanstalk
-from ..core import io
-from ..resources.strings import prompts, strings
-from ..objects.exceptions import TimeoutError
-from . import commonops
+from ebcli.lib import elasticbeanstalk
+from ebcli.core import io
+from ebcli.resources.strings import prompts, strings
+from ebcli.objects.exceptions import TimeoutError
+from ebcli.operations import commonops
 
 
 def scale(app_name, env_name, number, confirm, timeout=None):

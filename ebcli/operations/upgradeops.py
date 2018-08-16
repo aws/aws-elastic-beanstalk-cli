@@ -11,11 +11,11 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from ebcli.objects.platform import PlatformVersion
-from ..resources.strings import prompts
-from ..resources.statics import namespaces, option_names
-from ..core import io
-from ..lib import elasticbeanstalk
-from . import commonops, solution_stack_ops
+from ebcli.resources.strings import prompts
+from ebcli.resources.statics import namespaces, option_names
+from ebcli.core import io
+from ebcli.lib import elasticbeanstalk
+from ebcli.operations import commonops, solution_stack_ops
 
 
 def _get_warning_message(confirm, single, rolling_enabled, webserver, noroll):

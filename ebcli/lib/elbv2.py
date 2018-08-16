@@ -14,8 +14,8 @@ import time
 
 from cement.utils.misc import minimal_logger
 
-from ..lib import aws
-from ..objects.exceptions import ServiceError, NotFoundError
+from ebcli.lib import aws
+from ebcli.objects.exceptions import ServiceError, NotFoundError
 
 LOG = minimal_logger(__name__)
 

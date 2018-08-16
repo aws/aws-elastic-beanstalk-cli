@@ -201,13 +201,14 @@ class TestHealthops(unittest.TestCase):
             self,
             TraditionalHealthDataPoller_mock,
             term_mock,
-            screen_mock,
+            TraditionalHealthScreen_mock,
             create_traditional_health_tables_mock,
             describe_configuration_settings_mock
     ):
         poller_mock = mock.MagicMock()
         TraditionalHealthDataPoller_mock.return_value = poller_mock
-        screen_mock.return_value = healthops.TraditionalHealthScreen()
+        screen_mock = mock.MagicMock()
+        TraditionalHealthScreen_mock.return_value = screen_mock
         describe_configuration_settings_mock.return_value = {
             'SolutionStackName': '64bit Amazon Linux 2018.03 v4.5.1 running Node.js',
             'PlatformArn': 'arn:aws:elasticbeanstalk:us-west-2::platform/Node.js running on 64bit Amazon Linux/4.5.1',
@@ -235,9 +236,9 @@ class TestHealthops(unittest.TestCase):
             None
         )
 
-        create_traditional_health_tables_mock.assert_called_once()
-        screen_mock.return_value.start_screen.assert_called_once()
         poller_mock.start_background_polling.assert_called_once()
+        create_traditional_health_tables_mock.assert_called_once()
+        screen_mock.start_screen.assert_called_once()
 
     @mock.patch('ebcli.operations.healthops.elasticbeanstalk.describe_configuration_settings')
     @mock.patch('ebcli.operations.healthops.create_traditional_health_tables')

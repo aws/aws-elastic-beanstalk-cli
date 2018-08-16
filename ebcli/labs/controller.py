@@ -11,15 +11,15 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..core import io
-from .quicklink import QuicklinkController
-from .download import DownloadController
-from .convertdockerrun import ConvertDockerrunController
-from .cleanupversions import CleanupVersionsController
-from .cloudwatchsetup import CloudWatchSetUp
-from .setupssl import SetupSSLController
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings
+from ebcli.core import io
+from ebcli.labs.quicklink import QuicklinkController
+from ebcli.labs.download import DownloadController
+from ebcli.labs.convertdockerrun import ConvertDockerrunController
+from ebcli.labs.cleanupversions import CleanupVersionsController
+from ebcli.labs.cloudwatchsetup import CloudWatchSetUp
+from ebcli.labs.setupssl import SetupSSLController
 
 
 class LabsController(AbstractBaseController):

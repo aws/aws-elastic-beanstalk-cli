@@ -13,11 +13,11 @@
 
 from operator import itemgetter
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings
-from ..lib import elasticbeanstalk, utils
-from ..core import io
-from ..objects.exceptions import ServiceError
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings
+from ebcli.lib import elasticbeanstalk, utils
+from ebcli.core import io
+from ebcli.objects.exceptions import ServiceError
 
 
 class CleanupVersionsController(AbstractBaseController):

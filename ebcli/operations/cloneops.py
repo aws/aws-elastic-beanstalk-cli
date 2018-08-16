@@ -15,12 +15,12 @@ import re
 
 from cement.utils.misc import minimal_logger
 
-from ..lib import elasticbeanstalk, utils
-from ..lib.aws import InvalidParameterValueError
-from ..core import io
-from ..objects.exceptions import TimeoutError
-from ..resources.strings import strings, responses, prompts
-from . import commonops
+from ebcli.lib import elasticbeanstalk, utils
+from ebcli.lib.aws import InvalidParameterValueError
+from ebcli.core import io
+from ebcli.objects.exceptions import TimeoutError
+from ebcli.resources.strings import strings, responses, prompts
+from ebcli.operations import commonops
 
 
 LOG = minimal_logger(__name__)

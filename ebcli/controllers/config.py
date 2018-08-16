@@ -16,12 +16,12 @@ import sys
 from cement.core.controller import expose
 
 from ebcli.objects.platform import PlatformVersion
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, flag_text
-from ..core import io, fileoperations
-from ..operations import configops, saved_configs, solution_stack_ops
-from ..objects.exceptions import InvalidSyntaxError, NotFoundError
-from ..lib import utils
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings, flag_text
+from ebcli.core import io, fileoperations
+from ebcli.operations import configops, saved_configs, solution_stack_ops
+from ebcli.objects.exceptions import InvalidSyntaxError, NotFoundError
+from ebcli.lib import utils
 
 
 class ConfigController(AbstractBaseController):

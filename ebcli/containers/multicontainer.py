@@ -1,8 +1,8 @@
-from . import commands
-from . import compose
-from . import dockerrun
-from ..core import fileoperations
-from ..objects.exceptions import CommandError
+from ebcli.containers import commands
+from ebcli.containers import compose
+from ebcli.containers import dockerrun
+from ebcli.core import fileoperations
+from ebcli.objects.exceptions import CommandError
 
 
 class MultiContainer(object):

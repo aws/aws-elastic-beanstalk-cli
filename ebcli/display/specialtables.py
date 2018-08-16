@@ -14,9 +14,9 @@
 from copy import copy
 import re
 
-from ..core import io
-from .table import Table, justify_and_trim
-from . import term
+from ebcli.core import io
+from ebcli.display.table import Table, justify_and_trim
+from ebcli.display import term
 """
 Special table for request summary
 """

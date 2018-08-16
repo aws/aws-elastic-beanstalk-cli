@@ -11,8 +11,8 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..lib import elasticbeanstalk
-from . import commonops
+from ebcli.lib import elasticbeanstalk
+from ebcli.operations import commonops
 
 
 def cname_swap(source_env, dest_env):

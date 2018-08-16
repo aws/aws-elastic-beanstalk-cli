@@ -11,11 +11,11 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from ..core.abstractcontroller import AbstractBaseController
-from ..resources.strings import strings, flag_text
-from ..core import fileoperations, io
-from ..lib import elasticbeanstalk
-from ..operations import envvarops, commonops
+from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.resources.strings import strings, flag_text
+from ebcli.core import fileoperations, io
+from ebcli.lib import elasticbeanstalk
+from ebcli.operations import envvarops, commonops
 
 
 class SetEnvController(AbstractBaseController):
