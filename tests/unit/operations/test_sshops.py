@@ -344,7 +344,8 @@ class TestSSHOps(unittest.TestCase):
                     'Value': 'aws-eb-us-west-2'
                 }
             ],
-            False
+            False,
+            timeout=5
         )
 
     @mock.patch('ebcli.operations.sshops.prompt_for_ec2_keyname')
@@ -373,7 +374,7 @@ class TestSSHOps(unittest.TestCase):
             True,
             None
         )
-        setup_ssh_mock.assert_called_once_with('my-environment', None)
+        setup_ssh_mock.assert_called_once_with('my-environment', None, timeout=None)
 
     def test_prepare_for_ssh__instance_and_number(self):
         with self.assertRaises(sshops.InvalidOptionsError) as context_manager:

@@ -28,9 +28,9 @@ LOG = minimal_logger(__name__)
 
 def prepare_for_ssh(env_name, instance, keep_open, force, setup, number,
                     keyname=None, no_keypair_error_message=None,
-                    custom_ssh=None, command=None):
+                    custom_ssh=None, command=None, timeout=None):
     if setup:
-        setup_ssh(env_name, keyname)
+        setup_ssh(env_name, keyname, timeout=timeout)
         return
 
     if instance and number:
@@ -62,7 +62,7 @@ def prepare_for_ssh(env_name, instance, keep_open, force, setup, number,
         io.log_error(no_keypair_error_message)
 
 
-def setup_ssh(env_name, keyname):
+def setup_ssh(env_name, keyname, timeout=None):
     # Instance does not have a keypair
     io.log_warning(prompts['ssh.setupwarn'].replace('{env-name}',
                                                     env_name))
@@ -75,7 +75,7 @@ def setup_ssh(env_name, keyname):
              'OptionName': 'EC2KeyName',
              'Value': keyname}
         ]
-        commonops.update_environment(env_name, options, False)
+        commonops.update_environment(env_name, options, False, timeout=timeout or 5)
 
 
 def ssh_into_instance(instance_id, keep_open=False, force_open=False, custom_ssh=None, command=None):
