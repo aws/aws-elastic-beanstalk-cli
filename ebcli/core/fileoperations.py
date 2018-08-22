@@ -356,6 +356,13 @@ def get_project_root():
         os.chdir(cwd)
 
 
+def inside_ebcli_project():
+    try:
+        return not not get_project_root()
+    except NotInitializedError:
+        return False
+
+
 def get_zip_location(file_name):
     cwd = os.getcwd()
     try:

@@ -332,12 +332,19 @@ class TestFileOperations(unittest.TestCase):
         self._traverse_to_deeper_subdir()
         self.assertEquals(cwd, fileoperations.get_project_root())
 
-    @unittest.skip
     def test_traverse_to_project_no_root(self):
         os.chdir(os.path.pardir)
         os.chdir(os.path.pardir)
 
         self.assertRaises(NotInitializedError, fileoperations.get_project_root)
+
+    def test_inside_ebcli_project(self):
+        self.assertTrue(fileoperations.inside_ebcli_project())
+
+    def test_inside_ebcli_project__false(self):
+        shutil.rmtree(fileoperations.beanstalk_directory)
+
+        self.assertFalse(fileoperations.inside_ebcli_project())
 
     @patch('ebcli.core.fileoperations.json.loads')
     @patch('ebcli.core.fileoperations.read_from_text_file')
