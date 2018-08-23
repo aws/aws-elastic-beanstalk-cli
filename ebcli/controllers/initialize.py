@@ -61,16 +61,12 @@ class InitController(AbstractBaseController):
         region_name = self.app.pargs.region
         noverify = self.app.pargs.no_verify_ssl
         keyname = self.app.pargs.keyname
-        force_non_interactive = False
         profile = self.app.pargs.profile
         platform = self.app.pargs.platform
         source = self.app.pargs.source
         app_name = self.app.pargs.application_name
         modules = self.app.pargs.modules
-
-        # Determine if the customer is avoiding interactive mode by setting the platform flag
-        if platform:
-            force_non_interactive = True
+        force_non_interactive = customer_is_avoiding_non_interactive_flow(platform)
 
         # The user specifies directories to initialize
         if modules and len(modules) > 0:
@@ -398,6 +394,10 @@ def create_app_or_use_existing_one(app_name, default_env):
         return commonops.pull_down_app_info(app_name, default_env=default_env)
     else:
         return commonops.create_app(app_name, default_env=default_env)
+
+
+def customer_is_avoiding_non_interactive_flow(platform):
+    return not not platform
 
 
 def directory_is_already_associated_with_a_branch():

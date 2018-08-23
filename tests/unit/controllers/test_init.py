@@ -2071,6 +2071,12 @@ class TestInitModule(unittest.TestCase):
         echo_mock.assert_not_called()
         directory_is_already_associated_with_a_branch_mock.assert_called_once_with()
 
+    def test_customer_is_avoiding_non_interactive_flow(self):
+        self.assertTrue(initialize.customer_is_avoiding_non_interactive_flow('php-7.2'))
+
+    def test_customer_is_avoiding_non_interactive_flow__false(self):
+        self.assertFalse(initialize.customer_is_avoiding_non_interactive_flow(None))
+
 
 class TestInitMultipleModules(unittest.TestCase):
     platform = PlatformVersion(
