@@ -143,6 +143,7 @@ optional arguments:
                         specify subnets to launch Packer builder into
   --vpc.publicip        associate public IPs to EC2 instances launched if
                         specified
+  --timeout TIMEOUT     timeout period in minutes
 
 Creates a new platform version. If no version is specified then it will do a patch-increment based on the most recent platform version. The version and increment options are mutually exclusive.
 """.strip(),
@@ -394,6 +395,7 @@ optional arguments:
                         specify subnets to launch Packer builder into
   --vpc.publicip        associate public IPs to EC2 instances launched if
                         specified
+  --timeout TIMEOUT     timeout period in minutes
 
 Creates a new platform version. If no version is specified then it will do a patch-increment based on the most recent platform version. The version and increment options are mutually exclusive.
 """.strip(),
@@ -1518,6 +1520,7 @@ optional arguments:
   -o, --keep_open       keep port 22 open
   --force               force port 22 open to 0.0.0.0
   --setup               setup SSH for the environment
+  --timeout TIMEOUT     timeout period in minutes
 """.strip(),
             self.output_of(['eb', 'ssh', '--help'])
         )
