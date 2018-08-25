@@ -62,8 +62,8 @@ class HelpTestsMixin(object):
 Actual:
 
 {second}""".format(
-                    first=first,
-                    second=second
+                    first=io.color('green', first),
+                    second=io.color('red', second)
                    )
             )
 
