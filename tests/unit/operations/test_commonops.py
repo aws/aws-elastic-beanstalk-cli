@@ -681,7 +681,7 @@ class TestCommonOperations(unittest.TestCase):
 
     @mock.patch('ebcli.operations.commonops.elasticbeanstalk.create_application')
     @mock.patch('ebcli.operations.commonops.pull_down_app_info')
-    def test_create_app(
+    def test_create_app__app_already_exists__app_is_pulled_down(
             self,
             pull_down_app_info_mock,
             create_application_mock
