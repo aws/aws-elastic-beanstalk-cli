@@ -329,8 +329,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_values_from_old_eb')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
+    @mock.patch('ebcli.controllers.initialize.get_keyname')
     def test_init__get_application_information_from_old_config(
             self,
+            get_keyname_mock,
             create_app_or_use_existing_one_mock,
             set_default_env_mock,
             get_values_from_old_eb_mock,
@@ -361,6 +363,7 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_region.return_value = ''
         initops_mock.credentials_are_valid.return_value = True
         solution_stack_ops_mock.get_default_solution_stack.return_value = ''
+        get_keyname_mock.return_value = 'keyname'
 
         sourcecontrol_mock.get_source_control.return_value = git_mock
         git_mock.is_setup.return_value = None
@@ -557,8 +560,10 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     @mock.patch('ebcli.controllers.initialize.handle_buildspec_image')
     @mock.patch('ebcli.controllers.initialize.fileoperations.build_spec_exists')
+    @mock.patch('ebcli.controllers.initialize.get_keyname')
     def test_init_with_codecommit_source_and_codebuild(
             self,
+            get_keyname_mock,
             build_spec_exists_mock,
             handle_buildspec_image_mock,
             create_app_or_use_existing_one_mock,
@@ -586,6 +591,7 @@ class TestInit(unittest.TestCase):
             }
         ]
         sourcecontrol_mock.setup_existing_codecommit_branch = mock.MagicMock()
+        get_keyname_mock.return_value = 'keyname'
 
         solution_stack_ops_mock.get_solution_stack_from_customer.return_value = SolutionStack(
             '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5'
@@ -1744,16 +1750,22 @@ class TestInitModule(unittest.TestCase):
             initialize.get_keyname(None, 'previously-chosen-keyname', False, True)
         )
 
+    @mock.patch('ebcli.controllers.initialize.sshops.prompt_for_ec2_keyname')
     @mock.patch('ebcli.controllers.initialize.commonops.upload_keypair_if_needed')
-    def test_get_keyname__keyname_not_passed_through_command_line__using_previously_set_keyname__interactive(
+    def test_get_keyname__keyname_not_passed_through_command_line__using_previously_set_keyname__interactive__prompts_for_new_keyname_anyway(
             self,
-            upload_keypair_if_needed_mock
+            upload_keypair_if_needed_mock,
+            prompt_for_ec2_keyname_mock
     ):
+        prompt_for_ec2_keyname_mock.return_value = 'keyname'
+
         self.assertEqual(
-            'previously-chosen-keyname',
+            'keyname',
             initialize.get_keyname(None, 'previously-chosen-keyname', True, False)
         )
-        upload_keypair_if_needed_mock.assert_called_once_with('previously-chosen-keyname')
+
+        prompt_for_ec2_keyname_mock.assert_called_once_with()
+        upload_keypair_if_needed_mock.assert_not_called()
 
     @mock.patch('ebcli.controllers.initialize.commonops.get_default_keyname')
     def test_get_keyname__use_default_keyname__force_non_interactive(
@@ -1768,18 +1780,22 @@ class TestInitModule(unittest.TestCase):
 
     @mock.patch('ebcli.controllers.initialize.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.initialize.commonops.upload_keypair_if_needed')
+    @mock.patch('ebcli.controllers.initialize.sshops.prompt_for_ec2_keyname')
     def test_get_keyname__use_default_keyname__interactive(
             self,
+            prompt_for_ec2_keyname_mock,
             upload_keypair_if_needed_mock,
             get_default_keyname_mock
     ):
-        get_default_keyname_mock.return_value = 'keyname'
+        get_default_keyname_mock.return_value = 'default-keyname'
+        prompt_for_ec2_keyname_mock.return_value = 'keyname'
 
         self.assertEqual(
             'keyname',
             initialize.get_keyname(None, None, True, False)
         )
-        upload_keypair_if_needed_mock.assert_called_once_with('keyname')
+        prompt_for_ec2_keyname_mock.assert_called_once_with()
+        upload_keypair_if_needed_mock.assert_not_called()
 
     @mock.patch('ebcli.controllers.initialize.sshops.prompt_for_ec2_keyname')
     def test_get_keyname__prompt_for_ec2_keyname(

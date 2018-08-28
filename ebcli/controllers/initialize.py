@@ -512,6 +512,7 @@ def extract_solution_stack_from_env_yaml():
 
 
 def get_keyname(keyname, keyname_of_existing_app, interactive, force_non_interactive):
+    keyname_passed_through_command_line = not not keyname
     keyname = keyname or keyname_of_existing_app
     if not keyname:
         try:
@@ -522,11 +523,11 @@ def get_keyname(keyname, keyname_of_existing_app, interactive, force_non_interac
     if force_non_interactive and not interactive:
         return keyname
 
-    if keyname is None or \
-            (interactive and not keyname):
-        # Prompt for one
+    if (
+            (interactive and not keyname_passed_through_command_line)
+            or (not keyname and not force_non_interactive)
+    ):
         keyname = sshops.prompt_for_ec2_keyname()
-
     elif keyname != -1:
         commonops.upload_keypair_if_needed(keyname)
 
