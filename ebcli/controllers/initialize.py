@@ -645,10 +645,13 @@ def get_region(region_argument, interactive, force_non_interactive=False):
 
 
 def set_default_env(default_env, interactive, force_non_interactive):
+    if default_env:
+        return default_env
+
     if force_non_interactive:
         return '/ni'
 
-    if not default_env and not interactive:
+    if not interactive:
         try:
             return commonops.get_current_branch_environment()
         except NotInitializedError:

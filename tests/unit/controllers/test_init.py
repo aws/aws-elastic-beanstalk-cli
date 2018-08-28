@@ -1509,6 +1509,18 @@ class TestInitModule(unittest.TestCase):
         create_app_mock.assert_called_once_with('app_name', default_env='default_env')
         pull_down_app_info_mock.assert_not_called()
 
+    def test_set_default_env__force_non_interactive(self):
+        self.assertEqual('/ni', initialize.set_default_env(None, False, True))
+
+    def test_set_default_env__interactive_mode(self):
+        self.assertIsNone(initialize.set_default_env(None, True, False))
+
+    def test_set_default_env__default_env_passed(self):
+        self.assertEqual('default-env', initialize.set_default_env('default-env', True, False))
+
+    def test_set_default_env__default_env_is_not_passed__non_interactive(self):
+        self.assertIsNone(initialize.set_default_env(None, False, False))
+
 
 class TestInitMultipleModules(unittest.TestCase):
     platform = PlatformVersion(
