@@ -497,19 +497,19 @@ def get_region(region_argument, interactive, force_non_interactive=False):
     return region
 
 
-def get_solution_stack(solution_string):
+def get_solution_stack(platform):
     # Get solution stack from config file, if exists
-    if not solution_string:
+    if not platform:
         try:
-            solution_string = solution_stack_ops.get_default_solution_stack()
+            platform = solution_stack_ops.get_default_solution_stack()
         except NotInitializedError:
-            solution_string = None
+            platform = None
 
     # Validate that the platform exists
-    if solution_string:
-        solution_stack_ops.find_solution_stack_from_string(solution_string)
+    if platform:
+        solution_stack_ops.find_solution_stack_from_string(platform)
 
-    return solution_string
+    return platform
 
 
 def handle_buildspec_image(solution, force_non_interactive):
