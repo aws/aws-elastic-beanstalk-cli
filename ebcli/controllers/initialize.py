@@ -435,32 +435,18 @@ def extract_solution_stack_from_env_yaml():
 
 
 def get_app_name(customer_specified_app_name, interactive, force_non_interactive):
-    # Get app name from command line arguments
-    app_name = customer_specified_app_name
+    if customer_specified_app_name:
+        return customer_specified_app_name
 
-    # Get app name from config file, if exists
-    if not app_name:
-        try:
-            app_name = fileoperations.get_application_name(default=None)
-        except NotInitializedError:
-            app_name = None
+    try:
+        app_name = fileoperations.get_application_name(default=None)
+    except NotInitializedError:
+        app_name = None
 
-    if not app_name and force_non_interactive:
-        # Choose defaults
-        app_name = fileoperations.get_current_directory_name()
-
-    # Ask for app name
-    if not app_name or \
-            (interactive and not customer_specified_app_name):
-        app_name = _get_application_name_interactive()
-
-    if sys.version_info[0] < 3 and isinstance(app_name, unicode):
-        try:
-            app_name.encode('utf8').encode('utf8')
-            app_name = app_name.encode('utf8')
-        except UnicodeDecodeError:
-            pass
-
+    if force_non_interactive:
+        return fileoperations.get_current_directory_name()
+    elif interactive or not app_name:
+        return _get_application_name_interactive()
     return app_name
 
 

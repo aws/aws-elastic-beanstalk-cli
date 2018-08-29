@@ -1908,7 +1908,7 @@ class TestInitModule(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_application_name')
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
     @mock.patch('ebcli.controllers.initialize._get_application_name_interactive')
-    def test_get_app_name__app_name_not_passed__force_non_interactive_mode__directory_previously_initialized_but_customer_is_prompted_for_name_anyway(
+    def test_get_app_name__app_name_not_passed__force_non_interactive_mode__directory_previously_initialized(
             self,
             _get_application_name_interactive_mock,
             get_current_directory_name_mock,
@@ -1917,12 +1917,12 @@ class TestInitModule(unittest.TestCase):
         get_application_name_mock.return_value = 'my-application'
         get_current_directory_name_mock.return_value = 'my-application-dir'
         self.assertEqual(
-            'my-application',
+            'my-application-dir',
             initialize.get_app_name(None, False, True)
         )
 
         get_application_name_mock.assert_called_once_with(default=None)
-        get_current_directory_name_mock.assert_not_called()
+        get_current_directory_name_mock.assert_called_once_with()
         _get_application_name_interactive_mock.assert_not_called()
 
 
