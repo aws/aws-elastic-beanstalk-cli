@@ -589,8 +589,6 @@ def should_prompt_customer_to_opt_into_codecommit(
 
     if force_non_interactive:
         return False
-    elif not source_location:
-        return False
     elif source_location and not codecommit.region_supported(region_name):
         io.log_warning(strings['codecommit.badregion'])
         return False
