@@ -25,6 +25,8 @@ from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.buildconfiguration import BuildConfiguration
 
+from .. import mock_responses
+
 
 class TestInit(unittest.TestCase):
     solution = SolutionStack('64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5')
@@ -2263,6 +2265,100 @@ class TestInitModule(unittest.TestCase):
 
     def test_customer_is_avoiding_non_interactive_flow__false(self):
         self.assertFalse(initialize.customer_is_avoiding_non_interactive_flow(None))
+
+    @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize.codecommit.list_repositories')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
+    def test_get_repository_interactive__one_or_more_repositories_retrieved_from_codecommit__choose_existing_repository(
+            self,
+            prompt_for_item_in_list_mock,
+            echo_mock,
+            list_repositories_mock,
+            get_current_directory_name_mock,
+            get_source_control_mock
+    ):
+        get_source_control_mock.current_repository.return_value = 'current-repository'
+        list_repositories_mock.return_value = mock_responses.LIST_REPOSITORIES_RESPONSE
+        prompt_for_item_in_list_mock.return_value = 'my-other-repository'
+
+        self.assertEqual('my-other-repository', initialize.get_repository_interactive())
+
+        get_current_directory_name_mock.assert_not_called()
+        echo_mock.assert_has_calls(
+            [
+                mock.call(),
+                mock.call('Select a repository')
+            ]
+        )
+
+    @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize.codecommit.list_repositories')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
+    @mock.patch('ebcli.controllers.initialize.io.prompt_for_unique_name')
+    @mock.patch('ebcli.controllers.initialize.create_codecommit_repository')
+    def test_get_repository_interactive__one_or_more_repositories_retrieved_from_codecommit__customer_chooses_to_create_new_repository(
+            self,
+            create_codecommit_repository_mock,
+            prompt_for_unique_name_mock,
+            prompt_for_item_in_list_mock,
+            echo_mock,
+            list_repositories_mock,
+            get_current_directory_name_mock,
+            get_source_control_mock
+    ):
+        get_source_control_mock.current_repository.return_value = 'current-repository'
+        list_repositories_mock.return_value = mock_responses.LIST_REPOSITORIES_RESPONSE
+        prompt_for_item_in_list_mock.return_value = '[ Create new Repository ]'
+        prompt_for_unique_name_mock.return_value = 'new-repository-name'
+
+        self.assertEqual('new-repository-name', initialize.get_repository_interactive())
+
+        get_current_directory_name_mock.assert_not_called()
+        echo_mock.assert_has_calls(
+            [
+                mock.call(),
+                mock.call('Select a repository'),
+                mock.call(),
+                mock.call('Enter Repository Name')
+            ]
+        )
+        create_codecommit_repository_mock.assert_called_once_with('new-repository-name')
+
+    @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize.codecommit.list_repositories')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.io.prompt_for_unique_name')
+    @mock.patch('ebcli.controllers.initialize.create_codecommit_repository')
+    def test_get_repository_interactive__no_repositories_retrieved_from_codecommit__customer_chooses_to_create_new_repository(
+            self,
+            create_codecommit_repository_mock,
+            prompt_for_unique_name_mock,
+            echo_mock,
+            list_repositories_mock,
+            get_current_directory_name_mock,
+            get_source_control_mock
+    ):
+        get_source_control_mock.current_repository.return_value = 'current-repository'
+        list_repositories_mock.return_value = {
+            'repositories': []
+        }
+        prompt_for_unique_name_mock.return_value = 'new-repository-name'
+
+        self.assertEqual('new-repository-name', initialize.get_repository_interactive())
+
+        get_current_directory_name_mock.assert_not_called()
+        echo_mock.assert_has_calls(
+            [
+                mock.call(),
+                mock.call('Enter Repository Name')
+            ]
+        )
+        create_codecommit_repository_mock.assert_called_once_with('new-repository-name')
 
 
 class TestInitMultipleModules(unittest.TestCase):
