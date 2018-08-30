@@ -83,22 +83,10 @@ class InitController(AbstractBaseController):
             return
 
         fileoperations.touch_config_folder()
-
         region_name = set_region_for_application(interactive, region_name, force_non_interactive)
-
         set_up_credentials(profile, region_name, interactive)
-
-        app_name = get_app_name(
-            app_name,
-            interactive,
-            force_non_interactive
-        )
-        if noverify:
-            fileoperations.write_config_setting('global',
-                                                'no-verify-ssl', True)
-
+        app_name = get_app_name(app_name, interactive, force_non_interactive)
         default_env = set_default_env(interactive, force_non_interactive)
-
         sstack, keyname_of_existing_application = create_app_or_use_existing_one(app_name, default_env)
         platform = get_solution_stack(platform, sstack, interactive)
 
@@ -115,6 +103,8 @@ class InitController(AbstractBaseController):
         initializeops.setup(app_name, region_name, platform, dir_path=None, repository=repository, branch=branch)
         configure_keyname(platform, keyname, keyname_of_existing_application, interactive, force_non_interactive)
         fileoperations.write_config_setting('global', 'include_git_submodules', True)
+        if noverify:
+            fileoperations.write_config_setting('global', 'no-verify-ssl', True)
 
     def initialize_multiple_directories(
             self,
