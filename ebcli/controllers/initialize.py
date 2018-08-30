@@ -100,12 +100,7 @@ class InitController(AbstractBaseController):
         default_env = set_default_env(interactive, force_non_interactive)
 
         sstack, keyname_of_existing_application = create_app_or_use_existing_one(app_name, default_env)
-        platform = get_solution_stack(platform)
-        platform = platform or sstack
-
-        if fileoperations.env_yaml_exists():
-            platform = platform or extract_solution_stack_from_env_yaml()
-        platform = platform or solution_stack_ops.get_solution_stack_from_customer().platform_shorthand
+        platform = get_solution_stack(platform, sstack, interactive)
 
         handle_buildspec_image(platform, force_non_interactive)
 
@@ -143,7 +138,6 @@ class InitController(AbstractBaseController):
                 # Region should be set once for all modules
                 region = region or set_region_for_application(interactive, region, force_non_interactive)
                 set_up_credentials(profile, region, interactive)
-                solution = get_solution_stack(platform)
 
                 # App name should be set once for all modules
                 if not app_name:
@@ -169,7 +163,7 @@ class InitController(AbstractBaseController):
                         app_name,
                         default_env=default_env
                     )
-
+                solution = get_solution_stack(platform, sstack, interactive)
                 io.echo('\n--- Configuring module: {0} ---'.format(module))
 
                 solution = solution or sstack
@@ -497,8 +491,8 @@ def get_region(region_argument, interactive, force_non_interactive=False):
     return region
 
 
-def get_solution_stack(platform):
-    # Get solution stack from config file, if exists
+def get_solution_stack(platform, sstack, interactive):
+    customer_provided_platform = not not platform
     if not platform:
         try:
             platform = solution_stack_ops.get_default_solution_stack()
@@ -508,6 +502,14 @@ def get_solution_stack(platform):
     # Validate that the platform exists
     if platform:
         solution_stack_ops.find_solution_stack_from_string(platform)
+
+    platform = platform or sstack
+
+    if fileoperations.env_yaml_exists():
+        platform = platform or extract_solution_stack_from_env_yaml()
+
+    if not platform or (interactive and not customer_provided_platform):
+        platform = solution_stack_ops.get_solution_stack_from_customer().platform_shorthand
 
     return platform
 

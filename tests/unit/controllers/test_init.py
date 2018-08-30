@@ -41,7 +41,7 @@ class TestInit(unittest.TestCase):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
 
-    @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
+    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -60,19 +60,18 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            solution_stack_ops_mock
+            get_solution_stack_mock
     ):
         get_app_name_mock.return_value = 'my-application'
         initops_mock.credentials_are_valid.return_value = True
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = False
         create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
-        solution_stack_ops_mock.get_default_solution_stack.return_value = ''
         set_region_for_application_mock.return_value = 'us-west-2'
+        get_solution_stack_mock.return_value = 'PHP 5.5'
 
         app = EB(argv=['init'])
         app.setup()
@@ -87,8 +86,9 @@ class TestInit(unittest.TestCase):
             repository=None
         )
         get_app_name_mock.assert_called_once_with([], False, False)
+        get_solution_stack_mock.assert_called_once_with(None, None, False)
 
-    @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
+    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -107,7 +107,7 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            solution_stack_ops_mock
+            get_solution_stack_mock
     ):
         get_app_name_mock.return_value = 'my-application'
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
@@ -115,15 +115,12 @@ class TestInit(unittest.TestCase):
         elasticbeanstalk_mock.application_exist.return_value = False
         create_app_or_use_existing_one_mock.return_value = (None, None)
         commonops_mock.get_default_keyname.side_effect = initialize.NotInitializedError
-        solution_stack_ops_mock.get_default_solution_stack.side_effect = initialize.NotInitializedError
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
+        get_solution_stack_mock.return_value = 'PHP 5.5'
 
         get_input_mock.side_effect = [
             '3',  # region number
             self.app_name,  # Application name
-            '2',  # Platform selection
-            '2',  # Platform version selection'
             'n',  # Set up ssh selection
         ]
 
@@ -140,8 +137,9 @@ class TestInit(unittest.TestCase):
             repository=None
         )
         get_app_name_mock.assert_called_once_with([], True, False)
+        get_solution_stack_mock.assert_called_once_with(None, None, True)
 
-    @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
+    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -158,18 +156,17 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            solution_stack_ops_mock
+            get_solution_stack_mock
     ):
         get_app_name_mock.return_value = self.app_name
         initops_mock.credentials_are_valid.return_value = False
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = True
         create_app_or_use_existing_one_mock.return_value = (None, None)
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
-        solution_stack_ops_mock.get_default_solution_stack.return_value = ''
+        get_solution_stack_mock.return_value = 'PHP 5.5'
 
         EB.Meta.exit_on_close = False
         app = EB(
@@ -190,8 +187,9 @@ class TestInit(unittest.TestCase):
             dir_path=None,
             repository=None
         )
+        get_solution_stack_mock.assert_called_once_with(None, None, False)
 
-    @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
+    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -208,17 +206,16 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            solution_stack_ops_mock
+            get_solution_stack_mock
     ):
         get_app_name_mock.return_value = self.app_name
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = Exception
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = True
         create_app_or_use_existing_one_mock.return_value = 'ss-stack', 'key'
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = 'us-west-2'
-        solution_stack_ops_mock.get_default_solution_stack.return_value = ''
+        get_solution_stack_mock.return_value = 'php'
 
         EB.Meta.exit_on_close = False
         app = EB(argv=['init', '-p', 'php'])
@@ -233,8 +230,9 @@ class TestInit(unittest.TestCase):
             dir_path=None,
             repository=None
         )
+        get_solution_stack_mock.assert_called_once_with('php', 'ss-stack', False)
 
-    @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
+    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -255,10 +253,9 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            solution_stack_ops_mock,
+            get_solution_stack_mock,
     ):
         get_app_name_mock.return_value = self.app_name
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = Exception
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = False
@@ -266,9 +263,9 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
         initops_mock.credentials_are_valid.return_value = True
-        solution_stack_ops_mock.get_default_solution_stack.return_value = ''
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('my-repo', 'prod/mybranch')
+        get_solution_stack_mock.return_value = 'ruby'
 
         app = EB(
             argv=[
@@ -290,8 +287,9 @@ class TestInit(unittest.TestCase):
             branch='prod/mybranch'
         )
         configure_codecommit_mock.assert_called_once_with('codecommit/my-repo/prod/mybranch')
+        get_solution_stack_mock.assert_called_once_with('ruby', None, False)
 
-    @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
+    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -308,18 +306,17 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            solution_stack_ops_mock,
+            get_solution_stack_mock
     ):
         get_app_name_mock.return_value = 'my-app'
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
         initops_mock.credentials_are_valid.return_value = True
         create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = 'ec2-keyname'
-        solution_stack_ops_mock.get_default_solution_stack.return_value = ''
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('new-repo', 'devo')
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
+        get_solution_stack_mock.return_value = 'PHP 5.5'
 
         app = EB(
             argv=['init', '--region', 'us-east-1', 'my-app'])
@@ -336,9 +333,10 @@ class TestInit(unittest.TestCase):
         )
 
         configure_codecommit_mock.assert_called_once_with(None)
+        get_solution_stack_mock.assert_called_once_with(None, None, False)
 
     @mock.patch('ebcli.controllers.initialize.fileoperations')
-    @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
+    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
@@ -357,7 +355,7 @@ class TestInit(unittest.TestCase):
             create_app_or_use_existing_one_mock,
             commonops_mock,
             initops_mock,
-            solution_stack_ops_mock,
+            get_solution_stack_mock,
             fileoperations_mock,
     ):
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = False
@@ -365,10 +363,9 @@ class TestInit(unittest.TestCase):
         get_app_name_mock.return_value = self.app_name
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
         initops_mock.credentials_are_valid.return_value = True
-        solution_stack_ops_mock.get_default_solution_stack.side_effect = initialize.NotInitializedError
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = self.solution
         fileoperations_mock.env_yaml_exists.return_value = None
         get_keyname_mock.return_value = 'test'
+        get_solution_stack_mock.return_value = 'PHP 5.5'
 
         create_app_or_use_existing_one_mock.return_value = (None, None)
 
@@ -392,8 +389,9 @@ class TestInit(unittest.TestCase):
             mock.call('global', 'include_git_submodules', True)
         ]
         fileoperations_mock.write_config_setting.assert_has_calls(write_config_calls)
+        get_solution_stack_mock.assert_called_once_with(None, None, True)
 
-    @mock.patch('ebcli.controllers.initialize.solution_stack_ops')
+    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -420,21 +418,18 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            solution_stack_ops_mock,
+            get_solution_stack_mock
     ):
         get_app_name_mock.return_value = 'testDir'
         get_platform_from_env_yaml_mock.return_value = 'PHP 5.5'
         get_keyname_mock.return_value = 'keyname'
-        solution_stack_ops_mock.get_solution_stack_from_customer.return_value = SolutionStack(
-            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5'
-        )
+        get_solution_stack_mock.return_value = '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5'
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = False
         create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
-        solution_stack_ops_mock.get_default_solution_stack.return_value = ''
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('my-repo', 'prod')
 
@@ -445,13 +440,17 @@ class TestInit(unittest.TestCase):
         initops_mock.setup.assert_called_with(
             'testDir',
             'us-east-1',
-            'PHP 5.5',
+            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5',
+            branch='prod',
             dir_path=None,
-            repository='my-repo',
-            branch='prod'
+            repository='my-repo'
         )
-        handle_buildspec_image_mock.assert_called_once_with('PHP 5.5', False)
+        handle_buildspec_image_mock.assert_called_once_with(
+            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5',
+            False
+        )
         configure_codecommit_mock.assert_called_once_with('codecommit/my-repo/prod')
+        get_solution_stack_mock.assert_called_once_with(None, None, False)
 
 
 class TestInitModule(unittest.TestCase):
@@ -1867,45 +1866,233 @@ class TestInitModule(unittest.TestCase):
 
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_default_solution_stack')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
     def test_get_solution_stack__platform_argument_passed_in_through_the_command_line(
             self,
+            get_solution_stack_from_customer_mock,
+            extract_solution_stack_from_env_yaml_mock,
             find_solution_stack_from_string_mock,
             get_default_solution_stack_mock
     ):
-        initialize.get_solution_stack('php-5.5')
+        self.assertEqual(
+            'php-5.5',
+            initialize.get_solution_stack('php-5.5', 'php-5.4', False)
+        )
 
         get_default_solution_stack_mock.assert_not_called()
         find_solution_stack_from_string_mock.assert_called_once_with('php-5.5')
+        get_solution_stack_from_customer_mock.assert_not_called()
+        extract_solution_stack_from_env_yaml_mock.assert_not_called()
 
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_default_solution_stack')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops.find_solution_stack_from_string')
-    def test_get_solution_stack__platform_argument_not_passed_in_through_the_command_line__application_not_previously_initialized(
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test_get_solution_stack__platform_argument_not_passed_in_through_the_command_line__application_not_previously_initialized_or_created__no_env_yaml(
             self,
+            get_solution_stack_from_customer_mock,
+            extract_solution_stack_from_env_yaml_mock,
+            env_yaml_exists_mock,
             find_solution_stack_from_string_mock,
             get_default_solution_stack_mock
     ):
-        find_solution_stack_from_string_mock.return_value = self.solution
-        get_default_solution_stack_mock.return_value = None
+        get_default_solution_stack_mock.side_effect = initialize.NotInitializedError
+        env_yaml_exists_mock.return_value = False
 
-        initialize.get_solution_stack(None)
+        initialize.get_solution_stack(None, None, False)
 
         get_default_solution_stack_mock.assert_called_once_with()
         find_solution_stack_from_string_mock.assert_not_called()
+        extract_solution_stack_from_env_yaml_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_called_once_with()
 
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_default_solution_stack')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops.find_solution_stack_from_string')
-    def test_get_solution_stack__platform_argument_not_passed_in_through_the_command_line__application_previously_initialized(
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test_get_solution_stack__platform_argument_not_passed_in__application_previously_initialized(
             self,
+            get_solution_stack_from_customer_mock,
+            extract_solution_stack_from_env_yaml_mock,
+            env_yaml_exists_mock,
             find_solution_stack_from_string_mock,
             get_default_solution_stack_mock
     ):
-        find_solution_stack_from_string_mock.return_value = self.solution
-        get_default_solution_stack_mock.return_value = 'php-5.5'
+        get_default_solution_stack_mock.return_value = 'php 7.1'
+        env_yaml_exists_mock.return_value = True
 
-        initialize.get_solution_stack(None)
+        self.assertEqual(
+            'php 7.1',
+            initialize.get_solution_stack(None, None, False)
+        )
 
         get_default_solution_stack_mock.assert_called_once_with()
+        find_solution_stack_from_string_mock.assert_called_once_with('php 7.1')
+        extract_solution_stack_from_env_yaml_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_default_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test_get_solution_stack__fallback_to_keyname_associated_with_application(
+            self,
+            get_solution_stack_from_customer_mock,
+            extract_solution_stack_from_env_yaml_mock,
+            env_yaml_exists_mock,
+            find_solution_stack_from_string_mock,
+            get_default_solution_stack_mock
+    ):
+        get_default_solution_stack_mock.side_effect = initialize.NotInitializedError
+        env_yaml_exists_mock.return_value = False
+
+        self.assertEqual(
+            'php 5.4',
+            initialize.get_solution_stack(None, 'php 5.4', False)
+        )
+
+        get_default_solution_stack_mock.assert_called_once_with()
+        find_solution_stack_from_string_mock.assert_not_called()
+        extract_solution_stack_from_env_yaml_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_default_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test_get_solution_stack__fallback_to_keyname_in_env_yaml(
+            self,
+            get_solution_stack_from_customer_mock,
+            extract_solution_stack_from_env_yaml_mock,
+            env_yaml_exists_mock,
+            find_solution_stack_from_string_mock,
+            get_default_solution_stack_mock
+    ):
+        get_default_solution_stack_mock.side_effect = initialize.NotInitializedError
+        env_yaml_exists_mock.return_value = True
+        extract_solution_stack_from_env_yaml_mock.return_value = 'php 5.6'
+
+        self.assertEqual(
+            'php 5.6',
+            initialize.get_solution_stack(None, None, False)
+        )
+
+        get_default_solution_stack_mock.assert_called_once_with()
+        find_solution_stack_from_string_mock.assert_not_called()
+        extract_solution_stack_from_env_yaml_mock.assert_called_once_with()
+        get_solution_stack_from_customer_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_default_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test_get_solution_stack__interactive_flow__but_platform_command_line_argument_was_passed(
+            self,
+            get_solution_stack_from_customer_mock,
+            extract_solution_stack_from_env_yaml_mock,
+            env_yaml_exists_mock,
+            find_solution_stack_from_string_mock,
+            get_default_solution_stack_mock
+    ):
+        env_yaml_exists_mock.return_value = False
+
+        self.assertEqual(
+            'php-5.5',
+            initialize.get_solution_stack('php-5.5', None, True)
+        )
+
+        get_default_solution_stack_mock.assert_not_called()
         find_solution_stack_from_string_mock.assert_called_once_with('php-5.5')
+        extract_solution_stack_from_env_yaml_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_default_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test_get_solution_stack__interactive_flow__platform_command_line_argument_was_not_passed__platform_name_from_config_yml_found_but_disregarded(
+            self,
+            get_solution_stack_from_customer_mock,
+            extract_solution_stack_from_env_yaml_mock,
+            env_yaml_exists_mock,
+            find_solution_stack_from_string_mock,
+            get_default_solution_stack_mock
+    ):
+        get_default_solution_stack_mock.return_value = 'php 7.1'
+        get_solution_stack_from_customer_mock.return_value = self.solution
+        env_yaml_exists_mock.return_value = True
+
+        self.assertEqual(
+            'PHP 5.5',
+            initialize.get_solution_stack(None, None, True)
+        )
+
+        get_default_solution_stack_mock.assert_called_once_with()
+        find_solution_stack_from_string_mock.assert_called_once_with('php 7.1')
+        extract_solution_stack_from_env_yaml_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_called_once_with()
+
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_default_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test_get_solution_stack__interactive_flow__platform_name_found_in_env_yaml_but_disregarded(
+            self,
+            get_solution_stack_from_customer_mock,
+            extract_solution_stack_from_env_yaml_mock,
+            env_yaml_exists_mock,
+            find_solution_stack_from_string_mock,
+            get_default_solution_stack_mock
+    ):
+        get_default_solution_stack_mock.side_effect = initialize.NotInitializedError
+        get_solution_stack_from_customer_mock.return_value = self.solution
+        env_yaml_exists_mock.return_value = True
+        extract_solution_stack_from_env_yaml_mock.return_value = 'PHP 7.1'
+
+        self.assertEqual(
+            'PHP 5.5',
+            initialize.get_solution_stack(None, None, True)
+        )
+
+        get_default_solution_stack_mock.assert_called_once_with()
+        find_solution_stack_from_string_mock.assert_not_called()
+        extract_solution_stack_from_env_yaml_mock.assert_called_once_with()
+        get_solution_stack_from_customer_mock.assert_called_once_with()
+
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_default_solution_stack')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test_get_solution_stack__interactive_flow__platform_command_line_argument_was_not_passed(
+            self,
+            get_solution_stack_from_customer_mock,
+            extract_solution_stack_from_env_yaml_mock,
+            env_yaml_exists_mock,
+            find_solution_stack_from_string_mock,
+            get_default_solution_stack_mock
+    ):
+        get_solution_stack_from_customer_mock.return_value = self.solution
+        get_default_solution_stack_mock.side_effect = initialize.NotInitializedError
+        env_yaml_exists_mock.return_value = False
+
+        self.assertEqual(
+            'PHP 5.5',
+            initialize.get_solution_stack(None, None, True)
+        )
+
+        get_default_solution_stack_mock.assert_called_once_with()
+        find_solution_stack_from_string_mock.assert_not_called()
+        extract_solution_stack_from_env_yaml_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_called_once_with()
 
     def test_should_prompt_customer_to_opt_into_codecommit__force_non_interactive(self):
         self.assertFalse(
