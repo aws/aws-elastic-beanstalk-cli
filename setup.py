@@ -18,6 +18,7 @@ requires = [
     'six == 1.11.0',
     'tabulate == 0.7.5',
     'termcolor == 1.1.0',
+    'urllib3>=1.21.1,<1.23'
 ]
 
 testing_requires = [
