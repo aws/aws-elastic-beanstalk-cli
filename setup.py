@@ -16,7 +16,6 @@ requires = [
     'setuptools >= 20.0',
     'semantic_version == 2.5.0',
     'six == 1.11.0',
-    'tabulate == 0.7.5',
     'termcolor == 1.1.0',
     'urllib3>=1.21.1,<1.23'
 ]
