@@ -1520,7 +1520,8 @@ optional arguments:
   -o, --keep_open       keep port 22 open
   --force               force port 22 open to 0.0.0.0
   --setup               setup SSH for the environment
-  --timeout TIMEOUT     timeout period in minutes
+  --timeout TIMEOUT     Specify the timeout period in minutes. Can only be
+                        used with the '--setup' argument.
 """.strip(),
             self.output_of(['eb', 'ssh', '--help'])
         )

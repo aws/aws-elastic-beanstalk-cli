@@ -35,7 +35,7 @@ class SSHController(AbstractBaseController):
                 action='store_true', help=flag_text['ssh.force'])),
             (['--setup'], dict(
                 action='store_true', help=flag_text['ssh.setup'])),
-            (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
+            (['--timeout'], dict(type=int, help=flag_text['ssh.timeout'])),
         ]
 
     def do_command(self):
@@ -47,7 +47,10 @@ class SSHController(AbstractBaseController):
         keep_open = self.app.pargs.keep_open
         force = self.app.pargs.force
         setup = self.app.pargs.setup
-        timeout=self.app.pargs.timeout
+        timeout = self.app.pargs.timeout
+
+        if timeout and not setup:
+            raise InvalidOptionsError(strings['ssh.timeout_without_setup'])
 
         sshops.prepare_for_ssh(
                 env_name=env_name,

@@ -138,6 +138,7 @@ To upgrade an environment's platform, enter:
     'config.info': "Modify an environment's configuration. Use subcommands to manage saved configurations.",
     'platformconfig.info': "Modify an platform's configuration. Use subcommands to manage saved configurations.",
     'ssh.info': 'Opens the SSH client to connect to an instance.',
+    'ssh.timeout_without_setup': 'You can only use the "--timeout" argument with the "--setup" argument',
     'printenv.info': 'Shows the environment variables.',
     'local.info': 'Runs commands on your local machine.',
     'local.printenv.info': 'Shows local environment variables.',
@@ -623,6 +624,7 @@ flag_text = {
     'ssh.custom': "Specify an SSH command to use instead of 'ssh -i keyfile'. Do not include the remote user and hostname.",
     'ssh.force': 'force port 22 open to 0.0.0.0',
     'ssh.setup': 'setup SSH for the environment',
+    'ssh.timeout': "Specify the timeout period in minutes. Can only be used with the '--setup' argument.",
 
     # Cleanup
     'cleanup.resources': 'Valid values include (builder, versions, all). You can specify "builder" to terminate the environment used to create this platform. You can use "versions" to clean up platform versions in the Failed state',
