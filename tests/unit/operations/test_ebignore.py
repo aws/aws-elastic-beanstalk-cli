@@ -238,6 +238,7 @@ file\ 1
 		)
 
 	@unittest.skipIf(sys.version_info < (3, 0), reason='Python 2.7.x does not support non-ASCII characters')
+	@unittest.skipIf(sys.platform.startswith('darwin'), reason='OS X related problem')
 	@patch('ebcli.core.fileoperations.get_project_root')
 	@patch('ebcli.core.fileoperations.get_ebignore_location')
 	def test_get_ebignore_list__includes_files_with_unicode_names(
