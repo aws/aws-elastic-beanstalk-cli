@@ -2,12 +2,17 @@
 Changelog
 =========
 -------------------
-3.14.5 (2018-09-11)
+3.14.6 (2018-09-11)
 -------------------
 - Added `--timeout` argument to the `eb platform create` command
 - Added `--timeout` argument to the `eb ssh --setup` command
 - Removed dependency on `tabulate`
 - Restricted `urllib3` requirement to range `>1.21,<1.23` to resolve dependency incompatibility between `botocore` and `requests`
+
+-------------------
+3.14.5 (2018-09-07)
+-------------------
+- Restricted `botocore` version to the range `<1.12` to avoid incompatibility with the EBCLI
 
 -------------------
 3.14.4 (2018-08-16)
