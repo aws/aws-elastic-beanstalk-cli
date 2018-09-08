@@ -7,7 +7,7 @@ import ebcli
 
 
 requires = [
-    'botocore>=1.0.1',
+    'botocore<1.12',
     'cement==2.8.2',
     'colorama>=0.3.9,<0.4.0',  # use the same range that 'docker-compose' uses
     'pathspec==0.5.5',

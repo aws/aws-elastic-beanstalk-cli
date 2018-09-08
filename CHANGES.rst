@@ -2,6 +2,11 @@
 Changelog
 =========
 -------------------
+3.14.5 (2018-09-07)
+-------------------
+- Restricted `botocore` version to the range `<1.12` to avoid incompatibility with the EBCLI
+
+-------------------
 3.14.4 (2018-08-16)
 -------------------
 - Fixed `eb platform --help` and `ebp --help` usage texts to show all available commands and subcommands regardless of workspace type
