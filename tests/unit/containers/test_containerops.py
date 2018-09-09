@@ -51,7 +51,7 @@ class TestContainerOps(TestCase):
     @patch('ebcli.containers.containerops.fileoperations.get_json_dict')
     def test_get_configuration(self, get_json_dict):
         get_json_dict.return_value = {}
-        self.assertEquals({}, cops.get_configuration())
+        self.assertEqual({}, cops.get_configuration())
         get_json_dict.assert_called_once_with(cops.CONTAINER_CONFIG_PATH)
 
     def test_get_runtime_default_log_path(self):

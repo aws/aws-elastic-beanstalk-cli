@@ -61,12 +61,12 @@ class TestCompat(TestCase):
     @patch('ebcli.containers.compat.utils.exec_cmd_quiet')
     def test_container_ip_boot2docker_works(self, exec_cmd_quiet):
         exec_cmd_quiet.return_value = MOCK_MAC_CONTAINER_IP
-        self.assertEquals(MOCK_MAC_CONTAINER_IP, compat.container_ip())
+        self.assertEqual(MOCK_MAC_CONTAINER_IP, compat.container_ip())
 
     @patch('ebcli.containers.compat.utils.exec_cmd_quiet')
     def test_container_ip_boot2docker_oserror(self, exec_cmd_quiet):
         exec_cmd_quiet.side_effect = OSError
-        self.assertEquals(compat.LOCALHOST, compat.container_ip())
+        self.assertEqual(compat.LOCALHOST, compat.container_ip())
 
     @patch('ebcli.containers.compat.utils')
     @patch('ebcli.containers.compat.heuristics.is_boot2docker_installed')

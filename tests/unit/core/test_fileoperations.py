@@ -301,7 +301,7 @@ class TestFileOperations(unittest.TestCase):
         result = fileoperations.get_config_setting('global',
                                                    'application_name')
 
-        self.assertEquals(result, None)
+        self.assertEqual(result, None)
 
     def test_get_config_setting_merge(self):
         # create global file
@@ -324,13 +324,13 @@ class TestFileOperations(unittest.TestCase):
 
     def test_get_project_root_at_root(self):
         cwd = os.getcwd()
-        self.assertEquals(cwd, fileoperations.get_project_root())
-        self.assertEquals(cwd, os.getcwd())
+        self.assertEqual(cwd, fileoperations.get_project_root())
+        self.assertEqual(cwd, os.getcwd())
 
     def test_traverse_to_project_root_deep2(self):
         cwd = os.getcwd()
         self._traverse_to_deeper_subdir()
-        self.assertEquals(cwd, fileoperations.get_project_root())
+        self.assertEqual(cwd, fileoperations.get_project_root())
 
     def test_traverse_to_project_no_root(self):
         os.chdir(os.path.pardir)
@@ -353,7 +353,7 @@ class TestFileOperations(unittest.TestCase):
         loads.return_value = {}
         mock_path = 'a{0}b{0}c{0}file.json'.format(os.path.sep)
 
-        self.assertEquals(fileoperations.get_json_dict(mock_path), {})
+        self.assertEqual(fileoperations.get_json_dict(mock_path), {})
         read_from_data_file.assert_called_once_with(mock_path)
         loads.assert_called_once_with('{}')
 
@@ -361,7 +361,7 @@ class TestFileOperations(unittest.TestCase):
     def test_project_file_path(self, get_project_root):
         get_project_root.side_effect = [os.path.sep]
         expected_file_path = '{}foo'.format(os.path.sep)
-        self.assertEquals(fileoperations.project_file_path('foo'),
+        self.assertEqual(fileoperations.project_file_path('foo'),
                           expected_file_path)
 
     @patch('ebcli.core.fileoperations.file_exists')
@@ -470,7 +470,7 @@ class TestFileOperations(unittest.TestCase):
         fileoperations.zip_append_archive('target_file.zip', 'source_file.zip')
 
         target_file_zip = zipfile.ZipFile('target_file.zip', 'r', allowZip64=True)
-        self.assertEquals(['source_file.txt', 'target_file.txt'], sorted(target_file_zip.namelist()))
+        self.assertEqual(['source_file.txt', 'target_file.txt'], sorted(target_file_zip.namelist()))
 
     @patch('ebcli.core.fileoperations.get_editor')
     @patch('ebcli.core.fileoperations.os.system')

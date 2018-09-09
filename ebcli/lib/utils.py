@@ -20,6 +20,7 @@ from datetime import datetime
 from dateutil import tz, parser
 
 from botocore.compat import six
+from cement.ext.ext_logging import LoggingLogHandler
 from cement.utils.misc import minimal_logger
 from subprocess import Popen, PIPE, STDOUT
 urllib = six.moves.urllib
@@ -361,3 +362,14 @@ def decode_bytes(value):
         if isinstance(value, bytes):
             value = value.decode('utf8')
     return value
+
+
+def monkey_patch_warn():
+    def warn(self, msg, namespace=None, **kw):
+        """
+        Monkey-patch to call `warning` rather than `warn` on logger objects (which
+        are of type `logging.Logger`) because `warn` is going to be deprecated.
+        """
+        kwargs = self._get_logging_kwargs(namespace, **kw)
+        self.backend.warning(msg, **kwargs)
+    LoggingLogHandler.warn = warn

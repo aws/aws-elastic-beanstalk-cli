@@ -64,7 +64,7 @@ class TestLog(TestCase):
         datetime.now.return_value = MOCK_DATETIME
         datetime.strftime.return_value = EXPECTED_DATETIME_STR
 
-        self.assertEquals(EXPECTED_HOST_LOG_PATH, log.new_host_log_path(ROOT_LOG_DIR))
+        self.assertEqual(EXPECTED_HOST_LOG_PATH, log.new_host_log_path(ROOT_LOG_DIR))
         datetime.now.assert_called_once_with()
 
 
@@ -101,9 +101,9 @@ class TestLog(TestCase):
                 local_dir_permissions = '0o40777'
                 enclosing_dir_permissions = '0o40744'
 
-            self.assertEquals(enclosing_dir_permissions, oct(os.stat(enclosign_dir).st_mode))
-            self.assertEquals(local_dir_permissions, oct(os.stat(root_log_dir).st_mode))
-            self.assertEquals(local_dir_permissions, oct(os.stat(new_local_dir).st_mode))
+            self.assertEqual(enclosing_dir_permissions, oct(os.stat(enclosign_dir).st_mode))
+            self.assertEqual(local_dir_permissions, oct(os.stat(root_log_dir).st_mode))
+            self.assertEqual(local_dir_permissions, oct(os.stat(new_local_dir).st_mode))
 
         finally:
             shutil.rmtree('.elasticbeanstalk')

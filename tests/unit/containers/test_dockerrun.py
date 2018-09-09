@@ -103,7 +103,7 @@ class TestDockerrun(TestCase):
     @patch('ebcli.containers.dockerrun.fileoperations.get_json_dict')
     def test_get_dockerrun_happy_case(self, get_json_dict):
         get_json_dict.return_value = {}
-        self.assertEquals({}, dr.get_dockerrun(MOCK_DOCKERRUN_PATH))
+        self.assertEqual({}, dr.get_dockerrun(MOCK_DOCKERRUN_PATH))
 
     @patch('ebcli.containers.dockerrun.fileoperations.get_json_dict')
     def test_get_dockerrun_ioerror_case(self, get_json_dict):
@@ -130,7 +130,7 @@ class TestDockerrun(TestCase):
 
     def test_get_auth_key(self):
         dockerrun = _make_mock_dockerrun(auth_key=MOCK_AUTH_KEY, version=dr.VERSION_ONE)
-        self.assertEquals(MOCK_AUTH_KEY, dr.get_auth_key(dockerrun))
+        self.assertEqual(MOCK_AUTH_KEY, dr.get_auth_key(dockerrun))
 
     def test_get_auth_key_keyerror(self):
         self.assertRaises(KeyError, dr.get_auth_key, {})
@@ -138,14 +138,14 @@ class TestDockerrun(TestCase):
     def test_get_auth_bucket_name(self):
         dockerrun = _make_mock_dockerrun(auth_bucket=MOCK_AUTH_BUCKET,
                                          version=dr.VERSION_ONE)
-        self.assertEquals(MOCK_AUTH_BUCKET, dr.get_auth_bucket_name(dockerrun))
+        self.assertEqual(MOCK_AUTH_BUCKET, dr.get_auth_bucket_name(dockerrun))
 
     def test_get_auth_bucket_name_keyerror(self):
         self.assertRaises(KeyError, dr.get_auth_bucket_name, {})
 
     def test_get_logdir(self):
         dockerrun = _make_mock_dockerrun(logdir=MOCK_LOGDIR)
-        self.assertEquals(MOCK_LOGDIR, dr.get_logdir(dockerrun))
+        self.assertEqual(MOCK_LOGDIR, dr.get_logdir(dockerrun))
 
     def test_get_logdir_none_dockerrun(self):
         self.assertIsNone(dr.get_logdir(None))

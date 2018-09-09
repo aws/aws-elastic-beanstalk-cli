@@ -83,7 +83,7 @@ class TestCommands(TestCase):
         ret = commands.build_img(MOCK_DOCKER_PATH)
 
         msg = 'Expected returned image to be ' + EXPECTED_BUILD_IMG_ID
-        self.assertEquals(EXPECTED_BUILD_IMG_ID, ret, msg)
+        self.assertEqual(EXPECTED_BUILD_IMG_ID, ret, msg)
         expected_args = ['docker', 'build', MOCK_DOCKER_PATH]
         exec_cmd_live_output.assert_called_once_with(expected_args)
 
@@ -96,7 +96,7 @@ class TestCommands(TestCase):
         ret = commands.build_img(MOCK_DOCKER_PATH, MOCK_SKELETON_DOCKER_PATH)
 
         msg = 'Expected returned image to be ' + EXPECTED_BUILD_IMG_ID
-        self.assertEquals(EXPECTED_BUILD_IMG_ID, ret, msg)
+        self.assertEqual(EXPECTED_BUILD_IMG_ID, ret, msg)
         expected_args = ['docker', 'build', '-f', MOCK_SKELETON_DOCKER_PATH,
                          MOCK_DOCKER_PATH]
         exec_cmd_live_output.assert_called_once_with(expected_args)
@@ -169,7 +169,7 @@ class TestCommands(TestCase):
         loads.return_value = [{}]
         exec_cmd_quiet.return_value = '[{}]'
         lowlvl_info = commands.get_container_lowlvl_info(MOCK_CONTAINER_NAME)
-        self.assertEquals({}, lowlvl_info)
+        self.assertEqual({}, lowlvl_info)
 
         expected_args = ['docker', 'inspect', MOCK_CONTAINER_NAME]
         exec_cmd_quiet.assert_called_once_with(expected_args)
@@ -187,7 +187,7 @@ class TestCommands(TestCase):
     @patch('ebcli.containers.commands.get_container_lowlvl_info')
     def test_is_running_happy_case(self, get_container_lowlvl_info):
         get_container_lowlvl_info.return_value = MOCK_CONTAINER_INFO
-        self.assertEquals(MOCK_IS_RUNNING,
+        self.assertEqual(MOCK_IS_RUNNING,
                           commands.is_running(MOCK_CONTAINER_NAME))
 
     @patch('ebcli.containers.commands.get_container_lowlvl_info')
@@ -198,7 +198,7 @@ class TestCommands(TestCase):
     @patch('ebcli.containers.commands.get_container_lowlvl_info')
     def test_get_exposed_hostports_happy_case(self, get_container_lowlvl_info):
         get_container_lowlvl_info.return_value = MOCK_CONTAINER_NETWORK
-        self.assertEquals([MOCK_HOST_PORT],
+        self.assertEqual([MOCK_HOST_PORT],
                           commands.get_exposed_hostports(MOCK_CONTAINER_NAME))
 
     @patch('ebcli.containers.commands.get_container_lowlvl_info')
@@ -232,12 +232,12 @@ class TestCommands(TestCase):
     @patch('ebcli.containers.commands.utils.exec_cmd_quiet')
     def test_version(self, exec_cmd_quiet):
         exec_cmd_quiet.return_value = 'Docker version 1.1.0, build a8a31ef'
-        self.assertEquals('1.1.0', commands.version())
+        self.assertEqual('1.1.0', commands.version())
 
     @patch('ebcli.containers.commands.utils.exec_cmd_quiet')
     def test_compose_version(self, exec_cmd_quiet):
         exec_cmd_quiet.return_value = 'docker-compose 1.1.0'
-        self.assertEquals('1.1.0', commands.compose_version())
+        self.assertEqual('1.1.0', commands.compose_version())
 
     @patch('ebcli.containers.commands._compose_run')
     def test_up_not_allow_insecure_ssl(self, _compose_run):

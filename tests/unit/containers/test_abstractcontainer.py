@@ -100,7 +100,7 @@ class TestAbstractContainer(TestCase):
         self.pathconfig.docker_proj_path = lambda: ''
         # This is the result of sha1('')
         expected_hash = 'da39a3ee5e6b4b0d3255bfef95601890afd80709'
-        self.assertEquals(expected_hash, self.cnt.get_name())
+        self.assertEqual(expected_hash, self.cnt.get_name())
 
     @patch('ebcli.containers.abstractcontainer.commands.is_running')
     def test_is_running_true(self, is_running):

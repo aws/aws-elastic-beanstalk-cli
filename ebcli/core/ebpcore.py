@@ -29,6 +29,7 @@ from ebcli.controllers.platform.delete import EBPDeleteController
 from ebcli.controllers.platform.events import EBPEventsController
 from ebcli.controllers.platform.logs import EBPLogsController
 from ebcli.controllers.platform.initialize import EBPInitController
+from ebcli.lib import utils
 from ebcli.resources.strings import flag_text, strings
 
 
@@ -130,6 +131,9 @@ def _partition_commands():
         ('platform workspace commands', platform_workspace_labels),
         ('common commands', common_labels),
     )
+
+
+utils.monkey_patch_warn()
 
 
 def main():

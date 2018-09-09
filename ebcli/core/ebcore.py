@@ -12,6 +12,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from argparse import SUPPRESS
+
 from cement.core import foundation, handler, hook
 from cement.utils.misc import init_defaults
 
@@ -57,6 +58,7 @@ from ebcli.core.completer import CompleterController
 from ebcli.labs.controller import LabsController
 from ebcli.objects.exceptions import *
 from ebcli.resources.strings import flag_text
+from ebcli.lib import utils
 import ebcli.core.ebrun as ebrun
 
 
@@ -135,6 +137,9 @@ class EB(foundation.CementApp):
                      action='store_true', help=flag_text['base.noverify'])
         self.add_arg('--debugboto',  # show debug info for botocore
                      action='store_true', help=SUPPRESS)
+
+
+utils.monkey_patch_warn()
 
 
 def main():
