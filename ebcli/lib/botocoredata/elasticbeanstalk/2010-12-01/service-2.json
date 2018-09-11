@@ -4,6 +4,7 @@
     "apiVersion":"2010-12-01",
     "endpointPrefix":"elasticbeanstalk",
     "serviceFullName":"AWS Elastic Beanstalk",
+    "serviceId":"Elastic Beanstalk",
     "signatureVersion":"v4",
     "xmlNamespace":"http://elasticbeanstalk.amazonaws.com/docs/2010-12-01/",
     "protocol":"query"

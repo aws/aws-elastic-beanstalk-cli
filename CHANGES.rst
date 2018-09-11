@@ -6,8 +6,10 @@ Changelog
 -------------------
 - Added `--timeout` argument to the `eb platform create` command
 - Added `--timeout` argument to the `eb ssh --setup` command
+- Passed `serviceId` as a parameter to the `botocore`-managed service models patched by the EBCLI
 - Removed dependency on `tabulate`
 - Restricted `urllib3` requirement to range `>1.21,<1.23` to resolve dependency incompatibility between `botocore` and `requests`
+- Updated `botocore` requirement to `>=1.12.1,<1.13`
 
 -------------------
 3.14.5 (2018-09-07)

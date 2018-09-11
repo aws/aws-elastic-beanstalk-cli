@@ -5,6 +5,7 @@
     "endpointPrefix":"elasticloadbalancing",
     "serviceFullName":"Elastic Load Balancing",
     "signatureVersion":"v4",
+    "serviceId":"Elastic Load Balancing v2",
     "signingName":"elasticloadbalancing",
     "xmlNamespace":"http://elasticloadbalancing.amazonaws.com/doc/2015-12-01/",
     "protocol":"query"
