@@ -399,7 +399,7 @@ def set_up_credentials(given_profile, given_region, interactive, force_non_inter
     profile, _ = check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
 
     if not commonops.credentials_are_valid():
-        initializeops.setup_credentials()
+        commonops.setup_credentials()
     else:
         fileoperations.write_config_setting('global', 'profile', profile)
 

@@ -191,38 +191,6 @@ class TestInitializeOperations(unittest.TestCase):
 
         setup_ignore_file_mock.assert_called_once_with()
 
-    @mock.patch('ebcli.operations.initializeops.io.echo')
-    @mock.patch('ebcli.operations.initializeops.io.log_info')
-    @mock.patch('ebcli.operations.initializeops.io.prompt')
-    @mock.patch('ebcli.operations.initializeops.fileoperations.save_to_aws_config')
-    @mock.patch('ebcli.operations.initializeops.fileoperations.touch_config_folder')
-    @mock.patch('ebcli.operations.initializeops.fileoperations.write_config_setting')
-    @mock.patch('ebcli.operations.initializeops.aws.set_session_creds')
-    def test_setup_credentials(
-            self,
-            set_session_creds_mock,
-            write_config_setting_mock,
-            touch_config_folder_mock,
-            save_to_aws_config_mock,
-            prompt_mock,
-            log_info_mock,
-            echo_mock
-    ):
-        prompt_mock.side_effect = [
-            'access-id',
-            'secret-key'
-        ]
-
-        initializeops.setup_credentials()
-
-        set_session_creds_mock.assert_called_once_with('access-id', 'secret-key')
-        write_config_setting_mock.assert_called_once_with('global', 'profile', 'eb-cli')
-        touch_config_folder_mock.assert_called_once_with()
-        save_to_aws_config_mock.assert_called_once_with('access-id', 'secret-key')
-        log_info_mock.assert_called_once_with('Setting up ~/aws/ directory with config file')
-        echo_mock.assert_called_once_with(
-            'You have not yet set up your credentials or your credentials are incorrect \nYou must provide your credentials.'
-        )
 
     @mock.patch('ebcli.operations.initializeops.fileoperations.create_config_file')
     def test_setup_directory(

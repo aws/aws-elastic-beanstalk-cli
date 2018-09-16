@@ -180,7 +180,6 @@ class TestInit(unittest.TestCase):
         app.setup()
         app.run()
 
-        initops_mock.setup_credentials.assert_called_with()
         initops_mock.setup.assert_called_with(
             self.app_name,
             'us-west-2',
@@ -628,7 +627,7 @@ class TestInitModule(unittest.TestCase):
 
     @mock.patch('ebcli.controllers.initialize.check_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
-    @mock.patch('ebcli.controllers.initialize.initializeops.setup_credentials')
+    @mock.patch('ebcli.controllers.initialize.commonops.setup_credentials')
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     def test_set_up_credentials__credentials_not_setup(
             self,
@@ -658,7 +657,7 @@ class TestInitModule(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.aws.set_profile')
     @mock.patch('ebcli.controllers.initialize.check_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
-    @mock.patch('ebcli.controllers.initialize.initializeops.setup_credentials')
+    @mock.patch('ebcli.controllers.initialize.commonops.setup_credentials')
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     def test_set_up_credentials__eb_cli_is_used_as_default_profile(
             self,
@@ -690,7 +689,7 @@ class TestInitModule(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.aws.set_profile')
     @mock.patch('ebcli.controllers.initialize.check_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
-    @mock.patch('ebcli.controllers.initialize.initializeops.setup_credentials')
+    @mock.patch('ebcli.controllers.initialize.commonops.setup_credentials')
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     def test_set_up_credentials__eb_cli_is_used_as_default_profile(
             self,

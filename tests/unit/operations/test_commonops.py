@@ -2302,3 +2302,36 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
 
     def test_wait_for_processed_app_versions__no_app_versions_to_wait_for(self):
         self.assertTrue(commonops.wait_for_processed_app_versions('my-application', []))
+
+    @mock.patch('ebcli.operations.commonops.io.echo')
+    @mock.patch('ebcli.operations.commonops.io.log_info')
+    @mock.patch('ebcli.operations.commonops.io.prompt')
+    @mock.patch('ebcli.operations.commonops.fileoperations.save_to_aws_config')
+    @mock.patch('ebcli.operations.commonops.fileoperations.touch_config_folder')
+    @mock.patch('ebcli.operations.commonops.fileoperations.write_config_setting')
+    @mock.patch('ebcli.operations.commonops.aws.set_session_creds')
+    def test_setup_credentials(
+            self,
+            set_session_creds_mock,
+            write_config_setting_mock,
+            touch_config_folder_mock,
+            save_to_aws_config_mock,
+            prompt_mock,
+            log_info_mock,
+            echo_mock
+    ):
+        prompt_mock.side_effect = [
+            'access-id',
+            'secret-key'
+        ]
+
+        commonops.setup_credentials()
+
+        set_session_creds_mock.assert_called_once_with('access-id', 'secret-key')
+        write_config_setting_mock.assert_called_once_with('global', 'profile', 'eb-cli')
+        touch_config_folder_mock.assert_called_once_with()
+        save_to_aws_config_mock.assert_called_once_with('access-id', 'secret-key')
+        log_info_mock.assert_called_once_with('Setting up ~/aws/ directory with config file')
+        echo_mock.assert_called_once_with(
+            'You have not yet set up your credentials or your credentials are incorrect \nYou must provide your credentials.'
+        )
