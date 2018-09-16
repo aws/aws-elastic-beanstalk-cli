@@ -322,7 +322,7 @@ def get_branch_interactive(repository):
 def check_credentials(profile, given_profile, given_region, interactive, force_non_interactive):
     try:
         # Note, region is None unless explicitly set or read from old eb
-        initializeops.credentials_are_valid()
+        commonops.credentials_are_valid()
         return profile, given_region
     except NoRegionError:
         region = get_region(None, interactive, force_non_interactive)
@@ -398,7 +398,7 @@ def set_up_credentials(given_profile, given_region, interactive, force_non_inter
 
     profile, _ = check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
 
-    if not initializeops.credentials_are_valid():
+    if not commonops.credentials_are_valid():
         initializeops.setup_credentials()
     else:
         fileoperations.write_config_setting('global', 'profile', profile)

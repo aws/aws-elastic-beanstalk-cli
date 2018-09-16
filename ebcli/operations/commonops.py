@@ -26,6 +26,7 @@ from ebcli.core import fileoperations, io
 from ebcli.lib import aws, ec2, elasticbeanstalk, heuristics, iam, s3, utils, codecommit
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.exceptions import (
+    CredentialsError,
     AlreadyExistsError,
     CommandError,
     NotFoundError,
@@ -947,6 +948,18 @@ def create_instance_profile(
         io.log_warning(strings['platformcreateiamdescribeerror.info'].format(profile_name=profile_name))
 
     return profile_name
+
+
+def credentials_are_valid():
+    try:
+        elasticbeanstalk.get_available_solution_stacks(fail_on_empty_response=False)
+        return True
+    except CredentialsError:
+        return False
+    except NotAuthorizedError as e:
+        io.log_error('The current user does not have the correct permissions. '
+                     'Reason: {0}'.format(e.message))
+        return False
 
 
 def _create_instance_role(role_name, policy_arns):

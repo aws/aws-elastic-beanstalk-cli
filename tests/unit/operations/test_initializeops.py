@@ -22,7 +22,7 @@ import unittest
 import mock
 
 from ebcli.core import fileoperations
-from ebcli.operations import initializeops
+from ebcli.operations import commonops, initializeops
 
 
 class TestInitializeOperations(unittest.TestCase):
@@ -93,7 +93,7 @@ class TestInitializeOperations(unittest.TestCase):
             self,
             get_available_solution_stacks_mock
     ):
-        self.assertTrue(initializeops.credentials_are_valid())
+        self.assertTrue(commonops.credentials_are_valid())
 
     @mock.patch('ebcli.operations.initializeops.elasticbeanstalk.get_available_solution_stacks')
     def test_credentials_are_valid__credentials_error(
@@ -102,7 +102,7 @@ class TestInitializeOperations(unittest.TestCase):
     ):
         get_available_solution_stacks_mock.side_effect = initializeops.CredentialsError
 
-        self.assertFalse(initializeops.credentials_are_valid())
+        self.assertFalse(commonops.credentials_are_valid())
 
     @mock.patch('ebcli.operations.initializeops.elasticbeanstalk.get_available_solution_stacks')
     @mock.patch('ebcli.operations.initializeops.io.log_error')
@@ -113,7 +113,7 @@ class TestInitializeOperations(unittest.TestCase):
     ):
         get_available_solution_stacks_mock.side_effect = initializeops.NotAuthorizedError
 
-        self.assertFalse(initializeops.credentials_are_valid())
+        self.assertFalse(commonops.credentials_are_valid())
 
         log_error_mock.assert_called_once_with(
             'The current user does not have the correct permissions. Reason: '

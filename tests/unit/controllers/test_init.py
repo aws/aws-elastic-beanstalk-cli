@@ -65,7 +65,7 @@ class TestInit(unittest.TestCase):
             get_solution_stack_mock
     ):
         get_app_name_mock.return_value = 'my-application'
-        initops_mock.credentials_are_valid.return_value = True
+        commonops_mock.credentials_are_valid.return_value = True
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = False
@@ -113,7 +113,7 @@ class TestInit(unittest.TestCase):
     ):
         get_app_name_mock.return_value = 'my-application'
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
-        initops_mock.credentials_are_valid.return_value = True
+        commonops_mock.credentials_are_valid.return_value = True
         elasticbeanstalk_mock.application_exist.return_value = False
         create_app_or_use_existing_one_mock.return_value = (None, None)
         commonops_mock.get_default_keyname.side_effect = initialize.NotInitializedError
@@ -161,7 +161,7 @@ class TestInit(unittest.TestCase):
             get_solution_stack_mock
     ):
         get_app_name_mock.return_value = self.app_name
-        initops_mock.credentials_are_valid.return_value = False
+        commonops_mock.credentials_are_valid.return_value = False
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = True
@@ -264,7 +264,7 @@ class TestInit(unittest.TestCase):
         create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
-        initops_mock.credentials_are_valid.return_value = True
+        commonops_mock.credentials_are_valid.return_value = True
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('my-repo', 'prod/mybranch')
         get_solution_stack_mock.return_value = 'ruby'
@@ -312,7 +312,7 @@ class TestInit(unittest.TestCase):
     ):
         get_app_name_mock.return_value = 'my-app'
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
-        initops_mock.credentials_are_valid.return_value = True
+        commonops_mock.credentials_are_valid.return_value = True
         create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = 'ec2-keyname'
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
@@ -566,7 +566,7 @@ class TestInitModule(unittest.TestCase):
             initialize.get_region(None, False)
         )
 
-    @mock.patch('ebcli.controllers.initialize.initializeops.credentials_are_valid')
+    @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
     def test_check_credentials__credentials_are_valid(
             self,
             credentials_are_valid_mock
@@ -583,7 +583,7 @@ class TestInitModule(unittest.TestCase):
             )
         )
 
-    @mock.patch('ebcli.controllers.initialize.initializeops.credentials_are_valid')
+    @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
     @mock.patch('ebcli.controllers.initialize.get_region')
     def test_check_credentials__no_region_error_rescued(
             self,
@@ -602,7 +602,7 @@ class TestInitModule(unittest.TestCase):
                 False
             )
 
-    @mock.patch('ebcli.controllers.initialize.initializeops.credentials_are_valid')
+    @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
     @mock.patch('ebcli.controllers.initialize.get_region')
     def test_check_credentials__invalid_profile_error_raised__profile_not_provided_as_input(
             self,
@@ -627,7 +627,7 @@ class TestInitModule(unittest.TestCase):
         )
 
     @mock.patch('ebcli.controllers.initialize.check_credentials')
-    @mock.patch('ebcli.controllers.initialize.initializeops.credentials_are_valid')
+    @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
     @mock.patch('ebcli.controllers.initialize.initializeops.setup_credentials')
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     def test_set_up_credentials__credentials_not_setup(
@@ -657,7 +657,7 @@ class TestInitModule(unittest.TestCase):
 
     @mock.patch('ebcli.controllers.initialize.aws.set_profile')
     @mock.patch('ebcli.controllers.initialize.check_credentials')
-    @mock.patch('ebcli.controllers.initialize.initializeops.credentials_are_valid')
+    @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
     @mock.patch('ebcli.controllers.initialize.initializeops.setup_credentials')
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     def test_set_up_credentials__eb_cli_is_used_as_default_profile(
@@ -689,7 +689,7 @@ class TestInitModule(unittest.TestCase):
 
     @mock.patch('ebcli.controllers.initialize.aws.set_profile')
     @mock.patch('ebcli.controllers.initialize.check_credentials')
-    @mock.patch('ebcli.controllers.initialize.initializeops.credentials_are_valid')
+    @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
     @mock.patch('ebcli.controllers.initialize.initializeops.setup_credentials')
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
     def test_set_up_credentials__eb_cli_is_used_as_default_profile(

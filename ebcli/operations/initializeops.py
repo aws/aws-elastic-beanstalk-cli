@@ -22,18 +22,6 @@ from ebcli.core.ebglobals import Constants
 LOG = minimal_logger(__name__)
 
 
-def credentials_are_valid():
-    try:
-        elasticbeanstalk.get_available_solution_stacks(fail_on_empty_response=False)
-        return True
-    except CredentialsError:
-        return False
-    except NotAuthorizedError as e:
-        io.log_error('The current user does not have the correct permissions. '
-                     'Reason: {0}'.format(e.message))
-        return False
-
-
 def setup(
         app_name,
         region,
