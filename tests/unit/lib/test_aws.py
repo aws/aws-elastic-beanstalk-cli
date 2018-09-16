@@ -23,6 +23,7 @@ import mock
 import pytest
 
 from mock import patch, MagicMock
+from ebcli import __version__ as current_ebcli_version
 from ebcli.lib import aws
 
 
@@ -41,9 +42,15 @@ class TestAws(unittest.TestCase):
     def test_user_agent(self):
         aws.set_region('us-east-1')
         client = aws._get_client('elasticbeanstalk')
-        user_agent = client._endpoint._user_agent
-        self.assertTrue(user_agent.startswith('eb-cli'))
+        user_agent = client._client_config.user_agent
 
+        self.assertTrue(
+            user_agent.startswith(
+                'eb-cli/{current_ebcli_version}'.format(
+                    current_ebcli_version=current_ebcli_version
+                )
+            )
+        )
 
     def test_handle_response_code__500x_code__max_attempts_reached(self):
         aggregated_response_message = [r"""Received 5XX error during attempt #11
