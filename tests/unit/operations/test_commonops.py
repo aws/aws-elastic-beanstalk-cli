@@ -2579,3 +2579,37 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
         set_profile_mock.assert_called_once_with('eb-cli')
         setup_credentials_mock.assert_not_called()
         write_config_setting_mock.assert_called_once_with('global', 'profile', 'eb-cli')
+
+    @mock.patch('ebcli.operations.commonops.get_region_from_inputs')
+    @mock.patch('ebcli.controllers.initialize.aws.set_region')
+    def test_set_region_for_application(
+            self,
+            set_region_mock,
+            get_region_from_inputs_mock
+    ):
+        get_region_from_inputs_mock.return_value = 'us-west-2'
+
+        self.assertEqual(
+            'us-west-2',
+            commonops.set_region_for_application(False, 'us-west-2', False)
+        )
+
+        get_region_from_inputs_mock.assert_called_once_with('us-west-2')
+        set_region_mock.assert_called_once_with('us-west-2')
+
+    @mock.patch('ebcli.operations.commonops.get_region')
+    @mock.patch('ebcli.controllers.initialize.aws.set_region')
+    def test_set_region_for_application__interactive(
+            self,
+            set_region_mock,
+            get_region_mock
+    ):
+        get_region_mock.return_value = 'us-west-2'
+
+        self.assertEqual(
+            'us-west-2',
+            commonops.set_region_for_application(True, 'us-west-2', False)
+        )
+
+        get_region_mock.assert_called_once_with('us-west-2', True, False)
+        set_region_mock.assert_called_once_with('us-west-2')

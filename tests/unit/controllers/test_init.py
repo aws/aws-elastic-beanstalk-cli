@@ -48,7 +48,6 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
-    @mock.patch('ebcli.controllers.initialize.set_region_for_application')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     @mock.patch('ebcli.controllers.initialize.get_app_name')
@@ -57,7 +56,6 @@ class TestInit(unittest.TestCase):
             get_app_name_mock,
             create_app_or_use_existing_one_mock,
             set_default_env_mock,
-            set_region_for_application_mock,
             elasticbeanstalk_mock,
             commonops_mock,
             initops_mock,
@@ -72,8 +70,8 @@ class TestInit(unittest.TestCase):
         create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
-        commonops_mock.check_credentials.return_value = (None, 'us-east-1')
-        set_region_for_application_mock.return_value = 'us-west-2'
+        commonops_mock.check_credentials.return_value = (None, 'us-west-2')
+        commonops_mock.set_region_for_application.return_value = 'us-west-2'
         get_solution_stack_mock.return_value = 'PHP 5.5'
 
         app = EB(argv=['init'])
@@ -119,7 +117,8 @@ class TestInit(unittest.TestCase):
         create_app_or_use_existing_one_mock.return_value = (None, None)
         commonops_mock.get_default_keyname.side_effect = initialize.NotInitializedError
         commonops_mock.get_region.return_value = 'us-west-2'
-        commonops_mock.check_credentials.return_value = (None, 'us-east-1')
+        commonops_mock.check_credentials.return_value = (None, 'us-west-2')
+        commonops_mock.set_region_for_application.return_value = 'us-west-2'
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         get_solution_stack_mock.return_value = 'PHP 5.5'
 
@@ -172,7 +171,8 @@ class TestInit(unittest.TestCase):
         create_app_or_use_existing_one_mock.return_value = (None, None)
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
-        commonops_mock.check_credentials.return_value = (None, 'us-east-1')
+        commonops_mock.check_credentials.return_value = (None, 'us-west-2')
+        commonops_mock.set_region_for_application.return_value = 'us-west-2'
         get_solution_stack_mock.return_value = 'PHP 5.5'
 
         EB.Meta.exit_on_close = False
@@ -222,7 +222,8 @@ class TestInit(unittest.TestCase):
         create_app_or_use_existing_one_mock.return_value = 'ss-stack', 'key'
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_region.return_value = 'us-west-2'
-        commonops_mock.check_credentials.return_value = (None, 'us-east-1')
+        commonops_mock.check_credentials.return_value = (None, 'us-west-2')
+        commonops_mock.set_region_for_application.return_value = 'us-west-2'
         get_solution_stack_mock.return_value = 'php'
 
         EB.Meta.exit_on_close = False
@@ -272,6 +273,7 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_region.return_value = 'us-east-1'
         commonops_mock.credentials_are_valid.return_value = True
         commonops_mock.check_credentials.return_value = (None, 'us-east-1')
+        commonops_mock.set_region_for_application.return_value = 'us-east-1'
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('my-repo', 'prod/mybranch')
         get_solution_stack_mock.return_value = 'ruby'
@@ -324,6 +326,7 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_keyname.return_value = 'ec2-keyname'
         commonops_mock.get_region.return_value = 'us-east-1'
         commonops_mock.check_credentials.return_value = (None, 'us-east-1')
+        commonops_mock.set_region_for_application.return_value = 'us-east-1'
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('new-repo', 'devo')
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
@@ -353,14 +356,12 @@ class TestInit(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
     @mock.patch('ebcli.controllers.initialize.handle_buildspec_image')
     @mock.patch('ebcli.controllers.initialize.get_keyname')
-    @mock.patch('ebcli.controllers.initialize.set_region_for_application')
     @mock.patch('ebcli.controllers.initialize.get_app_name')
     @mock.patch('ebcli.controllers.initialize.should_prompt_customer_to_opt_into_codecommit')
     def test_init__interactive_mode__with_codebuild_buildspec(
             self,
             should_prompt_customer_to_opt_into_codecommit_mock,
             get_app_name_mock,
-            set_region_for_application_mock,
             get_keyname_mock,
             handle_buildspec_image_mock,
             create_app_or_use_existing_one_mock,
@@ -370,13 +371,14 @@ class TestInit(unittest.TestCase):
             fileoperations_mock,
     ):
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = False
-        set_region_for_application_mock.return_value = 'us-west-2'
+        commonops_mock.set_region_for_application.return_value = 'us-west-2'
         get_app_name_mock.return_value = self.app_name
         initops_mock.credentials_are_valid.return_value = True
         fileoperations_mock.env_yaml_exists.return_value = None
         get_keyname_mock.return_value = 'test'
         get_solution_stack_mock.return_value = 'PHP 5.5'
         commonops_mock.check_credentials.return_value = ('eb-cli', 'us-west-2')
+        commonops_mock.set_region_for_application.return_value = 'us-west-2'
 
         create_app_or_use_existing_one_mock.return_value = (None, None)
 
@@ -441,6 +443,7 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_region.return_value = 'us-east-1'
         commonops_mock.check_credentials.return_value = (None, 'us-east-1')
+        commonops_mock.set_region_for_application.return_value = 'us-east-1'
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('my-repo', 'prod')
 
@@ -853,57 +856,6 @@ class TestInitModule(unittest.TestCase):
             ]
         )
         prompt_for_unique_name_mock.assert_not_called()
-
-    @mock.patch('ebcli.controllers.initialize.commonops.get_region_from_inputs')
-    @mock.patch('ebcli.controllers.initialize.aws.set_region')
-    def test_set_region_for_application(
-            self,
-            set_region_mock,
-            get_region_from_inputs_mock
-    ):
-        get_region_from_inputs_mock.return_value = 'us-west-2'
-
-        self.assertEqual(
-            'us-west-2',
-            initialize.set_region_for_application(False, 'us-west-2', False)
-        )
-
-        get_region_from_inputs_mock.assert_called_once_with('us-west-2')
-        set_region_mock.assert_called_once_with('us-west-2')
-
-    @mock.patch('ebcli.controllers.initialize.commonops.get_region')
-    @mock.patch('ebcli.controllers.initialize.aws.set_region')
-    def test_set_region_for_application__interactive(
-            self,
-            set_region_mock,
-            get_region_mock
-    ):
-        get_region_mock.return_value = 'us-west-2'
-
-        self.assertEqual(
-            'us-west-2',
-            initialize.set_region_for_application(True, 'us-west-2', False)
-        )
-
-        get_region_mock.assert_called_once_with('us-west-2', True, False)
-        set_region_mock.assert_called_once_with('us-west-2')
-
-    @mock.patch('ebcli.controllers.initialize.commonops.get_region')
-    @mock.patch('ebcli.controllers.initialize.aws.set_region')
-    def test_set_region_for_application__region_not_passed__non_interactive_not_forced(
-            self,
-            set_region_mock,
-            get_region_mock
-    ):
-        get_region_mock.return_value = 'us-west-2'
-
-        self.assertEqual(
-            'us-west-2',
-            initialize.set_region_for_application(False, None, False)
-        )
-
-        get_region_mock.assert_called_once_with(None, False, False)
-        set_region_mock.assert_called_once_with('us-west-2')
 
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.application_exist')
     @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')

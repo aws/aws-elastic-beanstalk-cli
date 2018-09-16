@@ -83,7 +83,7 @@ class InitController(AbstractBaseController):
             return
 
         fileoperations.touch_config_folder()
-        region_name = set_region_for_application(interactive, region_name, force_non_interactive)
+        region_name = commonops.set_region_for_application(interactive, region_name, force_non_interactive)
         commonops.set_up_credentials(profile, region_name, interactive)
         app_name = get_app_name(app_name, interactive, force_non_interactive)
         default_env = set_default_env(interactive, force_non_interactive)
@@ -126,7 +126,7 @@ class InitController(AbstractBaseController):
                 fileoperations.touch_config_folder()
 
                 # Region should be set once for all modules
-                region = region or set_region_for_application(interactive, region, force_non_interactive)
+                region = region or commonops.set_region_for_application(interactive, region, force_non_interactive)
                 commonops.set_up_credentials(profile, region, interactive)
 
                 # App name should be set once for all modules
@@ -503,13 +503,6 @@ def establish_codecommit_repository_and_branch(repository, branch, source_contro
     branch = establish_codecommit_branch(repository, branch, source_control, source_location)
 
     return repository, branch
-
-
-def set_region_for_application(interactive, region, force_non_interactive):
-    region = commonops.get_region(region, interactive, force_non_interactive)
-    aws.set_region(region)
-
-    return region
 
 
 def should_prompt_customer_to_opt_into_codecommit(

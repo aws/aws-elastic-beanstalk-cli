@@ -1053,6 +1053,13 @@ def set_up_credentials(given_profile, given_region, interactive, force_non_inter
         fileoperations.write_config_setting('global', 'profile', profile)
 
 
+def set_region_for_application(interactive, region, force_non_interactive):
+    region = get_region(region, interactive, force_non_interactive)
+    aws.set_region(region)
+
+    return region
+
+
 def _create_instance_role(role_name, policy_arns):
     document = iam_documents.EC2_ASSUME_ROLE_PERMISSION
     ret = iam.create_role_with_policy(role_name, document, policy_arns)
