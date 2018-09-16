@@ -2426,3 +2426,63 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
             'us-west-1',
             commonops.get_region(None, False)
         )
+
+    @mock.patch('ebcli.operations.commonops.credentials_are_valid')
+    def test_check_credentials__credentials_are_valid(
+            self,
+            credentials_are_valid_mock
+    ):
+        credentials_are_valid_mock.return_value = True
+        self.assertEqual(
+            ('my-profile', 'us-east-1'),
+            commonops.check_credentials(
+                'my-profile',
+                'my-profile',
+                'us-east-1',
+                False,
+                False
+            )
+        )
+
+    @mock.patch('ebcli.operations.commonops.credentials_are_valid')
+    @mock.patch('ebcli.operations.commonops.get_region')
+    def test_check_credentials__no_region_error_rescued(
+            self,
+            get_region_mock,
+            credentials_are_valid_mock
+    ):
+        get_region_mock.return_value = 'us-west-1'
+        credentials_are_valid_mock.side_effect = commonops.InvalidProfileError
+
+        with self.assertRaises(commonops.InvalidProfileError):
+            commonops.check_credentials(
+                'my-profile',
+                'my-profile',
+                'us-east-1',
+                False,
+                False
+            )
+
+    @mock.patch('ebcli.operations.commonops.credentials_are_valid')
+    @mock.patch('ebcli.operations.commonops.get_region')
+    def test_check_credentials__invalid_profile_error_raised__profile_not_provided_as_input(
+            self,
+            get_region_mock,
+            credentials_are_valid_mock
+    ):
+        get_region_mock.return_value = 'us-west-1'
+        credentials_are_valid_mock.side_effect = [
+            commonops.InvalidProfileError,
+            None
+        ]
+
+        self.assertEqual(
+            (None, 'us-east-1'),
+            commonops.check_credentials(
+                None,
+                None,
+                'us-east-1',
+                False,
+                False
+            )
+        )

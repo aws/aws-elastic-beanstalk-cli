@@ -72,6 +72,7 @@ class TestInit(unittest.TestCase):
         create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
+        commonops_mock.check_credentials.return_value = (None, 'us-east-1')
         set_region_for_application_mock.return_value = 'us-west-2'
         get_solution_stack_mock.return_value = 'PHP 5.5'
 
@@ -118,6 +119,7 @@ class TestInit(unittest.TestCase):
         create_app_or_use_existing_one_mock.return_value = (None, None)
         commonops_mock.get_default_keyname.side_effect = initialize.NotInitializedError
         commonops_mock.get_region.return_value = 'us-west-2'
+        commonops_mock.check_credentials.return_value = (None, 'us-east-1')
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         get_solution_stack_mock.return_value = 'PHP 5.5'
 
@@ -170,6 +172,7 @@ class TestInit(unittest.TestCase):
         create_app_or_use_existing_one_mock.return_value = (None, None)
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_default_region.return_value = ''
+        commonops_mock.check_credentials.return_value = (None, 'us-east-1')
         get_solution_stack_mock.return_value = 'PHP 5.5'
 
         EB.Meta.exit_on_close = False
@@ -218,6 +221,7 @@ class TestInit(unittest.TestCase):
         create_app_or_use_existing_one_mock.return_value = 'ss-stack', 'key'
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_region.return_value = 'us-west-2'
+        commonops_mock.check_credentials.return_value = (None, 'us-east-1')
         get_solution_stack_mock.return_value = 'php'
 
         EB.Meta.exit_on_close = False
@@ -266,6 +270,7 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_region.return_value = 'us-east-1'
         commonops_mock.credentials_are_valid.return_value = True
+        commonops_mock.check_credentials.return_value = (None, 'us-east-1')
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('my-repo', 'prod/mybranch')
         get_solution_stack_mock.return_value = 'ruby'
@@ -317,6 +322,7 @@ class TestInit(unittest.TestCase):
         create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = 'ec2-keyname'
         commonops_mock.get_region.return_value = 'us-east-1'
+        commonops_mock.check_credentials.return_value = (None, 'us-east-1')
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('new-repo', 'devo')
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
@@ -365,11 +371,11 @@ class TestInit(unittest.TestCase):
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = False
         set_region_for_application_mock.return_value = 'us-west-2'
         get_app_name_mock.return_value = self.app_name
-        fileoperations.create_config_file('app1', 'us-west-1', 'random')
         initops_mock.credentials_are_valid.return_value = True
         fileoperations_mock.env_yaml_exists.return_value = None
         get_keyname_mock.return_value = 'test'
         get_solution_stack_mock.return_value = 'PHP 5.5'
+        commonops_mock.check_credentials.return_value = ('eb-cli', 'us-west-2')
 
         create_app_or_use_existing_one_mock.return_value = (None, None)
 
@@ -434,6 +440,7 @@ class TestInit(unittest.TestCase):
         create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_region.return_value = 'us-east-1'
+        commonops_mock.check_credentials.return_value = (None, 'us-east-1')
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('my-repo', 'prod')
 
@@ -478,67 +485,7 @@ class TestInitModule(unittest.TestCase):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
 
-    @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
-    def test_check_credentials__credentials_are_valid(
-            self,
-            credentials_are_valid_mock
-    ):
-        credentials_are_valid_mock.return_value = True
-        self.assertEqual(
-            ('my-profile', 'us-east-1'),
-            initialize.check_credentials(
-                'my-profile',
-                'my-profile',
-                'us-east-1',
-                False,
-                False
-            )
-        )
-
-    @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
-    @mock.patch('ebcli.controllers.initialize.commonops.get_region')
-    def test_check_credentials__no_region_error_rescued(
-            self,
-            get_region_mock,
-            credentials_are_valid_mock
-    ):
-        get_region_mock.return_value = 'us-west-1'
-        credentials_are_valid_mock.side_effect = initialize.InvalidProfileError
-
-        with self.assertRaises(initialize.InvalidProfileError):
-            initialize.check_credentials(
-                'my-profile',
-                'my-profile',
-                'us-east-1',
-                False,
-                False
-            )
-
-    @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
-    @mock.patch('ebcli.controllers.initialize.commonops.get_region')
-    def test_check_credentials__invalid_profile_error_raised__profile_not_provided_as_input(
-            self,
-            get_region_mock,
-            credentials_are_valid_mock
-    ):
-        get_region_mock.return_value = 'us-west-1'
-        credentials_are_valid_mock.side_effect = [
-            InvalidProfileError,
-            None
-        ]
-
-        self.assertEqual(
-            (None, 'us-east-1'),
-            initialize.check_credentials(
-                None,
-                None,
-                'us-east-1',
-                False,
-                False
-            )
-        )
-
-    @mock.patch('ebcli.controllers.initialize.check_credentials')
+    @mock.patch('ebcli.controllers.initialize.commonops.check_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
     @mock.patch('ebcli.controllers.initialize.commonops.setup_credentials')
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
@@ -568,7 +515,7 @@ class TestInitModule(unittest.TestCase):
         write_config_setting_mock.assert_not_called()
 
     @mock.patch('ebcli.controllers.initialize.aws.set_profile')
-    @mock.patch('ebcli.controllers.initialize.check_credentials')
+    @mock.patch('ebcli.controllers.initialize.commonops.check_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
     @mock.patch('ebcli.controllers.initialize.commonops.setup_credentials')
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
@@ -600,7 +547,7 @@ class TestInitModule(unittest.TestCase):
         write_config_setting_mock.assert_called_once_with('global', 'profile', 'eb-cli')
 
     @mock.patch('ebcli.controllers.initialize.aws.set_profile')
-    @mock.patch('ebcli.controllers.initialize.check_credentials')
+    @mock.patch('ebcli.controllers.initialize.commonops.check_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.credentials_are_valid')
     @mock.patch('ebcli.controllers.initialize.commonops.setup_credentials')
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')

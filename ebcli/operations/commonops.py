@@ -32,8 +32,10 @@ from ebcli.objects.exceptions import (
     NotFoundError,
     NotSupportedError,
     InvalidOptionsError,
+    InvalidProfileError,
     InvalidStateError,
     InvalidSyntaxError,
+    NoRegionError,
     NotAuthorizedError,
     NotInitializedError,
     ServiceError,
@@ -1012,6 +1014,27 @@ def get_region(region_argument, interactive, force_non_interactive=False):
         region = result.name
 
     return region
+
+
+def check_credentials(profile, given_profile, given_region, interactive, force_non_interactive):
+    try:
+        # Note, region is None unless explicitly set or read from old eb
+        credentials_are_valid()
+        return profile, given_region
+    except NoRegionError:
+        region = get_region(None, interactive, force_non_interactive)
+        aws.set_region(region)
+        return profile, region
+    except InvalidProfileError as e:
+        if given_profile:
+            # Provided profile is invalid, raise exception
+            raise e
+        else:
+            # eb-cli profile doesnt exist, revert to default
+            # try again
+            profile = None
+            aws.set_profile(profile)
+            return check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
 
 
 def _create_instance_role(role_name, policy_arns):

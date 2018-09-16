@@ -319,27 +319,6 @@ def get_branch_interactive(repository):
     return branch_name
 
 
-def check_credentials(profile, given_profile, given_region, interactive, force_non_interactive):
-    try:
-        # Note, region is None unless explicitly set or read from old eb
-        commonops.credentials_are_valid()
-        return profile, given_region
-    except NoRegionError:
-        region = commonops.get_region(None, interactive, force_non_interactive)
-        aws.set_region(region)
-        return profile, region
-    except InvalidProfileError as e:
-        if given_profile:
-            # Provided profile is invalid, raise exception
-            raise e
-        else:
-            # eb-cli profile doesnt exist, revert to default
-            # try again
-            profile = None
-            aws.set_profile(profile)
-            return check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
-
-
 def configure_codecommit(source):
     source_location, repository, branch = utils.parse_source(source)
     source_control = SourceControl.get_source_control()
@@ -396,7 +375,7 @@ def set_up_credentials(given_profile, given_region, interactive, force_non_inter
         profile = 'eb-cli'
         aws.set_profile(profile)
 
-    profile, _ = check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
+    profile, _ = commonops.check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
 
     if not commonops.credentials_are_valid():
         commonops.setup_credentials()
