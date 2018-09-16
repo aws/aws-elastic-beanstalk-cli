@@ -26,6 +26,7 @@ from ebcli.core import fileoperations
 from ebcli.objects.exceptions import NotAuthorizedError
 from ebcli.objects.event import Event
 from ebcli.objects.environment import Environment
+from ebcli.objects.region import Region
 from ebcli.operations import commonops
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.buildconfiguration import BuildConfiguration
@@ -2360,3 +2361,68 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
     ):
         get_default_region_mock.side_effect = commonops.NotInitializedError
         self.assertIsNone(commonops.get_region_from_inputs(None))
+
+    @mock.patch('ebcli.operations.commonops.get_region_from_inputs')
+    @mock.patch('ebcli.operations.commonops.get_all_regions')
+    @mock.patch('ebcli.operations.commonops.utils.prompt_for_item_in_list')
+    def test_get_region__determine_region_from_inputs(
+            self,
+            prompt_for_item_in_list_mock,
+            get_all_regions_mock,
+            get_region_from_inputs_mock
+    ):
+        get_region_from_inputs_mock.return_value = 'us-east-1'
+
+        self.assertEqual(
+            'us-east-1',
+            commonops.get_region('us-east-1', False)
+        )
+
+        get_all_regions_mock.assert_not_called()
+        prompt_for_item_in_list_mock.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.get_region_from_inputs')
+    @mock.patch('ebcli.operations.commonops.utils.prompt_for_item_in_list')
+    def test_get_region__could_not_determine_region_from_inputs__force_non_interactive__selects_us_west_2_by_default(
+            self,
+            prompt_for_item_in_list_mock,
+            get_region_from_inputs_mock
+    ):
+        get_region_from_inputs_mock.return_value = None
+
+        self.assertEqual(
+            'us-west-2',
+            commonops.get_region(None, False, force_non_interactive=True)
+        )
+
+        prompt_for_item_in_list_mock.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.get_region_from_inputs')
+    @mock.patch('ebcli.operations.commonops.utils.prompt_for_item_in_list')
+    def test_get_region__could_not_determine_region_from_inputs__in_interactive_mode__prompts_customer_for_region(
+            self,
+            prompt_for_item_in_list_mock,
+            get_region_from_inputs_mock
+    ):
+        get_region_from_inputs_mock.return_value = None
+        prompt_for_item_in_list_mock.return_value = Region('us-west-1', 'US West (N. California)')
+
+        self.assertEqual(
+            'us-west-1',
+            commonops.get_region(None, True)
+        )
+
+    @mock.patch('ebcli.operations.commonops.get_region_from_inputs')
+    @mock.patch('ebcli.operations.commonops.utils.prompt_for_item_in_list')
+    def test_get_region__could_not_determine_region_from_inputs__not_in_interactive_mode__prompts_customer_for_region_anyway(
+            self,
+            prompt_for_item_in_list_mock,
+            get_region_from_inputs_mock
+    ):
+        get_region_from_inputs_mock.return_value = None
+        prompt_for_item_in_list_mock.return_value = Region('us-west-1', 'US West (N. California)')
+
+        self.assertEqual(
+            'us-west-1',
+            commonops.get_region(None, False)
+        )

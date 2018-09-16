@@ -19,7 +19,7 @@ from ebcli.lib import aws
 from ebcli.objects.exceptions import NotInitializedError
 from ebcli.operations import commonops, platformops, initializeops
 from ebcli.resources.strings import strings, flag_text, prompts
-from ebcli.controllers.initialize import get_region, set_up_credentials
+from ebcli.controllers.initialize import set_up_credentials
 from ebcli.core.ebglobals import Constants
 from ebcli.operations import commonops, sshops
 
@@ -49,7 +49,7 @@ class GenericPlatformInitController(AbstractBaseController):
         self.region = self.app.pargs.region
 
         if self.interactive or not self.app.pargs.platform_name:
-            self.region = get_region(self.app.pargs.region, self.interactive)
+            self.region = commonops.get_region(self.app.pargs.region, self.interactive)
         else:
             self.region = commonops.get_region_from_inputs(self.app.pargs.region)
 

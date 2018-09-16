@@ -18,8 +18,8 @@ from ebcli.core import fileoperations, io
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.lib import utils, elasticbeanstalk, codecommit, aws
 from ebcli.objects.sourcecontrol import SourceControl
-from ebcli.objects import solutionstack, region as regions
-from ebcli.objects.platform import PlatformVersion
+from ebcli.objects import solutionstack
+
 from ebcli.objects.exceptions import(
     InvalidProfileError,
     NoRegionError,
@@ -325,7 +325,7 @@ def check_credentials(profile, given_profile, given_region, interactive, force_n
         commonops.credentials_are_valid()
         return profile, given_region
     except NoRegionError:
-        region = get_region(None, interactive, force_non_interactive)
+        region = commonops.get_region(None, interactive, force_non_interactive)
         aws.set_region(region)
         return profile, region
     except InvalidProfileError as e:
@@ -450,26 +450,6 @@ def get_keyname(keyname, keyname_of_existing_app, interactive, force_non_interac
     return keyname
 
 
-def get_region(region_argument, interactive, force_non_interactive=False):
-    # Get region from command line arguments
-    region = commonops.get_region_from_inputs(region_argument)
-
-    # Ask for region
-    if (not region) and force_non_interactive:
-        # Choose defaults
-        region_list = regions.get_all_regions()
-        region = region_list[2].name
-
-    if not region or (interactive and not region_argument):
-        io.echo()
-        io.echo('Select a default region')
-        region_list = regions.get_all_regions()
-        result = utils.prompt_for_item_in_list(region_list, default=3)
-        region = result.name
-
-    return region
-
-
 def get_solution_stack(platform, sstack, interactive):
     customer_provided_platform = not not platform
     if not platform:
@@ -563,7 +543,7 @@ def establish_codecommit_repository_and_branch(repository, branch, source_contro
 
 
 def set_region_for_application(interactive, region, force_non_interactive):
-    region = get_region(region, interactive, force_non_interactive)
+    region = commonops.get_region(region, interactive, force_non_interactive)
     aws.set_region(region)
 
     return region

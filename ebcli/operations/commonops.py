@@ -40,6 +40,7 @@ from ebcli.objects.exceptions import (
     TimeoutError
 )
 from ebcli.objects.sourcecontrol import SourceControl
+from ebcli.objects.region import get_all_regions
 from ebcli.resources.strings import strings, responses, prompts
 from ebcli.resources.statics import iam_documents, iam_attributes
 
@@ -989,6 +990,26 @@ def get_region_from_inputs(region):
             region = get_default_region()
         except NotInitializedError:
             region = None
+
+    return region
+
+
+def get_region(region_argument, interactive, force_non_interactive=False):
+    # Get region from command line arguments
+    region = get_region_from_inputs(region_argument)
+
+    # Ask for region
+    if (not region) and force_non_interactive:
+        # Choose defaults
+        region_list = get_all_regions()
+        region = region_list[2].name
+
+    if not region or (interactive and not region_argument):
+        io.echo()
+        io.echo('Select a default region')
+        region_list = get_all_regions()
+        result = utils.prompt_for_item_in_list(region_list, default=3)
+        region = result.name
 
     return region
 
