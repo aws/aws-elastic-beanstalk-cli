@@ -982,6 +982,17 @@ def setup_credentials(access_id=None, secret_key=None):
     aws.set_session_creds(access_id, secret_key)
 
 
+def get_region_from_inputs(region):
+    # Get region from config file
+    if not region:
+        try:
+            region = get_default_region()
+        except NotInitializedError:
+            region = None
+
+    return region
+
+
 def _create_instance_role(role_name, policy_arns):
     document = iam_documents.EC2_ASSUME_ROLE_PERMISSION
     ret = iam.create_role_with_policy(role_name, document, policy_arns)

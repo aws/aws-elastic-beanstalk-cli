@@ -2335,3 +2335,28 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
         echo_mock.assert_called_once_with(
             'You have not yet set up your credentials or your credentials are incorrect \nYou must provide your credentials.'
         )
+
+    def test_get_region_from_inputs__region_was_passed(self):
+        self.assertEqual(
+            'us-east-1',
+            commonops.get_region_from_inputs('us-east-1')
+        )
+
+    @mock.patch('ebcli.operations.commonops.get_default_region')
+    def test_get_region_from_inputs__region_not_passed_in__default_region_found(
+            self,
+            get_default_region_mock
+    ):
+        get_default_region_mock.return_value = 'us-east-1'
+        self.assertEqual(
+            'us-east-1',
+            commonops.get_region_from_inputs(None)
+        )
+
+    @mock.patch('ebcli.operations.commonops.get_default_region')
+    def test_get_region_from_inputs__region_not_passed_in__could_not_determine_default_region(
+            self,
+            get_default_region_mock
+    ):
+        get_default_region_mock.side_effect = commonops.NotInitializedError
+        self.assertIsNone(commonops.get_region_from_inputs(None))

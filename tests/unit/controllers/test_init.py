@@ -162,6 +162,7 @@ class TestInit(unittest.TestCase):
     ):
         get_app_name_mock.return_value = self.app_name
         commonops_mock.credentials_are_valid.return_value = False
+        commonops_mock.get_region_from_inputs.return_value = 'us-west-2'
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = True
@@ -215,7 +216,7 @@ class TestInit(unittest.TestCase):
         elasticbeanstalk_mock.application_exist.return_value = True
         create_app_or_use_existing_one_mock.return_value = 'ss-stack', 'key'
         commonops_mock.get_default_keyname.return_value = ''
-        commonops_mock.get_default_region.return_value = 'us-west-2'
+        commonops_mock.get_region_from_inputs.return_value = 'us-west-2'
         get_solution_stack_mock.return_value = 'php'
 
         EB.Meta.exit_on_close = False
@@ -262,7 +263,7 @@ class TestInit(unittest.TestCase):
         elasticbeanstalk_mock.application_exist.return_value = False
         create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = ''
-        commonops_mock.get_default_region.return_value = ''
+        commonops_mock.get_region_from_inputs.return_value = 'us-east-1'
         commonops_mock.credentials_are_valid.return_value = True
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('my-repo', 'prod/mybranch')
@@ -314,6 +315,7 @@ class TestInit(unittest.TestCase):
         commonops_mock.credentials_are_valid.return_value = True
         create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = 'ec2-keyname'
+        commonops_mock.get_region_from_inputs.return_value = 'us-east-1'
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('new-repo', 'devo')
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
@@ -430,7 +432,7 @@ class TestInit(unittest.TestCase):
         elasticbeanstalk_mock.application_exist.return_value = False
         create_app_or_use_existing_one_mock.return_value = None, None
         commonops_mock.get_default_keyname.return_value = ''
-        commonops_mock.get_default_region.return_value = ''
+        commonops_mock.get_region_from_inputs.return_value = 'us-east-1'
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('my-repo', 'prod')
 
@@ -475,32 +477,7 @@ class TestInitModule(unittest.TestCase):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
 
-    def test_get_region_from_inputs__region_was_passed(self):
-        self.assertEqual(
-            'us-east-1',
-            initialize.get_region_from_inputs('us-east-1')
-        )
-
-    @mock.patch('ebcli.controllers.initialize.commonops.get_default_region')
-    def test_get_region_from_inputs__region_not_passed_in__default_region_found(
-            self,
-            get_default_region_mock
-    ):
-        get_default_region_mock.return_value = 'us-east-1'
-        self.assertEqual(
-            'us-east-1',
-            initialize.get_region_from_inputs(None)
-        )
-
-    @mock.patch('ebcli.controllers.initialize.commonops.get_default_region')
-    def test_get_region_from_inputs__region_not_passed_in__could_not_determine_default_region(
-            self,
-            get_default_region_mock
-    ):
-        get_default_region_mock.side_effect = NotInitializedError
-        self.assertIsNone(initialize.get_region_from_inputs(None))
-
-    @mock.patch('ebcli.controllers.initialize.get_region_from_inputs')
+    @mock.patch('ebcli.controllers.initialize.commonops.get_region_from_inputs')
     @mock.patch('ebcli.controllers.initialize.regions.get_all_regions')
     @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
     def test_get_region__determine_region_from_inputs(
@@ -519,7 +496,7 @@ class TestInitModule(unittest.TestCase):
         get_all_regions_mock.assert_not_called()
         prompt_for_item_in_list_mock.assert_not_called()
 
-    @mock.patch('ebcli.controllers.initialize.get_region_from_inputs')
+    @mock.patch('ebcli.controllers.initialize.commonops.get_region_from_inputs')
     @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
     def test_get_region__could_not_determine_region_from_inputs__force_non_interactive__selects_us_west_2_by_default(
             self,
@@ -535,7 +512,7 @@ class TestInitModule(unittest.TestCase):
 
         prompt_for_item_in_list_mock.assert_not_called()
 
-    @mock.patch('ebcli.controllers.initialize.get_region_from_inputs')
+    @mock.patch('ebcli.controllers.initialize.commonops.get_region_from_inputs')
     @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
     def test_get_region__could_not_determine_region_from_inputs__in_interactive_mode__prompts_customer_for_region(
             self,
@@ -550,7 +527,7 @@ class TestInitModule(unittest.TestCase):
             initialize.get_region(None, True)
         )
 
-    @mock.patch('ebcli.controllers.initialize.get_region_from_inputs')
+    @mock.patch('ebcli.controllers.initialize.commonops.get_region_from_inputs')
     @mock.patch('ebcli.controllers.initialize.utils.prompt_for_item_in_list')
     def test_get_region__could_not_determine_region_from_inputs__not_in_interactive_mode__prompts_customer_for_region_anyway(
             self,
@@ -1087,7 +1064,7 @@ class TestInitModule(unittest.TestCase):
         )
         prompt_for_unique_name_mock.assert_not_called()
 
-    @mock.patch('ebcli.controllers.initialize.get_region_from_inputs')
+    @mock.patch('ebcli.controllers.initialize.commonops.get_region_from_inputs')
     @mock.patch('ebcli.controllers.initialize.aws.set_region')
     def test_set_region_for_application(
             self,
@@ -2457,7 +2434,7 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
     @mock.patch('ebcli.controllers.initialize.set_up_credentials')
     @mock.patch('ebcli.controllers.initialize.commonops.create_app')
     @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')
-    @mock.patch('ebcli.controllers.initialize.get_region_from_inputs')
+    @mock.patch('ebcli.controllers.initialize.commonops.get_region_from_inputs')
     @mock.patch('ebcli.controllers.initialize.initializeops.setup')
     def test_multiple_modules__interactive_mode__solution_stack_is_passed_through_command_line(
             self,

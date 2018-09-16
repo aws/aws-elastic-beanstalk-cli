@@ -450,20 +450,9 @@ def get_keyname(keyname, keyname_of_existing_app, interactive, force_non_interac
     return keyname
 
 
-def get_region_from_inputs(region):
-    # Get region from config file
-    if not region:
-        try:
-            region = commonops.get_default_region()
-        except NotInitializedError:
-            region = None
-
-    return region
-
-
 def get_region(region_argument, interactive, force_non_interactive=False):
     # Get region from command line arguments
-    region = get_region_from_inputs(region_argument)
+    region = commonops.get_region_from_inputs(region_argument)
 
     # Ask for region
     if (not region) and force_non_interactive:
