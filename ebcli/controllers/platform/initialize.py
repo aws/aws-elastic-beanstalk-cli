@@ -19,7 +19,6 @@ from ebcli.lib import aws
 from ebcli.objects.exceptions import NotInitializedError
 from ebcli.operations import commonops, platformops, initializeops
 from ebcli.resources.strings import strings, flag_text, prompts
-from ebcli.controllers.initialize import set_up_credentials
 from ebcli.core.ebglobals import Constants
 from ebcli.operations import commonops, sshops
 
@@ -55,7 +54,7 @@ class GenericPlatformInitController(AbstractBaseController):
 
         aws.set_region(self.region)
 
-        self.region = set_up_credentials(self.app.pargs.profile, self.region, self.interactive)
+        self.region = commonops.set_up_credentials(self.app.pargs.profile, self.region, self.interactive)
         self.platform_name, version = get_platform_name_and_version(self.app.pargs.platform_name)
         self.keyname = self.app.pargs.keyname
 

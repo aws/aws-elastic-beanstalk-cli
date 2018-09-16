@@ -84,7 +84,7 @@ class InitController(AbstractBaseController):
 
         fileoperations.touch_config_folder()
         region_name = set_region_for_application(interactive, region_name, force_non_interactive)
-        set_up_credentials(profile, region_name, interactive)
+        commonops.set_up_credentials(profile, region_name, interactive)
         app_name = get_app_name(app_name, interactive, force_non_interactive)
         default_env = set_default_env(interactive, force_non_interactive)
         sstack, keyname_of_existing_application = create_app_or_use_existing_one(app_name, default_env)
@@ -127,7 +127,7 @@ class InitController(AbstractBaseController):
 
                 # Region should be set once for all modules
                 region = region or set_region_for_application(interactive, region, force_non_interactive)
-                set_up_credentials(profile, region, interactive)
+                commonops.set_up_credentials(profile, region, interactive)
 
                 # App name should be set once for all modules
                 if not app_name:
@@ -365,22 +365,6 @@ def customer_is_avoiding_non_interactive_flow(platform):
 
 def directory_is_already_associated_with_a_branch():
     return gitops.git_management_enabled()
-
-
-def set_up_credentials(given_profile, given_region, interactive, force_non_interactive=False):
-    if given_profile:
-        # Profile already set at abstractController
-        profile = given_profile
-    else:
-        profile = 'eb-cli'
-        aws.set_profile(profile)
-
-    profile, _ = commonops.check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
-
-    if not commonops.credentials_are_valid():
-        commonops.setup_credentials()
-    else:
-        fileoperations.write_config_setting('global', 'profile', profile)
 
 
 def extract_solution_stack_from_env_yaml():

@@ -2486,3 +2486,96 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
                 False
             )
         )
+
+    @mock.patch('ebcli.operations.commonops.check_credentials')
+    @mock.patch('ebcli.operations.commonops.credentials_are_valid')
+    @mock.patch('ebcli.operations.commonops.setup_credentials')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    def test_set_up_credentials__credentials_not_setup(
+            self,
+            write_config_setting_mock,
+            setup_credentials_mock,
+            credentials_are_valid_mock,
+            check_credentials_mock
+    ):
+        check_credentials_mock.return_value = ['my-profile', 'us-east-1']
+        credentials_are_valid_mock.return_value = False
+
+        commonops.set_up_credentials(
+            'my-profile',
+            'us-east-1',
+            False
+        )
+        check_credentials_mock.assert_called_once_with(
+            'my-profile',
+            'my-profile',
+            'us-east-1',
+            False,
+            False
+        )
+        setup_credentials_mock.assert_called_once()
+        write_config_setting_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.initialize.aws.set_profile')
+    @mock.patch('ebcli.operations.commonops.check_credentials')
+    @mock.patch('ebcli.operations.commonops.credentials_are_valid')
+    @mock.patch('ebcli.operations.commonops.setup_credentials')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    def test_set_up_credentials__eb_cli_is_used_as_default_profile(
+            self,
+            write_config_setting_mock,
+            setup_credentials_mock,
+            credentials_are_valid_mock,
+            check_credentials_mock,
+            set_profile_mock
+    ):
+        check_credentials_mock.return_value = ['my-profile', 'us-east-1']
+        credentials_are_valid_mock.return_value = True
+
+        commonops.set_up_credentials(
+            None,
+            'us-east-1',
+            False
+        )
+        check_credentials_mock.assert_called_once_with(
+            'eb-cli',
+            None,
+            'us-east-1',
+            False,
+            False
+        )
+        set_profile_mock.assert_called_once_with('eb-cli')
+        setup_credentials_mock.assert_called_once()
+        write_config_setting_mock.assert_called_once_with('global', 'profile', 'eb-cli')
+
+    @mock.patch('ebcli.controllers.initialize.aws.set_profile')
+    @mock.patch('ebcli.operations.commonops.check_credentials')
+    @mock.patch('ebcli.operations.commonops.credentials_are_valid')
+    @mock.patch('ebcli.operations.commonops.setup_credentials')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    def test_set_up_credentials__eb_cli_is_used_as_default_profile(
+            self,
+            write_config_setting_mock,
+            setup_credentials_mock,
+            credentials_are_valid_mock,
+            check_credentials_mock,
+            set_profile_mock
+    ):
+        check_credentials_mock.return_value = ['eb-cli', 'us-east-1']
+        credentials_are_valid_mock.return_value = True
+
+        commonops.set_up_credentials(
+            None,
+            'us-east-1',
+            False
+        )
+        check_credentials_mock.assert_called_once_with(
+            'eb-cli',
+            None,
+            'us-east-1',
+            False,
+            False
+        )
+        set_profile_mock.assert_called_once_with('eb-cli')
+        setup_credentials_mock.assert_not_called()
+        write_config_setting_mock.assert_called_once_with('global', 'profile', 'eb-cli')

@@ -1037,6 +1037,22 @@ def check_credentials(profile, given_profile, given_region, interactive, force_n
             return check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
 
 
+def set_up_credentials(given_profile, given_region, interactive, force_non_interactive=False):
+    if given_profile:
+        # Profile already set at abstractController
+        profile = given_profile
+    else:
+        profile = 'eb-cli'
+        aws.set_profile(profile)
+
+    profile, _ = check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
+
+    if not credentials_are_valid():
+        setup_credentials()
+    else:
+        fileoperations.write_config_setting('global', 'profile', profile)
+
+
 def _create_instance_role(role_name, policy_arns):
     document = iam_documents.EC2_ASSUME_ROLE_PERMISSION
     ret = iam.create_role_with_policy(role_name, document, policy_arns)
