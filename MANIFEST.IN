@@ -1,0 +1,6 @@
+include LICENSE.txt
+include CHANGES.rst
+include README.rst
+include PKG_INFO
+exclude .coveragerc
+exclude .coverage
