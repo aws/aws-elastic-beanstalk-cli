@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from os import linesep
+import sys
 
 from ebcli.core import io
 from ebcli.lib import elasticbeanstalk
@@ -53,6 +54,12 @@ def raise_validation_error(
     raise exception_class(tags_error_message)
 
 
+def unicode_decode_keys(keys):
+    if sys.version_info < (3, 0):
+        return [key.decode('utf-8') for key in keys]
+    return keys
+
+
 def validate_additions(taglist):
     """
     Validates that the list of tags specified to be added do not
@@ -61,7 +68,7 @@ def validate_additions(taglist):
     :return: None
     """
     preexisting_keys = list_of_keys_of(taglist.current_list)
-    keys_of_tags_to_create = list_of_keys_of(taglist.additions)
+    keys_of_tags_to_create = unicode_decode_keys(list_of_keys_of(taglist.additions))
 
     preexisting_key_set = set(preexisting_keys).intersection(keys_of_tags_to_create)
 
@@ -81,7 +88,7 @@ def validate_deletions(taglist):
     :return: None
     """
     preexisting_keys = list_of_keys_of(taglist.current_list)
-    keys_of_tags_to_delete = taglist.deletions
+    keys_of_tags_to_delete = unicode_decode_keys(taglist.deletions)
 
     non_existent_key_set = list(set(keys_of_tags_to_delete) - set(preexisting_keys))
 
@@ -101,7 +108,7 @@ def validate_updates(taglist):
     :return: None
     """
     preexisting_keys = list_of_keys_of(taglist.current_list)
-    keys_of_tags_to_update = list_of_keys_of(taglist.updates)
+    keys_of_tags_to_update = unicode_decode_keys(list_of_keys_of(taglist.updates))
 
     non_existent_key_set = list(set(keys_of_tags_to_update) - set(preexisting_keys))
 
