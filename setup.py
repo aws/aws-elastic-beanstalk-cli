@@ -22,6 +22,7 @@ requires = [
     'botocore>=1.12.29,<1.13',
     'cement==2.8.2',
     'colorama>=0.3.9,<0.4.0',  # use the same range that 'docker-compose' uses
+    'future>=0.16.0,<0.17.0',
     'pathspec==0.5.5',
     'python-dateutil>=2.1,<3.0.0',  # use the same range that 'botocore' uses
     'PyYAML>=3.10,<=3.13',  # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
@@ -30,7 +31,8 @@ requires = [
     'semantic_version == 2.5.0',
     'six>=1.11.0,<1.12.0',
     'termcolor == 1.1.0',
-    'urllib3>=1.24.1,<1.25'
+    'urllib3>=1.24.1,<1.25',
+    'wcwidth>=0.1.7,<0.2.0',
 ]
 
 testing_requires = [
@@ -39,6 +41,13 @@ testing_requires = [
     'pytest_socket',
 ]
 
+extras_require = {
+    # use the same ranges as 'docker-py':
+    # https://github.com/docker/docker-py/blob/e0495a91e49d19dc357513536c2882b7eaf28a05/setup.py#L29-L30
+    ':sys_platform == "win32" and python_version < "3.6"': 'pypiwin32==219',
+    ':sys_platform == "win32" and python_version >= "3.6"': 'pypiwin32==223',
+
+}
 if not sys.platform.startswith('win'):
     requires.append('docker-compose >= 1.23.2, < 1.24.0')
     requires.append('blessed>=1.9.5')
@@ -61,6 +70,7 @@ setup_options = dict(
         'ebcli.containers': ['containerfiles/*'],
         'ebcli.labs': ['cloudwatchfiles/*.config']},
     install_requires=requires,
+    extras_require=extras_require,
     license="Apache License 2.0",
     classifiers=(
         'Development Status :: 5 - Production/Stable',
