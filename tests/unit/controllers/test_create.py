@@ -812,34 +812,6 @@ CName: front-A08G28LG+""")
         self.assertEnvironmentRequestsEqual(expected_environment_request, actual_environment_request)
         self.assertEqual(1, get_input_mock.call_count)
 
-    def test_elb_types__region_explicitly_passed_in__nlb_restricted_regions(self):
-        for region in ['cn-north-1', 'us-gov-west-1']:
-            self.assertEqual(['classic', 'application'], create.elb_types(region))
-
-    def test_elb_types__region_explicitly_passed_in__nlb_allowed_regions(self):
-        for region in self.nlb_supported_regions:
-            self.assertEqual(['classic', 'application', 'network'], create.elb_types(region))
-
-    @mock.patch('ebcli.operations.commonops.get_default_region')
-    def test_elb_types__region_not_passed_in_through_command_line__nlb_restricted_regions(
-            self,
-            get_default_region_mock
-    ):
-        for region in ['cn-north-1', 'us-gov-west-1']:
-            get_default_region_mock.return_value = region
-
-            self.assertEqual(['classic', 'application'], create.elb_types(None))
-
-    @mock.patch('ebcli.operations.commonops.get_default_region')
-    def test_elb_types__region_not_passed_in_through_command_line__nlb_allowed_regions(
-            self,
-            get_default_region_mock
-    ):
-        for region in self.nlb_supported_regions:
-            get_default_region_mock.return_value = region
-
-            self.assertEqual(['classic', 'application', 'network'], create.elb_types(None))
-
 
 class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.core.io.get_input')
@@ -1576,7 +1548,6 @@ class TestCreateModule(unittest.TestCase):
             create.get_elb_type_from_customer(
                 interactive=True,
                 single=True,
-                region='us-west-2',
                 tier=Tier.from_raw_string('webserver')
             )
         )
@@ -1586,7 +1557,6 @@ class TestCreateModule(unittest.TestCase):
             create.get_elb_type_from_customer(
                 interactive=False,
                 single=True,
-                region='us-west-2',
                 tier=Tier.from_raw_string('webserver')
             )
         )
@@ -1602,7 +1572,6 @@ class TestCreateModule(unittest.TestCase):
             create.get_elb_type_from_customer(
                 interactive=True,
                 single=None,
-                region='us-west-2',
                 tier=Tier.from_raw_string('webserver')
             )
         )
@@ -1612,7 +1581,6 @@ class TestCreateModule(unittest.TestCase):
             create.get_elb_type_from_customer(
                 interactive=True,
                 single=None,
-                region='us-west-2',
                 tier=Tier.from_raw_string('worker')
             )
         )

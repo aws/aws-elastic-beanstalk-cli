@@ -174,7 +174,7 @@ class CreateController(AbstractBaseController):
         env_name = provided_env_name or get_environment_name(app_name, group)
         cname = cname or get_environment_cname(env_name, provided_env_name, tier)
         key_name = key_name or commonops.get_default_keyname()
-        elb_type = elb_type or get_elb_type_from_customer(interactive, single, region, tier)
+        elb_type = elb_type or get_elb_type_from_customer(interactive, single, tier)
         database = self.form_database_object()
         vpc = self.form_vpc_object(tier, single)
 
@@ -477,7 +477,7 @@ def get_cname_from_customer(env_name):
     return cname
 
 
-def get_elb_type_from_customer(interactive, single, region, tier):
+def get_elb_type_from_customer(interactive, single, tier):
     """
     Prompt customer to specify the ELB type if operating in the interactive mode and
     on a load-balanced environment.
@@ -494,28 +494,13 @@ def get_elb_type_from_customer(interactive, single, region, tier):
 
     io.echo()
     io.echo('Select a load balancer type')
-    result = utils.prompt_for_item_in_list(elb_types(region), default=1)
+    result = utils.prompt_for_item_in_list(
+        [elb_names.CLASSIC_VERSION, elb_names.APPLICATION_VERSION, elb_names.NETWORK_VERSION],
+        default=1
+    )
     elb_type = result
 
     return elb_type
-
-
-def elb_types(region):
-    """
-    Returns the list of Load Balancer types that a customer can use in
-    the given region.
-    :param region: Name of region of create environment in
-    :return: list of Load Balancer types
-    """
-    types = [elb_names.CLASSIC_VERSION, elb_names.APPLICATION_VERSION]
-
-    if not region:
-        region = commonops.get_default_region()
-
-    if region not in ['cn-north-1', 'us-gov-west-1']:
-        types.append(elb_names.NETWORK_VERSION)
-
-    return types
 
 
 def get_and_validate_envars(environment_variables_input):
