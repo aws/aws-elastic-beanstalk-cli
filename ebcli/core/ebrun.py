@@ -71,7 +71,7 @@ def run_app(app):
         if '--verbose' in sys.argv or '--debug' in sys.argv:
             io.log_info(traceback.format_exc())
         else:
-            io.log_error(e.__class__.__name__ + " - " + e.message)
+            io.log_error('{0} - {1}'.format(e.__class__.__name__, e.message))
 
         app.close(code=4)
     except Exception as e:
