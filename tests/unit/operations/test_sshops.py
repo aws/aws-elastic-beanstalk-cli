@@ -323,6 +323,7 @@ class TestSSHOps(unittest.TestCase):
         call_mock.return_value = 0
 
         sshops.ssh_into_instance('instance-id')
+        call_mock.assert_called_once_with(['ssh', '-i', 'aws-eb-us-west-2', 'ec2-user@172.31.35.210'])
 
     @mock.patch('ebcli.operations.sshops.prompt_for_ec2_keyname')
     @mock.patch('ebcli.operations.sshops.commonops.update_environment')

@@ -88,8 +88,8 @@ def ssh_into_instance(instance_id, keep_open=False, force_open=False, custom_ssh
         ip = instance['PublicIpAddress']
     except KeyError:
         # Now allows access to private subnet
-        if 'PrivateIpAddress' in instance and 'PrivateDnsName' in instance:
-            ip = instance['PrivateDnsName']
+        if 'PrivateIpAddress' in instance:
+            ip = instance['PrivateIpAddress']
         else:
             raise NotFoundError(strings['ssh.noip'])
     security_groups = instance['SecurityGroups']
