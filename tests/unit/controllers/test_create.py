@@ -1575,6 +1575,10 @@ class TestCreateModule(unittest.TestCase):
                 tier=Tier.from_raw_string('webserver')
             )
         )
+        prompt_for_item_in_list_mock.assert_called_once_with(
+            ['classic', 'application', 'network'],
+            default=2
+        )
 
     def test_get_elb_type_from_customer__interactive_mode__not_applicable_for_worker_tier(self):
         self.assertIsNone(

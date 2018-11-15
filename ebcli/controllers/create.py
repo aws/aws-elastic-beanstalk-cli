@@ -482,7 +482,7 @@ def get_elb_type_from_customer(interactive, single, tier):
     Prompt customer to specify the ELB type if operating in the interactive mode and
     on a load-balanced environment.
 
-    Selection defaults to 'classic' when provided with blank input.
+    Selection defaults to 'application' when provided with blank input.
     :param interactive: True/False depending on whether operating in the interactive mode or not
     :param single: False/True depending on whether environment is load balanced or not
     :param region: AWS region in which in load balancer will be created
@@ -496,7 +496,7 @@ def get_elb_type_from_customer(interactive, single, tier):
     io.echo('Select a load balancer type')
     result = utils.prompt_for_item_in_list(
         [elb_names.CLASSIC_VERSION, elb_names.APPLICATION_VERSION, elb_names.NETWORK_VERSION],
-        default=1
+        default=2
     )
     elb_type = result
 
