@@ -356,8 +356,6 @@ To upgrade an environment's platform, enter:
 
     # CodeCommit
     'codecommit.nosc': 'Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization',
-    'codecommit.ccwarning': 'Note: Elastic Beanstalk now supports AWS CodeCommit; a fully-managed source control service.'
-                    ' To learn more, see Docs: https://aws.amazon.com/codecommit/',
     'codecommit.norepo': 'Repository does not exist in CodeCommit',
     'codecommit.nobranch': 'Branch does not exist in CodeCommit',
     'codecommit.badregion': 'AWS CodeCommit is not supported in this region; continuing initialization without CodeCommit',

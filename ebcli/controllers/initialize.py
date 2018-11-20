@@ -189,7 +189,6 @@ class InitController(AbstractBaseController):
 
         # Prompt for interactive CodeCommit
         if prompt_codecommit:
-            io.echo(strings['codecommit.ccwarning'])
             try:
                 if not source_location:
                     io.validate_action(prompts['codecommit.usecc'], "y")
