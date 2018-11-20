@@ -181,53 +181,53 @@ class InitController(AbstractBaseController):
             # Do not prompt if customer has already configured the EB application
             # in the present working directory with Git
             prompt_codecommit = False
+        elif not source_control_setup:
+            io.echo(strings['codecommit.nosc'])
+            prompt_codecommit = False
         else:
             prompt_codecommit = True
 
         # Prompt for interactive CodeCommit
         if prompt_codecommit:
-            if not source_control_setup:
-                io.echo(strings['codecommit.nosc'])
-            else:
-                io.echo(strings['codecommit.ccwarning'])
-                try:
-                    if not source_location:
-                        io.validate_action(prompts['codecommit.usecc'], "y")
+            io.echo(strings['codecommit.ccwarning'])
+            try:
+                if not source_location:
+                    io.validate_action(prompts['codecommit.usecc'], "y")
 
-                    # Setup git config settings for code commit credentials
-                    source_control.setup_codecommit_cred_config()
+                # Setup git config settings for code commit credentials
+                source_control.setup_codecommit_cred_config()
 
-                    # Get user specified repository
-                    remote_url = None
-                    if repository is None:
-                        repository = get_repository_interactive()
-                    else:
-                        try:
+                # Get user specified repository
+                remote_url = None
+                if repository is None:
+                    repository = get_repository_interactive()
+                else:
+                    try:
+                        setup_codecommit_remote_repo(repository, source_control)
+                    except ServiceError as ex:
+                        if source_location:
+                            create_codecommit_repository(repository)
                             setup_codecommit_remote_repo(repository, source_control)
-                        except ServiceError as ex:
-                            if source_location:
-                                create_codecommit_repository(repository)
-                                setup_codecommit_remote_repo(repository, source_control)
-                            else:
-                                io.log_error(strings['codecommit.norepo'])
-                                raise ex
+                        else:
+                            io.log_error(strings['codecommit.norepo'])
+                            raise ex
 
-                    # Get user specified branch
-                    if branch is None:
-                        branch = get_branch_interactive(repository)
-                    else:
-                        try:
-                            codecommit.get_branch(repository, branch)
-                        except ServiceError as ex:
-                            if source_location:
-                                create_codecommit_branch(source_control, branch)
-                            else:
-                                io.log_error(strings['codecommit.nobranch'])
-                                raise ex
-                        source_control.setup_existing_codecommit_branch(branch, remote_url)
+                # Get user specified branch
+                if branch is None:
+                    branch = get_branch_interactive(repository)
+                else:
+                    try:
+                        codecommit.get_branch(repository, branch)
+                    except ServiceError as ex:
+                        if source_location:
+                            create_codecommit_branch(source_control, branch)
+                        else:
+                            io.log_error(strings['codecommit.nobranch'])
+                            raise ex
+                    source_control.setup_existing_codecommit_branch(branch, remote_url)
 
-                except ValidationError:
-                    LOG.debug("Denied option to use CodeCommit, continuing initialization")
+            except ValidationError:
+                LOG.debug("Denied option to use CodeCommit, continuing initialization")
 
         # Initialize the whole setup
         initializeops.setup(self.app_name, self.region, self.solution, dir_path=None, repository=repository, branch=branch)
