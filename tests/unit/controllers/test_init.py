@@ -1418,6 +1418,23 @@ class TestInitModule(unittest.TestCase):
         get_region_mock.assert_called_once_with('us-west-2', True, False)
         set_region_mock.assert_called_once_with('us-west-2')
 
+    @mock.patch('ebcli.controllers.initialize.get_region')
+    @mock.patch('ebcli.controllers.initialize.aws.set_region')
+    def test_set_region_for_application__region_not_passed__non_interactive_not_forced(
+            self,
+            set_region_mock,
+            get_region_mock
+    ):
+        get_region_mock.return_value = 'us-west-2'
+
+        self.assertEqual(
+            'us-west-2',
+            initialize.set_region_for_application(False, None, False)
+        )
+
+        get_region_mock.assert_called_once_with(None, False, False)
+        set_region_mock.assert_called_once_with('us-west-2')
+
 
 class TestInitMultipleModules(unittest.TestCase):
     platform = PlatformVersion(

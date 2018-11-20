@@ -650,7 +650,7 @@ def get_region(region_argument, interactive, force_non_interactive=False):
 
 
 def set_region_for_application(interactive, region, force_non_interactive):
-    if interactive:
+    if interactive or (not region and not force_non_interactive):
         region = get_region(region, interactive, force_non_interactive)
     else:
         region = get_region_from_inputs(region)
