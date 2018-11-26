@@ -182,7 +182,8 @@ class InitController(AbstractBaseController):
             # in the present working directory with Git
             prompt_codecommit = False
         elif not source_control_setup:
-            io.echo(strings['codecommit.nosc'])
+            if source_location:
+                io.echo(strings['codecommit.nosc'])
             prompt_codecommit = False
         else:
             prompt_codecommit = True
