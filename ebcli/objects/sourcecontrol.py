@@ -437,7 +437,8 @@ class Git(SourceControl):
         return stdout
 
     def create_initial_commit(self):
-        self._run_cmd(['touch', 'README'])
+        with open('README', 'w') as readme:
+            readme.write('')
         self._run_cmd(['git', 'add', 'README'])
         stdout, stderr, exitcode = self._run_cmd(['git', 'commit', '--allow-empty', '-m', 'EB CLI initial commit'], handle_exitcode=False)
 
