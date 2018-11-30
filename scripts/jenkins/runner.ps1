@@ -34,9 +34,14 @@ $GIT_BRANCH = Invoke-Expression "git rev-parse --abbrev-ref HEAD"
 $VENV_ENV_NAME="$PYTHON_VERSION-$GIT_COMMIT"
 $PYTHON_NOT_FOUND="${PYTHON_INSTALLATION} --version' did not work. Is '$PYTHON_INSTALLATION' really a Python binary?"
 $STEP_NUMBER = 1
+$SUBSTEP_NUMBER = 1
 
 function Increment-StepNumber() {
-    $STEP_NUMBER++
+    $script:STEP_NUMBER++
+}
+
+function Increment-SubStepNumber() {
+    $script:SUBSTEP_NUMBER++
 }
 
 function Exit-UponFailure() {
@@ -45,6 +50,16 @@ function Exit-UponFailure() {
         Remove-Item -Path $VENV_ENV_NAME -Recurse
         Exit 1
     }
+    Increment-StepNumber
+}
+
+function Exit-UponSubStepFailure() {
+    if ($LASTEXITCODE -ne 0) {
+        Write-Output -InputObject "Delete Python $PYTHON_VERSION virtualenv before premature exit"
+        Remove-Item -Path $VENV_ENV_NAME -Recurse
+        Exit 1
+    }
+    Increment-SubStepNumber
 }
 
 function Validate-PythonVersionName()
@@ -61,11 +76,77 @@ function Print-StepTitle($title)
     Write-Output "******************************************************"
     Write-Output "$STEP_NUMBER. $title"
     Write-Output "******************************************************"
-    Increment-StepNumber
+}
+
+function Print-SubStepTitle($title)
+{
+    Write-Output "    $STEP_NUMBER.$SUBSTEP_NUMBER $title"
 }
 
 Print-StepTitle "Verifying Python binary path is valid"
 Validate-PythonVersionName
+Exit-UponFailure
+
+Print-StepTitle "Ensure AWSEBCLI installs correctly after AWSCLI"
+function Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI()
+{
+    Print-SubStepTitle "Create new Python $PYTHON_VERSION virtualenv"
+    Invoke-Expression "virtualenv.exe -p '$PYTHON_INSTALLATION' '$VENV_ENV_NAME'"
+    Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Loading Python $PYTHON_VERSION virtualenv"
+    Invoke-Expression ".\$VENV_ENV_NAME\Scripts\activate"
+    Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Installing AWSCLI and dependencies"
+    Invoke-Expression "pip install awscli"
+    Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Installing AWSEBCLI and dependencies"
+    Invoke-Expression "pip install ."
+    Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Check of missing dependencies and dependency mismatches in the package set"
+    Invoke-Expression "python .\tests\test_dependencies_mismatch.py"
+    Exit-UponSubStepFailure
+
+    Print-StepTitle "Deleting Python $PYTHON_VERSION virtualenv"
+    Remove-Item -Path $VENV_ENV_NAME -Recurse
+    Exit-UponSubStepFailure
+    $SUBSTEP_NUMBER = 1
+}
+Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI
+
+Print-StepTitle "Ensure AWSCLI installs correctly after AWSEBCLI"
+function Ensure-AWSCLIInstallsCorrectlyAfterAWSEBCLI()
+{
+    Print-SubStepTitle "Create new Python $PYTHON_VERSION virtualenv"
+    Invoke-Expression "virtualenv.exe -p '$PYTHON_INSTALLATION' '$VENV_ENV_NAME'"
+    Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Loading Python $PYTHON_VERSION virtualenv"
+    Invoke-Expression ".\$VENV_ENV_NAME\Scripts\activate"
+    Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Installing AWSEBCLI and dependencies"
+    Invoke-Expression "pip install ."
+    Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Installing AWSCLI and dependencies"
+    Invoke-Expression "pip install awscli"
+    Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Check of missing dependencies and dependency mismatches in the package set"
+    Invoke-Expression "python .\tests\test_dependencies_mismatch.py"
+    Exit-UponSubStepFailure
+
+    Print-StepTitle "Deleting Python $PYTHON_VERSION virtualenv"
+    Remove-Item -Path $VENV_ENV_NAME -Recurse
+    Exit-UponSubStepFailure
+
+    $SUBSTEP_NUMBER = 1
+}
+Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI
 
 Print-StepTitle "Create new Python $PYTHON_VERSION virtualenv"
 Invoke-Expression "virtualenv.exe -p '$PYTHON_INSTALLATION' '$VENV_ENV_NAME'"
@@ -89,24 +170,28 @@ Exit-UponFailure
 
 Print-StepTitle "Checking whether to generate `awsebcli` artifact for $GIT_BRANCH"
 if ( $GIT_BRANCH -like '*master' ) {
-    Write-Output "    $STEP_NUMBER.1. Ensuring $ARTIFACTS_DIRECTORY exists"
+    Print-SubStepTitle "Ensuring $ARTIFACTS_DIRECTORY exists"
     if (!(Test-Path -Path $ARTIFACTS_DIRECTORY -PathType Container))
     {
         New-Item $ARTIFACTS_DIRECTORY -ItemType directory
     }
+    Increment-SubStepNumber
 
-    Write-Output "    $STEP_NUMBER.2. Recreating $ARTIFACTS_DIRECTORY\$PYTHON_VERSION"
+    Print-SubStepTitle "Recreating $ARTIFACTS_DIRECTORY\$PYTHON_VERSION"
     if (Test-Path -Path $ARTIFACTS_DIRECTORY\$PYTHON_VERSION -PathType Container)
     {
         Remove-Item $ARTIFACTS_DIRECTORY\$PYTHON_VERSION -Recurse -Force
     }
     New-Item "$ARTIFACTS_DIRECTORY\$PYTHON_VERSION" -ItemType directory
+    Increment-SubStepNumber
 
-    Write-Output "    $STEP_NUMBER.3 Packaging awsebcli to store in $ARTIFACTS_DIRECTORY\$PYTHON_VERSION"
+    Print-SubStepTitle "Packaging awsebcli to store in $ARTIFACTS_DIRECTORY\$PYTHON_VERSION"
     Write-Output "******************************************************"
     Invoke-Expression "python setup.py sdist --dist-dir '$ARTIFACTS_DIRECTORY\$PYTHON_VERSION'"
+    Increment-SubStepNumber
 } else {
-    Write-Output "    6.1. Branch is not a 'master' branch; skipping artifact generation"
+    Print-SubStepTitle "Branch is not a 'master' branch; skipping artifact generation"
+    Increment-SubStepNumber
 }
 Exit-UponFailure
 
