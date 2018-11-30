@@ -30,8 +30,14 @@ Param(
 $ARTIFACTS_DIRECTORY = "$env:JENKINS_HOME\awsebcli_artifacts"
 $PYTHON_VERSION = & "${PYTHON_INSTALLATION}" -c 'import sys; print(\".\".join(map(str, sys.version_info[:3])))'
 $GIT_COMMIT = Invoke-Expression "git rev-parse HEAD"
+$GIT_BRANCH = Invoke-Expression "git rev-parse --abbrev-ref HEAD"
 $VENV_ENV_NAME="$PYTHON_VERSION-$GIT_COMMIT"
 $PYTHON_NOT_FOUND="${PYTHON_INSTALLATION} --version' did not work. Is '$PYTHON_INSTALLATION' really a Python binary?"
+$STEP_NUMBER = 1
+
+function Increment-StepNumber() {
+    $STEP_NUMBER++
+}
 
 function Exit-UponFailure() {
     if ($LASTEXITCODE -ne 0) {
@@ -49,60 +55,54 @@ function Validate-PythonVersionName()
     }
 }
 
-Write-Output "******************************************************"
-Write-Output "1. Verifying Python binary path is valid"
-Write-Output "******************************************************"
+function Print-StepTitle($title)
+{
+    Write-Output ""
+    Write-Output "******************************************************"
+    Write-Output "$STEP_NUMBER. $title"
+    Write-Output "******************************************************"
+    Increment-StepNumber
+}
+
+Print-StepTitle "Verifying Python binary path is valid"
 Validate-PythonVersionName
 
-Write-Output ""
-Write-Output "******************************************************"
-Write-Output "2. Create new Python $PYTHON_VERSION virtualenv"
-Write-Output "******************************************************"
+Print-StepTitle "Create new Python $PYTHON_VERSION virtualenv"
 Invoke-Expression "virtualenv.exe -p '$PYTHON_INSTALLATION' '$VENV_ENV_NAME'"
 Exit-UponFailure
 
-Write-Output "******************************************************"
-Write-Output "3. Loading Python $PYTHON_VERSION virtualenv"
-Write-Output "******************************************************"
+Print-StepTitle "Loading Python $PYTHON_VERSION virtualenv"
 Invoke-Expression ".\$VENV_ENV_NAME\Scripts\activate"
 Exit-UponFailure
 
-Write-Output "******************************************************"
-Write-Output "4. (Re)Installing AWSEBCLI and dependencies using commit $env:GIT_BRANCH/$GIT_COMMIT"
-Write-Output "******************************************************"
+Print-StepTitle "(Re)Installing AWSEBCLI and dependencies using commit $GIT_BRANCH/$GIT_COMMIT"
 Invoke-Expression "python .\scripts\jenkins\install_dependencies"
 Exit-UponFailure
 
-Write-Output "******************************************************"
-Write-Output "5. Check of missing dependencies and dependency mismatches in the package set"
-Write-Output "******************************************************"
+Print-StepTitle "Check of missing dependencies and dependency mismatches in the package set"
 Invoke-Expression "python .\tests\test_dependencies_mismatch.py"
 Exit-UponFailure
 
-Write-Output "******************************************************"
-Write-Output "6. Executing unit tests"
-Write-Output "******************************************************"
+Print-StepTitle "Executing unit tests"
 Invoke-Expression "python .\scripts\jenkins\run_unit_tests"
 Exit-UponFailure
 
-Write-Output "******************************************************"
-Write-Output "7. Checking whether to generate `awsebcli` artifact for $env:GIT_BRANCH"
-Write-Output "******************************************************"
-if ( $env:GIT_BRANCH -like '*master' ) {
-    Write-Output "    6.1. Ensuring $ARTIFACTS_DIRECTORY exists"
+Print-StepTitle "Checking whether to generate `awsebcli` artifact for $GIT_BRANCH"
+if ( $GIT_BRANCH -like '*master' ) {
+    Write-Output "    $STEP_NUMBER.1. Ensuring $ARTIFACTS_DIRECTORY exists"
     if (!(Test-Path -Path $ARTIFACTS_DIRECTORY -PathType Container))
     {
         New-Item $ARTIFACTS_DIRECTORY -ItemType directory
     }
 
-    Write-Output "    6.2. Recreating $ARTIFACTS_DIRECTORY\$PYTHON_VERSION"
+    Write-Output "    $STEP_NUMBER.2. Recreating $ARTIFACTS_DIRECTORY\$PYTHON_VERSION"
     if (Test-Path -Path $ARTIFACTS_DIRECTORY\$PYTHON_VERSION -PathType Container)
     {
         Remove-Item $ARTIFACTS_DIRECTORY\$PYTHON_VERSION -Recurse -Force
     }
     New-Item "$ARTIFACTS_DIRECTORY\$PYTHON_VERSION" -ItemType directory
 
-    Write-Output "    6.4. Packaging awsebcli to store in $ARTIFACTS_DIRECTORY\$PYTHON_VERSION"
+    Write-Output "    $STEP_NUMBER.3 Packaging awsebcli to store in $ARTIFACTS_DIRECTORY\$PYTHON_VERSION"
     Write-Output "******************************************************"
     Invoke-Expression "python setup.py sdist --dist-dir '$ARTIFACTS_DIRECTORY\$PYTHON_VERSION'"
 } else {
@@ -110,8 +110,6 @@ if ( $env:GIT_BRANCH -like '*master' ) {
 }
 Exit-UponFailure
 
-Write-Output "******************************************************"
-Write-Output "8. Deleting Python $PYTHON_VERSION virtualenv"
-Write-Output "******************************************************"
+Print-StepTitle "Deleting Python $PYTHON_VERSION virtualenv"
 Remove-Item -Path $VENV_ENV_NAME -Recurse
 Exit-UponFailure

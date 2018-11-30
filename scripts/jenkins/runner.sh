@@ -2,6 +2,7 @@
 
 ARTIFACTS_DIRECTORY="$HOME/awsebcli_artifacts"
 GIT_COMMIT=`git rev-parse HEAD`
+GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
 PYTHON_INSTALLATION=$1
 PYTHON_VERSION=`${PYTHON_INSTALLATION} -c 'import sys; print(".".join(map(str, sys.version_info[:3])))'`
 VENV_ENV_NAME="$PYTHON_VERSION-$GIT_COMMIT"
@@ -21,6 +22,7 @@ e.g., to test this project against Python 2.7 and Python 3.6, you would:
 usage
 )
 PYTHON_NOT_FOUND="\"$PYTHON_INSTALLATION --version\" did not work. Is \"$PYTHON_INSTALLATION\" really a Python binary?"
+STEP_NUMBER=1
 
 error_if_required_number_of_arguments_have_not_been_passed()
 {
@@ -38,7 +40,7 @@ exit_upon_failure()
 
         exit 1
     fi
-
+    increment_step_number
     echo ""
 }
 
@@ -61,81 +63,71 @@ validate_python_version_name()
     fi
 }
 
+step_title()
+{
+    echo ""
+    echo "******************************************************"
+    echo "$STEP_NUMBER. $1"
+    echo "******************************************************"
+}
+
+increment_step_number()
+{
+    STEP_NUMBER=$(($STEP_NUMBER + 1))
+}
+
+
 print_help_message_if_requested_and_exit $*
 
-echo ""
-echo "******************************************************"
-echo "1. Verifying required number of arguments have been passed"
-echo "******************************************************"
+step_title "Verifying required number of arguments have been passed"
 error_if_required_number_of_arguments_have_not_been_passed $*
+increment_step_number
 
-echo ""
-echo "******************************************************"
-echo "2. Verifying Python binary path is valid"
+step_title "Verifying Python binary path is valid"
 echo "******************************************************"
 validate_python_version_name
+increment_step_number
 
-echo ""
-echo "******************************************************"
-echo "3. Create new Python $PYTHON_VERSION virtualenv"
-echo "******************************************************"
+step_title "Create new Python $PYTHON_VERSION virtualenv"
 virtualenv -p $PYTHON_INSTALLATION $VENV_ENV_NAME
 exit_upon_failure
 
-echo "******************************************************"
-echo "4. Loading Python $PYTHON_VERSION virtualenv"
-echo "******************************************************"
+step_title "Loading Python $PYTHON_VERSION virtualenv"
 source $VENV_ENV_NAME/bin/activate
 exit_upon_failure
 
-echo "******************************************************"
-echo "5. (Re)Installing AWSEBCLI and dependencies using commit $GIT_BRANCH/$GIT_COMMIT"
-echo "******************************************************"
+step_title "(Re)Installing AWSEBCLI and dependencies using commit $GIT_BRANCH/$GIT_COMMIT"
 python scripts/jenkins/install_dependencies
 exit_upon_failure
 
-echo "******************************************************"
-echo "6. Check of missing dependencies and dependency mismatches in the package set"
-echo "******************************************************"
+step_title "Check of missing dependencies and dependency mismatches in the package set"
 python tests/test_dependencies_mismatch.py
 exit_upon_failure
 
-echo "******************************************************"
-echo "7. Executing unit tests"
-echo "******************************************************"
+step_title "Executing unit tests"
 python scripts/jenkins/run_unit_tests
 exit_upon_failure
 
-echo "******************************************************"
-echo "8. Checking whether branch is a 'master' branch"
-echo "******************************************************"
+step_title "Checking whether branch is a 'master' branch"
 if [[ $GIT_BRANCH =~ 'master' ]]; then
-    echo "    6.1. Ensuring $ARTIFACTS_DIRECTORY exists"
+    echo "    $STEP_NUMBER.1. Ensuring $ARTIFACTS_DIRECTORY exists"
     if [ ! -d "$ARTIFACTS_DIRECTORY" ]; then
         mkdir "$ARTIFACTS_DIRECTORY"
     fi
 
-    echo "    6.2. Recreating $ARTIFACTS_DIRECTORY/$PYTHON_VERSION"
+    echo "    $STEP_NUMBER.2. Recreating $ARTIFACTS_DIRECTORY/$PYTHON_VERSION"
     if [ -d $ARTIFACTS_DIRECTORY/$PYTHON_VERSION ]; then
         rm -rf $ARTIFACTS_DIRECTORY/$PYTHON_VERSION
     fi
     mkdir $ARTIFACTS_DIRECTORY/$PYTHON_VERSION
 
-    echo "    6.4. Packaging awsebcli to store in $ARTIFACTS_DIRECTORY/$PYTHON_VERSION"
-    echo "******************************************************"
+    echo "    $STEP_NUMBER.3. Packaging awsebcli to store in $ARTIFACTS_DIRECTORY/$PYTHON_VERSION"
     python setup.py sdist
     mv dist/* $ARTIFACTS_DIRECTORY/$PYTHON_VERSION/
 else
-    echo "    6.1. Branch is not a 'master' branch; skipping artifact generation"
+    echo "    $STEP_NUMBER.1. Branch is not a 'master' branch; skipping artifact generation"
+    increment_step_number
 fi
-exit_upon_failure
 
-echo "******************************************************"
-echo "9. Delete Python $PYTHON_VERSION virtualenv"
-echo "******************************************************"
-rm -rf $VENV_ENV_NAME
-
-echo "******************************************************"
-echo "10. Deleting Python $PYTHON_VERSION virtualenv"
-echo "******************************************************"
+step_title "Deleting Python $PYTHON_VERSION virtualenv"
 rm -rf $VENV_ENV_NAME
