@@ -2,6 +2,19 @@
 Changelog
 =========
 -------------------
+3.14.7 (2018-12-03)
+-------------------
+- Fixed Python 2.7 Unicode tag deletion bug
+- Fixed bug that suggests unavailable CNAME to customers
+- Fixed logic to handle exceptions without error messages
+- Fixed bug that avoids showing region list during `eb init`
+- Fixed failure to create empty README file in CodeCommit Git repository on Windows
+- Modified ALB to be the default load balancer during `eb create`
+- Modified NLB to be available in the China regions
+- Modified `eb ssh` logic to use `PrivateIpAddress` rather than `PrivateDnsName`
+
+
+-------------------
 3.14.6 (2018-09-11)
 -------------------
 - Added `--timeout` argument to the `eb platform create` command
