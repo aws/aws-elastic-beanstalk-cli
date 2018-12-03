@@ -479,7 +479,7 @@ class Git(SourceControl):
         self._run_cmd(
             ['git', 'config', '--local', '--replace-all', 'credential.UseHttpPath', 'true'])
         self._run_cmd(
-            ['git', 'config', '--local', '--replace-all', 'credential.helper', '!aws codecommit credential-helper $@'])
+            ['git', 'config', '--local', '--replace-all', 'credential.helper', '"!aws codecommit credential-helper $@"'])
 
     def _run_cmd(self, cmd, handle_exitcode=True):
         stdout, stderr, exitcode = exec_cmd(cmd)

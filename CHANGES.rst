@@ -8,6 +8,7 @@ Changelog
 - Fixed bug that suggests unavailable CNAME to customers
 - Fixed logic to handle exceptions without error messages
 - Fixed bug that avoids showing region list during `eb init`
+- Fixed bug that fails to invoke CodeCommit credential helper on Windows
 - Fixed failure to create empty README file in CodeCommit Git repository on Windows
 - Modified ALB to be the default load balancer during `eb create`
 - Modified NLB to be available in the China regions
