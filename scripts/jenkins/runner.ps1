@@ -30,7 +30,9 @@ Param(
 $ARTIFACTS_DIRECTORY = "$env:JENKINS_HOME\awsebcli_artifacts"
 $PYTHON_VERSION = & "${PYTHON_INSTALLATION}" -c 'import sys; print(\".\".join(map(str, sys.version_info[:3])))'
 $GIT_COMMIT = Invoke-Expression "git rev-parse HEAD"
-$GIT_BRANCH = Invoke-Expression "git rev-parse --abbrev-ref HEAD"
+if (-not (Test-Path env:GIT_BRANCH)) {
+    $GIT_BRANCH = Invoke-Expression "git rev-parse --abbrev-ref HEAD"
+}
 $VENV_ENV_NAME="$PYTHON_VERSION-$GIT_COMMIT"
 $PYTHON_NOT_FOUND="${PYTHON_INSTALLATION} --version' did not work. Is '$PYTHON_INSTALLATION' really a Python binary?"
 $STEP_NUMBER = 1
@@ -156,7 +158,7 @@ Print-StepTitle "Loading Python $PYTHON_VERSION virtualenv"
 Invoke-Expression ".\$VENV_ENV_NAME\Scripts\activate"
 Exit-UponFailure
 
-Print-StepTitle "(Re)Installing AWSEBCLI and dependencies using commit $GIT_BRANCH/$GIT_COMMIT"
+Print-StepTitle "(Re)Installing AWSEBCLI and dependencies using commit $env:GIT_BRANCH/$GIT_COMMIT"
 Invoke-Expression "python .\scripts\jenkins\install_dependencies"
 Exit-UponFailure
 
@@ -168,8 +170,8 @@ Print-StepTitle "Executing unit tests"
 Invoke-Expression "python .\scripts\jenkins\run_unit_tests"
 Exit-UponFailure
 
-Print-StepTitle "Checking whether to generate `awsebcli` artifact for $GIT_BRANCH"
-if ( $GIT_BRANCH -like '*master' ) {
+Print-StepTitle "Checking whether to generate `awsebcli` artifact for $env:GIT_BRANCH"
+if ( $env:GIT_BRANCH -like '*master' ) {
     Print-SubStepTitle "Ensuring $ARTIFACTS_DIRECTORY exists"
     if (!(Test-Path -Path $ARTIFACTS_DIRECTORY -PathType Container))
     {

@@ -2,7 +2,9 @@
 
 ARTIFACTS_DIRECTORY="$HOME/awsebcli_artifacts"
 GIT_COMMIT=`git rev-parse HEAD`
-GIT_BRANCH=`git rev-parse --abbrev-ref HEAD`
+if [[ ! $GIT_BRANCH ]]; then
+    GIT_BRANCH = `git rev-parse --abbrev-ref HEAD`
+fi
 PYTHON_INSTALLATION=$1
 PYTHON_VERSION=`${PYTHON_INSTALLATION} -c 'import sys; print(".".join(map(str, sys.version_info[:3])))'`
 VENV_ENV_NAME="$PYTHON_VERSION-$GIT_COMMIT"

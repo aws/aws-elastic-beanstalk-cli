@@ -4,3 +4,6 @@ include README.rst
 include PKG_INFO
 exclude .coveragerc
 exclude .coverage
+exclude index.rst
+exclude conf.py
+exclude .gitignore
