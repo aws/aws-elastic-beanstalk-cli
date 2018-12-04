@@ -17,6 +17,7 @@ import fileinput
 import os
 import re
 import subprocess
+import sys
 
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
@@ -478,8 +479,9 @@ class Git(SourceControl):
         LOG.debug('Setup git config settings for code commit credentials')
         self._run_cmd(
             ['git', 'config', '--local', '--replace-all', 'credential.UseHttpPath', 'true'])
+
         self._run_cmd(
-            ['git', 'config', '--local', '--replace-all', 'credential.helper', '"!aws codecommit credential-helper $@"'])
+            ['git', 'config', '--local', '--replace-all', 'credential.helper', credential_helper_command()])
 
     def _run_cmd(self, cmd, handle_exitcode=True):
         stdout, stderr, exitcode = exec_cmd(cmd)
@@ -498,3 +500,10 @@ class Git(SourceControl):
             # Prevent communiocating with non-CodeCommit repositories because of unknown security implications
             # Integration with non-CodeCommit repositories is not something Beanstalk presently supports
             raise NoSourceControlError('Could not connect to repository located at {}'.format(remote_url))
+
+
+def credential_helper_command():
+    if sys.platform.startswith('win32'):
+        return '"!aws codecommit credential-helper $@"'
+    else:
+        return '!aws codecommit credential-helper $@'

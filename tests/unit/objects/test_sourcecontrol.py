@@ -234,3 +234,83 @@ class TestGitSourceControl(unittest.TestCase):
                 'Could not connect to repository located at {}'.format(url),
                 context_manager.exception.message
             )
+
+    @unittest.skipIf(
+        sys.platform.startswith('win32'),
+        'This test is not meant to run on Windows'
+    )
+    def test_credential_helper_command__non_windows(self):
+        self.assertEqual(
+            '!aws codecommit credential-helper $@',
+            sourcecontrol.credential_helper_command()
+        )
+
+    @unittest.skipIf(
+        not sys.platform.startswith('win32'),
+        'This test is meant to run only on Windows'
+    )
+    def test_credential_helper_command__windows(self):
+        self.assertEqual(
+            '"!aws codecommit credential-helper $@"',
+            sourcecontrol.credential_helper_command()
+        )
+
+    @unittest.skipIf(
+        sys.platform.startswith('win32'),
+        'This test is not meant to run on Windows'
+    )
+    @mock.patch('ebcli.objects.sourcecontrol.Git._run_cmd')
+    def test_setup_codecommit_cred_config__non_windows(
+            self,
+            _run_cmd_mock
+    ):
+        sourcecontrol.Git().setup_codecommit_cred_config()
+
+        _run_cmd_mock.assert_has_calls(
+            [
+                ['git', 'config', '--local', '--replace-all', 'credential.UseHttpPath', 'true'],
+                [
+                    'git', 'config', '--local', '--replace-all',
+                    'credential.helper', '!aws codecommit credential-helper $@'
+                ]
+            ])
+
+    @unittest.skipIf(
+        sys.platform.startswith('win32'),
+        'This test is not meant to run on Windows'
+    )
+    @mock.patch('ebcli.objects.sourcecontrol.Git._run_cmd')
+    def test_setup_codecommit_cred_config__non_windows(
+            self,
+            _run_cmd_mock
+    ):
+        sourcecontrol.Git().setup_codecommit_cred_config()
+
+        _run_cmd_mock.assert_has_calls(
+            [
+                mock.call(['git', 'config', '--local', '--replace-all', 'credential.UseHttpPath', 'true']),
+                mock.call([
+                    'git', 'config', '--local', '--replace-all',
+                    'credential.helper', '!aws codecommit credential-helper $@'
+                ])
+            ])
+
+    @unittest.skipIf(
+        not sys.platform.startswith('win32'),
+        'This test is meant only to run on Windows'
+    )
+    @mock.patch('ebcli.objects.sourcecontrol.Git._run_cmd')
+    def test_setup_codecommit_cred_config__windows(
+            self,
+            _run_cmd_mock
+    ):
+        sourcecontrol.Git().setup_codecommit_cred_config()
+
+        _run_cmd_mock.assert_has_calls(
+            [
+                mock.call(['git', 'config', '--local', '--replace-all', 'credential.UseHttpPath', 'true']),
+                mock.call([
+                    'git', 'config', '--local', '--replace-all',
+                    'credential.helper', '"!aws codecommit credential-helper $@"'
+                ])
+            ])
