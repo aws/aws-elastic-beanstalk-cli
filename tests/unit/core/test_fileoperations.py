@@ -21,7 +21,7 @@ import zipfile
 
 import pytest
 import unittest
-from mock import patch
+from mock import call, patch
 
 from ebcli.core import fileoperations
 from ebcli.objects.buildconfiguration import BuildConfiguration
@@ -51,6 +51,7 @@ class TestFileOperations(unittest.TestCase):
         fileoperations.aws_config_location = os.path.join('home', '.aws', 'config')
 
     def tearDown(self):
+        fileoperations.ProjectRoot._reset_root()
         os.chdir(self.test_root)
         if os.path.exists('testDir'):
             if sys.platform.startswith('win'):
@@ -170,6 +171,34 @@ class TestFileOperations(unittest.TestCase):
                 pass  # expected
         finally:
             os.chdir(cwd)
+
+    @patch('ebcli.core.fileoperations.LOG.debug')
+    def test_project_root__root_is_cached_once_found(
+            self,
+            debug_mock
+    ):
+        cwd = os.getcwd()
+
+        self._traverse_to_deeper_subdir()
+
+        def traverse_to_root_and_assert():
+            fileoperations.ProjectRoot.traverse()
+
+            nwd = os.getcwd()
+            self.assertEqual(cwd, nwd)
+
+        traverse_to_root_and_assert()
+        traverse_to_root_and_assert()
+        traverse_to_root_and_assert()
+
+        debug_mock.assert_has_calls(
+            [
+                call('beanstalk directory not found in /Users/rahuraja/git/eb/EB-CLI/testDir/fol1/fol2/fol3  -Going up a level'),
+                call('beanstalk directory not found in /Users/rahuraja/git/eb/EB-CLI/testDir/fol1/fol2  -Going up a level'),
+                call('beanstalk directory not found in /Users/rahuraja/git/eb/EB-CLI/testDir/fol1  -Going up a level'),
+                call('Project root found at: /Users/rahuraja/git/eb/EB-CLI/testDir')
+            ]
+        )
 
     def test_write_config_setting_no_section(self):
         # create config file
