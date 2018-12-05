@@ -76,7 +76,6 @@ setup_options = dict(
             'ebp=ebcli.core.ebpcore:main'
         ]
     },
-    include_package_data=True
 )
 
 
