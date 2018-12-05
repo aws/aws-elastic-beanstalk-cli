@@ -156,7 +156,6 @@ class TestFileOperations(unittest.TestCase):
         nwd = os.getcwd()
         self.assertEqual(cwd, nwd)
 
-    @unittest.skip
     def test_project_root__traverse_no_root(self):
         # move up 2 directories first to make sure we are not in a project root
         cwd = os.getcwd()
