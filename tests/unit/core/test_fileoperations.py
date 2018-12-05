@@ -148,7 +148,9 @@ class TestFileOperations(unittest.TestCase):
         cwd = os.getcwd()
 
         # create and swap to deep subdirectory
-        self._traverse_to_deeper_subdir()
+        dir = 'fol1' + os.path.sep + 'fol2' + os.path.sep + 'fol3'
+        os.makedirs(dir)
+        os.chdir(dir)
 
         fileoperations.ProjectRoot.traverse()
 
@@ -178,7 +180,9 @@ class TestFileOperations(unittest.TestCase):
     ):
         cwd = os.getcwd()
 
-        self._traverse_to_deeper_subdir()
+        dir = 'fol1' + os.path.sep + 'fol2' + os.path.sep + 'fol3'
+        os.makedirs(dir)
+        os.chdir(dir)
 
         def traverse_to_root_and_assert():
             fileoperations.ProjectRoot.traverse()
@@ -198,6 +202,22 @@ class TestFileOperations(unittest.TestCase):
                 call('Project root found at: /Users/rahuraja/git/eb/EB-CLI/testDir')
             ]
         )
+
+    def test_project_root__traverse__file_system_root_reached(self):
+        if os.path.isdir('.elasticbeanstalk'):
+            shutil.rmtree('.elasticbeanstalk')
+
+        cwd = os.getcwd()
+        with patch('os.getcwd') as getcwd_mock:
+            getcwd_mock.return_value = cwd
+
+            with self.assertRaises(fileoperations.NotInitializedError) as context_manager:
+                fileoperations.ProjectRoot.traverse()
+
+            self.assertEqual(
+                'EB is not yet initialized',
+                str(context_manager.exception)
+            )
 
     def test_write_config_setting_no_section(self):
         # create config file
@@ -357,7 +377,9 @@ class TestFileOperations(unittest.TestCase):
 
     def test_project_root__traverse_deep2(self):
         cwd = os.getcwd()
-        self._traverse_to_deeper_subdir()
+        dir = 'fol1' + os.path.sep + 'fol2' + os.path.sep + 'fol3'
+        os.makedirs(dir)
+        os.chdir(dir)
         self.assertEqual(cwd, fileoperations.get_project_root())
 
     def test_traverse_to_project_no_root(self):
@@ -402,11 +424,6 @@ class TestFileOperations(unittest.TestCase):
         self.assertTrue(fileoperations.project_file_exists('foo'))
         project_file_path.assert_called_once_with('foo')
         file_exists.assert_called_once_with('{}foo'.format(os.path.sep))
-
-    def _traverse_to_deeper_subdir(self):
-        dir = 'fol1' + os.path.sep + 'fol2' + os.path.sep + 'fol3'
-        os.makedirs(dir)
-        os.chdir(dir)
 
     @patch('ebcli.core.fileoperations.codecs')
     @patch('ebcli.core.fileoperations.load')
@@ -977,21 +994,6 @@ aws_secret_access_key = my-secret-key""",
             fileoperations.get_workspace_type(default='platform')
         )
 
-    def test_project_root__traverse__file_system_root_reached(self):
-        if os.path.isdir('.elasticbeanstalk'):
-            shutil.rmtree('.elasticbeanstalk')
-
-        cwd = os.getcwd()
-        with patch('os.getcwd') as getcwd_mock:
-            getcwd_mock.return_value = cwd
-
-            with self.assertRaises(fileoperations.NotInitializedError) as context_manager:
-                fileoperations.ProjectRoot.traverse()
-
-            self.assertEqual(
-                'EB is not yet initialized',
-                str(context_manager.exception)
-            )
 
     def test_update_platform_version(self):
         self.create_config_file()
