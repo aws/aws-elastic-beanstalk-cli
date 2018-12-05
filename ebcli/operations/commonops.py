@@ -462,7 +462,7 @@ def create_dummy_app_version(app_name):
 
 def create_app_version(app_name, process=False, label=None, message=None, staged=False, build_config=None):
     cwd = os.getcwd()
-    fileoperations._traverse_to_project_root()
+    fileoperations.ProjectRoot.traverse()
     try:
         if heuristics.directory_is_empty():
             io.echo('NOTE: {}'.format(strings['appversion.none']))
@@ -541,7 +541,7 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
 
 def create_codecommit_app_version(app_name, process=False, label=None, message=None, build_config=None):
     cwd = os.getcwd()
-    fileoperations._traverse_to_project_root()
+    fileoperations.ProjectRoot.traverse()
 
     source_control = SourceControl.get_source_control()
     if source_control.get_current_commit() is None:
@@ -593,7 +593,7 @@ def create_codecommit_app_version(app_name, process=False, label=None, message=N
 
 def create_app_version_from_source(app_name, source, process=False, label=None, message=None, build_config=None):
     cwd = os.getcwd()
-    fileoperations._traverse_to_project_root()
+    fileoperations.ProjectRoot.traverse()
     try:
         if heuristics.directory_is_empty():
             io.echo('NOTE: {}'.format(strings['appversion.none']))

@@ -128,7 +128,7 @@ class TestFileOperations(unittest.TestCase):
         self.assertEqual(app, app_name)
         self.assertEqual(test, 'app1')
 
-    def test_traverse_to_project_root_at_root(self):
+    def test_project_root__traverse_at_root(self):
         # make sure we are at root
         if not os.path.exists(fileoperations.beanstalk_directory):
             os.makedirs(fileoperations.beanstalk_directory)
@@ -136,27 +136,27 @@ class TestFileOperations(unittest.TestCase):
         # save current directory
         cwd = os.getcwd()
 
-        fileoperations._traverse_to_project_root()
+        fileoperations.ProjectRoot.traverse()
 
         # get new working directory - make sure its the same as the original
         nwd = os.getcwd()
         self.assertEqual(cwd, nwd)
 
-    def test_traverse_to_project_root_deep(self):
+    def test_project_root__traverse_deep(self):
         # save current directory
         cwd = os.getcwd()
 
         # create and swap to deep subdirectory
         self._traverse_to_deeper_subdir()
 
-        fileoperations._traverse_to_project_root()
+        fileoperations.ProjectRoot.traverse()
 
         # get new working directory - make sure its the same as the original
         nwd = os.getcwd()
         self.assertEqual(cwd, nwd)
 
     @unittest.skip
-    def test_traverse_to_project_root_no_root(self):
+    def test_project_root__traverse_no_root(self):
         # move up 2 directories first to make sure we are not in a project root
         cwd = os.getcwd()
         try:
@@ -164,7 +164,7 @@ class TestFileOperations(unittest.TestCase):
             os.chdir(os.path.pardir)
 
             try:
-                fileoperations._traverse_to_project_root()
+                fileoperations.ProjectRoot.traverse()
                 raise Exception('Should have thrown NotInitializedException')
             except fileoperations.NotInitializedError:
                 pass  # expected
@@ -327,7 +327,7 @@ class TestFileOperations(unittest.TestCase):
         self.assertEqual(cwd, fileoperations.get_project_root())
         self.assertEqual(cwd, os.getcwd())
 
-    def test_traverse_to_project_root_deep2(self):
+    def test_project_root__traverse_deep2(self):
         cwd = os.getcwd()
         self._traverse_to_deeper_subdir()
         self.assertEqual(cwd, fileoperations.get_project_root())
@@ -949,7 +949,7 @@ aws_secret_access_key = my-secret-key""",
             fileoperations.get_workspace_type(default='platform')
         )
 
-    def test_traverse_to_project_root__file_system_root_reached(self):
+    def test_project_root__traverse__file_system_root_reached(self):
         if os.path.isdir('.elasticbeanstalk'):
             shutil.rmtree('.elasticbeanstalk')
 
@@ -958,7 +958,7 @@ aws_secret_access_key = my-secret-key""",
             getcwd_mock.return_value = cwd
 
             with self.assertRaises(fileoperations.NotInitializedError) as context_manager:
-                fileoperations._traverse_to_project_root()
+                fileoperations.ProjectRoot.traverse()
 
             self.assertEqual(
                 'EB is not yet initialized',

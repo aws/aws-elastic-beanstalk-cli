@@ -93,7 +93,7 @@ def delete_objects(bucket, keys):
 def upload_workspace_version(bucket, key, file_path, workspace_type='Application'):
     cwd = os.getcwd()
     try:
-        fileoperations._traverse_to_project_root()
+        fileoperations.ProjectRoot.traverse()
         size = os.path.getsize(file_path)
     except OSError as err:
         if err.errno == 2:

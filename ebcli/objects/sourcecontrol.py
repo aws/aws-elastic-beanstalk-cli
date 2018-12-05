@@ -238,7 +238,7 @@ class Git(SourceControl):
         cwd = os.getcwd()
         try:
             # must be in project root for git archive to work.
-            fileoperations._traverse_to_project_root()
+            fileoperations.ProjectRoot.traverse()
 
             if staged:
                 commit_id, stderr, exitcode = self._run_cmd(['git', 'write-tree'])
@@ -299,7 +299,7 @@ class Git(SourceControl):
     def clean_up_ignore_file(self):
         cwd = os.getcwd()
         try:
-            fileoperations._traverse_to_project_root()
+            fileoperations.ProjectRoot.traverse()
 
             in_section = False
             for line in fileinput.input('.gitignore', inplace=True):

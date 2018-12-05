@@ -68,7 +68,7 @@ def download_source_bundle(app_name, env_name):
 
     cwd = os.getcwd()
     try:
-        fileoperations._traverse_to_project_root()
+        fileoperations.ProjectRoot.traverse()
         if heuristics.directory_is_empty():
             # If we dont have any project code, unzip as current project
             io.echo('Unzipping application version as project files.')

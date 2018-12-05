@@ -601,7 +601,7 @@ def _enable_healthd():
         'value': 'aws-elasticbeanstalk-service-role'
     })
 
-    fileoperations._traverse_to_project_root()
+    fileoperations.ProjectRoot.traverse()
     with open('platform.yaml', 'r') as stream:
         platform_yaml = yaml.load(stream)
 
@@ -683,7 +683,7 @@ def _name_to_arn(platform_name):
 
 def _raise_if_directory_is_empty():
     cwd = os.getcwd()
-    fileoperations._traverse_to_project_root()
+    fileoperations.ProjectRoot.traverse()
     try:
         if heuristics.directory_is_empty():
             raise PlatformWorkspaceEmptyError(strings['exit.platformworkspaceempty'])

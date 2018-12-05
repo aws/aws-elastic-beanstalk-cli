@@ -974,14 +974,14 @@ class TestCommonOperations(unittest.TestCase):
             warning=False
         )
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
     @mock.patch('ebcli.operations.commonops.io.echo')
     def test_create_app_version__directory_is_empty(
             self,
             echo_mock,
             directory_is_empty_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         directory_is_empty_mock.return_value = True
 
@@ -992,7 +992,7 @@ class TestCommonOperations(unittest.TestCase):
             'Elastic Beanstalk is launching the sample application instead.'
         )
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops.fileoperations.get_config_setting')
@@ -1009,7 +1009,7 @@ class TestCommonOperations(unittest.TestCase):
             get_config_setting_mock,
             get_source_control_mock,
             directory_is_empty_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         directory_is_empty_mock.return_value = False
         source_control_mock = mock.MagicMock()
@@ -1039,7 +1039,7 @@ class TestCommonOperations(unittest.TestCase):
             build_config=None
         )
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops.fileoperations.get_config_setting')
@@ -1062,7 +1062,7 @@ class TestCommonOperations(unittest.TestCase):
             get_config_setting_mock,
             get_source_control_mock,
             directory_is_empty_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         directory_is_empty_mock.return_value = False
         source_control_mock = mock.MagicMock()
@@ -1100,7 +1100,7 @@ class TestCommonOperations(unittest.TestCase):
             build_config=None
         )
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops.fileoperations.get_config_setting')
@@ -1119,7 +1119,7 @@ class TestCommonOperations(unittest.TestCase):
             get_config_setting_mock,
             get_source_control_mock,
             directory_is_empty_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         directory_is_empty_mock.return_value = False
         source_control_mock = mock.MagicMock()
@@ -1156,7 +1156,7 @@ class TestCommonOperations(unittest.TestCase):
             build_config=None
         )
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops.fileoperations.get_config_setting')
@@ -1179,7 +1179,7 @@ class TestCommonOperations(unittest.TestCase):
             get_config_setting_mock,
             get_source_control_mock,
             directory_is_empty_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         directory_is_empty_mock.return_value = False
         source_control_mock = mock.MagicMock()
@@ -1216,7 +1216,7 @@ class TestCommonOperations(unittest.TestCase):
             build_config=None
         )
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops.fileoperations.get_config_setting')
@@ -1235,7 +1235,7 @@ class TestCommonOperations(unittest.TestCase):
             get_config_setting_mock,
             get_source_control_mock,
             directory_is_empty_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         directory_is_empty_mock.return_value = False
         source_control_mock = mock.MagicMock()
@@ -1270,7 +1270,7 @@ class TestCommonOperations(unittest.TestCase):
             build_config=build_config_mock
         )
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops._create_application_version')
     @mock.patch('ebcli.operations.gitops.get_default_repository')
@@ -1279,7 +1279,7 @@ class TestCommonOperations(unittest.TestCase):
             get_default_repository_mock,
             _create_application_version_mock,
             get_source_control_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         source_control_mock = mock.MagicMock()
         source_control_mock.get_current_commit.return_value = '213123123'
@@ -1307,7 +1307,7 @@ class TestCommonOperations(unittest.TestCase):
             repository='repository'
         )
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops._create_application_version')
     @mock.patch('ebcli.operations.commonops.io.log_warning')
@@ -1318,7 +1318,7 @@ class TestCommonOperations(unittest.TestCase):
             log_warning_mock,
             _create_application_version_mock,
             get_source_control_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         source_control_mock = mock.MagicMock()
         source_control_mock.get_current_commit.return_value = '213123123'
@@ -1348,7 +1348,7 @@ class TestCommonOperations(unittest.TestCase):
             repository='repository'
         )
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops._create_application_version')
     @mock.patch('ebcli.operations.commonops.io.log_warning')
@@ -1359,7 +1359,7 @@ class TestCommonOperations(unittest.TestCase):
             log_warning_mock,
             _create_application_version_mock,
             get_source_control_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         source_control_mock = mock.MagicMock()
         source_control_mock.get_current_commit.side_effect = [None, '213123123']
@@ -1394,7 +1394,7 @@ class TestCommonOperations(unittest.TestCase):
             repository='repository'
         )
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops._create_application_version')
     @mock.patch('ebcli.operations.gitops.get_default_repository')
@@ -1403,7 +1403,7 @@ class TestCommonOperations(unittest.TestCase):
             get_default_repository_mock,
             _create_application_version_mock,
             get_source_control_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         source_control_mock = mock.MagicMock()
         source_control_mock.get_current_commit.return_value = '213123123'
@@ -1439,7 +1439,7 @@ class TestCommonOperations(unittest.TestCase):
             repository='repository'
         )
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops._create_application_version')
     @mock.patch('ebcli.operations.gitops.get_default_repository')
@@ -1452,7 +1452,7 @@ class TestCommonOperations(unittest.TestCase):
             get_default_repository_mock,
             _create_application_version_mock,
             get_source_control_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         source_control_mock = mock.MagicMock()
         source_control_mock.get_current_commit.return_value = '213123123'
@@ -1474,7 +1474,7 @@ class TestCommonOperations(unittest.TestCase):
 
         _create_application_version_mock.assert_not_called()
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops._create_application_version')
     @mock.patch('ebcli.operations.gitops.get_default_repository')
@@ -1483,7 +1483,7 @@ class TestCommonOperations(unittest.TestCase):
             get_default_repository_mock,
             _create_application_version_mock,
             get_source_control_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         source_control_mock = mock.MagicMock()
         source_control_mock.get_current_commit.return_value = '213123123'
@@ -1501,14 +1501,14 @@ class TestCommonOperations(unittest.TestCase):
         _create_application_version_mock.assert_not_called()
 
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
     @mock.patch('ebcli.operations.commonops.io.echo')
     def test_create_app_version_from_source__directory_is_empty(
             self,
             echo_mock,
             directory_is_empty_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         directory_is_empty_mock.return_value = True
 
@@ -1524,7 +1524,7 @@ class TestCommonOperations(unittest.TestCase):
             'Elastic Beanstalk is launching the sample application instead.'
         )
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops._create_application_version')
@@ -1535,7 +1535,7 @@ class TestCommonOperations(unittest.TestCase):
             _create_application_version_mock,
             get_source_control_mock,
             directory_is_empty_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         directory_is_empty_mock.return_value = False
         source_control_mock = mock.MagicMock()
@@ -1574,7 +1574,7 @@ class TestCommonOperations(unittest.TestCase):
             repository='my-repository'
         )
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops._create_application_version')
@@ -1585,7 +1585,7 @@ class TestCommonOperations(unittest.TestCase):
             _create_application_version_mock,
             get_source_control_mock,
             directory_is_empty_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         directory_is_empty_mock.return_value = False
         source_control_mock = mock.MagicMock()
@@ -1608,7 +1608,7 @@ class TestCommonOperations(unittest.TestCase):
         get_branch_mock.assert_not_called()
         _create_application_version_mock.assert_not_called()
 
-    @mock.patch('ebcli.operations.commonops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
     @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
     @mock.patch('ebcli.operations.commonops._create_application_version')
@@ -1621,7 +1621,7 @@ class TestCommonOperations(unittest.TestCase):
             _create_application_version_mock,
             get_source_control_mock,
             directory_is_empty_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         directory_is_empty_mock.return_value = False
         source_control_mock = mock.MagicMock()

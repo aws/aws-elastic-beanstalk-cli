@@ -986,12 +986,12 @@ class TestPlatformOperations(unittest.TestCase):
             platform_version='latest'
         )
 
-    @mock.patch('ebcli.operations.platformops.fileoperations._traverse_to_project_root')
+    @mock.patch('ebcli.operations.platformops.fileoperations.ProjectRoot.traverse')
     @mock.patch('ebcli.operations.platformops.yaml.load')
     def test_enable_healthd(
             self,
             load_mock,
-            _traverse_to_project_root_mock
+            traverse_mock
     ):
         open('platform.yaml', 'w').close()
         load_mock.return_value = {
