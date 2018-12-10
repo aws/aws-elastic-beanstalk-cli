@@ -13,6 +13,7 @@ from ebcli.operations import commonops
 from .. import mock_responses
 
 
+@unittest.skip
 class TestHealth(unittest.TestCase):
     def setUp(self):
         disable_socket()
