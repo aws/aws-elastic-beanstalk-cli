@@ -59,7 +59,15 @@ class TestCreateOps(unittest.TestCase):
             createops.get_and_validate_tags(addition_string)
         )
 
-    def test_retrieve_application_version_url__successfully_returns_sample_app_url(self):
+    @mock.patch('ebcli.operations.createops.elasticbeanstalk.get_environment')
+    @mock.patch('ebcli.operations.createops.cloudformation.wait_until_stack_exists')
+    @mock.patch('ebcli.operations.createops.cloudformation.get_template')
+    def test_retrieve_application_version_url__successfully_returns_sample_app_url(
+            self,
+            get_template_mock,
+            wait_until_stack_exists_mock,
+            get_environment_mock
+    ):
         get_template_response = {
             "TemplateBody": {
                 "Parameters": {
@@ -73,23 +81,42 @@ class TestCreateOps(unittest.TestCase):
                 "Description": "AWS Elastic Beanstalk environment (Name: 'my_env_name'  Id: 'my_env_id')",
             }
         }
-        elasticbeanstalk.get_environment = mock.MagicMock(return_value=Environment(name='my_env_name', id='my_env_id'))
-        cloudformation.wait_until_stack_exists = mock.MagicMock()
-        cloudformation.get_template = mock.MagicMock(return_value=get_template_response)
+        get_environment_mock.return_value = Environment(name='my_env_name', id='my_env_id')
+        get_template_mock.return_value = get_template_response
 
         self.assertEqual(
             "http://sample-app-location/python-sample.zip",
             createops.retrieve_application_version_url('my_env_name')
         )
 
-    def test_retrieve_application_version_url__empty_response__raises_not_found_error(self):
+    @mock.patch('ebcli.operations.createops.elasticbeanstalk.get_environment')
+    @mock.patch('ebcli.operations.createops.cloudformation.wait_until_stack_exists')
+    @mock.patch('ebcli.operations.createops.cloudformation.get_template')
+    def test_retrieve_application_version_url__empty_response__raises_not_found_error(
+            self,
+            get_template_mock,
+            wait_until_stack_exists_mock,
+            get_environment_mock
+    ):
+        get_template_response = {}
+
         # save original definition of io.log_warning
         io._log_warning = io.log_warning
         io.log_warning = mock.MagicMock()
 
-        self.__assert_app_source_not_found_warning_log(template_response={})
+        get_environment_mock.return_value = Environment(name='my_env_name', id='my_env_id')
+        get_template_mock.return_value = get_template_response
 
-    def test_retrieve_application_version_url__app_version_url_not_found_in_app_source__raises_not_found_error(self):
+
+    @mock.patch('ebcli.operations.createops.elasticbeanstalk.get_environment')
+    @mock.patch('ebcli.operations.createops.cloudformation.wait_until_stack_exists')
+    @mock.patch('ebcli.operations.createops.cloudformation.get_template')
+    def test_retrieve_application_version_url__app_version_url_not_found_in_app_source__raises_not_found_error(
+            self,
+            get_template_mock,
+            wait_until_stack_exists_mock,
+            get_environment_mock
+    ):
         # save original definition of io.log_warning
         io._log_warning = io.log_warning
         io.log_warning = mock.MagicMock()
@@ -107,12 +134,8 @@ class TestCreateOps(unittest.TestCase):
             }
         }
 
-        self.__assert_app_source_not_found_warning_log(template_response=get_template_response)
-
-    def __assert_app_source_not_found_warning_log(self, template_response):
-        elasticbeanstalk.get_environment = mock.MagicMock(return_value=Environment(name='my_env_name', id='my_env_id'))
-        cloudformation.wait_until_stack_exists = mock.MagicMock()
-        cloudformation.get_template = mock.MagicMock(return_value=template_response)
+        get_environment_mock.return_value = Environment(name='my_env_name', id='my_env_id')
+        get_template_mock.return_value = get_template_response
 
         createops.retrieve_application_version_url('my_env_name')
 
