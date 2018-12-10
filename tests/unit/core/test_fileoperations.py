@@ -180,9 +180,11 @@ class TestFileOperations(unittest.TestCase):
     ):
         cwd = os.getcwd()
 
-        dir = 'fol1' + os.path.sep + 'fol2' + os.path.sep + 'fol3'
-        os.makedirs(dir)
-        os.chdir(dir)
+        fol1 = os.path.abspath('fol1')
+        fol2 = os.path.abspath(os.path.join(fol1, 'fol2'))
+        fol3 = os.path.abspath(os.path.join(fol2, 'fol3'))
+        os.makedirs(fol3)
+        os.chdir(fol3)
 
         def traverse_to_root_and_assert():
             fileoperations.ProjectRoot.traverse()
@@ -196,10 +198,10 @@ class TestFileOperations(unittest.TestCase):
 
         debug_mock.assert_has_calls(
             [
-                call('beanstalk directory not found in /Users/rahuraja/git/eb/EB-CLI/testDir/fol1/fol2/fol3  -Going up a level'),
-                call('beanstalk directory not found in /Users/rahuraja/git/eb/EB-CLI/testDir/fol1/fol2  -Going up a level'),
-                call('beanstalk directory not found in /Users/rahuraja/git/eb/EB-CLI/testDir/fol1  -Going up a level'),
-                call('Project root found at: /Users/rahuraja/git/eb/EB-CLI/testDir')
+                call('beanstalk directory not found in {}  -Going up a level'.format(fol3)),
+                call('beanstalk directory not found in {}  -Going up a level'.format(fol2)),
+                call('beanstalk directory not found in {}  -Going up a level'.format(fol1)),
+                call('Project root found at: {}'.format(os.path.abspath(cwd)))
             ]
         )
 
