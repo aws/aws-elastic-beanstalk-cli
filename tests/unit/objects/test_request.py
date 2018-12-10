@@ -375,11 +375,6 @@ class TestRequests(unittest.TestCase):
         self.assertEqual(
             [
                 {
-                    'Namespace': 'aws:autoscaling:launchconfiguration',
-                    'OptionName': 'InstanceType',
-                    'Value': 't2.micro'
-                },
-                {
                     'Namespace': 'aws:elasticbeanstalk:command',
                     'OptionName': 'BatchSize',
                     'Value': '30'
@@ -431,11 +426,6 @@ class TestRequests(unittest.TestCase):
         request.add_client_defaults()
         self.assertEqual(
             [
-                {
-                    'Namespace': 'aws:autoscaling:launchconfiguration',
-                    'OptionName': 'InstanceType',
-                    'Value': 't2.micro'
-                },
                 {
                     'Namespace': 'aws:elasticbeanstalk:command',
                     'OptionName': 'BatchSize',

@@ -479,11 +479,6 @@ class TestCloudWatch(unittest.TestCase):
             EnvironmentName='environment-1',
             OptionSettings=[
                 {
-                    'Namespace': 'aws:autoscaling:launchconfiguration',
-                    'OptionName': 'InstanceType',
-                    'Value': 't2.micro'
-                },
-                {
                     'Namespace': 'aws:elasticbeanstalk:healthreporting:system',
                     'OptionName': 'SystemType',
                     'Value': 'enhanced'

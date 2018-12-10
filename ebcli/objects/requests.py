@@ -220,14 +220,6 @@ class CreateEnvironmentRequest(object):
             # dont add client defaults if a template is being used
             return
 
-        if not self.instance_type:
-            if ec2.has_default_vpc():
-                # Launch with t2 micro if not a classic account
-                self.add_option_setting(
-                    namespaces.LAUNCH_CONFIGURATION,
-                    option_names.INSTANCE_TYPE,
-                    't2.micro'
-                )
         if self.platform and self.platform.has_healthd_support:
             self.add_option_setting(
                 namespaces.HEALTH_SYSTEM,
