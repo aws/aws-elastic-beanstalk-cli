@@ -14,6 +14,7 @@ import datetime
 from dateutil import tz
 
 import unittest
+import pytest_socket
 import mock
 
 from ebcli.display import data_poller
@@ -140,6 +141,12 @@ class TestDataPoller(unittest.TestCase):
             }
         ]
     }
+
+    def setUp(self):
+        pytest_socket.disable_socket()
+
+    def tearDown(self):
+        pytest_socket.enable_socket()
 
     def test_format_float(self):
         self.assertEqual('1.0', data_poller.format_float(flt=1, number_of_places=1))
@@ -297,8 +304,10 @@ class TestDataPoller(unittest.TestCase):
 
     @mock.patch('ebcli.display.data_poller.DataPoller._get_sleep_time')
     @mock.patch('ebcli.display.data_poller.LOG')
+    @mock.patch('ebcli.display.data_poller.DataPoller._get_health_data')
     def test_poll_for_health_data(
             self,
+            _get_health_data_mock,
             log_mock,
             get_sleep_time_mock
     ):
@@ -310,6 +319,7 @@ class TestDataPoller(unittest.TestCase):
             ]
         )
         get_sleep_time_mock.side_effect = [0, 0, KeyboardInterrupt]
+        _get_health_data_mock.return_value = 'data'
 
         poller._poll_for_health_data()
 
