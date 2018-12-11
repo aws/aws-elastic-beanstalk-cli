@@ -2,6 +2,11 @@
 Changelog
 =========
 -------------------
+3.14.8 (2018-12-12)
+-------------------
+- Added eu-north-1 EU (Stockholm) region
+
+-------------------
 3.14.7 (2018-12-03)
 -------------------
 - Fixed Python 2.7 Unicode tag deletion bug
