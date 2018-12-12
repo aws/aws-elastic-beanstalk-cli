@@ -37,28 +37,52 @@ class TestUpgradeOps(unittest.TestCase):
 
     def test__get_warning_message__confirm(self):
         self.assertIsNone(
-            upgradeops._get_warning_message(True, False, False, False, False)
+            upgradeops._get_warning_message(
+                confirm=True,
+                single=False,
+                rolling_enabled=False,
+                webserver=False,
+                noroll=False
+            )
         )
 
     def test__get_warning_message__single_instance(self):
         self.assertEqual(
             'This operation causes application downtime while Elastic Beanstalk '
             'replaces the instance.',
-            upgradeops._get_warning_message(False, True, False, False, False)
+            upgradeops._get_warning_message(
+                confirm=False,
+                single=True,
+                rolling_enabled=False,
+                webserver=False,
+                noroll=False
+            )
         )
 
     def test__get_warning_message__not_rolling_enabled__noroll_set(self):
         self.assertEqual(
             'This operation causes application downtime while Elastic Beanstalk '
             'replaces your instances.',
-            upgradeops._get_warning_message(False, False, False, False, True)
+            upgradeops._get_warning_message(
+                confirm=False,
+                single=False,
+                rolling_enabled=False,
+                webserver=False,
+                noroll=True
+            )
         )
 
     def test__get_warning_message__rolling_enabled(self):
         self.assertEqual(
             'This operation replaces your instances with minimal or zero downtime. '
             'You may cancel the upgrade after it has started by typing "eb abort".',
-            upgradeops._get_warning_message(False, False, True, False, False)
+            upgradeops._get_warning_message(
+                confirm=False,
+                single=False,
+                rolling_enabled=True,
+                webserver=False,
+                noroll=False
+            )
         )
 
     def test__get_warning_message__not_rolling_enabled__noroll_not_specified__webserver_environment(self):
@@ -67,7 +91,13 @@ class TestUpgradeOps(unittest.TestCase):
             'application downtime while it replaces your instances. You may cancel '
             'the upgrade after it has started by typing "eb abort". To upgrade '
             'without rolling updates, type "eb upgrade --noroll".',
-            upgradeops._get_warning_message(False, False, False, True, False)
+            upgradeops._get_warning_message(
+                confirm=False,
+                single=False,
+                rolling_enabled=False,
+                webserver=True,
+                noroll=False
+            )
         )
 
     def test__get_warning_message__not_rolling_enabled__noroll_not_specified__non_webserver_environment(self):
@@ -76,20 +106,26 @@ class TestUpgradeOps(unittest.TestCase):
             'application downtime while it replaces your instances. You may cancel '
             'the upgrade after it has started by typing "eb abort". To upgrade '
             'without rolling updates, type "eb upgrade --noroll".',
-            upgradeops._get_warning_message(False, False, False, False, False)
+            upgradeops._get_warning_message(
+                confirm=False,
+                single=False,
+                rolling_enabled=False,
+                webserver=False,
+                noroll=False
+            )
         )
 
     def test__should_add_rolling__noroll_set(self):
-        self.assertFalse(upgradeops._should_add_rolling(False, False, True))
+        self.assertFalse(upgradeops._should_add_rolling(single=False, rolling_enabled=False, noroll=True))
 
     def test__should_add_rolling__single_environment(self):
-        self.assertFalse(upgradeops._should_add_rolling(True, False, False))
+        self.assertFalse(upgradeops._should_add_rolling(single=True, rolling_enabled=False, noroll=False))
 
     def test__should_add_rolling__rolling_enabled(self):
-        self.assertFalse(upgradeops._should_add_rolling(False, True, False))
+        self.assertFalse(upgradeops._should_add_rolling(single=False, rolling_enabled=True, noroll=False))
 
     def test__should_add_rolling(self):
-        self.assertTrue(upgradeops._should_add_rolling(False, False, False))
+        self.assertTrue(upgradeops._should_add_rolling(single=False, rolling_enabled=False, noroll=False))
 
     @mock.patch('ebcli.operations.upgradeops.elasticbeanstalk.get_environment_settings')
     @mock.patch('ebcli.operations.upgradeops.solution_stack_ops.find_solution_stack_from_string')
