@@ -24,7 +24,7 @@ class TestEvent(unittest.TestCase):
             'EnvironmentName': 'my-environment',
             'RequestId': '23141234-134adsfasdf-12341234',
             'Severity': 'INFO'
-	}
+        }
 
         event_2 = {
             'EventDate': '2018-03-12T22:14:14.292Z',
@@ -33,7 +33,7 @@ class TestEvent(unittest.TestCase):
             'EnvironmentName': 'my-environment',
             'RequestId': '23141234-134adsfasdf-12341234',
             'Severity': 'INFO'
-	}
+        }
 
         events = Event.json_to_event_objects(
             [
@@ -53,7 +53,7 @@ class TestEvent(unittest.TestCase):
             'EnvironmentName': 'my-environment',
             'RequestId': '23141234-134adsfasdf-12341234',
             'Severity': 'INFO'
-	}
+        }
 
         # 'Severity' differs
         event_2 = {
@@ -63,7 +63,7 @@ class TestEvent(unittest.TestCase):
             'EnvironmentName': 'my-environment',
             'RequestId': '23141234-134adsfasdf-12341234',
             'Severity': 'SEVERE'
-	}
+        }
 
         # candidate Event object
         event_candidate = {
@@ -73,7 +73,7 @@ class TestEvent(unittest.TestCase):
             'EnvironmentName': 'my-environment',
             'RequestId': '23141234-134adsfasdf-12341234',
             'Severity': 'INFO'
-	}
+        }
 
         events = Event.json_to_event_objects(
             [

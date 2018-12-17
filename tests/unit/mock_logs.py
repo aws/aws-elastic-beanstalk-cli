@@ -40,30 +40,30 @@ INSTANCE_TAIL_LOGS_RESPONSE = """-------------------------------------
 
 
 REQUEST_ENVIRONMENT_INFO_RESPONSE = {
-	"EnvironmentInfo": [
-		{
-			"InfoType": "tail",
-			"Ec2InstanceId": "i-024a31a441247971d",
-			"SampleTimestamp": "2018-04-06T01:05:43.875Z",
-			"Message": "https://elasticbeanstalk-us-east-1-123123123123.s3.amazonaws.com"
-		},
-		{
-			"InfoType": "tail",
-			"Ec2InstanceId": "i-0dce0f6c5e2d5fa48",
-			"SampleTimestamp": "2018-04-06T01:05:43.993Z",
-			"Message": "https://elasticbeanstalk-us-east-1-123123123123.s3.amazonaws.com"
-		},
-		{
-			"InfoType": "tail",
-			"Ec2InstanceId": "i-090689581e5afcfc6",
-			"SampleTimestamp": "2018-04-06T01:05:43.721Z",
-			"Message": "https://elasticbeanstalk-us-east-1-123123123123.s3.amazonaws.com"
-		},
-		{
-			"InfoType": "tail",
-			"Ec2InstanceId": "i-053efe7c102d0a540",
-			"SampleTimestamp": "2018-04-06T01:05:43.900Z",
-			"Message": "https://elasticbeanstalk-us-east-1-123123123123.s3.amazonaws.com"
-		}
-	]
+    "EnvironmentInfo": [
+        {
+            "InfoType": "tail",
+            "Ec2InstanceId": "i-024a31a441247971d",
+            "SampleTimestamp": "2018-04-06T01:05:43.875Z",
+            "Message": "https://elasticbeanstalk-us-east-1-123123123123.s3.amazonaws.com"
+        },
+        {
+            "InfoType": "tail",
+            "Ec2InstanceId": "i-0dce0f6c5e2d5fa48",
+            "SampleTimestamp": "2018-04-06T01:05:43.993Z",
+            "Message": "https://elasticbeanstalk-us-east-1-123123123123.s3.amazonaws.com"
+        },
+        {
+            "InfoType": "tail",
+            "Ec2InstanceId": "i-090689581e5afcfc6",
+            "SampleTimestamp": "2018-04-06T01:05:43.721Z",
+            "Message": "https://elasticbeanstalk-us-east-1-123123123123.s3.amazonaws.com"
+        },
+        {
+            "InfoType": "tail",
+            "Ec2InstanceId": "i-053efe7c102d0a540",
+            "SampleTimestamp": "2018-04-06T01:05:43.900Z",
+            "Message": "https://elasticbeanstalk-us-east-1-123123123123.s3.amazonaws.com"
+        }
+    ]
 }

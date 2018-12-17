@@ -38,7 +38,7 @@ error_if_required_number_of_arguments_have_not_been_passed()
 exit_upon_failure()
 {
     if [[ $? -ne 0 ]] ; then
-    	echo "Delete Python $PYTHON_VERSION virtualenv before premature exit"
+        echo "Delete Python $PYTHON_VERSION virtualenv before premature exit"
         rm -rf $VENV_ENV_NAME
 
         exit 1
@@ -50,7 +50,7 @@ exit_upon_failure()
 exit_upon_substep_failure()
 {
     if [[ $? -ne 0 ]] ; then
-    	echo "Delete Python $PYTHON_VERSION virtualenv before premature exit"
+        echo "Delete Python $PYTHON_VERSION virtualenv before premature exit"
         rm -rf $VENV_ENV_NAME
 
         exit 1

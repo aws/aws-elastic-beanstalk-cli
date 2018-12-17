@@ -13,26 +13,26 @@
 
 
 class LogStream(object):
-	def __init__(
-			self,
-			name,
-			creation_time
-	):
-		self.name = name
-		self.creation_time = creation_time
+    def __init__(
+            self,
+            name,
+            creation_time
+    ):
+        self.name = name
+        self.creation_time = creation_time
 
-	def __lt__(self, other):
-		return self.creation_time < other.creation_time
+    def __lt__(self, other):
+        return self.creation_time < other.creation_time
 
-	@classmethod
-	def log_stream_objects_from_json(cls, json):
-		log_streams = list()
-		for log_stream in json:
-			log_streams.append(
-				LogStream(
-					name=log_stream['logStreamName'],
-					creation_time=log_stream['creationTime']
-				)
-			)
+    @classmethod
+    def log_stream_objects_from_json(cls, json):
+        log_streams = list()
+        for log_stream in json:
+            log_streams.append(
+                LogStream(
+                    name=log_stream['logStreamName'],
+                    creation_time=log_stream['creationTime']
+                )
+            )
 
-		return sorted(log_streams)
+        return sorted(log_streams)

@@ -13,29 +13,29 @@
 
 
 class Filter(object):
-	def __init__(self, values, operator='='):
-		self.operator = operator
-		self.values = values
+    def __init__(self, values, operator='='):
+        self.operator = operator
+        self.values = values
 
-	def json(self):
-		return {
-			'Type': self.filter_type,
-			'Operator': self.operator,
-			'Values': self.values,
-		}
+    def json(self):
+        return {
+            'Type': self.filter_type,
+            'Operator': self.operator,
+            'Values': self.values,
+        }
 
 
 class PlatformNameFilter(Filter):
-	filter_type = 'PlatformName'
+    filter_type = 'PlatformName'
 
 
 class PlatformOwnerFilter(Filter):
-	filter_type = 'PlatformOwner'
+    filter_type = 'PlatformOwner'
 
 
 class PlatformStatusFilter(Filter):
-	filter_type = 'PlatformStatus'
+    filter_type = 'PlatformStatus'
 
 
 class PlatformVersionFilter(Filter):
-	filter_type = 'PlatformVersion'
+    filter_type = 'PlatformVersion'

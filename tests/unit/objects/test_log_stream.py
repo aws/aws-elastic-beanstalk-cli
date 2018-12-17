@@ -16,28 +16,28 @@ from ebcli.objects.log_stream import LogStream
 
 
 class TestLogStream(unittest.TestCase):
-	def test_log_streams__sorted(self):
+    def test_log_streams__sorted(self):
 
-		log_streams = [
-			{
-				'logStreamName': 'archive-health-2018-04-14-B5A100C12FEE498324A234B9ED377644',
-				'creationTime': 1523674444444
-			},
-			{
-				'logStreamName': 'archive-health-2018-04-16-B5A100C12FEE498324A234B9ED377644',
-				'creationTime': 1523678888888
-			},
-			{
-				'logStreamName': 'archive-health-2018-04-15-B5A100C12FEE498324A234B9ED377644',
-				'creationTime': 1523676666666
-			}
-		]
+        log_streams = [
+            {
+                'logStreamName': 'archive-health-2018-04-14-B5A100C12FEE498324A234B9ED377644',
+                'creationTime': 1523674444444
+            },
+            {
+                'logStreamName': 'archive-health-2018-04-16-B5A100C12FEE498324A234B9ED377644',
+                'creationTime': 1523678888888
+            },
+            {
+                'logStreamName': 'archive-health-2018-04-15-B5A100C12FEE498324A234B9ED377644',
+                'creationTime': 1523676666666
+            }
+        ]
 
-		self.assertEqual(
-			[
-				'archive-health-2018-04-14-B5A100C12FEE498324A234B9ED377644',
-				'archive-health-2018-04-15-B5A100C12FEE498324A234B9ED377644',
-				'archive-health-2018-04-16-B5A100C12FEE498324A234B9ED377644'
-			],
-			[log_stream.name for log_stream in LogStream.log_stream_objects_from_json(log_streams)]
-		)
+        self.assertEqual(
+            [
+                'archive-health-2018-04-14-B5A100C12FEE498324A234B9ED377644',
+                'archive-health-2018-04-15-B5A100C12FEE498324A234B9ED377644',
+                'archive-health-2018-04-16-B5A100C12FEE498324A234B9ED377644'
+            ],
+            [log_stream.name for log_stream in LogStream.log_stream_objects_from_json(log_streams)]
+        )

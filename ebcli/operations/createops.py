@@ -320,11 +320,9 @@ def resolve_roles(env_request, interactive):
     LOG.debug('Resolving roles')
 
     if (
-	        (
-	            not env_request.instance_profile or
-	            env_request.instance_profile == iam_attributes.DEFAULT_ROLE_NAME
-	        ) and not env_request.template_name
-    ):
+        not env_request.instance_profile or
+        env_request.instance_profile == iam_attributes.DEFAULT_ROLE_NAME
+    ) and not env_request.template_name:
         # Service supports no profile, however it is not good/recommended
         # Get the eb default profile
         env_request.instance_profile = commonops.create_default_instance_profile()
