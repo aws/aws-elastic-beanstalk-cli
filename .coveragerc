@@ -1,8 +1,0 @@
-[run]
-branch = true
-
-[html]
-directory = build/brazil-documentation/coverage
-
-[xml-only-for-brazil]
-output = build/brazil-documentation/coverage/coverage.xml
