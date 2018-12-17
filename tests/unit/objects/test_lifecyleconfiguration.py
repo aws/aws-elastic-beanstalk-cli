@@ -27,7 +27,7 @@ class TestLifecycleConfiguration(unittest.TestCase):
     region = 'us-foo-1'
     app_name = 'foo_app'
     file_location = 'local/app/'
-    service_role = 'arn:aws:iam::293615521073:role/aws-elasticbeanstalk-service-role'
+    service_role = 'arn:aws:iam::123123123123:role/aws-elasticbeanstalk-service-role'
     get_role_response = {u'Arn': service_role}
     api_model = {u'ApplicationName': app_name, u'Description': 'Application created from the EB CLI using "eb init"',
                  u'Versions': ['Sample Application'],

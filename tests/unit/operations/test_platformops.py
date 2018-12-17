@@ -268,7 +268,7 @@ class TestPlatformOperations(unittest.TestCase):
 
         self.platform_name = 'test-platform'
         self.platform_version = '1.0.0'
-        self.platform_arn = 'arn:aws:elasticbeanstalk:us-east-1:647823116501:platform/{0}/{1}'.format(
+        self.platform_arn = 'arn:aws:elasticbeanstalk:us-east-1:123123123123:platform/{0}/{1}'.format(
                 self.platform_name,
                 self.platform_version)
 
@@ -312,7 +312,7 @@ class TestPlatformOperations(unittest.TestCase):
         _version_to_arn_mock.return_value = self.platform_arn
         environments = [ 
                 Environment(name='env1', platform=PlatformVersion(self.platform_arn)),
-                Environment(name='no match', platform=PlatformVersion('arn:aws:elasticbeanstalk:us-east-1:647823116501:platform/foo/2.0.0')),
+                Environment(name='no match', platform=PlatformVersion('arn:aws:elasticbeanstalk:us-east-1:123123123123:platform/foo/2.0.0')),
                 Environment(name='env2', platform=PlatformVersion(self.platform_arn))
         ]
 

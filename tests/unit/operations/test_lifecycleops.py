@@ -35,14 +35,14 @@ class TestLifecycleOperations(unittest.TestCase):
                                                                u'MaxCount': 200},
                                              u'MaxAgeRule': {u'DeleteSourceFromS3': False, u'Enabled': False,
                                                              u'MaxAgeInDays': 180}},
-                                        u'ServiceRole': 'arn:aws:iam::293615521073:role/aws-elasticbeanstalk-service-role'}}
+                                        u'ServiceRole': 'arn:aws:iam::123123123123:role/aws-elasticbeanstalk-service-role'}}
 
     usr_model = {u'ResourceLifecycleConfig': {u'VersionLifecycleConfig':
                                             {u'MaxCountRule': {u'DeleteSourceFromS3': False, u'Enabled': False,
                                                                u'MaxCount': 200},
                                              u'MaxAgeRule': {u'DeleteSourceFromS3': False, u'Enabled': False,
                                                              u'MaxAgeInDays': 180}},
-                                        u'ServiceRole': 'arn:aws:iam::293615521073:role/aws-elasticbeanstalk-service-role'}}
+                                        u'ServiceRole': 'arn:aws:iam::123123123123:role/aws-elasticbeanstalk-service-role'}}
 
     def setUp(self):
         self.patcher_io = mock.patch('ebcli.operations.lifecycleops.io')
@@ -85,7 +85,7 @@ class TestLifecycleOperations(unittest.TestCase):
                          call('{0}DeleteSourceFromS3: False'.format(lifecycleops.SPACER * 4)),
                          call('{0}Enabled: False'.format(lifecycleops.SPACER * 4)),
                          call('{0}MaxAgeInDays: 180'.format(lifecycleops.SPACER * 4)),
-                         call('{0}ServiceRole: arn:aws:iam::293615521073:role/aws-elasticbeanstalk-service-role'.format(lifecycleops.SPACER * 2))]
+                         call('{0}ServiceRole: arn:aws:iam::123123123123:role/aws-elasticbeanstalk-service-role'.format(lifecycleops.SPACER * 2))]
         self.mock_io.echo.assert_has_calls(io_echo_calls, any_order=True)
 
     @mock.patch('ebcli.operations.lifecycleops.LifecycleConfiguration')
