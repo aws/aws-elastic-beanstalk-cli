@@ -20,8 +20,10 @@ from ebcli.core import io, fileoperations
 
 
 CWFILES_DIRNAME = 'cloudwatchfiles'
-CWFILES_DIR_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                CWFILES_DIRNAME)
+CWFILES_DIR_PATH = os.path.join(os.path.dirname(
+    os.path.realpath(__file__)),
+    CWFILES_DIRNAME
+)
 
 
 class CloudWatchSetUp(AbstractBaseController):

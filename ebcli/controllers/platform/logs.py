@@ -16,8 +16,22 @@ class GenericPlatformLogsController(AbstractBaseController):
         requires_directory_initialization = True
         description = strings['platformlogs.info']
         arguments = [
-            (['version'], dict(action='store', nargs='?', default=None, help=flag_text['platformlogs.version'])),
-            (['--stream'], dict(action='store_true', help=flag_text['logs.stream']))
+            (
+                ['version'],
+                dict(
+                    action='store',
+                    nargs='?',
+                    default=None,
+                    help=flag_text['platformlogs.version']
+                )
+            ),
+            (
+                ['--stream'],
+                dict(
+                    action='store_true',
+                    help=flag_text['logs.stream']
+                )
+            )
         ]
 
         @classmethod

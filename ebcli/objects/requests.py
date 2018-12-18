@@ -106,8 +106,12 @@ class CreateEnvironmentRequest(object):
         self_dict = copy.deepcopy(self.__dict__)
         other_dict = copy.deepcopy(other.__dict__)
 
-        self_dict['option_settings'] = OptionSetting.option_settings_from_json(self_dict.get('option_settings', []))
-        other_dict['option_settings'] = OptionSetting.option_settings_from_json(other_dict.get('option_settings', []))
+        self_dict['option_settings'] = OptionSetting.option_settings_from_json(
+            self_dict.get('option_settings', [])
+        )
+        other_dict['option_settings'] = OptionSetting.option_settings_from_json(
+            other_dict.get('option_settings', [])
+        )
 
         return self_dict == other_dict
 

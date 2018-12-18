@@ -43,7 +43,15 @@ class GenericPlatformUseController(AbstractBaseController):
         requires_directory_initialization = True
         description = strings['platformworkspaceselectversion.info']
         arguments = [
-            (['platform'], dict(action='store', nargs='?', default=None, help=flag_text['platformworkspace.platform'])),
+            (
+                ['platform'],
+                dict(
+                    action='store',
+                    nargs='?',
+                    default=None,
+                    help=flag_text['platformworkspace.platform']
+                )
+            ),
         ]
 
         @classmethod

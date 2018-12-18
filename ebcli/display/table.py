@@ -68,8 +68,9 @@ class Table(object):
             column_size = column.size
             if column_size is None:
                 column_size = self.get_widest_data_length_in_column(self.columns[c]) + 2
-                # special case for Description column this should be the same for all description columns, allows very
-                #   large descriptions that we are able to scroll through.
+                # special case for Description column this should be the same for all
+                # description columns, allows very large descriptions that we are able
+                # to scroll through.
                 if column.name == 'Description' and column_size > self.MAX_DESCRIPTION:
                     column_size = self.MAX_DESCRIPTION
                 column.fit_size = column_size

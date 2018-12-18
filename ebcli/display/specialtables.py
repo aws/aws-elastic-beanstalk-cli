@@ -56,9 +56,14 @@ class StatusTable(RequestTable):
         else:
             d = str(data.get(column.key, '-'))
 
-        if column.key == 'Cause'\
-            and self.screen.horizontal_offset > self.screen.max_columns:
-            cause_scroll = (self.screen.horizontal_offset - self.screen.max_columns) * StatusTable.CAUSE_SCROLL_FACTOR
+        if (
+            column.key == 'Cause'
+            and self.screen.horizontal_offset > self.screen.max_columns
+        ):
+            cause_scroll = (
+                self.screen.horizontal_offset
+                - self.screen.max_columns
+            ) * StatusTable.CAUSE_SCROLL_FACTOR
             d = d[cause_scroll:]
 
         c_data = justify_and_trim(

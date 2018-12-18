@@ -31,7 +31,11 @@ def get_all_stream_names(log_group_name, log_stream_name_prefix=None):
 
     streams = streams or {}
 
-    return [log_stream.name for log_stream in LogStream.log_stream_objects_from_json(streams.get('logStreams', []))]
+    return [
+        log_stream.name
+        for log_stream
+        in LogStream.log_stream_objects_from_json(streams.get('logStreams', []))
+    ]
 
 
 def get_log_events(log_group_name, log_stream_name, next_token=None,

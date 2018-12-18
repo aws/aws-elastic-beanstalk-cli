@@ -130,10 +130,16 @@ class Git(SourceControl):
         if exitcode == 128:
             # 128 = No HEAD
             if "HEAD" in stderr:
-                LOG.debug('An error occurred while handling git command.'
-                                   '\nError code: ' + str(exitcode) + ' Error: ' +
-                                   stderr)
-                raise CommandError('git could not find the HEAD; most likely because there are no commits present')
+                LOG.debug(
+                    'An error occurred while handling git command.\nError code: '
+                    + str(exitcode)
+                    + ' Error: '
+                    + stderr
+                )
+                raise CommandError(
+                    'git could not find the HEAD; '
+                    'most likely because there are no commits present'
+                )
 
         # Something else happened
         raise CommandError('An error occurred while handling git command.'
@@ -262,7 +268,15 @@ class Git(SourceControl):
                 for index, line in enumerate(stdout.splitlines()):
                     submodule_dir = line.split(' ')[1].strip('\'')
                     os.chdir(os.path.join(project_root, submodule_dir))
-                    self.do_zip_submodule(location, "{0}_{1}".format(location, str(index)), staged=staged, submodule_dir=submodule_dir)
+                    self.do_zip_submodule(
+                        location,
+                        "{0}_{1}".format(
+                            location,
+                            str(index)
+                        ),
+                        staged=staged,
+                        submodule_dir=submodule_dir
+                    )
 
         finally:
             os.chdir(cwd)
@@ -317,7 +331,13 @@ class Git(SourceControl):
     def push_codecommit_code(self):
         io.log_info('Pushing local code to codecommit with git-push')
 
-        stdout, stderr, exitcode = self._run_cmd(['git', 'push', self.get_current_repository(), self.get_current_branch()])
+        stdout, stderr, exitcode = self._run_cmd(
+            [
+                'git', 'push',
+                self.get_current_repository(),
+                self.get_current_branch()
+            ]
+        )
 
         if exitcode != 0:
             io.log_warning('Git is not able to push code: {0}'.format(exitcode))
@@ -336,19 +356,48 @@ class Git(SourceControl):
         # Setup the remote repository with code commit
         if exitcode != 0:
             if exitcode == 128:
-                remote_set_url_command = ['git', 'remote', 'set-url', self.codecommit_remote_name, remote_url]
-                LOG.debug('Remote already exists, performing: {0}'.format(' '.join(remote_set_url_command)))
+                remote_set_url_command = [
+                    'git', 'remote', 'set-url',
+                    self.codecommit_remote_name,
+                    remote_url
+                ]
+                LOG.debug(
+                    'Remote already exists, performing: {0}'.format(
+                        ' '.join(remote_set_url_command)
+                    )
+                )
                 self._run_cmd(remote_set_url_command)
 
-                remote_set_url_with_push_command = ['git', 'remote', 'set-url', '--push', self.codecommit_remote_name, remote_url]
-                LOG.debug('                {0}'.format(' '.join(remote_set_url_with_push_command)))
+                remote_set_url_with_push_command = [
+                    'git',
+                    'remote',
+                    'set-url',
+                    '--push',
+                    self.codecommit_remote_name,
+                    remote_url
+                ]
+                LOG.debug(
+                    '                {0}'.format(
+                        ' '.join(remote_set_url_with_push_command)
+                    )
+                )
                 self._run_cmd(remote_set_url_with_push_command)
             else:
                 LOG.debug("Error setting up git config for CodeCommit: {0}".format(stderr))
                 return
         else:
-            remote_set_url_with_add_push_command = ['git', 'remote', 'set-url', '--add', '--push', self.codecommit_remote_name, remote_url]
-            LOG.debug('Setting remote URL and pushing to it: {0}'.format(' '.join(remote_set_url_with_add_push_command)))
+            remote_set_url_with_add_push_command = [
+                'git', 'remote', 'set-url',
+                '--add',
+                '--push',
+                self.codecommit_remote_name,
+                remote_url
+            ]
+            LOG.debug(
+                'Setting remote URL and pushing to it: {0}'.format(
+                    ' '.join(remote_set_url_with_add_push_command)
+                )
+            )
             self._run_cmd(remote_set_url_with_add_push_command)
             self._handle_exitcode(exitcode, stderr)
 
@@ -406,8 +455,14 @@ class Git(SourceControl):
 
         # Setup the remote branch with the local git directory
         stdout, stderr, exitcode = self._run_cmd(
-            ['git', 'branch', '--set-upstream-to', "{0}/{1}".format(self.codecommit_remote_name, branch_name)],
-            handle_exitcode=False)
+            [
+                'git', 'branch', '--set-upstream-to', "{0}/{1}".format(
+                    self.codecommit_remote_name,
+                    branch_name
+                )
+            ],
+            handle_exitcode=False
+        )
 
         if exitcode != 0:
             LOG.debug('git branch --set-upstream-to error: ' + stderr)
@@ -426,8 +481,11 @@ class Git(SourceControl):
             LOG.debug(stderr)
             if exitcode == 1:
                 if create_branch:
-                    LOG.debug("Could not checkout branch '{0}', creating the branch locally with current HEAD".format(branch_name))
-                    stdout, stderr, exitcode = self._run_cmd(['git', 'checkout', '-b', branch_name])
+                    LOG.debug(
+                        "Could not checkout branch '{0}', creating the branch "
+                        "locally with current HEAD".format(branch_name)
+                    )
+                    self._run_cmd(['git', 'checkout', '-b', branch_name])
                 else:
                     return False
         return True
@@ -441,7 +499,10 @@ class Git(SourceControl):
         with open('README', 'w') as readme:
             readme.write('')
         self._run_cmd(['git', 'add', 'README'])
-        stdout, stderr, exitcode = self._run_cmd(['git', 'commit', '--allow-empty', '-m', 'EB CLI initial commit'], handle_exitcode=False)
+        stdout, stderr, exitcode = self._run_cmd(
+            ['git', 'commit', '--allow-empty', '-m', 'EB CLI initial commit'],
+            handle_exitcode=False
+        )
 
         if exitcode !=0:
             LOG.debug('git was not able to initialize an empty commit: {0}'.format(stderr))

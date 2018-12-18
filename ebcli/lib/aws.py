@@ -292,7 +292,11 @@ def _handle_response_code(response_data, attempt, aggregated_error_message):
         raise AlreadyExistsError(message)
     elif status in (500, 503, 504):
         LOG.debug('Received 5XX error')
-        retry_failure_message = 'Received 5XX error during attempt #{0}\n   {1}\n'.format(str(attempt), message)
+        retry_failure_message = \
+            'Received 5XX error during attempt #{0}\n   {1}\n'.format(
+                str(attempt),
+                message
+            )
 
         aggregated_error_message.insert(attempt, retry_failure_message)
 

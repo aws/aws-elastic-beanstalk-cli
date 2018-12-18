@@ -64,11 +64,20 @@ class AbstractBaseController(controller.CementBaseController):
         elif '--help' in sys.argv:
             pass
         else:
-            is_platform_workspace_only_command = cls.Meta.__dict__.get('is_platform_workspace_only_command')
-            if is_platform_workspace_only_command is True and Constants.WorkSpaceTypes.APPLICATION == workspace_type:
-                raise ApplicationWorkspaceNotSupportedError(strings['exit.applicationworkspacenotsupported'])
+            is_platform_workspace_only_command = cls.Meta.__dict__.get(
+                'is_platform_workspace_only_command'
+            )
+            if (
+                is_platform_workspace_only_command is True
+                and Constants.WorkSpaceTypes.APPLICATION == workspace_type
+            ):
+                raise ApplicationWorkspaceNotSupportedError(
+                    strings['exit.applicationworkspacenotsupported']
+                )
 
-            requires_directory_initialization = cls.Meta.__dict__.get('requires_directory_initialization')
+            requires_directory_initialization = cls.Meta.__dict__.get(
+                'requires_directory_initialization'
+            )
             if requires_directory_initialization is None:
                 requires_directory_initialization = False
             if requires_directory_initialization and not workspace_type:
@@ -89,9 +98,13 @@ class AbstractBaseController(controller.CementBaseController):
         workspace_type = fileoperations.get_workspace_type()
         if workspace_type != expected_type:
             if Constants.WorkSpaceTypes.PLATFORM == workspace_type:
-                raise PlatformWorkspaceNotSupportedError(strings['exit.platformworkspacenotsupported'])
+                raise PlatformWorkspaceNotSupportedError(
+                    strings['exit.platformworkspacenotsupported']
+                )
             if Constants.WorkSpaceTypes.APPLICATION == workspace_type:
-                raise ApplicationWorkspaceNotSupportedError(strings['exit.applicationworkspacenotsupported'])
+                raise ApplicationWorkspaceNotSupportedError(
+                    strings['exit.applicationworkspacenotsupported']
+                )
 
     def check_for_cli_update(self, version):
         label = self.Meta.label

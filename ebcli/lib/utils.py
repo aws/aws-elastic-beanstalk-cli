@@ -347,7 +347,9 @@ def parse_source(source):
 
 def raise_if_source_location_is_not_codecommit(source_location):
     if source_location != 'codecommit':
-        raise InvalidOptionsError('Source location "{0}" is not supported by the EBCLI'.format(source_location))
+        raise InvalidOptionsError(
+            'Source location "{0}" is not supported by the EBCLI'.format(source_location)
+        )
 
 
 def encode_to_ascii(unicode_value):

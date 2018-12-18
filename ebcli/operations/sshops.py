@@ -55,7 +55,13 @@ def prepare_for_ssh(env_name, instance, keep_open, force, setup, number,
             instance = utils.prompt_for_item_in_list(instances)
 
     try:
-        ssh_into_instance(instance, keep_open=keep_open, force_open=force, custom_ssh=custom_ssh, command=command)
+        ssh_into_instance(
+            instance,
+            keep_open=keep_open,
+            force_open=force,
+            custom_ssh=custom_ssh,
+            command=command
+        )
     except NoKeypairError:
         if not no_keypair_error_message:
             no_keypair_error_message = prompts['ssh.nokey']

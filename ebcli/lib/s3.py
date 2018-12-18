@@ -97,8 +97,13 @@ def upload_workspace_version(bucket, key, file_path, workspace_type='Application
         size = os.path.getsize(file_path)
     except OSError as err:
         if err.errno == 2:
-            raise NotFoundError('{0} Version does not exist locally ({1}).'
-                                ' Try uploading the Application Version again.'.format(workspace_type, err.filename))
+            raise NotFoundError(
+                '{0} Version does not exist locally ({1}).'
+                ' Try uploading the Application Version again.'.format(
+                    workspace_type,
+                    err.filename
+                )
+            )
         raise err
     finally:
         os.chdir(cwd)

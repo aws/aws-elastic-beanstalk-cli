@@ -143,7 +143,10 @@ class TagListValidator(object):
 
     def __init__(self, taglist, key):
         self.taglist = taglist
-        self.additions = [addition for addition in taglist.additions if addition['Key'] not in taglist.updates]
+        self.additions = [
+            addition for addition in taglist.additions
+            if addition['Key'] not in taglist.updates
+        ]
         self.deletions = taglist.deletions
         self.updates = taglist.updates
         self.key = key
@@ -153,7 +156,10 @@ class TagListValidator(object):
         Validates key hasn't already been specified for addition in the additions list
         :param key: a key (string) of a tag that is specified to be added
         """
-        self.__raise_if_key_present_in_list(list_of_keys_of(self.additions), 'tags.duplicate_key_in_add_list')
+        self.__raise_if_key_present_in_list(
+            list_of_keys_of(self.additions),
+            'tags.duplicate_key_in_add_list'
+        )
 
     def validate_key_for_deletion_is_unique(self):
         """
@@ -161,8 +167,14 @@ class TagListValidator(object):
         deletion in the deletions list.
         :param key: a key (string) of a tag that is specified to be updated
         """
-        self.__raise_if_key_present_in_list(self.deletions, 'tags.duplicate_key_in_delete_list')
-        self.__raise_if_key_present_in_list(list_of_keys_of(self.updates), 'tags.duplicate_key_in_update_list')
+        self.__raise_if_key_present_in_list(
+            self.deletions,
+            'tags.duplicate_key_in_delete_list'
+        )
+        self.__raise_if_key_present_in_list(
+            list_of_keys_of(self.updates),
+            'tags.duplicate_key_in_update_list'
+        )
 
     def validate_key_for_update_is_unique(self):
         """
@@ -170,8 +182,14 @@ class TagListValidator(object):
         deletion in the deletions list.
         :param key: a key (string) of a tag that is specified to be updated
         """
-        self.__raise_if_key_present_in_list(list_of_keys_of(self.updates), 'tags.duplicate_key_in_update_list')
-        self.__raise_if_key_present_in_list(self.deletions, 'tags.duplicate_across_delete_and_update_lists')
+        self.__raise_if_key_present_in_list(
+            list_of_keys_of(self.updates),
+            'tags.duplicate_key_in_update_list'
+        )
+        self.__raise_if_key_present_in_list(
+            self.deletions,
+            'tags.duplicate_across_delete_and_update_lists'
+        )
 
     def __raise_if_key_present_in_list(self, key_list, error_label):
         if self.key in key_list:
@@ -218,11 +236,23 @@ class TagList(object):
         io.echo('')
 
         ideal_column_length = column_length(self.current_list) + 3
-        io.echo(''.join(key_value_string.ljust(ideal_column_length) for key_value_string in ['Key', 'Value']))
+        io.echo(
+            ''.join(
+                key_value_string.ljust(ideal_column_length)
+                for key_value_string in ['Key', 'Value']
+            )
+        )
         io.echo('')
 
         for tag in self.current_list:
-            io.echo((''.join(key_value.ljust(ideal_column_length) for key_value in [tag['Key'], tag['Value']])).strip())
+            io.echo(
+                (
+                    ''.join(
+                        key_value.ljust(ideal_column_length)
+                        for key_value in [tag['Key'], tag['Value']]
+                    )
+                ).strip()
+            )
 
     def populate_add_list(self, addition_string):
         """

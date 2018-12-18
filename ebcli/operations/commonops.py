@@ -93,7 +93,13 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                     env_name = event.environment_name
 
                     if stream_events:
-                        streamer.stream_event(get_event_string(event, long_format=True), safe_to_quit=safe_to_quit)
+                        streamer.stream_event(
+                            get_event_string(
+                                event,
+                                long_format=True
+                            ),
+                            safe_to_quit=safe_to_quit
+                        )
 
                     _raise_if_error_event(event.message)
                     if _is_success_event(event.message):
@@ -125,7 +131,13 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
 
             for event in reversed(events):
                 if stream_events:
-                    streamer.stream_event(get_event_string(event, long_format=True), safe_to_quit=safe_to_quit)
+                    streamer.stream_event(
+                        get_event_string(
+                            event,
+                            long_format=True
+                        ),
+                        safe_to_quit=safe_to_quit
+                    )
                     # We dont need to update last_time if we are not printing.
                     # This can solve timing issues
                     last_time = event.event_date
@@ -359,7 +371,13 @@ def get_app_version_s3_location(app_name, version_label):
     if app_version:
         s3_bucket = app_version['SourceBundle']['S3Bucket']
         s3_key = app_version['SourceBundle']['S3Key']
-        io.log_info("Application Version '{0}' exists. Source from S3: {1}/{2}.".format(version_label, s3_bucket, s3_key))
+        io.log_info(
+            "Application Version '{0}' exists. Source from S3: {1}/{2}.".format(
+                version_label,
+                s3_bucket,
+                s3_key
+            )
+        )
 
     return s3_bucket, s3_key
 
@@ -553,7 +571,11 @@ def create_codecommit_app_version(app_name, process=False, label=None, message=N
 
     source_control = SourceControl.get_source_control()
     if source_control.get_current_commit() is None:
-        io.log_warning('There are no commits for the current branch, attempting to create an empty commit and launching with the sample application')
+        io.log_warning(
+            'There are no commits for the current branch, attempting '
+            'to create an empty commit and launching with the sample '
+            'application'
+        )
         source_control.create_initial_commit()
 
     if source_control.untracked_changes_exist():
@@ -597,7 +619,14 @@ def create_codecommit_app_version(app_name, process=False, label=None, message=N
                                        build_config=build_config)
 
 
-def create_app_version_from_source(app_name, source, process=False, label=None, message=None, build_config=None):
+def create_app_version_from_source(
+        app_name,
+        source,
+        process=False,
+        label=None,
+        message=None,
+        build_config=None
+):
     cwd = os.getcwd()
     fileoperations.ProjectRoot.traverse()
     try:
@@ -633,9 +662,14 @@ def create_app_version_from_source(app_name, source, process=False, label=None, 
         try:
             result = codecommit.get_branch(repository, branch)
         except ServiceError as ex:
-            io.log_error("Could not get branch '{0}' for the repository '{1}' because of this error: {2}".format(branch,
-                                                                                                                 repository,
-                                                                                                                 ex.code))
+            io.log_error(
+                "Could not get branch '{0}' for the repository '{1}' "
+                "because of this error: {2}".format(
+                    branch,
+                    repository,
+                    ex.code
+                )
+            )
             raise ex
 
         commit_id = result['branch']['commitId']
@@ -643,7 +677,11 @@ def create_app_version_from_source(app_name, source, process=False, label=None, 
             raise ServiceError("Could not find repository or commit id to create an application version")
     else:
         LOG.debug("Source location '{0}' is not supported".format(source_location))
-        raise InvalidOptionsError("This command does not support the given source location: {0}".format(source_location))
+        raise InvalidOptionsError(
+            "This command does not support the given source location: {0}".format(
+                source_location
+            )
+        )
 
     # Deploy Application version with freshly pushed git commit
     io.log_info('Creating AppVersion ' + version_label)
@@ -668,7 +706,15 @@ def _create_application_version(app_name, version_label, description,
     while True:
         try:
             elasticbeanstalk.create_application_version(
-                app_name, version_label, description, bucket, key, process, repository, commit_id, build_config
+                app_name,
+                version_label,
+                description,
+                bucket,
+                key,
+                process,
+                repository,
+                commit_id,
+                build_config
             )
             return version_label
         except InvalidParameterValueError as e:
@@ -868,7 +914,10 @@ def wait_for_processed_app_versions(app_name, version_labels, timeout=5):
             io.log_error(strings['appversion.processtimeout'])
             return False
         io.LOG.debug('Retrieving app versions.')
-        app_versions = elasticbeanstalk.get_application_versions(app_name, versions_to_check)["ApplicationVersions"]
+        app_versions = elasticbeanstalk.get_application_versions(
+            app_name,
+            versions_to_check
+        )["ApplicationVersions"]
 
         for v in app_versions:
             if v['Status'] == 'PROCESSED':
@@ -900,10 +949,18 @@ def create_default_instance_profile(profile_name=iam_attributes.DEFAULT_ROLE_NAM
     return profile_name
 
 
-def create_instance_profile(profile_name, policy_arns, role_name=None, inline_policy_name=None, inline_policy_doc=None):
-    """ Create instance profile and associated IAM role, and attach policy ARNs. 
-        If role_name is omitted profile_name will be used as role name.
-        Inline policy is optional. """
+def create_instance_profile(
+        profile_name,
+        policy_arns,
+        role_name=None,
+        inline_policy_name=None,
+        inline_policy_doc=None
+):
+    """
+    Create instance profile and associated IAM role, and attach policy ARNs.
+    If role_name is omitted profile_name will be used as role name.
+    Inline policy is optional.
+    """
     try:
         name = iam.create_instance_profile(profile_name)
         if name:

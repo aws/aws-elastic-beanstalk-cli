@@ -146,13 +146,14 @@ class EnvironmentScreen(Screen):
         if env_id:
             try:
                 self.flusher(term.get_terminal())
-                io.validate_action(prompts['restore.selectedenv'].replace('{env_id}', env_id)
-                                   .replace('{app}', utils.encode_to_ascii(environment.get('ApplicationName')))
-                                   .replace('{desc}', utils.encode_to_ascii(environment.get('Description')))
-                                   .replace('{cname}', utils.encode_to_ascii(environment.get('CNAME')))
-                                   .replace('{version}', utils.encode_to_ascii(environment.get('VersionLabel')))
-                                   .replace('{platform}', utils.encode_to_ascii(environment.get('SolutionStackName')))
-                                   .replace('{dat_term}', environment.get('DateUpdated')), 'y')
+                io.validate_action(
+                    prompts['restore.selectedenv'].replace('{env_id}', env_id)
+                    .replace('{app}', utils.encode_to_ascii(environment.get('ApplicationName')))
+                    .replace('{desc}', utils.encode_to_ascii(environment.get('Description')))
+                    .replace('{cname}', utils.encode_to_ascii(environment.get('CNAME')))
+                    .replace('{version}', utils.encode_to_ascii(environment.get('VersionLabel')))
+                    .replace('{platform}', utils.encode_to_ascii(environment.get('SolutionStackName')))
+                    .replace('{dat_term}', environment.get('DateUpdated')), 'y')
                 from ebcli.operations import restoreops
                 # restore specified environment
                 self.request_id = restoreops.restore(env_id)
@@ -192,8 +193,11 @@ class EnvironmentDataPoller(DataPoller):
             raise NotFoundError(strings['restore.no_env'])
 
         current_item = self.curr_page * self.PAGE_LENGTH
-        new_page_environments = self.all_environments[current_item: current_item + self.PAGE_LENGTH]
-        # Modify the data to make it appropriate for output, save the environment list and decrement the number of
+        new_page_environments = self.all_environments[
+            current_item: current_item + self.PAGE_LENGTH
+        ]
+        # Modify the data to make it appropriate for output, save the environment
+        # list and decrement the number of
         #   environments left to process, i.e. that are not in our cache
         self.prep_version_data(new_page_environments)
         # Append processed data to our cache
@@ -202,8 +206,9 @@ class EnvironmentDataPoller(DataPoller):
 
     def prep_version_data(self, page_table_data):
         """
-        Modifies certain parameters of the given environments in order to display them nicely. This method also
-        decrements the total number of environments left to process
+        Modifies certain parameters of the given environments in order to display them
+        nicely. This method also decrements the total number of environments left to
+        process,
 
         :param page_table_data: list of environments to process
         """

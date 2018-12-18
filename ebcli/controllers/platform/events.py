@@ -9,8 +9,22 @@ class GenericPlatformEventsController(AbstractBaseController):
         requires_directory_initialization = True
         description = strings['platformevents.info']
         arguments = [
-            (['version'], dict(action='store', nargs='?', default=None, help=flag_text['platformevents.version'])),
-            (['-f', '--follow'], dict(action='store_true', help=flag_text['events.follow']))
+            (
+                ['version'],
+                dict(
+                    action='store',
+                    nargs='?',
+                    default=None,
+                    help=flag_text['platformevents.version']
+                )
+            ),
+            (
+                ['-f', '--follow'],
+                dict(
+                    action='store_true',
+                    help=flag_text['events.follow']
+                )
+            )
         ]
 
         @classmethod

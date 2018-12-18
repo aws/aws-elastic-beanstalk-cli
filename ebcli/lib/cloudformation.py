@@ -46,7 +46,9 @@ def wait_until_stack_exists(stack_name, timeout=120):
 
     while not stack_exists:
         if (datetime.now() - start_time) > timedelta(timeout):
-            raise CFNTemplateNotFound("Could not find CFN stack, '{stack_name}'.".format(stack_name=stack_name))
+            raise CFNTemplateNotFound(
+                "Could not find CFN stack, '{stack_name}'.".format(stack_name=stack_name)
+            )
 
         response = _make_api_call('describe_stacks')
 

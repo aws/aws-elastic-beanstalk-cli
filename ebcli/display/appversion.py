@@ -163,7 +163,12 @@ class VersionScreen(Screen):
 
     def delete(self, t):
         """Return true upon successful completion, false if there was an exception"""
-        save = self.prompt_and_action(prompts['appversion.delete.prompt'].format(len(self.poller.all_app_versions)), self.delete_app_version_num)
+        save = self.prompt_and_action(
+            prompts['appversion.delete.prompt'].format(
+                len(self.poller.all_app_versions)
+            ),
+            self.delete_app_version_num
+        )
         self.flusher(t)
         return save
 
@@ -224,10 +229,13 @@ class VersionDataPoller(DataPoller):
     PAGE_LENGTH = 10
 
     def get_version_data(self):
-        """Gets app_versions data by pages. Pages that were already accessed would be stored in history
+        """
+        Gets app_versions data by pages. Pages that were already accessed would be
+        stored in history
 
-        Then modifies app_versions: add SinceCreated field and format DateCreated field for each version in app_versions.
-        Paginates, so appends PAGE_LENGTH versions with each call
+        Then modifies app_versions: add SinceCreated field and format DateCreated
+        field for each version in app_versions. Paginates, so appends PAGE_LENGTH
+        versions with each call
 
         :returns data object with two keys: environment and app_versions
         note: environment data would be None if no environment is specified
@@ -237,9 +245,18 @@ class VersionDataPoller(DataPoller):
             return self.get_table_data()
 
         if self.next_token:
-            response = elasticbeanstalk.get_application_versions(self.app_name, None, self.PAGE_LENGTH, self.next_token)
+            response = elasticbeanstalk.get_application_versions(
+                self.app_name,
+                None,
+                self.PAGE_LENGTH,
+                self.next_token
+            )
         else:
-            response = elasticbeanstalk.get_application_versions(self.app_name, None, self.PAGE_LENGTH)
+            response = elasticbeanstalk.get_application_versions(
+                self.app_name,
+                None,
+                self.PAGE_LENGTH
+            )
 
         new_page_versions = response['ApplicationVersions']
         self.next_token = None

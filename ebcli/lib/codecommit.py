@@ -43,11 +43,17 @@ def _make_api_call(operation_name, **operation_options):
         result = aws.make_api_call('codecommit', operation_name, **operation_options)
     except ServiceError as ex:
         if ex.code == 'AccessDeniedException':
-            io.echo("EB CLI does not have the right permissions to access CodeCommit."
-                    " List of IAM policies needed by EB CLI, please configure and try again.\n "
-                    "codecommit:CreateRepository\n codecommit:CreateBranch\n codecommit:GetRepository\n "
-                    "codecommit:ListRepositories\n codecommit:ListBranches\n"
-                    "To learn more, see Docs: http://docs.aws.amazon.com/codecommit/latest/userguide/access-permissions.html")
+            io.echo(
+                "EB CLI does not have the right permissions to access CodeCommit."
+                " List of IAM policies needed by EB CLI, please configure and try again.\n"
+                " codecommit:CreateRepository\n"
+                " codecommit:CreateBranch\n"
+                " codecommit:GetRepository\n"
+                " codecommit:ListRepositories\n"
+                " codecommit:ListBranches\n"
+                "To learn more, see Docs: "
+                "http://docs.aws.amazon.com/codecommit/latest/userguide/access-permissions.html"
+            )
         raise ex
     return result
 

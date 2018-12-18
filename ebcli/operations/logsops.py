@@ -39,9 +39,12 @@ def beanstalk_log_group_builder(env_name, log_group_name=None):
 
     :param env_name: current environment being used
     :param log_group_name: One of the following
-        - None: the method defaults to using '/aws/elasticbeanstalk/<`env_name`>' as the `log_group_name` in this case
-        - '/aws/elasticbeanstalk/<`env_name`>/<log_group_name>': the `log_group_name` is used as is
-        - '<log_group_name>': '/aws/elasticbeanstalk/<`env_name`>' is prefixed to the `log_group_name`
+        - None: the method defaults to using '/aws/elasticbeanstalk/<`env_name`>' as
+          the `log_group_name` in this case
+        - '/aws/elasticbeanstalk/<`env_name`>/<log_group_name>': the `log_group_name`
+          is used as is
+        - '<log_group_name>': '/aws/elasticbeanstalk/<`env_name`>' is prefixed to the
+          `log_group_name`
 
     :return: a normalized `log_group_name`
     """
@@ -75,11 +78,12 @@ def cloudwatch_log_group_for_environment_health_streaming(env_name):
 
 def cloudwatch_log_stream_names(log_group, log_stream_name_prefix):
     """
-    Returns all of the logStream names associated with `log_group` with the prefix, `log_stream_name_prefix` if one
-    is specified
+    Returns all of the logStream names associated with `log_group` with the
+    prefix, `log_stream_name_prefix` if one is specified
     :param log_group: A CloudWatch logGroup whose logStream names to retrieve
     :param log_stream_name_prefix: A prefix to filter logStream names by
-    :return: All of the logStream names associated with `log_group` with the prefix, `log_stream_name_prefix` if one
+    :return: All of the logStream names associated with `log_group`
+             with the prefix, `log_stream_name_prefix` if one
     is specified
     """
     return cloudwatch.get_all_stream_names(
@@ -92,7 +96,8 @@ def deployment_logs_log_group_name(env_name):
     """
     Determines the default deployment logGroup for the environment, `env_name`
     :param env_name: An Elastic Beanstalk environment name
-    :return: 'var/log/eb-activity.log' if the environment is using a non-Windows platform, 'EBDeploy-Log' otherwise
+    :return: 'var/log/eb-activity.log' if the environment is using a
+             non-Windows platform, 'EBDeploy-Log' otherwise
     """
     environment = elasticbeanstalk.get_environment(env_name=env_name)
     if 'windows' in environment.platform.name.lower():
@@ -182,7 +187,11 @@ def enable_cloudwatch_logs(app_name, env_name, cloudwatch_log_source):
     ]:
         _raise_if_environment_is_not_using_enhanced_health(configuration_settings)
 
-        if not environment_health_streaming_enabled(app_name, env_name, config_settings=configuration_settings):
+        if not environment_health_streaming_enabled(
+                app_name,
+                env_name,
+                config_settings=configuration_settings
+        ):
             option_settings.append(_environment_health_log_streaming_option_setting())
             io.echo(strings['cloudwatch_environment_health_log_streaming.enable'])
         else:
@@ -221,7 +230,8 @@ def get_cloudwatch_log_stream_events(log_group_name, stream_name, num_log_events
 
     :param log_group_name: cloudwatch logGroup
     :param stream_name: cloudwatch stream name
-    :param num_log_events: number of log events to retrieve; default is cloudwatch's max: 10k or 1MB of messages
+    :param num_log_events: number of log events to retrieve; default is
+                           cloudwatch's max: 10k or 1MB of messages
     :return: single string will all log events concatenated together
     """
     full_log = []
@@ -244,15 +254,26 @@ def get_cloudwatch_log_stream_events(log_group_name, stream_name, num_log_events
     return full_log_blob
 
 
-def get_cloudwatch_messages(log_group_name, stream_name, formatter, next_token, start_time, messages_handler, sleep_time=10):
+def get_cloudwatch_messages(
+        log_group_name,
+        stream_name,
+        formatter,
+        next_token,
+        start_time,
+        messages_handler,
+        sleep_time=10
+):
     """
-    Polls periodically the logStream `stream_name` until interrupted through a KeyboardInterrupt or an unexpected exception
-    :param log_group_name: A CloudWatch logGroup in which the logStream `stream_name` exists
+    Polls periodically the logStream `stream_name` until interrupted through a
+    KeyboardInterrupt or an unexpected exception
+    :param log_group_name: A CloudWatch logGroup in which the logStream `stream_name`
+                           exists
     :param stream_name: A CloudWatch logStream to poll
     :param formatter: The object that formats the output to be displayed in the terminal
     :param next_token: The token for the next set of items to return
-    :param start_time: The start of the time range, expressed as the number of milliseconds after Jan 1, 1970 00:00:00 UTC.
-        Events with a time stamp earlier than this time are not included.
+    :param start_time: The start of the time range, expressed as the number of
+                       milliseconds after Jan 1, 1970 00:00:00 UTC.
+                       Events with a time stamp earlier than this time are not included.
     :param messages_handler:
     :param sleep_time: Time in seconds to sleep before polling CloudWatch for newer events
     :return: None
@@ -332,7 +353,10 @@ def instance_log_streaming_enabled(app_name, env_name, config_settings=None):
     :param config_settings: the raw response of a call to describe_configuration_settings
     :return: boolean if the given environment has log streaming enabled
     """
-    config_settings = config_settings or elasticbeanstalk.describe_configuration_settings(app_name, env_name)
+    config_settings = (
+        config_settings or
+        elasticbeanstalk.describe_configuration_settings(app_name, env_name)
+    )
     stream_enabled = elasticbeanstalk.get_specific_configuration(
         config_settings,
         namespaces.CLOUDWATCH_LOGS,
@@ -344,30 +368,43 @@ def instance_log_streaming_enabled(app_name, env_name, config_settings=None):
 
 def normalize_log_group_name(env_name, log_group=None, cloudwatch_log_source=None):
     """
-    Converts the given (potentially None) `log_group` name to a value that can be consumed by `describe_log_groups`.
+    Converts the given (potentially None) `log_group` name to a value that can be
+    consumed by `describe_log_groups`.
     :param env_name: An Elastic Beanstalk environment name
-    :param log_group: A value for the logGroup name specified by the customer, which is potentially None
-    :param cloudwatch_log_source: Name of the log source `log_group` belongs to. One among: instance, environment-health
+    :param log_group: A value for the logGroup name specified by the customer, which
+                      is potentially None
+    :param cloudwatch_log_source: Name of the log source `log_group` belongs to. One among:
+                                  instance, environment-health
     :return: A normalized logGroup name
     """
-    if not cloudwatch_log_source or cloudwatch_log_source == logs_operations_constants.LOG_SOURCES.INSTANCE_LOG_SOURCE:
+    if (
+            not cloudwatch_log_source
+            or cloudwatch_log_source == logs_operations_constants.LOG_SOURCES.INSTANCE_LOG_SOURCE
+    ):
         log_group = beanstalk_log_group_builder(env_name, log_group)
     elif cloudwatch_log_source == logs_operations_constants.LOG_SOURCES.ENVIRONMENT_HEALTH_LOG_SOURCE:
         if log_group:
-            raise InvalidOptionsError(strings['logs.log_group_and_environment_health_log_source'])
+            raise InvalidOptionsError(
+                strings['logs.log_group_and_environment_health_log_source']
+            )
         log_group = beanstalk_log_group_builder(
             env_name,
             cloudwatch_log_group_for_environment_health_streaming(env_name)
         )
     else:
-        raise InvalidOptionsError(strings['logs.cloudwatch_log_source_argumnent_is_invalid_for_retrieval'].format(cloudwatch_log_source))
+        raise InvalidOptionsError(
+            strings[
+                'logs.cloudwatch_log_source_argumnent_is_invalid_for_retrieval'
+            ].format(cloudwatch_log_source)
+        )
 
     return log_group
 
 
 def paginate_cloudwatch_logs(platform_name, version, formatter=None):
     """
-    Method periodically polls CloudWatch get_log_events to retrieve the logs for the logStream `version` within the logGroup
+    Method periodically polls CloudWatch get_log_events to retrieve the logs for the
+    logStream `version` within the logGroup
     defined by `version`
     :param platform_name: A CloudWatch logGroup in which the logStream `version` exists
     :param version: A CloudWatch logStream to poll
@@ -379,7 +416,15 @@ def paginate_cloudwatch_logs(platform_name, version, formatter=None):
     start_time = None
     messages_handler = (lambda messages: io.echo_with_pager(os.linesep.join(messages)))
 
-    get_cloudwatch_messages(log_group_name, version, formatter, next_token, start_time, messages_handler, sleep_time=4)
+    get_cloudwatch_messages(
+        log_group_name,
+        version,
+        formatter,
+        next_token,
+        start_time,
+        messages_handler,
+        sleep_time=4
+    )
 
 
 def raise_if_instance_log_streaming_is_not_enabled(app_name, env_name):
@@ -448,16 +493,22 @@ def retrieve_cloudwatch_instance_logs(
         specific_log_stream=None
 ):
     """
-    Retrieves CloudWatch logs for all the environment instances for the `log_group` unless `specific_log_stream`
-    is specified.
+    Retrieves CloudWatch logs for all the environment instances for the `log_group`
+    unless `specific_log_stream` is specified.
     :param log_group: CloudWatch logGroup
     :param info_type:
         tail: to get the last 100 lines and returns the result to the terminal
-        'bundle': get all of the logs and save them to a dir under .elasticbeanstalk/logs/
+        'bundle': get all of the logs and save them to a dir under
+        .elasticbeanstalk/logs/
     :param do_zip: If True, zip the logs for the user
     :param specific_log_stream: Get logs for specific stream
     """
-    retrieve_cloudwatch_logs(log_group, info_type, do_zip, specific_log_stream=specific_log_stream)
+    retrieve_cloudwatch_logs(
+        log_group,
+        info_type,
+        do_zip,
+        specific_log_stream=specific_log_stream
+    )
 
 
 def retrieve_cloudwatch_environment_health_logs(
@@ -526,13 +577,14 @@ def stream_environment_health_logs_from_cloudwatch(
         specific_log_stream=None
 ):
     """
-    Method streams CloudWatch logs to the terminal for the logGroup given. Since it is possible that the logGroup
-    might match multiple logGroups, multiple threads can be spawned to switch between streams to display all of them
-    on the same terminal.
+    Method streams CloudWatch logs to the terminal for the logGroup given. Since it
+    is possible that the logGroup might match multiple logGroups, multiple threads
+    can be spawned to switch between streams to display all of them on the same terminal.
 
     :param sleep_time: sleep time to refresh the logs from cloudwatch
     :param log_group: cloudwatch logGroup
-    :param specific_log_stream: since all of our log streams are instance ids we require this if we want a single stream
+    :param specific_log_stream: since all of our log streams are instance ids we require
+                                this if we want a single stream
     """
     streamer = io.get_event_streamer()
     streamer.prompt = ' -- {0} -- (Ctrl+C to exit)'.format(log_group)
@@ -560,13 +612,15 @@ def stream_instance_logs_from_cloudwatch(
         specific_log_stream=None
 ):
     """
-    Method streams CloudWatch logs to the terminal for the logGroup given. Since it is possible that the logGroup
-    might match multiple logGroups, multiple threads can be spawned to switch between streams to display all of them
-    on the same terminal.
+    Method streams CloudWatch logs to the terminal for the logGroup given.
+    Since it is possible that the logGroup might match multiple logGroups,
+    multiple threads can be spawned to switch between streams to display
+    all of them on the same terminal.
 
     :param sleep_time: sleep time to refresh the logs from cloudwatch
     :param log_group: cloudwatch logGroup
-    :param specific_log_stream: since all of our log streams are instance ids we require this if we want a single stream
+    :param specific_log_stream: since all of our log streams are instance ids
+                                we require this if we want a single stream
     """
     streamer = io.get_event_streamer()
     streamer.prompt = ' -- {0} -- (Ctrl+C to exit)'.format(log_group)
@@ -599,11 +653,13 @@ def stream_logs_in_terminal(log_group, log_streams):
             log_stream,
             num_log_events=TAIL_LOG_SIZE
         )
-        all_logs += '{linesep}{linesep}============= {log_stream} - {log_group} =============={linesep}{linesep}'.format(
-            log_stream=str(log_stream),
-            log_group=log_group,
-            linesep=os.linesep
-        )
+        all_logs += '{linesep}{linesep}============= ' \
+                    '{log_stream} - {log_group} ==============' \
+                    '{linesep}{linesep}'.format(
+                        log_stream=str(log_stream),
+                        log_group=log_group,
+                        linesep=os.linesep
+                    )
         all_logs += tail_logs
 
     io.echo_with_pager(all_logs)
@@ -638,24 +694,27 @@ def stream_single_stream(
         formatter=None,
 ):
     """
-    Method periodically polls CloudWatch get_log_events to retrieve the logs for the `stream_name` within the logGroup
-    defined by `log_group_name`
+    Method periodically polls CloudWatch get_log_events to retrieve the logs for the `stream_name`
+    within the logGroup defined by `log_group_name`
     :param log_group_name: A CloudWatch logGroup in which `stream_name` exists
     :param stream_name: The CloudWatch logStream to get events from
     :param streamer: The object that streams events to the terminal
     :param sleep_time: Time in seconds to sleep before polling CloudWatch for newer events
-    :param start_time: The start of the time range, expressed as the number of milliseconds after Jan 1, 1970 00:00:00 UTC.
+    :param start_time: The start of the time range, expressed as the number of milliseconds
+                       after Jan 1, 1970 00:00:00 UTC.
         Events with a time stamp earlier than this time are not included.
     :param formatter: The object that formats the output to be displayed in the terminal
     :return: None
     """
     def messages_handler(messages):
-        messages = '{linesep}{linesep}============= {log_stream} - {log_group} =============={linesep}{linesep}{messages}'.format(
-            log_stream=stream_name,
-            log_group=log_group_name,
-            linesep=os.linesep,
-            messages=os.linesep.join(messages)
-        )
+        messages = '{linesep}{linesep}============= ' \
+                   '{log_stream} - {log_group} ==============' \
+                   '{linesep}{linesep}{messages}'.format(
+                        log_stream=stream_name,
+                        log_group=log_group_name,
+                        linesep=os.linesep,
+                        messages=os.linesep.join(messages)
+                   )
         io.echo(messages)
 
     get_cloudwatch_messages(log_group_name, stream_name, formatter, None, start_time, messages_handler)
@@ -850,7 +909,11 @@ def _raise_if_environment_is_not_using_enhanced_health(configuration_settings):
     )
 
     if health_type != 'enhanced':
-        raise InvalidOptionsError(strings['cloudwatch_environment_health_log_streaming.enhanced_health_not_found'])
+        raise InvalidOptionsError(
+            strings[
+                'cloudwatch_environment_health_log_streaming.enhanced_health_not_found'
+            ]
+        )
 
 
 def _setup_logs_folder(cloudwatch_log_source):
@@ -858,10 +921,14 @@ def _setup_logs_folder(cloudwatch_log_source):
         logs_folder_name = _timestamped_directory_name()
     else:
         if not os.path.exists(
-                fileoperations.get_logs_location(logs_operations_constants.LOG_SOURCES.ENVIRONMENT_HEALTH_LOG_SOURCE)
+                fileoperations.get_logs_location(
+                    logs_operations_constants.LOG_SOURCES.ENVIRONMENT_HEALTH_LOG_SOURCE
+                )
         ):
             os.mkdir(
-                fileoperations.get_logs_location(logs_operations_constants.LOG_SOURCES.ENVIRONMENT_HEALTH_LOG_SOURCE)
+                fileoperations.get_logs_location(
+                    logs_operations_constants.LOG_SOURCES.ENVIRONMENT_HEALTH_LOG_SOURCE
+                )
             )
 
         logs_folder_name = os.path.join(

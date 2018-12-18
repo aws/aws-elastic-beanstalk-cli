@@ -171,7 +171,10 @@ class DeployController(AbstractBaseController):
             else:
                 io.echo(strings['deploy.noenvname'].replace('{module}', module))
 
-                stages_version_labels[group_name] = [v for v in stages_version_labels[group_name] if v != version_label]
+                stages_version_labels[group_name] = [
+                    v for v in stages_version_labels[group_name]
+                    if v != version_label
+                ]
 
             chdir(top_dir)
 

@@ -42,8 +42,13 @@ def update_environment_with_config_file(env_name, cfg_name,
 
     if fileoperations.env_yaml_exists():
         io.echo(strings['config.envyamlexists'])
-    commonops.update_environment(env_name, None, nohang,
-                                  template=cfg_name, timeout=timeout)
+    commonops.update_environment(
+        env_name,
+        None,
+        nohang,
+        template=cfg_name,
+        timeout=timeout
+    )
 
 
 def update_environment_with_config_data(env_name, data,
@@ -51,8 +56,13 @@ def update_environment_with_config_data(env_name, data,
 
     if fileoperations.env_yaml_exists():
         io.echo(strings['config.envyamlexists'])
-    commonops.update_environment(env_name, None, nohang,
-                                  timeout=timeout, template_body=data)
+    commonops.update_environment(
+        env_name,
+        None,
+        nohang,
+        timeout=timeout,
+        template_body=data
+    )
 
 
 def download_config_from_s3(app_name, cfg_name):
@@ -181,8 +191,11 @@ def validate_config_file(app_name, cfg_name, platform):
     except InvalidParameterValueError as e:
         # Platform not in Saved config. Try again with default platform
         if e.message == responses['create.noplatform']:
-           result = elasticbeanstalk.validate_template(app_name, cfg_name,
-                                                       platform=platform)
+            result = elasticbeanstalk.validate_template(
+                app_name,
+                cfg_name,
+                platform=platform
+            )
         else:
             raise
 

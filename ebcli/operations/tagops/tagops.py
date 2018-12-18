@@ -195,13 +195,25 @@ class TagOps(object):
         :return: None
         """
         keys_to_update = list_of_keys_of(self.taglist.updates)
-        additions = [addition for addition in self.taglist.additions if addition['Key'] not in keys_to_update]
+        additions = [
+            addition for addition in self.taglist.additions
+            if addition['Key'] not in keys_to_update
+        ]
         deletions = self.taglist.deletions
         updates = self.taglist.updates
 
         if additions:
             io.echo('Added Tags:')
-            io.echo(linesep.join(["  Key: '{0}'  Value: '{1}'".format(addition['Key'], addition['Value']) for addition in additions]))
+            io.echo(
+                linesep.join(
+                    [
+                        "  Key: '{0}'  Value: '{1}'".format(
+                            addition['Key'],
+                            addition['Value']
+                        ) for addition in additions
+                    ]
+                )
+            )
             io.echo('')
 
         if deletions:
@@ -211,5 +223,14 @@ class TagOps(object):
 
         if updates:
             io.echo('Updated Tags:')
-            io.echo(linesep.join(["  Key: '{0}'  Value: '{1}'".format(update['Key'], update['Value']) for update in updates]))
+            io.echo(
+                linesep.join(
+                    [
+                        "  Key: '{0}'  Value: '{1}'".format(
+                            update['Key'],
+                            update['Value']
+                        ) for update in updates
+                    ]
+                )
+            )
             io.echo('')

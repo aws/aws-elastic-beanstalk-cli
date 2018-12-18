@@ -22,10 +22,36 @@ class GenericPlatformDeleteController(AbstractBaseController):
         requires_directory_initialization = True
         description = strings['platformdeleteversion.info']
         arguments = [
-            (['version'], dict(action='store', help=flag_text['platformdeleteversion.version'], nargs='?', default=None)),
-            (['--cleanup'], dict(action='store_true', help=flag_text['platformdelete.cleanup'])),
-            (['--all-platforms'], dict(action='store_true', help=flag_text['platformdelete.allplatforms'])),
-            (['--force'], dict(action='store_true', help=flag_text['platformdelete.force']))
+            (
+                ['version'],
+                dict(
+                    action='store',
+                    help=flag_text['platformdeleteversion.version'],
+                    nargs='?',
+                    default=None
+                )
+            ),
+            (
+                ['--cleanup'],
+                dict(
+                    action='store_true',
+                    help=flag_text['platformdelete.cleanup']
+                )
+            ),
+            (
+                ['--all-platforms'],
+                dict(
+                    action='store_true',
+                    help=flag_text['platformdelete.allplatforms']
+                )
+            ),
+            (
+                ['--force'],
+                dict(
+                    action='store_true',
+                    help=flag_text['platformdelete.force']
+                )
+            )
         ]
         epilog = strings['platformdeleteversion.epilog']
 

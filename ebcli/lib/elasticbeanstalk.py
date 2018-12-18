@@ -105,7 +105,16 @@ def create_application(app_name, descrip):
     return result
 
 
-def create_platform_version(platform_name, version, s3_bucket, s3_key, instance_profile, key_name, instance_type, vpc = None):
+def create_platform_version(
+        platform_name,
+        version,
+        s3_bucket,
+        s3_key,
+        instance_profile,
+        key_name,
+        instance_type,
+        vpc=None
+):
     kwargs = dict()
 
     if s3_bucket and s3_key:
@@ -173,8 +182,17 @@ def create_platform_version(platform_name, version, s3_bucket, s3_key, instance_
                           **kwargs)
 
 
-def create_application_version(app_name, vers_label, descrip, s3_bucket,
-                               s3_key, process=False, repository=None, commit_id=None, build_configuration=None):
+def create_application_version(
+        app_name,
+        vers_label,
+        descrip,
+        s3_bucket,
+        s3_key,
+        process=False,
+        repository=None,
+        commit_id=None,
+        build_configuration=None
+):
     kwargs = dict()
     kwargs['Process'] = process
     if descrip is not None:
@@ -188,9 +206,11 @@ def create_application_version(app_name, vers_label, descrip, s3_bucket,
                                                 'SourceRepository': 'S3',
                                                 'SourceLocation': "{0}/{1}".format(s3_bucket, s3_key)}
     elif repository and commit_id:
-        kwargs['SourceBuildInformation'] = {'SourceType': 'Git',
-                                  'SourceRepository': 'CodeCommit',
-                                  'SourceLocation': "{0}/{1}".format(repository, commit_id)}
+        kwargs['SourceBuildInformation'] = {
+            'SourceType': 'Git',
+            'SourceRepository': 'CodeCommit',
+            'SourceLocation': "{0}/{1}".format(repository, commit_id)
+        }
         kwargs['Process'] = True
 
     if build_configuration is not None:
@@ -481,7 +501,14 @@ def get_all_environments():
     return Environment.json_to_environment_objects_array(result['Environments'])
 
 
-def get_environment(app_name=None, env_name=None, env_id=None, include_deleted=False, deleted_back_to=None, want_solution_stack=False):
+def get_environment(
+        app_name=None,
+        env_name=None,
+        env_id=None,
+        include_deleted=False,
+        deleted_back_to=None,
+        want_solution_stack=False
+):
     LOG.debug('Inside get_environment api wrapper')
 
     kwargs = {}

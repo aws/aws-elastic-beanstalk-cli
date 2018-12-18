@@ -77,14 +77,19 @@ def sanitize_environment_variables_from_customer_input(environment_variables_inp
 
 def create_environment_variables_list(environment_variables, as_option_settings=True):
     """
-    Returns a pair of environment variables to add and remove from a list of sanitized environment variables.
+    Returns a pair of environment variables to add and remove from a list of
+    sanitized environment variables.
 
-    If `as_option_settings` is set to `True`, the list of environment variables to add is transformed
-    into option settings in the 'aws:elasticbeanstalk:application:environment' namespace.
+    If `as_option_settings` is set to `True`, the list of environment variables
+    to add is transformed into option settings in the
+    'aws:elasticbeanstalk:application:environment' namespace.
 
-    :param environment_variables: a list of the sanitized environment variables specified in the format KEY_i=VALUE_i
-    :param as_option_settings: boolean indicating whether to transform `environment_variables` into option settings
-    :return: a pair of environment variables to add and remove in the format dictated by `as_option_settings`
+    :param environment_variables: a list of the sanitized environment variables
+                                  specified in the format KEY_i=VALUE_i
+    :param as_option_settings: boolean indicating whether to transform
+                               `environment_variables` into option settings
+    :return: a pair of environment variables to add and remove in the format
+             dictated by `as_option_settings`
     """
     namespace = 'aws:elasticbeanstalk:application:environment'
 

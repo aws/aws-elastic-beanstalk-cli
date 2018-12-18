@@ -374,7 +374,10 @@ class Screen(object):
             try:
                 platform_arn = self.env_data['PlatformArn']
                 platform_version = PlatformVersion(platform_arn)
-                platform = ' {}/{}'.format(platform_version.platform_shorthand, platform_version.platform_version)
+                platform = ' {}/{}'.format(
+                    platform_version.platform_shorthand,
+                    platform_version.platform_version
+                )
             except KeyError:
                 solutionstack = SolutionStack(self.env_data['SolutionStackName'])
                 platform = ' {}'.format(solutionstack.platform_shorthand)

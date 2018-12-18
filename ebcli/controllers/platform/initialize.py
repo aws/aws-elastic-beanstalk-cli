@@ -97,7 +97,9 @@ class EBPInitController(GenericPlatformInitController):
 
 
 def get_keyname():
-    return commonops.get_default_keyname() or sshops.prompt_for_ec2_keyname(message=prompts['platforminit.ssh'])
+    return commonops.get_default_keyname() or sshops.prompt_for_ec2_keyname(
+        message=prompts['platforminit.ssh']
+    )
 
 
 def get_platform_name_and_version(platform_name):

@@ -54,7 +54,8 @@ class EBPBaseController(base.EbBaseController):
             'show': 'Shows information about current platform.',
             'select': 'Selects a default platform.',
             'init': 'Initializes your directory with the EB CLI to create and manage Platforms.',
-            'list': 'In a platform workspace, lists versions of the custom platform associated with this workspace. Elsewhere, lists available platforms.'
+            'list': 'In a platform workspace, lists versions of the custom platform associated '
+                    'with this workspace. Elsewhere, lists available platforms.'
         }
         txt = self._meta.description
         for command_category in command_categories:

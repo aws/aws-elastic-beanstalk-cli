@@ -21,7 +21,9 @@ class PlatformVersion(object):
     class UnableToParseArnException(EBCLIException):
         pass
 
-    ARN_PATTERN = re.compile('^arn:[^:]+:elasticbeanstalk:[^:]+:([^:]*):platform/([^/]+)/(\d+\.\d+\.\d+)$')
+    ARN_PATTERN = re.compile(
+        r'^arn:[^:]+:elasticbeanstalk:[^:]+:([^:]*):platform/([^/]+)/(\d+\.\d+\.\d+)$'
+    )
 
     @classmethod
     def is_custom_platform_arn(cls, arn):
@@ -112,8 +114,8 @@ class PlatformVersion(object):
         if PlatformVersion.is_custom_platform_arn(self.name):
             return False
 
-        if pkg_resources.parse_version(self.platform_version) >= pkg_resources.parse_version('2.0.10'):
-            return True
+        return pkg_resources.parse_version(self.platform_version) \
+            >= pkg_resources.parse_version('2.0.10')
 
     @property
     def has_healthd_support(self):

@@ -78,7 +78,11 @@ def make_new_env(
                                              build_config=build_config)
 
         if build_config is not None:
-            buildspecops.stream_build_configuration_app_version_creation(env_request.app_name, env_request.version_label, build_config)
+            buildspecops.stream_build_configuration_app_version_creation(
+                env_request.app_name,
+                env_request.version_label,
+                build_config
+            )
         elif process_app_version is True:
             success = commonops.wait_for_processed_app_versions(
                 env_request.app_name,

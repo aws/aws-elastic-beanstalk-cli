@@ -51,9 +51,17 @@ class PlatformShowController(AbstractBaseController):
 
         if env_name:
             if want_solution_stack:
-                platform = platformops.get_environment_platform(app_name, env_name, want_solution_stack=want_solution_stack).name
+                platform = platformops.get_environment_platform(
+                    app_name,
+                    env_name,
+                    want_solution_stack=want_solution_stack
+                ).name
             else:
-                platform = platformops.get_environment_platform(app_name, env_name, want_solution_stack=want_solution_stack).arn
+                platform = platformops.get_environment_platform(
+                    app_name,
+                    env_name,
+                    want_solution_stack=want_solution_stack
+                ).arn
 
             io.echo()
             io.echo('Platform info for environment "{env_name}":'
@@ -66,7 +74,10 @@ class PlatformShowController(AbstractBaseController):
 
     def get_latest_solution_stack(self, solution_stack):
         full_platform = solution_stack_ops.find_solution_stack_from_string(solution_stack)
-        latest_platform = solution_stack_ops.find_solution_stack_from_string(full_platform.platform_shorthand, find_newer=True)
+        latest_platform = solution_stack_ops.find_solution_stack_from_string(
+            full_platform.platform_shorthand,
+            find_newer=True
+        )
 
         return full_platform.name, latest_platform.name
 
@@ -82,7 +93,15 @@ class GenericPlatformStatusController(AbstractBaseController):
         requires_directory_initialization = True
         description = strings['platformshowversion.info']
         arguments = [
-            (['version'], dict(action='store', nargs='?', default=None, help=flag_text['platformshowversion.version'])),
+            (
+                ['version'],
+                dict(
+                    action='store',
+                    nargs='?',
+                    default=None,
+                    help=flag_text['platformshowversion.version']
+                )
+            ),
         ]
         epilog = strings['platformshowversion.epilog']
 

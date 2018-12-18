@@ -29,8 +29,14 @@ class GenericPlatformListController(AbstractBaseController):
         requires_directory_initialization = True
         description = strings['platformlistversions.info']
         arguments = [
-            (['-a', '--all-platforms'], dict(action='store_true', help=flag_text['platformlist.all'])),
-            (['-s', '--status'], dict(action='store', help=flag_text['platformlist.status'])),
+            (
+                ['-a', '--all-platforms'],
+                dict(action='store_true', help=flag_text['platformlist.all'])
+            ),
+            (
+                ['-s', '--status'],
+                dict(action='store', help=flag_text['platformlist.status'])
+            ),
         ]
 
         @classmethod
@@ -43,9 +49,13 @@ class GenericPlatformListController(AbstractBaseController):
             echo(self.custom_platforms())
         elif workspace_type == Constants.WorkSpaceTypes.APPLICATION:
             if self.app.pargs.status:
-                raise InvalidOptionsError('You cannot use the "--status" option in application workspaces.')
+                raise InvalidOptionsError(
+                    'You cannot use the "--status" option in application workspaces.'
+                )
             if self.app.pargs.all_platforms:
-                raise InvalidOptionsError('You cannot use the "--all-platforms" option in application workspaces.')
+                raise InvalidOptionsError(
+                    'You cannot use the "--all-platforms" option in application workspaces.'
+                )
 
             echo(self.all_platforms())
 

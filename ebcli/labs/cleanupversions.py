@@ -56,7 +56,10 @@ class CleanupVersionsController(AbstractBaseController):
         total_num_unused_versions = len(app_versions)
 
         if total_num_unused_versions < num_to_leave:
-            io.echo('Not enough unused application version to leave behind {0}; No application versions to delete.'.format(num_to_leave))
+            io.echo(
+                'Not enough unused application version to leave behind {0}; '
+                'No application versions to delete.'.format(num_to_leave)
+            )
             return
 
         # Filter out versions newer than filter date
@@ -69,8 +72,10 @@ class CleanupVersionsController(AbstractBaseController):
 
         if app_versions:
             if not force:
-                response = io.get_boolean_response('{} application versions will be deleted. '
-                                        'Continue?'.format(len(app_versions)))
+                response = io.get_boolean_response(
+                    '{} application versions will be deleted. '
+                    'Continue?'.format(len(app_versions))
+                )
                 if not response:
                     return
         else:

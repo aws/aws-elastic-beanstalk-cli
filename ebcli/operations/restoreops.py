@@ -30,11 +30,21 @@ def validate_restore(env_id):
     """
     Do client side validation because rebuild will rebuild a running environments as well
     """
-    env = elasticbeanstalk.get_environment(env_id=env_id, include_deleted=True, deleted_back_to=get_date_cutoff())
+    env = elasticbeanstalk.get_environment(
+        env_id=env_id,
+        include_deleted=True,
+        deleted_back_to=get_date_cutoff()
+    )
 
     if env.status != 'Terminated':
-        raise InvalidParameterValueError('Environment {0} ({1}) is currently {2}, must be "Terminated" to restore'
-                                         .format(env.name, env.id, env.status))
+        raise InvalidParameterValueError(
+            'Environment {0} ({1}) is currently {2}, must '
+            'be "Terminated" to restore'.format(
+                env.name,
+                env.id,
+                env.status
+            )
+        )
 
 
 def restore(env_id):
@@ -52,7 +62,11 @@ def get_restorable_envs(app_name):
     date_cutoff = get_date_cutoff()
     environments = []
 
-    app_envs = elasticbeanstalk.get_raw_app_environments(app_name, include_deleted=True, deleted_back_to=date_cutoff)
+    app_envs = elasticbeanstalk.get_raw_app_environments(
+        app_name,
+        include_deleted=True,
+        deleted_back_to=date_cutoff
+    )
     for env in app_envs:
         if env['Status'] == 'Terminated':
             environments.append(env)

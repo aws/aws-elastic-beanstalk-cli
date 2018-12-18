@@ -24,7 +24,13 @@ class RestoreController(AbstractBaseController):
                 action='store', nargs='?', default=[],
                 help=flag_text['restore.env'])),
         ]
-        usage = AbstractBaseController.Meta.usage.replace('{cmd}', label).replace('environment_name', 'environment_id')
+        usage = AbstractBaseController.Meta.usage.replace(
+            '{cmd}',
+            label
+        ).replace(
+            'environment_name',
+            'environment_id'
+        )
 
     def do_command(self):
         self.env_id = self.app.pargs.environment_id

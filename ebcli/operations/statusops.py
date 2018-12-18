@@ -64,7 +64,11 @@ def _print_information_about_elb_and_instances(env_name):
 
 
 def _print_elbv2_health_stats(load_balancer_name, instances):
-    target_groups = [t['TargetGroupArn'] for t in elbv2.get_target_groups_for_load_balancer(load_balancer_name)]
+    target_groups = [
+        t['TargetGroupArn']
+        for t
+        in elbv2.get_target_groups_for_load_balancer(load_balancer_name)
+    ]
     target_group_states = elbv2.get_target_group_healths(target_groups)
 
     for target_group_arn, target_group_health in six.iteritems(target_group_states):

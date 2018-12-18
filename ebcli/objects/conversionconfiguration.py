@@ -17,8 +17,8 @@ from abc import ABCMeta, abstractmethod
 class ConversionConfiguration:
     def __init__(self, api_model):
         """
-        This abstract class is the top layer for a class that takes in raw API response and will modify it for other
-        uses.
+        This abstract class is the top layer for a class that takes in raw API response
+        and will modify it for other uses.
         :param api_model: API response from AWS
         """
         self.api_model = api_model
@@ -29,8 +29,8 @@ class ConversionConfiguration:
     @abstractmethod
     def collect_changes(self, usr_model):
         """
-        Grabs all the pairs in the usr_model that are different and returns just the changes ready to be put into a
-        request.
+        Grabs all the pairs in the usr_model that are different and returns just the
+        changes ready to be put into a request.
         :param usr_model: User model, key-value style
         :return: Api model with only the changes in it
         """
@@ -39,7 +39,8 @@ class ConversionConfiguration:
     @abstractmethod
     def convert_api_to_usr_model(self):
         """
-        Converts the saved api model to a User model as a key-value system and remove unwanted entries
+        Converts the saved api model to a User model as a key-value system and remove
+        unwanted entries
         :return: A user model, key-value style
         """
         pass

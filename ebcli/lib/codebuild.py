@@ -28,12 +28,17 @@ def _make_api_call(operation_name, **operation_options):
         result = aws.make_api_call('codebuild', operation_name, **operation_options)
     except ServiceError as ex:
         if ex.code == 'AccessDeniedException':
-            io.echo("EB CLI does not have the right permissions to access CodeBuild.\n"
-                    "To learn more, see Docs: https://docs-aws.amazon.com/codebuild/latest/userguide/auth-and-access-control-permissions-reference.html")
+            io.echo(
+                "EB CLI does not have the right permissions to access CodeBuild.\n"
+                "To learn more, see Docs: https://docs-aws.amazon.com/codebuild/"
+                "latest/userguide/auth-and-access-control-permissions-reference.html"
+            )
         raise ex
     except EndpointConnectionError:
-        LOG.debug("Caught endpoint timeout for CodeBuild."
-                 " We are assuming this is because they are not supported in that region yet.")
+        LOG.debug(
+            "Caught endpoint timeout for CodeBuild."
+            " We are assuming this is because they are not supported in that region yet."
+        )
         raise ServiceError("Elastic Beanstalk does not support AWS CodeBuild in this region.")
     return result
 
@@ -46,9 +51,10 @@ def batch_get_builds(ids):
 
 def list_curated_environment_images():
     """
-    This raw method will get all curated images managed by CodeBuild. We will return an array of image dictionaries of
-        the most recent Beanstalk platform version available. So in the end what will be returned is a single image for
-        each available platform from CodeBuild.
+    This raw method will get all curated images managed by CodeBuild. We will
+    return an array of image dictionaries of the most recent Beanstalk platform
+    version available. So in the end what will be returned is a single image for
+    each available platform from CodeBuild.
     :return: array of image dictionaries
     """
     regex_search_version = "AWS ElasticBeanstalk - (.*)v([0-9]+\.[0-9]+\.[0-9]+)"

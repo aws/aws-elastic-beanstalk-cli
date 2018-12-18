@@ -18,19 +18,29 @@ from ebcli.resources.strings import strings
 
 DEFAULT_LIFECYCLE_SERVICE_ROLE = 'aws-elasticbeanstalk-service-role'
 DEFAULT_ARN_STRING = 'REPLACE_WITH_ARN'
-DEFAULT_LIFECYCLE_CONFIG = {u'VersionLifecycleConfig':
-                                        {u'MaxCountRule': {u'DeleteSourceFromS3': False, u'Enabled': False,
-                                                           u'MaxCount': 200},
-                                         u'MaxAgeRule': {u'DeleteSourceFromS3': False, u'Enabled': False,
-                                                         u'MaxAgeInDays': 180}}}
+DEFAULT_LIFECYCLE_CONFIG = {
+    u'VersionLifecycleConfig': {
+        u'MaxCountRule': {
+            u'DeleteSourceFromS3': False,
+            u'Enabled': False,
+            u'MaxCount': 200
+        },
+        u'MaxAgeRule': {
+            u'DeleteSourceFromS3': False,
+            u'Enabled': False,
+            u'MaxAgeInDays': 180
+        }
+    }
+}
+
 
 class LifecycleConfiguration(ConversionConfiguration):
     def collect_changes(self, usr_model):
         """
-            Because we can't remove options from the lifecycle config we can only add to them so we just take the
-                direct user model and apply that.
-            :param usr_model: User model, key-value style
-            :return: api_model
+        Because we can't remove options from the lifecycle config we can only
+        add to them so we just take the direct user model and apply that.
+        :param usr_model: User model, key-value style
+        :return: api_model
         """
         # Validate the service role they gave us exists
         if 'ServiceRole' in usr_model['Configurations']:
@@ -43,9 +53,10 @@ class LifecycleConfiguration(ConversionConfiguration):
 
     def convert_api_to_usr_model(self):
         """
-            Convert an api model to a User model as a key-value system and remove unwanted entries, we will place a
-                default Service Role if there is none present to begin with.
-            :return: a user model
+        Convert an api model to a User model as a key-value system and remove
+        unwanted entries, we will place a default Service Role if there is
+        none present to begin with.
+        :return: a user model
         """
 
         usr_model = dict()

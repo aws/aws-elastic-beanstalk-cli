@@ -154,7 +154,12 @@ def create_platform_version(
     platform_name = fileoperations.get_platform_name()
     instance_profile = fileoperations.get_instance_profile(None)
     key_name = commonops.get_default_keyname()
-    version = version or _resolve_version_number(platform_name, major_increment, minor_increment, patch_increment)
+    version = version or _resolve_version_number(
+        platform_name,
+        major_increment,
+        minor_increment,
+        patch_increment
+    )
     source_control = SourceControl.get_source_control()
     io.log_warning(strings['sc.unstagedchanges']) if source_control.untracked_changes_exist() else None
     version_label = _resolve_version_label(source_control, staged)
@@ -246,7 +251,11 @@ def get_custom_platform_from_customer(custom_platforms):
 
 
 def get_environment_platform(app_name, env_name, want_solution_stack=False):
-    env = elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name, want_solution_stack=want_solution_stack)
+    env = elasticbeanstalk.get_environment(
+        app_name=app_name,
+        env_name=env_name,
+        want_solution_stack=want_solution_stack
+    )
     return env.platform
 
 
@@ -398,7 +407,14 @@ def generate_version_to_arn_mappings(custom_platforms, specified_platform_name):
 
 
 def group_custom_platforms_by_platform_name(custom_platforms):
-    return sorted(set([PlatformVersion.get_platform_name(custom_platform) for custom_platform in custom_platforms]))
+    return sorted(
+        set(
+            [
+                PlatformVersion.get_platform_name(custom_platform)
+                for custom_platform in custom_platforms
+            ]
+        )
+    )
 
 
 def list_custom_platform_versions(
@@ -616,7 +632,10 @@ def _enable_healthd():
         found_option = False
         for platform_option in platform_options:
             # Don't add an option if it was defined by the customer
-            if option['namespace'] == platform_option['namespace'] and option['option_name']== platform_option['option_name']:
+            if option['namespace'] == (
+                    platform_option['namespace']
+                    and option['option_name'] == platform_option['option_name']
+            ):
                 found_option = True
                 break
 
@@ -643,9 +662,14 @@ def _generate_platform_yaml_copy():
 
 def _get_latest_version(platform_name=None, owner=None, ignored_states=None):
     if ignored_states is None:
-        ignored_states=['Deleting', 'Failed']
+        ignored_states = ['Deleting', 'Failed']
 
-    platforms = get_platforms(platform_name=platform_name, ignored_states=ignored_states, owner=owner, platform_version="latest")
+    platforms = get_platforms(
+        platform_name=platform_name,
+        ignored_states=ignored_states,
+        owner=owner,
+        platform_version="latest"
+    )
 
     try:
         return platforms[platform_name]
@@ -716,7 +740,11 @@ def _resolve_version_number(
         minor_increment,
         patch_increment
 ):
-    version = _get_latest_version(platform_name=platform_name, owner=Constants.OWNED_BY_SELF, ignored_states=[])
+    version = _get_latest_version(
+        platform_name=platform_name,
+        owner=Constants.OWNED_BY_SELF,
+        ignored_states=[]
+    )
 
     if version is None:
         version = '1.0.0'

@@ -40,7 +40,12 @@ def delete_app_version_label(app_name, version_label):
         used_envs = [version[1] for version in versions_in_use if version[0] == version_label]
 
         if used_envs:
-            raise ValidationError(strings['appversion.delete.deployed'].format(version_label, ','.join(used_envs)))
+            raise ValidationError(
+                strings['appversion.delete.deployed'].format(
+                    version_label,
+                    ','.join(used_envs)
+                )
+            )
 
         try:
             io.validate_action(prompts['appversion.delete.validate'].format(version_label), "y")

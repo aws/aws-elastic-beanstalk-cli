@@ -39,17 +39,21 @@ def find_solution_stack_from_string(solution_string, find_newer=False):
 
     :param solution_string: A string in one of the following (case-insensitive) forms:
         - PlatformArn:
-            - EB-managed: 'arn:aws:elasticbeanstalk:us-west-2::platform/Multi-container Docker running on 64bit Amazon Linux/2.8.0'
-            - Custom: arn:aws:elasticbeanstalk:us-west-2:123412341234:platform/custom_platform/1.0.0
-        - complete name: '64bit Amazon Linux 2017.03 v2.7.5 running Multi-container Docker 17.03.2-ce (Generic)'
+            - EB-managed: 'arn:aws:elasticbeanstalk:us-west-2::platform/Multi-container
+                            Docker running on 64bit Amazon Linux/2.8.0'
+            - Custom: arn:aws:elasticbeanstalk:us-west-2:123412341234:platform/
+                        custom_platform/1.0.0
+        - complete name: '64bit Amazon Linux 2017.03 v2.7.5 running Multi-container Docker
+                            17.03.2-ce (Generic)'
         - shorthand: 'Multi-container Docker 17.03.2-ce (Generic)'
         - language name: 'Multi-container Docker'
         - pythonified shorthand: 'multi-container-docker-17.03.2-ce-(generic)'
-    :param find_newer: If solution_string is a complete name or a PlatformArn that uniquely matches a
-            solution stack or platform, find the newest version of the solution stack.
+    :param find_newer: If solution_string is a complete name or a PlatformArn that uniquely
+                        matches a solution stack or platform, find the newest version of the
+                        solution stack.
 
-    :return: A SolutionStack object representing the latest version of the `solution_string`. In case of a custom
-        platform, the return value is a PlatformVersion object.
+    :return: A SolutionStack object representing the latest version of the `solution_string`.
+            In case of a custom platform, the return value is a PlatformVersion object.
     """
 
     # Compare input with PlatformARNs
@@ -73,7 +77,10 @@ def find_solution_stack_from_string(solution_string, find_newer=False):
         match = SolutionStack.match_with_complete_solution_string(available_solution_stacks, solution_string)
         if match and find_newer:
             language_name = SolutionStack(solution_string).language_name
-            match = SolutionStack.match_with_solution_string_language_name(available_solution_stacks, language_name)
+            match = SolutionStack.match_with_solution_string_language_name(
+                available_solution_stacks,
+                language_name
+            )
 
     # Compare input with other forms
     for solution_string_matcher in [
@@ -105,8 +112,15 @@ def get_solution_stack_from_customer(module_name=None):
     :return: A SolutionStack object representing the the customers choice of platform
     """
     solution_stacks = elasticbeanstalk.get_available_solution_stacks()
-    solution_stacks_grouped_by_language_name = SolutionStack.group_solution_stacks_by_language_name(solution_stacks)
-    language_names_to_display = [solution_stack['LanguageName'] for solution_stack in solution_stacks_grouped_by_language_name]
+    solution_stacks_grouped_by_language_name = \
+        SolutionStack.group_solution_stacks_by_language_name(
+            solution_stacks
+        )
+    language_names_to_display = [
+        solution_stack['LanguageName']
+        for solution_stack
+        in solution_stacks_grouped_by_language_name
+    ]
 
     custom_platforms = platformops.list_custom_platform_versions()
 
