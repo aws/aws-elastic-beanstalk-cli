@@ -120,6 +120,7 @@ def _set_user_agent_for_session(session):
     session.user_agent_name = 'eb-cli'
     session.user_agent_version = __version__
 
+
 def _get_data_loader():
     # Creates a botocore data loader that loads custom data files
     # FIRST, creating a precedence for custom files.
@@ -128,6 +129,7 @@ def _get_data_loader():
 
     return Loader(extra_search_paths=[data_folder, Loader.BUILTIN_DATA_PATH],
                   include_default_search_paths=False)
+
 
 def _get_client(service_name):
     aws_access_key_id = _id
@@ -352,6 +354,7 @@ def _get_400_error(response_data, message):
     else:
         # Not tracking this error
         return ServiceError(message, code=code)
+
 
 def _handle_500_error(aggregated_error_message):
     raise MaxRetriesError('Max retries exceeded for '

@@ -35,6 +35,7 @@ from ebcli.operations import (
 from ebcli.resources.strings import strings, prompts, flag_text
 from ebcli.resources.statics import elb_names
 
+
 class CreateController(AbstractBaseController):
     class Meta:
         label = 'create'

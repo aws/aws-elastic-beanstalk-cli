@@ -70,5 +70,3 @@ def clone_env(clone_request):
                     default_name=unique_name)
             else:
                 raise
-
-            # try again

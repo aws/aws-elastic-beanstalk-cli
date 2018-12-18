@@ -117,7 +117,6 @@ def ssh_into_instance(instance_id, keep_open=False, force_open=False, custom_ssh
                         elif ip_restriction == '0.0.0.0/0':
                             rule_existed_before = True
 
-
     if has_restriction and not force_open:
         io.log_warning(strings['ssh.notopening'])
     elif group_id:

@@ -43,4 +43,3 @@ def compose_no_events(app_name, version_labels, group_name=None):
         return None
 
     return compose_apps(app_name, version_labels, group_name)
-

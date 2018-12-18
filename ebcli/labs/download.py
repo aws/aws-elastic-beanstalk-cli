@@ -77,6 +77,7 @@ def download_source_bundle(app_name, env_name):
     finally:
         os.chdir(cwd)
 
+
 def get_filename(url):
     pattern = re.compile('^(?:.*[/])*([^/]+)$')
     matcher = re.match(pattern, url)

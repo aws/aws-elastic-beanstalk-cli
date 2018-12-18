@@ -754,6 +754,8 @@ responses = {
     # Env Restore display table
     'restore.norestore': 'Environment will not be restored',
 }
+
+
 git_ignore = [
     '# Elastic Beanstalk Files',        # comment line
     '.elasticbeanstalk/*',              # ignore eb files

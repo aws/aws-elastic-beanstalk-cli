@@ -158,6 +158,7 @@ class AbstractBaseController(controller.CementBaseController):
         except where <command> is "platform".
         """
         longest = 0
+
         def pad(label):
             padlength = longest - len(label) + 2
             padding = '   '

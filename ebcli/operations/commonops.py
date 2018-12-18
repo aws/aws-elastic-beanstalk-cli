@@ -494,7 +494,6 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
             timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
             version_label = version_label + '-stage-' + timestamp
 
-
     # get description
     if message:
         description = message
@@ -567,7 +566,6 @@ def create_codecommit_app_version(app_name, process=False, label=None, message=N
     else:
         version_label = source_control.get_version_label()
 
-
     # get description
     if message:
         description = message
@@ -594,7 +592,6 @@ def create_codecommit_app_version(app_name, process=False, label=None, message=N
         raise ServiceError("Could not find repository or commit id to create an application version")
 
     # Deploy Application version with freshly pushed git commit
-
     io.log_info('Creating AppVersion ' + version_label)
     return _create_application_version(app_name, version_label, description,
                                        None, None, process, repository=repository, commit_id=commit_id,
@@ -923,7 +920,6 @@ def create_instance_profile(profile_name, policy_arns, role_name=None, inline_po
             iam.put_role_policy(role_name, inline_policy_name, inline_policy_doc)
 
         iam.add_role_to_profile(profile_name, role_name)
-
     except NotAuthorizedError:
         # Not a root account. Just assume role exists
         io.log_warning(strings['platformcreateiamdescribeerror.info'].format(profile_name=profile_name))

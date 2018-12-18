@@ -196,4 +196,3 @@ def validate_config_file(app_name, cfg_name, platform):
             # and almost always completely irrelevant.
             # io.log_warning(message)
             pass
-

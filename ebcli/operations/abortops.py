@@ -24,4 +24,3 @@ def abort_operation(env_name):
     request_id = elasticbeanstalk.abort_environment_update(env_name)
     io.echo('Aborting update to environment "{}". \n'
             'Type "eb events -f" to watch the environment events.'.format(env_name))
-    # io.echo(request_id)

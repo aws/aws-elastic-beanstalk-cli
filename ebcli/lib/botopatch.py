@@ -55,12 +55,12 @@ def fix_botocore_to_pass_response_date():
             parsed['ResponseMetadata']['HTTPStatusCode'] = (
                 response['status_code'])
 
-            ##### BEGIN PATCH
+            # BEGIN PATCH
             # Here we inject the date
             parsed['ResponseMetadata']['date'] = (
                 response['headers']['date']
             )
-            ##### END PATCH
+            # END PATCH
         return parsed
 
     parsers.ResponseParser.parse = parse

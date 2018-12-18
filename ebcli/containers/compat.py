@@ -128,4 +128,3 @@ def remove_leading_zeros_from_version(version_string):
     # 1. the start of string (major version) or following a '.'
     # 2. followed by some other digit
     return re.sub(r'((?<=\.)|^)[0]+(?=\d+)', r'', version_string)
-

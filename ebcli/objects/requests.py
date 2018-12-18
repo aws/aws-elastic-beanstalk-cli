@@ -49,7 +49,6 @@ class OptionSetting(object):
         return option_settings
 
 
-
 class CreateEnvironmentRequest(object):
 
     def __init__(self, app_name=None, env_name=None, cname=None, platform=None,

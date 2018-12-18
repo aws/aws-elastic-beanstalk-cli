@@ -39,5 +39,4 @@ class ListController(AbstractBaseController):
         listops.list_env_names(app_name, verbose, all_apps)
 
     def complete_command(self, commands):
-        # We only care about regions
         self.complete_region(commands)

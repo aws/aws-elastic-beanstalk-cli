@@ -38,6 +38,7 @@ def fix_path():
 
     sys.path.insert(0, vendor_dir)
 
+
 fix_path()
 
 

@@ -10,8 +10,8 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
 from cement.utils.misc import minimal_logger
+
 from ebcli.lib import elasticbeanstalk, aws
 from ebcli.core import fileoperations, io
 from ebcli.objects.lifecycleconfiguration import LifecycleConfiguration
@@ -21,6 +21,7 @@ from ebcli.resources.strings import strings
 LOG = minimal_logger(__name__)
 SPACER = ' ' * 2
 NO_ITEM_TOKEN = '-'
+
 
 def print_lifecycle_policy(app_name):
     application = elasticbeanstalk.describe_application(app_name)

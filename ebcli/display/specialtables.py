@@ -10,7 +10,6 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
 from copy import copy
 
 from ebcli.core import io
@@ -50,6 +49,7 @@ class StatusTable(RequestTable):
         super(StatusTable, self).draw(rows, data)
 
     CAUSE_SCROLL_FACTOR = 5
+
     def get_column_data(self, data, column):
         if data.get('Copy', False) and column.key != 'Cause':
             d = ' '

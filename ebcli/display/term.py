@@ -151,6 +151,7 @@ def echo_on_line(line_num, *strings):
     else:
         io.echo(*strings)
 
+
 def get_key(timeout=None):
     init_terminal()
     with terminal.cbreak():
@@ -354,6 +355,7 @@ class Val(object):
 
     def __str__(self):
         return self.key or ''
+
     @property
     def is_sequence(self):
         return self.key is None

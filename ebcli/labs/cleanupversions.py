@@ -84,6 +84,3 @@ class CleanupVersionsController(AbstractBaseController):
             except ServiceError as e:
                 io.log_warning('Error deleting version {0}. Error: {1}'
                                .format(label, e.message))
-
-
-

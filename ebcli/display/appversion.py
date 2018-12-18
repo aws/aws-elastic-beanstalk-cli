@@ -28,12 +28,14 @@ from ebcli.lib.utils import get_local_time
 from ebcli.resources.strings import prompts
 from ebcli.operations.lifecycleops import interactive_update_lifcycle_policy
 
+locale.setlocale(locale.LC_ALL, 'C')
 Queue = six.moves.queue.Queue
 LOG = minimal_logger(__name__)
 
 
 class VersionScreen(Screen):
     APP_VERSIONS_TABLE_NAME = 'appversion'
+
     def __init__(self, poller=None):
         super(VersionScreen, self).__init__()
         self.empty_row = 3
@@ -218,7 +220,6 @@ class VersionDataPoller(DataPoller):
             self.env = elasticbeanstalk.get_environment(app_name=self.app_name, env_name=self.env_name)
             self.curr_deploy_num = self.get_curr_deploy_num()
             self.env_data = self.get_env_data()
-
 
     PAGE_LENGTH = 10
 

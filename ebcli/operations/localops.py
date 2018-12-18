@@ -29,7 +29,6 @@ class LocalState(object):
     def __init__(self, envvarcollector):
         self.envvarcollector = envvarcollector
 
-
     def dumps(self, path):
         fileoperations.write_to_data_file(data=cPickle.dumps(self, protocol=2),
                                           location=path)
@@ -42,11 +41,9 @@ class LocalState(object):
         except IOError:  # file doesn't exist, so no local state
             return cls(EnvvarCollector())
 
-
     @classmethod
     def get_envvarcollector(cls, path):
         return cls.loads(path).envvarcollector
-
 
     @classmethod
     def save_envvarcollector(cls, envvarcollector, path):
@@ -102,7 +99,6 @@ def open_webpage(cnt_viewmodel):
 
     else:
         raise RuntimeError(strings['local.open.noexposedport'])
-
 
     url = '{}:{}'.format(cnt_viewmodel.ip, host_port)
     commonops.open_webpage_in_browser(url)

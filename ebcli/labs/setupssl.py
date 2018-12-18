@@ -157,6 +157,7 @@ def _validate_files_exists(*files):
         if not fileoperations.file_exists(f):
             raise NotFoundError('Cannot find file {}'.format(f))
 
+
 def _is_single_instance(app_name, env_name):
     env = elasticbeanstalk.describe_configuration_settings(app_name, env_name)
     option_settings = env['OptionSettings']

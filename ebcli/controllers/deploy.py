@@ -24,6 +24,7 @@ from ebcli.resources.strings import strings, flag_text
 
 LOG = minimal_logger(__name__)
 
+
 class DeployController(AbstractBaseController):
     class Meta(AbstractBaseController.Meta):
         label = 'deploy'
