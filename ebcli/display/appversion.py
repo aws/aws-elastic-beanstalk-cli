@@ -160,13 +160,6 @@ class VersionScreen(Screen):
         self.tables[0].shift_col = 0
         self.flusher(t)
 
-    # TODO: redeploy should be enabled in future releases
-    # def redeploy(self, t):
-    #     """Return true upon successful completion, false if there was an exception"""
-    #     save = self.prompt_and_action(prompts['appversion.redeploy.prompt'], self.deploy_app_version_num)
-    #     self.flusher(t)
-    #     return save
-
     def delete(self, t):
         """Return true upon successful completion, false if there was an exception"""
         save = self.prompt_and_action(prompts['appversion.delete.prompt'].format(len(self.poller.all_app_versions)), self.delete_app_version_num)
@@ -185,29 +178,6 @@ class VersionScreen(Screen):
             sys.stdout.flush()
             io.echo(t.clear_eos(), '')
             return
-
-    # TODO: redeploy should be enabled in future releases
-    # def deploy_app_version_num(self, version_number):
-    #     """Take in user input as a string,
-    #     convert it to a decimal,
-    #     get the version-label that the user input matches,
-    #     and attempt to redeploy that version.
-    #     """
-    #     version_number = int(version_number)  # raises InvalidOperation Exception
-    #     app_versions = self.poller.all_app_versions
-    #     v_len = len(app_versions)
-    #     if version_number > v_len or version_number < 1:
-    #         raise IndexError
-    #     app_version = app_versions[v_len - version_number]
-    #     self.version_label = app_version.get(u'VersionLabel')
-    #     if self.version_label:
-    #         env_name = self.poller.env_name
-    #         # redeploy specified application version
-    #         self.request_id = elasticbeanstalk.update_env_application_version(
-    #             env_name, self.version_label, False)
-    #     # Exception should never get thrown
-    #     else:
-    #         raise Exception
 
     def delete_app_version_num(self, version_number):
         """Take in user input as a string,
