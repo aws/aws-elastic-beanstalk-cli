@@ -32,8 +32,11 @@ def get_key_pairs():
 
 def import_key_pair(keyname, key_material):
     try:
-        result = _make_api_call('import_key_pair', KeyName=keyname,
-                    PublicKeyMaterial=key_material)
+        result = _make_api_call(
+            'import_key_pair',
+            KeyName=keyname,
+            PublicKeyMaterial=key_material
+        )
     except ServiceError as e:
         if e.message.endswith('already exists.'):
             raise AlreadyExistsError(e.message)
@@ -82,9 +85,14 @@ def has_default_vpc():
 
 def revoke_ssh(security_group_id):
     try:
-        _make_api_call('revoke_security_group_ingress',
-                   GroupId=security_group_id, IpProtocol='tcp',
-                   ToPort=22, FromPort=22, CidrIp='0.0.0.0/0')
+        _make_api_call(
+            'revoke_security_group_ingress',
+            GroupId=security_group_id,
+            IpProtocol='tcp',
+            ToPort=22,
+            FromPort=22,
+            CidrIp='0.0.0.0/0'
+        )
     except ServiceError as e:
         if e.message.startswith(responses['ec2.sshalreadyopen']):
             pass
@@ -94,9 +102,14 @@ def revoke_ssh(security_group_id):
 
 def authorize_ssh(security_group_id):
     try:
-        _make_api_call('authorize_security_group_ingress',
-                   GroupId=security_group_id, IpProtocol='tcp',
-                   ToPort=22, FromPort=22, CidrIp='0.0.0.0/0')
+        _make_api_call(
+            'authorize_security_group_ingress',
+            GroupId=security_group_id,
+            IpProtocol='tcp',
+            ToPort=22,
+            FromPort=22,
+            CidrIp='0.0.0.0/0'
+        )
     except ServiceError as e:
         if e.code == 'InvalidPermission.Duplicate':
             pass

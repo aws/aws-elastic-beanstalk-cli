@@ -224,7 +224,8 @@ def make_api_call(service_name, operation_name, **operation_options):
             LOG.debug('Botocore could not parse response received')
             if attempt > max_attempts:
                 raise MaxRetriesError(
-                    'Max retries exceeded for ResponseParserErrors' + os.linesep.join(aggregated_error_message)
+                    'Max retries exceeded for ResponseParserErrors'
+                    + os.linesep.join(aggregated_error_message)
                 )
 
             aggregated_error_message.insert(attempt, str(e))

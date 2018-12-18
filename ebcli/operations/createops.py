@@ -358,8 +358,7 @@ def _get_default_service_trust_document():
     Just a string representing the service role policy.
     Includes newlines for pretty printing :)
     """
-    return \
-'''{
+    return """{
     "Version": "2012-10-17",
     "Statement": [{
         "Sid": "",
@@ -374,7 +373,7 @@ def _get_default_service_trust_document():
             }
         }
     }]
-}'''
+}"""
 
 
 def get_and_validate_tags(addition_string):

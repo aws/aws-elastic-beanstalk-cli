@@ -38,8 +38,7 @@ class ScaleController(AbstractBaseController):
         env_name = self.get_env_name(cmd_example='scale ' + str(number))
         confirm = self.app.pargs.force
 
-        scaleops.scale(app_name, env_name, number, confirm,
-                         timeout=timeout)
+        scaleops.scale(app_name, env_name, number, confirm, timeout=timeout)
 
     def complete_command(self, commands):
         if not self.complete_region(commands):

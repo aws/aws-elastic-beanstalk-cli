@@ -165,8 +165,12 @@ class Environment(object):
 
             for link in links.values():
                 echo_method('    {}:'.format(link['env_name']))
-                echo_method('      {}: {}'.format(link['link_name'],
-                                              link['value']))
+                echo_method(
+                    '      {}: {}'.format(
+                        link['link_name'],
+                        link['value']
+                    )
+                )
 
     def get_worker_sqs_url(self, get_environment_resources_callback):
         resources = get_environment_resources_callback(self.name)['EnvironmentResources']

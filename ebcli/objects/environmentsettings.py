@@ -62,8 +62,13 @@ class EnvironmentSettings(ConversionConfiguration):
                             changes.append(setting)
                         else:
                             remove.append(
-                                _get_option_setting_dict(namespace, option,
-                                                              None, resource_name))
+                                _get_option_setting_dict(
+                                    namespace,
+                                    option,
+                                    None,
+                                    resource_name
+                                )
+                            )
                 else:
                     if usr_value is not None:
                         setting['Value'] = usr_value
@@ -71,8 +76,12 @@ class EnvironmentSettings(ConversionConfiguration):
 
             except KeyError:
                 # user removed setting. We want to add to remove list
-                d = _get_option_setting_dict(namespace, option,
-                                                  None, resource_name)
+                d = _get_option_setting_dict(
+                    namespace,
+                    option,
+                    None,
+                    resource_name
+                )
                 remove.append(d)
 
         # Now we look for added options:

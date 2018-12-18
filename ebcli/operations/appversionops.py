@@ -79,7 +79,9 @@ def display_versions(app_name, env_name, app_versions, timeout_in_minutes=5):
 
 
 def _create_version_table(screen):
-    """Creates and adds a versions table and a viewless help table to the screen."""
+    """
+    Creates and adds a versions table and a viewless help table to the screen.
+    """
     screen.add_table(Table(VersionScreen.APP_VERSIONS_TABLE_NAME, columns=[
         Column('#', None, 'DeployNum', 'left'),
         Column('Version Label', None, 'VersionLabel', 'left'),

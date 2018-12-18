@@ -180,11 +180,13 @@ def multithreaded_upload(bucket, key, file_path):
                       .format(len(etaglist), total_parts))
             raise UploadError('An error occured while uploading Application Version. '
                               'Use the --debug option for more information if the problem persists.')
-        result = _make_api_call('complete_multipart_upload',
-                              Bucket=bucket,
-                              Key=key,
-                              UploadId=upload_id,
-                              MultipartUpload=dict(Parts=etaglist))
+        result = _make_api_call(
+            'complete_multipart_upload',
+            Bucket=bucket,
+            Key=key,
+            UploadId=upload_id,
+            MultipartUpload=dict(Parts=etaglist)
+        )
 
         return result
 
@@ -262,10 +264,12 @@ def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id):
 
 def _get_part_etag(bucket, key, part, upload_id):
     try:
-        response = _make_api_call('list_parts',
-                              Bucket=bucket,
-                              Key=key,
-                              UploadId=upload_id)
+        response = _make_api_call(
+            'list_parts',
+            Bucket=bucket,
+            Key=key,
+            UploadId=upload_id
+        )
     except Exception as e:
         # We want to swallow all exceptions or else they will be printed
         # as a stack trace to the Console

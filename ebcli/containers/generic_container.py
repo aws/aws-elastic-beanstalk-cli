@@ -23,11 +23,15 @@ class GenericContainer(AbstractContainer):
     """
 
     def validate(self):
-        if (not self.pathconfig.dockerfile_exists() and
-            not self.pathconfig.dockerrun_exists()):
+        if (
+            not self.pathconfig.dockerfile_exists()
+            and not self.pathconfig.dockerrun_exists()
+        ):
             raise NotFoundError(strings['local.filenotfound'])
-        dockerrun.validate_dockerrun_v1(self.fs_handler.dockerrun,
-                                        not self.pathconfig.dockerfile_exists())
+        dockerrun.validate_dockerrun_v1(
+            self.fs_handler.dockerrun,
+            not self.pathconfig.dockerfile_exists()
+        )
 
     # This gets called if user only provides Dockerrun.aws.json and not Dockerfile
     def _containerize(self):

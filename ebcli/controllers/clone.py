@@ -26,8 +26,7 @@ class CloneController(AbstractBaseController):
         label = 'clone'
         description = strings['clone.info']
         arguments = [
-            (['environment_name'], dict(action='store', nargs='?',
-                                            help=flag_text['clone.env'])),
+            (['environment_name'], dict(action='store', nargs='?', help=flag_text['clone.env'])),
             (['-n', '--clone_name'], dict(help=flag_text['clone.name'])),
             (['-c', '--cname'], dict(help=flag_text['clone.cname'])),
             (['--scale'], dict(type=int, help=flag_text['clone.scale'])),
@@ -36,8 +35,7 @@ class CloneController(AbstractBaseController):
             (['-nh', '--nohang'], dict(action='store_true',
                                        help=flag_text['clone.nohang'])),
             (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
-            (['--exact'], dict(action='store_true',
-                                help=flag_text['clone.exact'])),
+            (['--exact'], dict(action='store_true', help=flag_text['clone.exact'])),
         ]
         usage = 'eb clone <environment_name> (-n CLONE_NAME) [options ...]'
 
@@ -133,8 +131,11 @@ class CloneController(AbstractBaseController):
 
         clone_request.option_settings += envvars
 
-        cloneops.make_cloned_env(clone_request, nohang=nohang,
-                                   timeout=timeout)
+        cloneops.make_cloned_env(
+            clone_request,
+            nohang=nohang,
+            timeout=timeout
+        )
 
     def complete_command(self, commands):
         super(CloneController, self).complete_command(commands)

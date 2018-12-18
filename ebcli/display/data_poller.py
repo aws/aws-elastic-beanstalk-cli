@@ -220,8 +220,12 @@ def collapse_instance_health_data(instances_health):
 
         # Convert counts to percentages
         for key in {'Status_2xx', 'Status_3xx', 'Status_4xx', 'Status_5xx'}:
-            _convert_data_to_percentage(instance, key, request_count,
-                                       add_sort_column=True)
+            _convert_data_to_percentage(
+                instance,
+                key,
+                request_count,
+                add_sort_column=True
+            )
 
         # Add status sort index
         instance['status_sort'] = __get_health_sort_order(instance['HealthStatus'])

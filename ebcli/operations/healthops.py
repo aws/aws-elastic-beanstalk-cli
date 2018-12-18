@@ -47,7 +47,10 @@ def display_interactive_health(
 
         poller = DataPoller
         screen = Screen()
-        platform = PlatformVersion(env['PlatformArn']) if env.get('PlatformArn') else SolutionStack(env['SolutionStackName'])
+        platform = (
+            PlatformVersion(env['PlatformArn'])
+            if env.get('PlatformArn') else SolutionStack(env['SolutionStackName'])
+        )
         create_health_tables(screen, platform)
     elif env['Tier']['Name'] == 'WebServer':
         LOG.debug('Platform has basic health capabilities')

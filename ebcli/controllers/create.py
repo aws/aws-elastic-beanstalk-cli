@@ -76,9 +76,15 @@ class CreateController(AbstractBaseController):
             (['--elb-type'], dict(help=flag_text['create.elb_type'])),
             (['-db', '--database'], dict(
                 action="store_true", help=flag_text['create.database'])),
-            ## Add addition hidden db commands
-            (['-db.user', '--database.username'], dict(dest='db_user',
-                                                   help=argparse.SUPPRESS)),
+
+            # Hidden RDS commands
+            (
+                ['-db.user', '--database.username'],
+                dict(
+                    dest='db_user',
+                    help=argparse.SUPPRESS
+                )
+            ),
             (['-db.pass', '--database.password'],
                 dict(dest='db_pass', help=argparse.SUPPRESS)),
             (['-db.i', '--database.instance'],

@@ -23,9 +23,16 @@ class CodeSourceController(AbstractBaseController):
         label = 'codesource'
         description = strings['codesource.info']
         arguments = [
-            (['sourcename'], dict(action='store', nargs='?',
-                                    help=flag_text['codesource.sourcename'],
-                                  choices=['codecommit', 'local'], type=str.lower)),
+            (
+                ['sourcename'],
+                dict(
+                    action='store',
+                    nargs='?',
+                    help=flag_text['codesource.sourcename'],
+                    choices=['codecommit', 'local'],
+                    type=str.lower
+                )
+            ),
         ]
         usage = 'eb codesource <sourcename> [options ...]'
 

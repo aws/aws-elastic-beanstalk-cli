@@ -59,8 +59,11 @@ def setup(
         branch=branch)
 
     # Handle tomcat special case
-    if solution is not None and 'tomcat' in solution.lower() and \
-                heuristics.has_tomcat_war_file():
+    if (
+        solution is not None
+        and 'tomcat' in solution.lower()
+        and heuristics.has_tomcat_war_file()
+    ):
         war_file = fileoperations.get_war_file_location()
         fileoperations.write_config_setting('deploy', 'artifact', war_file)
 

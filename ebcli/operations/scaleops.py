@@ -48,9 +48,10 @@ def scale(app_name, env_name, number, confirm, timeout=None):
 
     for name in [max, min]:
         options.append(
-            {'Namespace': namespace,
-             'OptionName': name,
-             'Value': str(number)
+            {
+                'Namespace': namespace,
+                'OptionName': name,
+                'Value': str(number)
             }
         )
     request_id = elasticbeanstalk.update_environment(env_name, options)

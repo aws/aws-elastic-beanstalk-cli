@@ -23,11 +23,29 @@ class SetEnvController(AbstractBaseController):
         description = strings['setenv.info']
         usage = 'eb setenv [VAR_NAME=KEY ...] [-e environment] [options ...]'
         arguments = [
-            (['varKey'], dict(action='store', nargs='+',
-                              default=[], help=flag_text['setenv.vars'])),
-            (['-e', '--environment'], dict(dest='environment_name',
-                                        help=flag_text['setenv.env'])),
-            (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
+            (
+                ['varKey'],
+                dict(
+                    action='store',
+                    nargs='+',
+                    default=[],
+                    help=flag_text['setenv.vars']
+                )
+            ),
+            (
+                ['-e', '--environment'],
+                dict(
+                    dest='environment_name',
+                    help=flag_text['setenv.env']
+                )
+            ),
+            (
+                ['--timeout'],
+                dict(
+                    type=int,
+                    help=flag_text['general.timeout']
+                )
+            ),
         ]
         epilog = strings['setenv.epilog']
 

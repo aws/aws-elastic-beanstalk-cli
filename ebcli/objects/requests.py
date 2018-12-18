@@ -287,8 +287,11 @@ class CreateEnvironmentRequest(object):
         self.add_option_setting(namespace, option_names.VPC_ID,
                                 self.vpc['id'])
         if self.vpc['publicip']:
-            self.add_option_setting(namespace, option_names.PUBLIC_IP,
-                                self.vpc['publicip'])
+            self.add_option_setting(
+                namespace,
+                option_names.PUBLIC_IP,
+                self.vpc['publicip']
+            )
         if self.vpc['elbscheme']:
             self.add_option_setting(namespace, option_names.ELB_SCHEME,
                                     self.vpc['elbscheme'])

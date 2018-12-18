@@ -105,10 +105,15 @@ class VersionScreen(Screen):
                         raise
 
     def show_help_line(self):
-        text = u' (Commands: {q}uit, {d}elete, {l}ifecycle, {down} {up} {left} {right})' \
-            .format(q=io.bold('Q'), d=io.bold('D'), l=io.bold('L'),
-                    down=term.DOWN_ARROW, up=term.UP_ARROW,
-                    left=term.LEFT_ARROW, right=term.RIGHT_ARROW)
+        text = u' (Commands: {q}uit, {d}elete, {l}ifecycle, {down} {up} {left} {right})'.format(
+            q=io.bold('Q'),
+            d=io.bold('D'),
+            l=io.bold('L'),
+            down=term.DOWN_ARROW,
+            up=term.UP_ARROW,
+            left=term.LEFT_ARROW,
+            right=term.RIGHT_ARROW
+        )
         term.echo_line(text)
 
     def handle_input(self):

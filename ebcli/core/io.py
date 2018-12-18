@@ -292,8 +292,10 @@ def get_boolean_response(text=None):
         string = '(Y/n)'
     response = get_input(string, default='y').lower()
     while response not in ('y', 'n', 'yes', 'no'):
-        echo(strings['prompt.invalid'],
-                             strings['prompt.yes-or-no'])
+        echo(
+            strings['prompt.invalid'],
+            strings['prompt.yes-or-no']
+        )
         response = prompt('Y/n', default='y').lower()
 
     if response in ('y', 'yes'):

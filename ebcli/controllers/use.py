@@ -27,9 +27,14 @@ class UseController(AbstractBaseController):
         label = 'use'
         description = strings['use.info']
         arguments = [
-            (['environment_name'], dict(action='store', nargs=1,
-                                    help=flag_text['use.env'])),
-            (['--source'], dict(type=utils.check_source, help=flag_text['deploy.source'])),
+            (
+                ['environment_name'],
+                dict(action='store', nargs=1, help=flag_text['use.env'])
+            ),
+            (
+                ['--source'],
+                dict(type=utils.check_source, help=flag_text['deploy.source'])
+            ),
         ]
         usage = 'eb use [environment_name] [options ...]'
 

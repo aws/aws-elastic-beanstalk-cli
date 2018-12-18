@@ -274,19 +274,25 @@ class Screen(object):
                     LOG.debug("Caught SIGINT and exiting gracefully from action")
                     return True
             except Exception as e:  # Should never get thrown
-                LOG.debug("Exception thrown: {0},{1}. Something strange happened and the request could not be completed."
-                             .format(type(e), e.message))
+                LOG.debug(
+                    "Exception thrown: {0},{1}. Something strange happened "
+                    "and the request could not be completed.".format(
+                        type(e),
+                        str(e)
+                    )
+                )
                 io.log_error("Something strange happened and the request could not be completed.")
                 time.sleep(4)
                 return False
 
     def reboot_instance_view(self):
-        self.prompt_and_action('instance-ID to reboot:',
-                                  ec2.reboot_instance)
+        self.prompt_and_action('instance-ID to reboot:', ec2.reboot_instance)
 
     def replace_instance_view(self):
-        self.prompt_and_action('instance-ID to replace:',
-                                  ec2.terminate_instance)
+        self.prompt_and_action(
+            'instance-ID to replace:',
+            ec2.terminate_instance
+        )
 
     def toggle_freeze(self):
         self.frozen = not self.frozen
@@ -342,11 +348,13 @@ class Screen(object):
             else:
                 countdown = " ({} secs)".format(diff)
         env_name = data.get('EnvironmentName')
-        pad_length = term.width() \
-                     - len(env_name) \
-                     - len(timestamp) \
-                     - len(countdown) \
-                     - 1
+        pad_length = (
+            term.width()
+            - len(env_name)
+            - len(timestamp)
+            - len(countdown)
+            - 1
+        )
         if lines > 2:
             banner = io.bold(' {env_name}{status}{time}{cd} ') \
                 .format(env_name=env_name,
@@ -403,11 +411,16 @@ class Screen(object):
             ])
             column_size = max(len(k) for k in instance_counts) + 1
             term.echo_line(
-                ''.join((s.center(column_size)
-                          for s in instance_counts)))
+                ''.join((s.center(column_size) for s in instance_counts))
+            )
             term.echo_line(
-                ''.join((io.bold((str(v).center(column_size)))
-                                 for k, v in six.iteritems(instance_counts))))
+                ''.join(
+                    (
+                        io.bold((str(v).center(column_size)))
+                        for k, v in six.iteritems(instance_counts)
+                    )
+                )
+            )
             lines -= 2
 
         return lines
@@ -426,9 +439,10 @@ class Screen(object):
         scrolled = visible_tables[0].scroll_down(reverse=reverse)
         if scrolled:
             for i in range(1, len(visible_tables)):
-                assert len(visible_tables[0].data) >= \
-                       len(visible_tables[i].data), \
+                assert(
+                    len(visible_tables[0].data) >= len(visible_tables[i].data),
                     'First table should be the largest'
+                )
                 visible_tables[i].scroll_to_id(scrolled, reverse=reverse)
 
     def scroll_over(self, reverse=False):

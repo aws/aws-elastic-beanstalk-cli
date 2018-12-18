@@ -738,15 +738,17 @@ def validate_template(app_name, template_name, platform=None):
     kwargs = {}
     if platform:
         if PlatformVersion.is_valid_arn(platform):
-            kwargs['TemplateSpecification'] = \
-                {'TemplateSource':
-                     {'PlatformArn': platform}}
+            kwargs['TemplateSpecification'] = {
+                'TemplateSource': {
+                    'PlatformArn': platform
+                }
+            }
         else:
-            kwargs['TemplateSpecification'] = \
-                {'TemplateSource':
-                    {'SolutionStackName': platform}}
-
-
+            kwargs['TemplateSpecification'] = {
+                'TemplateSource': {
+                    'SolutionStackName': platform
+                }
+            }
 
     result = _make_api_call('validate_configuration_settings',
                             ApplicationName=app_name,

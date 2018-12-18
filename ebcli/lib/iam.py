@@ -40,9 +40,11 @@ def get_role(role_name):
 
 
 def create_instance_profile(profile_name, allow_recreate=True):
-    """ Create IAM instance profile. 
-            Return profile_name if creation succeeds, None if allowing
-            recreate while profile already exists"""
+    """
+    Create IAM instance profile.
+    Return profile_name if creation succeeds, None if allowing
+    recreate while profile already exists
+    """
     try:
         _make_api_call('create_instance_profile',
                        InstanceProfileName=profile_name)
@@ -106,22 +108,28 @@ def create_policy(policy_name, policy):
 
 
 def attach_role_policy(role_name, policy_arn):
-    result = _make_api_call('attach_role_policy',
-                            RoleName=role_name,
-                            PolicyArn=policy_arn)
+    _make_api_call(
+        'attach_role_policy',
+        RoleName=role_name,
+        PolicyArn=policy_arn
+    )
 
 
 def put_role_policy(role_name, policy_name, policy_json):
-    result = _make_api_call('put_role_policy',
-                            RoleName=role_name,
-                            PolicyName=policy_name,
-                            PolicyDocument=policy_json)
+    _make_api_call(
+        'put_role_policy',
+        RoleName=role_name,
+        PolicyName=policy_name,
+        PolicyDocument=policy_json
+    )
 
 
 def create_role(role_name, document, allow_recreate=True):
-    """ Create IAM role and attach assume role policy. 
-            Return role_name if creation succeeds, None if allowing
-            recreate while role already exists"""
+    """
+    Create IAM role and attach assume role policy.
+    Return role_name if creation succeeds, None if allowing
+    recreate while role already exists
+    """
     try:
         _make_api_call('create_role',
                        RoleName=role_name,

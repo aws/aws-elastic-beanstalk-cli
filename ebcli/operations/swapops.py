@@ -18,5 +18,8 @@ from ebcli.operations import commonops
 def cname_swap(source_env, dest_env):
     request_id = elasticbeanstalk.swap_environment_cnames(source_env, dest_env)
 
-    commonops.wait_for_success_events(request_id, timeout_in_minutes=1,
-                            sleep_time=2)
+    commonops.wait_for_success_events(
+        request_id,
+        timeout_in_minutes=1,
+        sleep_time=2
+    )

@@ -85,12 +85,14 @@ def get_dockerrun_v2(v1_json):
         if 'volumes' not in v2_json:
             v2_json['volumes'] = []
 
-        v2_json['volumes'].append({
-            'name': "volume#{i}".format(i=i),
-            'host': {
-                'sourcePath': volume['HostDirectory']
+        v2_json['volumes'].append(
+            {
+                'name': "volume#{i}".format(i=i),
+                'host': {
+                    'sourcePath': volume['HostDirectory']
+                }
             }
-        })
+        )
 
         if 'mountPoints' not in v2_json['containerDefinitions'][0]:
             v2_json['containerDefinitions'][0]['mountPoints'] = []

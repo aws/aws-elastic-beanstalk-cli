@@ -461,9 +461,16 @@ def open_webpage_in_browser(url, ssl=False):
         LOG.debug('Running webbrowser as subprocess.')
         from subprocess import Popen, PIPE
 
-        p = Popen(['{python} -m webbrowser \'{url}\''
-                  .format(python=sys.executable, url=url)],
-                  stderr=PIPE, stdout=PIPE, shell=True)
+        p = Popen(
+            [
+                '{python} -m webbrowser \'{url}\''.format(
+                    python=sys.executable,
+                    url=url)
+            ],
+            stderr=PIPE,
+            stdout=PIPE,
+            shell=True
+        )
         '''
          We need to fork the process for various reasons
             1. Calling p.communicate waits for the thread. Some browsers
@@ -888,8 +895,9 @@ def _get_public_ssh_key(keypair_name):
             '{key-name}', keypair_name))
 
     try:
-        stdout, stderr, returncode = exec_cmd(['ssh-keygen', '-y', '-f',
-                                           file_name])
+        stdout, stderr, returncode = exec_cmd(
+            ['ssh-keygen', '-y', '-f', file_name]
+        )
         if returncode != 0:
             raise CommandError('An error occurred while trying '
                                'to get ssh public key')
@@ -944,7 +952,9 @@ def wait_for_processed_app_versions(app_name, version_labels, timeout=5):
 
 
 def create_default_instance_profile(profile_name=iam_attributes.DEFAULT_ROLE_NAME):
-    """ Create default elasticbeanstalk IAM profile and return its name. """
+    """
+    Create default elasticbeanstalk IAM profile and return its name.
+    """
     create_instance_profile(profile_name, iam_attributes.DEFAULT_ROLE_POLICIES)
     return profile_name
 
