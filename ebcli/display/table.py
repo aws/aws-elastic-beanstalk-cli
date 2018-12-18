@@ -221,7 +221,7 @@ class Table(object):
     def get_row_id(self, row_index):
         try:
             row = self.data[row_index]
-        except IndexError as e:
+        except IndexError:
             raise IndexError('Can not access index:{}'.format(row_index))
         return row.get('InstanceId')
 

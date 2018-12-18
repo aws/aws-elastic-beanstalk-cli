@@ -138,7 +138,6 @@ class CreateController(AbstractBaseController):
         elb_type = self.app.pargs.elb_type
         source = self.app.pargs.source
         process = self.app.pargs.process
-        region = self.app.pargs.region
         interactive = False if env_name else True
 
         provided_env_name = env_name

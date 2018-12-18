@@ -56,9 +56,6 @@ def init_terminal():
             terminal = Terminal()
 
         io.echo(terminal.clear())
-        def on_resize(sig, action):
-            pass
-        # signal.signal(signal.SIGWINCH, on_resize)
 
 
 def reset_terminal():
@@ -255,8 +252,6 @@ class WindowsTerminal(object):
         In order to use 'with' you need an object
          with an __enter__ and __exit__ method
         """
-        xy_tuple = self._get_cursor_pos()
-
         class TermLocation(object):
             def __init__(self, term):
                 self.term = term

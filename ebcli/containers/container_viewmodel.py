@@ -48,7 +48,7 @@ class ContainerViewModel(object):
 
         soln_stk = container.soln_stk
         cids = _get_cids(container)
-        is_running = container.is_running()
+        container.is_running()
         ip = compat.container_ip()
         services = [ServiceInfo(cid=cid,
                                 ip=ip,

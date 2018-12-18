@@ -253,7 +253,7 @@ def create_env(env_request, interactive=True):
                 LOG.debug('creating env returned error: ' + e.message)
                 if re.match(responses['env.cnamenotavailable'], e.message):
                     io.echo(prompts['cname.unavailable'])
-                    cname = io.prompt_for_cname()
+                    io.prompt_for_cname()
                 elif re.match(responses['env.nameexists'], e.message):
                     io.echo(strings['env.exists'])
                     current_environments = elasticbeanstalk.get_all_environment_names()

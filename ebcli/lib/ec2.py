@@ -71,7 +71,7 @@ def has_default_vpc():
         if attribute['AttributeName'] == 'default-vpc':
             try:
                 default_vpc = attribute['AttributeValues'][0]['AttributeValue']
-            except (KeyError, IndexError) as e:
+            except (KeyError, IndexError):
                 default_vpc = None
 
     if default_vpc and default_vpc.lower() != 'none':

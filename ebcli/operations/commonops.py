@@ -549,7 +549,6 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
 
 
 def create_codecommit_app_version(app_name, process=False, label=None, message=None, build_config=None):
-    cwd = os.getcwd()
     fileoperations.ProjectRoot.traverse()
 
     source_control = SourceControl.get_source_control()
@@ -786,7 +785,7 @@ def get_setting_from_current_branch(keyname):
     try:
         source_control = SourceControl.get_source_control()
         branch_name = source_control.get_current_branch()
-    except CommandError as ex:
+    except CommandError:
         LOG.debug("Git is not installed returning None for setting: %s".format(keyname))
         return None
 

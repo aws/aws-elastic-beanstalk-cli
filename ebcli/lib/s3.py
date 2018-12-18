@@ -183,7 +183,7 @@ def multithreaded_upload(bucket, key, file_path):
 
         return result
 
-    except (Exception, KeyboardInterrupt) as e:
+    except (Exception, KeyboardInterrupt):
         # We dont want to clean up multipart in case a user decides to
         # continue later
         raise

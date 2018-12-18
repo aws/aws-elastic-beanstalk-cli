@@ -91,7 +91,6 @@ def print_list_in_columns(lst):
     """
     if sys.stdout.isatty():
         lst = list_to_columns(lst)
-        index = 0
         for x in range(0, len(lst[0])):
             line = []
             for i in range(0, len(lst)):
