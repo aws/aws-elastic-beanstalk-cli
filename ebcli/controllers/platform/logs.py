@@ -24,9 +24,6 @@ class GenericPlatformLogsController(AbstractBaseController):
         def clone(cls):
             return type('Meta', cls.__bases__, dict(cls.__dict__))
 
-    def do_command(self):
-        self.app.args.print_help()
-
     @classmethod
     def add_to_handler(cls, handler):
         handler.register(cls)
