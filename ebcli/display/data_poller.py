@@ -195,7 +195,8 @@ def collapse_instance_health_data(instances_health):
         instance['Cause'] = cause
 
         instance['InstanceType'] = i.get('InstanceType')
-        if i.get('AvailabilityZone'): #us-east-1a -> 1a
+        if i.get('AvailabilityZone'):
+            # us-east-1a -> 1a
             try:
                 instance['AvailabilityZone'] = i.get('AvailabilityZone').rsplit('-', 1)[-1]
             except:

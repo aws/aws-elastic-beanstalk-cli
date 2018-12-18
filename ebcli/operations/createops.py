@@ -111,9 +111,9 @@ def make_new_env(
     env_name = result.name  # get the (possibly) updated name
 
     # Edit configurations
-    ## Get default environment
+    # Get default environment
     default_env = commonops.get_current_branch_environment()
-    ## Save env as branch default if needed
+    # Save env as branch default if needed
     if not default_env or branch_default:
         commonops.set_environment_for_current_branch(env_name)
         if codecommit_setup:
@@ -246,7 +246,7 @@ def create_env(env_request, interactive=True):
             if e.message == responses['app.notexists'].replace(
                         '{app-name}', '\'' + env_request.app_name + '\''):
                 # App doesnt exist, must be a new region.
-                ## Lets create the app in the region
+                # Lets create the app in the region
                 commonops.create_app(env_request.app_name)
             elif e.message == responses['create.noplatform']:
                 if platform:
@@ -268,7 +268,7 @@ def create_env(env_request, interactive=True):
                 elif e.message == responses['app.notexists'].replace(
                             '{app-name}', '\'' + env_request.app_name + '\''):
                     # App doesnt exist, must be a new region.
-                    ## Lets create the app in the region
+                    # Lets create the app in the region
                     commonops.create_app(env_request.app_name)
                 else:
                     raise

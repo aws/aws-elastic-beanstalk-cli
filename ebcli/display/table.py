@@ -77,7 +77,7 @@ class Table(object):
             header = justify_and_trim(column.name, column_size, column.justify)
             if (self.screen.sort_index and  # We are sorting
                     self.screen.sort_index[1] == c and  # Sort column
-                    self.name == self.screen.sort_index[0] and # sort table
+                    self.name == self.screen.sort_index[0] and  # sort table
                     len(' '.join(labels)) < width):  # Column is on screen
                 format_string = '{n}{b}{u}{data}{n}{r}'
                 header = format_string.replace('{data}', header)

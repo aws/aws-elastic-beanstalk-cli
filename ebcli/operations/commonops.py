@@ -509,7 +509,7 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
     if source_control.untracked_changes_exist():
         io.log_warning(strings['sc.unstagedchanges'])
 
-    #get version_label
+    # get version_label
     if label:
         version_label = label
     else:
@@ -588,7 +588,7 @@ def create_codecommit_app_version(app_name, process=False, label=None, message=N
     if source_control.untracked_changes_exist():
         io.log_warning(strings['sc.unstagedchanges'])
 
-    #get version_label
+    # get version_label
     if label:
         version_label = label
     else:
@@ -734,7 +734,7 @@ def _create_application_version(app_name, version_label, description,
             elif e.message == responses['app.notexists'].replace(
                         '{app-name}', '\'' + app_name + '\''):
                 # App doesnt exist, must be a new region.
-                ## Lets create the app in the region
+                # Lets create the app in the region
                 create_app(app_name)
             else:
                 raise

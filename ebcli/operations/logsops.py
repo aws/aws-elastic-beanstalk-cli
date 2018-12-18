@@ -754,7 +754,7 @@ def _create_log_stream_for_log_group(log_group, stream_name, streamer, sleep_tim
         target=stream_single_stream,
         args=(log_group, stream_name, sleep_time, start_time,),
     )
-    cloudwatch_log_stream.daemon=True
+    cloudwatch_log_stream.daemon = True
     cloudwatch_log_stream.start()
 
 

@@ -110,7 +110,7 @@ class EBP(foundation.CementApp):
 
         super(EBP, self).setup()
 
-        #Register global arguments
+        # Register global arguments
         self.add_arg('-v', '--verbose',
                      action='store_true', help=flag_text['base.verbose'])
         self.add_arg('--profile', help=flag_text['base.profile'])

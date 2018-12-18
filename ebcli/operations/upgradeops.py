@@ -81,7 +81,7 @@ def upgrade_env(app_name, env_name, timeout, confirm, noroll):
         add_rolling = _should_add_rolling(single, rolling_enabled, noroll)
 
         do_upgrade(env_name, add_rolling, timeout, latest.name,
-                   health_based=webserver, platform_arn = latest.name)
+                   health_based=webserver, platform_arn=latest.name)
 
 
 def do_upgrade(env_name, add_rolling, timeout, solution_stack_name,

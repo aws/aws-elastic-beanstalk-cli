@@ -138,8 +138,8 @@ def log_error(message):
 
 def get_input(output, default=None):
     # importing readline module allows user to use bash commands
-    ## such as Ctrl+A etc.
-    ## Only works on non windows
+    # such as Ctrl+A etc.
+    # Only works on non windows
     try:
         import readline
     except ImportError:

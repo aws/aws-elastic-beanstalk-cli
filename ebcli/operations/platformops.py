@@ -144,7 +144,7 @@ def create_platform_version(
         minor_increment,
         patch_increment,
         instance_type,
-        vpc = None,
+        vpc=None,
         staged=False,
         timeout=None):
 

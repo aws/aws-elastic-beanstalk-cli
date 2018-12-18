@@ -49,7 +49,7 @@ class CompleterController(controller.CementBaseController):
         commands = commands[0:-1]
         commands = list(filter(lambda x: len(x) > 0, commands))
 
-        #Get the list of controllers
+        # Get the list of controllers
         self.controllers = handler.list('controller')
         self._filter_controllers()
 
@@ -75,7 +75,7 @@ class CompleterController(controller.CementBaseController):
                     return  # Controller does not support completion
 
                 try:
-                    #Set up aws profile just in case we need to make a service call
+                    # Set up aws profile just in case we need to make a service call
                     profile = commonops.get_default_profile()
                     if profile:
                         aws.set_profile(profile)
@@ -101,7 +101,7 @@ class CompleterController(controller.CementBaseController):
                          c.Meta.label == commands[0]), None)
 
     def _filter_controllers(self):
-        #filter out unwanted controllers
+        # filter out unwanted controllers
         self.base_controller = next((c for c in self.controllers if
                                      c.Meta.label == 'base'), None)
         self.controllers = [c for c in self.controllers if

@@ -51,7 +51,7 @@ class ConvertDockerrunController(AbstractBaseController):
 
 def get_dockerrun_v2(v1_json):
     v2_json = {
-        'AWSEBDockerrunVersion':2,
+        'AWSEBDockerrunVersion': 2,
         'containerDefinitions': [
             {
                 'name': 'myapp',

@@ -152,7 +152,7 @@ class Git(SourceControl):
             self._run_cmd(['git', 'describe', '--always', '--abbrev=4'])
 
         version_label = 'app-{}-{:%y%m%d_%H%M%S}'.format(stdout, datetime.datetime.now())
-        #Replace dots with underscores
+        # Replace dots with underscores
         return version_label.replace('.', '_')
 
     def untracked_changes_exist(self):
@@ -504,7 +504,7 @@ class Git(SourceControl):
             handle_exitcode=False
         )
 
-        if exitcode !=0:
+        if exitcode != 0:
             LOG.debug('git was not able to initialize an empty commit: {0}'.format(stderr))
 
         LOG.debug('git commit result: {0}'.format(stdout))

@@ -30,7 +30,7 @@ def scale(app_name, env_name, number, confirm, timeout=None):
     value = setting['Value']
     if value == 'SingleInstance':
         if not confirm:
-            ## prompt to switch to LoadBalanced environment type
+            # prompt to switch to LoadBalanced environment type
             io.echo(prompts['scale.switchtoloadbalance'])
             io.log_warning(prompts['scale.switchtoloadbalancewarn'])
             switch = io.get_boolean_response()

@@ -226,7 +226,7 @@ def _generate_and_upload_keypair(keys):
 
     if exitcode == 0 or exitcode == 1:
         # if exitcode is 1, they file most likely exists, and they are
-        ## just uploading it
+        # just uploading it
         commonops.upload_keypair_if_needed(keyname)
         return keyname
     else:

@@ -303,10 +303,12 @@ class WindowsTerminal(object):
         if not key:
             return None
 
-        if key == '\x03': # Ctrl C
+        if key == '\x03':
+            # Ctrl C
             raise CaughtSignal(2, None)
 
-        elif key == '\x1c': # Ctrl \
+        elif key == '\x1c':
+            # Ctrl \
             sys.exit(1)
 
         elif key == '\xe0':
@@ -321,9 +323,9 @@ class WindowsTerminal(object):
             elif next_key == 'M':
                 return Val(name='KEY_RIGHT', code=261)
 
-        elif key == '\x1b': # Esc
+        elif key == '\x1b':
             return Val(name='KEY_ESCAPE', code=361)
-        elif key == '\x0d': # Enter
+        elif key == '\x0d':
             return Val(name='KEY_ENTER', code=362)
 
         else:

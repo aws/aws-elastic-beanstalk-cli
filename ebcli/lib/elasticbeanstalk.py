@@ -415,7 +415,8 @@ def get_application_versions(app_name, version_labels=None, max_records=None, ne
     if max_records:
         kwargs['MaxRecords'] = max_records
     if next_token:
-        time.sleep(0.1) # To avoid throttling we sleep for 100ms before requesting the next page
+        # To avoid throttling we sleep for 100ms before requesting the next page
+        time.sleep(0.1)
         kwargs['NextToken'] = next_token
     result = _make_api_call('describe_application_versions',
                             ApplicationName=app_name,
@@ -582,7 +583,7 @@ def get_new_events(app_name, env_name, request_id,
     # make call
     if last_event_time is not None:
         # In python 2 time is a datetime, in 3 it is a string
-        ## Convert to string for compatibility
+        # Convert to string for compatibility
         time = last_event_time
         new_time = time + datetime.timedelta(0, 0, 1000)
     else:
