@@ -1,13 +1,12 @@
 import os
 import re
-import subprocess
 import sys
 from semantic_version import Version
 
 from cement.utils.misc import minimal_logger
 
 from ebcli.containers import commands
-from ebcli.core import io, fileoperations
+from ebcli.core import fileoperations
 from ebcli.lib import heuristics, utils
 from ebcli.resources.strings import strings
 from ebcli.objects.exceptions import CommandError

@@ -27,7 +27,6 @@ from cement.utils.misc import minimal_logger
 from ebcli import __version__
 from ebcli.lib.botopatch import apply_patches
 from ebcli.lib.utils import static_var
-from ebcli.core import fileoperations
 from ebcli.objects.exceptions import ServiceError, NotAuthorizedError, \
     CredentialsError, NoRegionError,  ValidationError, \
     InvalidProfileError, ConnectionError, AlreadyExistsError, NotFoundError, \

@@ -10,9 +10,8 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
 import os
-import re
+import sys
 import time
 from datetime import datetime, timedelta
 import platform
@@ -21,14 +20,25 @@ from ebcli.core.fileoperations import _marker
 
 from cement.utils.misc import minimal_logger
 from cement.utils.shell import exec_cmd
-from botocore.compat import six
 
 from ebcli.operations import buildspecops
 from ebcli.core import fileoperations, io
 from ebcli.lib import aws, ec2, elasticbeanstalk, heuristics, iam, s3, utils, codecommit
 from ebcli.lib.aws import InvalidParameterValueError
-from ebcli.objects.exceptions import *
-from ebcli.objects.sourcecontrol import SourceControl, NoSC
+from ebcli.objects.exceptions import (
+    AlreadyExistsError,
+    CommandError,
+    NotFoundError,
+    NotSupportedError,
+    InvalidOptionsError,
+    InvalidStateError,
+    InvalidSyntaxError,
+    NotAuthorizedError,
+    NotInitializedError,
+    ServiceError,
+    TimeoutError
+)
+from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.resources.strings import strings, responses, prompts
 from ebcli.resources.statics import iam_documents, iam_attributes
 

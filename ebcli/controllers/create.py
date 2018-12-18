@@ -17,8 +17,10 @@ import time
 from ebcli.core import io, fileoperations, hooks
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.lib import elasticbeanstalk, utils
-from ebcli.objects.exceptions import NotFoundError, AlreadyExistsError, \
+from ebcli.objects.exceptions import (
+    AlreadyExistsError,
     InvalidOptionsError
+)
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.requests import CreateEnvironmentRequest
 from ebcli.objects.tier import Tier

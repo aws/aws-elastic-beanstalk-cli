@@ -24,7 +24,7 @@ from cement.utils.shell import exec_cmd
 
 from ebcli.lib import utils
 from ebcli.core import fileoperations, io
-from ebcli.objects.exceptions import(
+from ebcli.objects.exceptions import (
     CommandError,
     NotInitializedError,
     NoSourceControlError

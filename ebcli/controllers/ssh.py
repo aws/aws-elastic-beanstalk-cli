@@ -10,13 +10,12 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from ebcli.core.ebglobals import Constants
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings, prompts, flag_text
+from ebcli.resources.strings import strings, flag_text
 from ebcli.core import fileoperations, io
 from ebcli.lib import elasticbeanstalk
-from ebcli.objects.exceptions import NoKeypairError, InvalidOptionsError
-from ebcli.operations import commonops, sshops
+from ebcli.objects.exceptions import InvalidOptionsError
+from ebcli.operations import sshops
 
 
 class SSHController(AbstractBaseController):

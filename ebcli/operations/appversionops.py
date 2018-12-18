@@ -15,10 +15,9 @@ from cement.utils.misc import minimal_logger
 from ebcli.core import io
 from ebcli.display.appversion import term, VersionScreen, VersionDataPoller
 from ebcli.display.table import Table, Column
-from ebcli.display.help import HelpTable, ViewlessHelpTable
+from ebcli.display.help import ViewlessHelpTable
 from ebcli.lib import elasticbeanstalk as elasticbeanstalk
 from ebcli.objects.exceptions import ValidationError, NotFoundError
-from ebcli.operations import commonops
 from ebcli.resources.strings import prompts, strings
 
 LOG = minimal_logger(__name__)

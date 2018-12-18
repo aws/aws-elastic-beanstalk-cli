@@ -10,18 +10,15 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-import re
-
 from cement.utils.misc import minimal_logger
 
 from ebcli.core import io
-from ebcli.core.ebglobals import Constants
 from ebcli.lib import elasticbeanstalk, heuristics, utils
 from ebcli.objects.exceptions import NotFoundError
 from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.operations import commonops, platformops
-from ebcli.resources.strings import prompts, strings
+from ebcli.resources.strings import prompts
 
 CUSTOM_PLATFORM_OPTION = 'Custom Platform'
 

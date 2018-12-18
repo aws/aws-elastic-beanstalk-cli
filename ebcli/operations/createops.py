@@ -16,17 +16,13 @@ from zipfile import ZipFile
 
 from cement.utils.misc import minimal_logger
 
-from ebcli.operations import gitops, buildspecops, commonops, solution_stack_ops
+from ebcli.operations import gitops, buildspecops, commonops
 from ebcli.operations.tagops import tagops
 from ebcli.operations.tagops.taglist import TagList
 from ebcli.lib import cloudformation, elasticbeanstalk, heuristics, iam, utils
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.core import io, fileoperations
-from ebcli.objects.exceptions import (
-    NotAuthorizedError,
-    NotFoundError,
-    TimeoutError
-)
+from ebcli.objects.exceptions import NotAuthorizedError
 from ebcli.resources.strings import strings, responses, prompts
 from ebcli.resources.statics import iam_attributes
 import json

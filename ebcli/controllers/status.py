@@ -14,7 +14,7 @@
 
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings
-from ebcli.operations import statusops, commonops
+from ebcli.operations import statusops
 
 
 class StatusController(AbstractBaseController):

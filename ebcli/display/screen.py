@@ -18,7 +18,6 @@ from decimal import InvalidOperation
 from ebcli.objects.platform import PlatformVersion
 from ebcli.display import term
 import errno
-import pprint
 from datetime import timedelta, datetime
 from copy import copy
 from collections import OrderedDict

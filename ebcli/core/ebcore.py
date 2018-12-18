@@ -56,7 +56,6 @@ from ebcli.controllers.upgrade import UpgradeController
 from ebcli.controllers.use import UseController
 from ebcli.core.completer import CompleterController
 from ebcli.labs.controller import LabsController
-from ebcli.objects.exceptions import *
 from ebcli.resources.strings import flag_text
 from ebcli.lib import utils
 import ebcli.core.ebrun as ebrun

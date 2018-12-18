@@ -18,9 +18,8 @@ from cement.utils.misc import minimal_logger
 from ebcli.core import io, hooks, fileoperations
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.lib import elasticbeanstalk, utils
-from ebcli.objects.exceptions import NoEnvironmentForBranchError, \
-    InvalidOptionsError
-from ebcli.operations import commonops, deployops, composeops, solution_stack_ops
+from ebcli.objects.exceptions import InvalidOptionsError
+from ebcli.operations import commonops, deployops, composeops
 from ebcli.resources.strings import strings, flag_text
 
 LOG = minimal_logger(__name__)

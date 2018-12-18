@@ -10,15 +10,13 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
-from ebcli.core import fileoperations, io
+from ebcli.core import fileoperations
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.core.fileoperations import write_config_setting
-from ebcli.lib import iam
-from ebcli.objects.exceptions import NotInitializedError, NotAuthorizedError, AlreadyExistsError
+from ebcli.objects.exceptions import NotInitializedError
 from ebcli.operations.platformops import create_platform_version
-from ebcli.resources.strings import strings, flag_text, prompts
-from ebcli.resources.statics import iam_attributes, iam_documents
+from ebcli.resources.strings import strings, flag_text
+from ebcli.resources.statics import iam_attributes
 from ebcli.operations import commonops
 
 

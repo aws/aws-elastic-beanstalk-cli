@@ -7,9 +7,7 @@ from ebcli.containers import compose
 from ebcli.containers import containerops
 from ebcli.containers import dockerrun
 from ebcli.containers import log
-from ebcli.containers.envvarcollector import EnvvarCollector
 from ebcli.core import fileoperations
-from ebcli.lib import s3
 from ebcli.operations.localops import LocalState
 from ebcli.resources.strings import docker_ignore
 

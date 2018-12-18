@@ -15,7 +15,7 @@ from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings, flag_text
 from ebcli.core import fileoperations, io
 from ebcli.lib import elasticbeanstalk
-from ebcli.operations import envvarops, commonops
+from ebcli.operations import envvarops
 
 
 class SetEnvController(AbstractBaseController):

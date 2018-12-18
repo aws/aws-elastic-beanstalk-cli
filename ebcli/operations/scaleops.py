@@ -13,8 +13,7 @@
 
 from ebcli.lib import elasticbeanstalk
 from ebcli.core import io
-from ebcli.resources.strings import prompts, strings
-from ebcli.objects.exceptions import TimeoutError
+from ebcli.resources.strings import prompts
 from ebcli.operations import commonops
 
 

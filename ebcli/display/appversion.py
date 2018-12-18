@@ -15,7 +15,6 @@ import locale
 import sys
 import time
 
-locale.setlocale(locale.LC_ALL, 'C')
 from datetime import datetime, timedelta
 from cement.utils.misc import minimal_logger
 from botocore.compat import six

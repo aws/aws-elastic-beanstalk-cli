@@ -15,8 +15,8 @@ from cement.utils.misc import minimal_logger
 from ebcli.lib import elasticbeanstalk, aws
 from ebcli.core import fileoperations, io
 from ebcli.objects.lifecycleconfiguration import LifecycleConfiguration
-from ebcli.objects.exceptions import InvalidSyntaxError, InvalidOptionsError
-from ebcli.resources.strings import prompts, strings
+from ebcli.objects.exceptions import InvalidSyntaxError
+from ebcli.resources.strings import strings
 
 LOG = minimal_logger(__name__)
 SPACER = ' ' * 2

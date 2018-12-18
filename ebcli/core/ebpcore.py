@@ -12,7 +12,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from argparse import SUPPRESS
-import re
 import textwrap
 
 from cement.core import foundation, handler, hook

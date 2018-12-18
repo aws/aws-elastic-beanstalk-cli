@@ -12,7 +12,6 @@
 # language governing permissions and limitations under the License.
 from datetime import datetime
 import locale
-locale.setlocale(locale.LC_ALL, 'C')
 
 from botocore.compat import six
 from cement.utils.misc import minimal_logger
@@ -23,6 +22,8 @@ from ebcli.display.data_poller import DataPoller
 from ebcli.display.screen import Screen
 from ebcli.lib import ec2, elasticbeanstalk, elb, elbv2
 from ebcli.resources import statics
+
+locale.setlocale(locale.LC_ALL, 'C')
 
 Queue = six.moves.queue.Queue
 LOG = minimal_logger(__name__)

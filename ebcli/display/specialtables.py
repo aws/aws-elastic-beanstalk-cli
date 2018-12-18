@@ -12,7 +12,6 @@
 # language governing permissions and limitations under the License.
 
 from copy import copy
-import re
 
 from ebcli.core import io
 from ebcli.display.table import Table, justify_and_trim

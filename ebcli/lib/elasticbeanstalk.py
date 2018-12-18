@@ -21,7 +21,6 @@ from ebcli.resources.statics import namespaces, option_names
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.exceptions import NotFoundError, InvalidStateError, \
     AlreadyExistsError
-from ebcli.objects.tier import Tier
 from ebcli.lib import aws
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.event import Event

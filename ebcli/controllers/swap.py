@@ -16,7 +16,7 @@ from ebcli.resources.strings import strings, flag_text, prompts
 from ebcli.core import io
 from ebcli.objects.exceptions import NotSupportedError
 from ebcli.lib import elasticbeanstalk, utils
-from ebcli.operations import commonops, swapops
+from ebcli.operations import swapops
 
 
 class SwapController(AbstractBaseController):

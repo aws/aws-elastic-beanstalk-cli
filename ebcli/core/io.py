@@ -16,7 +16,6 @@ import warnings
 import getpass
 import sys
 import logging
-import signal
 
 import colorama
 import pydoc

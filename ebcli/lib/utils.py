@@ -23,11 +23,11 @@ from botocore.compat import six
 from cement.ext.ext_logging import LoggingLogHandler
 from cement.utils.misc import minimal_logger
 from subprocess import Popen, PIPE, STDOUT
-urllib = six.moves.urllib
 
 from ebcli.objects.exceptions import CommandError, InvalidOptionsError
-from ebcli.core import io, fileoperations
+from ebcli.core import io
 
+urllib = six.moves.urllib
 LOG = minimal_logger(__name__)
 
 def prompt_for_item_in_list(lst, default=1):

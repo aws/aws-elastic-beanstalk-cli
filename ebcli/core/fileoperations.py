@@ -36,8 +36,11 @@ except ImportError:
 
 from ebcli.core import io
 from ebcli.resources.strings import prompts, strings
-from ebcli.objects.exceptions import NotInitializedError, InvalidSyntaxError, \
-    NotFoundError, ValidationError
+from ebcli.objects.exceptions import (
+    NotInitializedError,
+    InvalidSyntaxError,
+    NotFoundError
+)
 from ebcli.core.ebglobals import Constants
 
 LOG = minimal_logger(__name__)

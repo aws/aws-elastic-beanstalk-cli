@@ -12,7 +12,6 @@
 # language governing permissions and limitations under the License.
 import copy
 
-from ebcli.lib import ec2, utils
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.platform import PlatformVersion
 from ebcli.resources.strings import strings

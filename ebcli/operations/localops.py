@@ -11,7 +11,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from botocore.compat import six
-cPickle = six.moves.cPickle
 
 from ebcli.containers.envvarcollector import EnvvarCollector
 from ebcli.containers.pathconfig import PathConfig
@@ -19,6 +18,7 @@ from ebcli.core import fileoperations, io
 from ebcli.lib import utils
 from ebcli.operations import commonops, envvarops
 from ebcli.resources.strings import strings
+cPickle = six.moves.cPickle
 
 
 class LocalState(object):

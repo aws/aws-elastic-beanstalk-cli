@@ -14,7 +14,7 @@
 from cement.utils.misc import minimal_logger
 
 from ebcli.lib import aws
-from ebcli.objects.exceptions import ServiceError, AlreadyExistsError
+from ebcli.objects.exceptions import AlreadyExistsError
 
 LOG = minimal_logger(__name__)
 

@@ -20,7 +20,6 @@ from ebcli.resources.strings import prompts, responses
 from ebcli.display import term
 from ebcli.core import io
 
-locale.setlocale(locale.LC_ALL, 'C')
 from datetime import datetime, timedelta
 from cement.utils.misc import minimal_logger
 from botocore.compat import six
@@ -30,6 +29,7 @@ from ebcli.lib import utils
 from ebcli.objects.exceptions import NotFoundError, ValidationError
 from ebcli.resources.strings import strings
 
+locale.setlocale(locale.LC_ALL, 'C')
 Queue = six.moves.queue.Queue
 LOG = minimal_logger(__name__)
 TABLE_DATA_KEY = 'environments'

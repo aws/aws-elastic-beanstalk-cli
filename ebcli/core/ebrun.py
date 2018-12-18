@@ -1,21 +1,29 @@
-import os, sys
+import os
+import sys
 
 import logging
 import traceback
 
-from argparse import SUPPRESS, ArgumentTypeError
+from argparse import ArgumentTypeError
 
 from botocore.compat import six
 
 from ebcli.lib.aws import TooManyPlatformsError
 
-iteritems = six.iteritems
-
 from cement.core.exc import CaughtSignal
 
 from ebcli.core import io
-from ebcli.objects.exceptions import *
+from ebcli.objects.exceptions import (
+    NoEnvironmentForBranchError,
+    InvalidStateError,
+    NotInitializedError,
+    NoSourceControlError,
+    NoRegionError,
+    EBCLIException
+)
 from ebcli.resources.strings import strings
+
+iteritems = six.iteritems
 
 
 def fix_path():

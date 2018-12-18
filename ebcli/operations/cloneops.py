@@ -18,7 +18,6 @@ from cement.utils.misc import minimal_logger
 from ebcli.lib import elasticbeanstalk, utils
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.core import io
-from ebcli.objects.exceptions import TimeoutError
 from ebcli.resources.strings import strings, responses, prompts
 from ebcli.operations import commonops
 
