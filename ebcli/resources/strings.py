@@ -701,7 +701,6 @@ flag_text = {
 }
 
 
-### The below are programmatic and are not intended to be edited unless the service response changes
 responses = {
     'event.completewitherrors': 'Create environment operation is complete, but with errors.',
     'event.launched_environment': 'Launched environment',

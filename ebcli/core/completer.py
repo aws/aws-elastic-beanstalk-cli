@@ -56,8 +56,7 @@ class CompleterController(controller.CementBaseController):
         ctrlr = self._get_desired_controller(commands)
 
         if not ctrlr:
-            return  # command entered so far is invalid, we dont need to
-                    ##   worry about completion
+            return
 
         if word_so_far.startswith('--'):
             # Get all base option flags
@@ -82,14 +81,6 @@ class CompleterController(controller.CementBaseController):
                         aws.set_profile(profile)
                     ctrlr.complete_command(commands)
                 except:
-                    #We want to swallow ALL exceptions. We can
-                    ## not print any output when trying to tab-complete
-                    ## because any output gets passed to the user as
-                    ## completion candidates
-                    ### Exceptions here are normally thrown because the service
-                    ### can not be contacted for things such as environment
-                    ### list and solution stack list. Typically, credentials
-                    ### are not set up yet
                     pass
 
     def complete_options(self, controller):

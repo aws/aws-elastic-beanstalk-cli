@@ -221,8 +221,6 @@ class CreateController(AbstractBaseController):
 
         self.complete_region(commands)
 
-        # We only care about top command, because there are no positional
-        ## args for this command
         cmd = commands[-1]
         if cmd in ['-t', '--tier']:
             io.echo(*Tier.get_all_tiers())

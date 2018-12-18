@@ -431,7 +431,7 @@ class Screen(object):
     def scroll_over(self, reverse=False):
         if reverse and self.horizontal_offset > 0:
             self.horizontal_offset -= 1
-        elif not reverse: #and self.horizontal_offset < (self.max_columns + 2) - 1:
+        elif not reverse:
             # remove bounds check on upper limit to allow for text scrolling in causes
             self.horizontal_offset += 1
 

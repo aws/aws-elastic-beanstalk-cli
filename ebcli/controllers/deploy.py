@@ -83,10 +83,8 @@ class DeployController(AbstractBaseController):
                          staged=self.staged, timeout=self.timeout, source=self.source)
 
     def complete_command(self, commands):
-        # TODO: edit this if we ever support multiple env deploys
         super(DeployController, self).complete_command(commands)
 
-        ## versionlabels on --version
         cmd = commands[-1]
         if cmd in ['--version']:
             app_name = fileoperations.get_application_name()

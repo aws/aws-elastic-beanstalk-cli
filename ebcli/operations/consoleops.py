@@ -20,7 +20,6 @@ def open_console(app_name, env_name):
         raise NotSupportedError('The console command is not supported'
                                 ' in an ssh type session')
 
-    #Get environment id
     env = None
     if env_name is not None:
         env = elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name)
@@ -31,7 +30,6 @@ def open_console(app_name, env_name):
     else:
         page = 'application/overview'
 
-    #encode app name
     app_name = utils.url_encode(app_name)
 
     console_url = 'console.aws.amazon.com/elasticbeanstalk/home?'

@@ -87,7 +87,6 @@ def revoke_ssh(security_group_id):
                    ToPort=22, FromPort=22, CidrIp='0.0.0.0/0')
     except ServiceError as e:
         if e.message.startswith(responses['ec2.sshalreadyopen']):
-            #ignore
             pass
         else:
             raise
@@ -100,7 +99,6 @@ def authorize_ssh(security_group_id):
                    ToPort=22, FromPort=22, CidrIp='0.0.0.0/0')
     except ServiceError as e:
         if e.code == 'InvalidPermission.Duplicate':
-            #ignore
             pass
         else:
             raise

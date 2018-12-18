@@ -69,12 +69,6 @@ def display_versions(app_name, env_name, app_versions, timeout_in_minutes=5):
 
     try:
         screen.start_version_screen(data, VersionScreen.APP_VERSIONS_TABLE_NAME)
-        # TODO: this would be working if redeploying a version label is enabled
-        # if hasattr(screen, 'request_id') and screen.request_id:
-        #     io.echo(prompts['appversion.redeploy.inprogress'].format(screen.version_label))
-        #     commonops.wait_for_success_events(screen.request_id,
-        #                                       timeout_in_minutes,
-        #                                       can_abort=True)
     finally:
         term.return_cursor_to_normal()
 

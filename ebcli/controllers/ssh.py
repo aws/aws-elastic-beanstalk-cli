@@ -65,8 +65,6 @@ class SSHController(AbstractBaseController):
 
     def complete_command(self, commands):
         if not self.complete_region(commands):
-            # Environment names are the second positional argument in this
-            ## controller, so we only complete if its the second
             if len(commands) == 2 and commands[-1].startswith('-'):
                 app_name = fileoperations.get_application_name()
                 io.echo(*elasticbeanstalk.get_environment_names(app_name))

@@ -36,7 +36,7 @@ DEFAULT_SERVICE_ROLE_POLICIES = [
     'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService'
 ]
 
-# TODO: Make unit tests for these changes
+
 def make_new_env(
         env_request,
         branch_default=False,

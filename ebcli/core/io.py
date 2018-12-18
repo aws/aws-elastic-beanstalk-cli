@@ -143,7 +143,6 @@ def get_input(output, default=None):
     try:
         import readline
     except ImportError:
-        # oh well, we tried
         pass
 
     # Trim spaces
