@@ -42,9 +42,9 @@ from ebcli.resources.statics import namespaces, option_names
 from ebcli.resources.strings import strings, prompts
 
 
-VALID_PLATFORM_VERSION_FORMAT = re.compile('^\d+\.\d+\.\d+$')
-VALID_PLATFORM_SHORT_FORMAT = re.compile('^([^:/]+)/(\d+\.\d+\.\d+)$')
-VALID_PLATFORM_NAME_FORMAT = re.compile('^([^:/]+)$')
+VALID_PLATFORM_VERSION_FORMAT = re.compile(r'^\d+\.\d+\.\d+$')
+VALID_PLATFORM_SHORT_FORMAT = re.compile(r'^([^:/]+)/(\d+\.\d+\.\d+)$')
+VALID_PLATFORM_NAME_FORMAT = re.compile(r'^([^:/]+)$')
 
 LOG_MESSAGE_REGEX = re.compile(r'.* -- (.+)$')
 LOG_MESSAGE_SEVERITY_REGEX = re.compile(r'.*(INFO|ERROR|WARN) -- .*')
@@ -53,7 +53,9 @@ PACKER_OTHER_MESSAGE_DATA_REGEX = re.compile(r'Packer: \d+,([^,]*),.*')
 PACKER_OTHER_MESSAGE_TARGET_REGEX = re.compile(r'Packer: \d+,[^,]*,(.+)')
 OTHER_FORMAT_REGEX = re.compile(r'[^:]+: (.+)')
 
-PLATFORM_ARN = re.compile("^arn:aws(?:-[a-z\-0-9]+)?:elasticbeanstalk:(?:[a-z\-0-9]*):\d+:platform/([^/]+)/(\d+\.\d+\.\d+)$")
+PLATFORM_ARN = re.compile(
+    r'^arn:aws(?:-[a-z\-0-9]+)?:elasticbeanstalk:(?:[a-z\-0-9]*):\d+:platform/([^/]+)/(\d+\.\d+\.\d+)$'
+)
 
 
 class PackerStreamMessage(object):

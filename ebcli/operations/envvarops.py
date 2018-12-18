@@ -97,7 +97,7 @@ def create_environment_variables_list(environment_variables, as_option_settings=
     options_to_remove = set()
     for environment_variable_string in environment_variables:
         if (
-            not re.match('^[\w\\_.:/+@-][^="]*=.*$', environment_variable_string)
+            not re.match(r'^[\w\\_.:/+@-][^="]*=.*$', environment_variable_string)
             or '=' not in environment_variable_string
         ):
             raise InvalidSyntaxError(strings['setenv.invalidformat'])

@@ -118,9 +118,15 @@ class ArgumentSyntaxValidator(object):
     @classmethod
     def __tag_component_regex_matcher(cls, value):
         if sys.version_info < (3, 0):
-            return re.compile(u'^[\w\s.:\\/+=@-]{' + str(len(value.decode('utf-8'))) + '}', re.UNICODE)
+            return re.compile(
+                r'^[\w\s.:\\/+=@-]{'
+                + str(len(value.decode('utf-8')))
+                + '}', re.UNICODE)
         else:
-            return re.compile('^[\w\s.:\\/+=@-]{' + str(len(value)) + '}')
+            return re.compile(
+                r'^[\w\s.:\\/+=@-]{'
+                + str(len(value)) + '}'
+            )
 
     @classmethod
     def __tag_component_regex_search(cls, regex_matcher, component):
