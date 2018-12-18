@@ -621,7 +621,7 @@ def _enable_healthd():
 
     fileoperations.ProjectRoot.traverse()
     with open('platform.yaml', 'r') as stream:
-        platform_yaml = yaml.load(stream)
+        platform_yaml = yaml.safe_load(stream)
 
     try:
         platform_options = platform_yaml['option_settings']

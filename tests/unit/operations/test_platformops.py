@@ -987,7 +987,7 @@ class TestPlatformOperations(unittest.TestCase):
         )
 
     @mock.patch('ebcli.operations.platformops.fileoperations.ProjectRoot.traverse')
-    @mock.patch('ebcli.operations.platformops.yaml.load')
+    @mock.patch('ebcli.operations.platformops.yaml.safe_load')
     def test_enable_healthd(
             self,
             load_mock,

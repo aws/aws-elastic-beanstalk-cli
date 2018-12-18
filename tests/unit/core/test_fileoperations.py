@@ -428,7 +428,7 @@ class TestFileOperations(unittest.TestCase):
         file_exists.assert_called_once_with('{}foo'.format(os.path.sep))
 
     @patch('ebcli.core.fileoperations.codecs')
-    @patch('ebcli.core.fileoperations.load')
+    @patch('ebcli.core.fileoperations.safe_load')
     def test_get_build_spec_info(self, mock_yaml_load, mock_codecs):
         # Setup mocks
         image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3'
@@ -449,7 +449,7 @@ class TestFileOperations(unittest.TestCase):
                          "Expected '{0}' but got: {1}".format(expected_build_config.__str__(), actual_build_config.__str__()))
 
     @patch('ebcli.core.fileoperations.codecs')
-    @patch('ebcli.core.fileoperations.load')
+    @patch('ebcli.core.fileoperations.safe_load')
     def test_get_build_spec_info_with_bad_header(self, mock_yaml_load, mock_codecs):
         # Setup mocks
         image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3'
@@ -467,7 +467,7 @@ class TestFileOperations(unittest.TestCase):
         self.assertIsNone(actual_build_config)
 
     @patch('ebcli.core.fileoperations.codecs')
-    @patch('ebcli.core.fileoperations.load')
+    @patch('ebcli.core.fileoperations.safe_load')
     def test_get_build_spec_info_with_no_values(self, mock_yaml_load, mock_codecs):
         # Setup mocks
         mock_yaml_load.return_value = {fileoperations.buildspec_config_header: None}

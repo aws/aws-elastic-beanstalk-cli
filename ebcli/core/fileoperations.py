@@ -26,7 +26,7 @@ from pathspec import PathSpec
 from cement.utils.misc import minimal_logger
 from ebcli.objects.buildconfiguration import BuildConfiguration
 from six import StringIO
-from yaml import load, safe_dump
+from yaml import safe_load, safe_dump
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
 try:
@@ -645,7 +645,7 @@ def get_environment_from_file(env_name):
         path = file_name + file_ext
         if os.path.exists(path):
             with codecs.open(path, 'r', encoding='utf8') as f:
-                return load(f)
+                return safe_load(f)
     except (ScannerError, ParserError):
         raise InvalidSyntaxError('The environment file contains '
                                  'invalid syntax.')
@@ -664,7 +664,7 @@ def get_application_from_file(app_name):
         path = file_name + file_ext
         if os.path.exists(path):
             with codecs.open(path, 'r', encoding='utf8') as f:
-                return load(f)
+                return safe_load(f)
     except (ScannerError, ParserError):
         raise InvalidSyntaxError('The application file contains '
                                  'invalid syntax.')
@@ -774,7 +774,7 @@ def write_json_dict(json_data, fullpath):
 def _get_yaml_dict(filename):
     try:
         with codecs.open(filename, 'r', encoding='utf8') as f:
-            return load(f)
+            return safe_load(f)
     except IOError:
         return {}
 
@@ -950,7 +950,7 @@ def env_yaml_exists():
 
 def get_env_name_from_env_yaml():
     with open(os.path.join(os.getcwd(), env_yaml), 'r') as f:
-        data = yaml.load(f)
+        data = yaml.safe_load(f)
         try:
             env_name = data['EnvironmentName']
             return env_name
@@ -960,7 +960,7 @@ def get_env_name_from_env_yaml():
 
 def get_platform_from_env_yaml():
     with open(os.path.join(os.getcwd(), env_yaml), 'r') as f:
-        data = yaml.load(f)
+        data = yaml.safe_load(f)
         try:
             env_name = data['SolutionStack']
             return env_name
