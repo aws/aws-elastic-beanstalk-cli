@@ -41,13 +41,6 @@ class LocalController(AbstractBaseController):
                 LocalPrintEnvController, LocalRunController,
                 LocalSetEnvController, LocalStatusController]
 
-    def complete_command(self, commands):
-        if len(commands) == 1:
-            aliases = [c.Meta.aliases[0] for c in self._get_child_controllers()]
-            io.echo(*aliases)
-        else:
-            pass
-
 
 class LocalRunController(AbstractBaseController):
     class Meta:

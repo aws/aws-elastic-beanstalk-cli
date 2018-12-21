@@ -220,19 +220,6 @@ class CreateController(AbstractBaseController):
                                timeout=timeout,
                                source=source)
 
-    def complete_command(self, commands):
-        app_name = fileoperations.get_application_name()
-
-        self.complete_region(commands)
-
-        cmd = commands[-1]
-        if cmd in ['-t', '--tier']:
-            io.echo(*Tier.get_all_tiers())
-        if cmd in ['-s', '--solution']:
-            io.echo(*elasticbeanstalk.get_available_solution_stacks())
-        if cmd in ['-vl', '--versionlabel']:
-            io.echo(*elasticbeanstalk.get_app_version_labels(app_name))
-
     def form_database_object(self):
         create_db = self.app.pargs.database
         username = self.app.pargs.db_user

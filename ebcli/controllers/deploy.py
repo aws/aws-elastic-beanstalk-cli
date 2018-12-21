@@ -77,14 +77,6 @@ class DeployController(AbstractBaseController):
                          self.message, group_name=group_name, process_app_versions=process_app_versions,
                          staged=self.staged, timeout=self.timeout, source=self.source)
 
-    def complete_command(self, commands):
-        super(DeployController, self).complete_command(commands)
-
-        cmd = commands[-1]
-        if cmd in ['--version']:
-            app_name = fileoperations.get_application_name()
-            io.echo(*elasticbeanstalk.get_app_version_labels(app_name))
-
     def multiple_app_deploy(self):
         missing_env_yaml = []
         top_dir = getcwd()

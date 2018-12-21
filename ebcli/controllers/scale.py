@@ -39,9 +39,3 @@ class ScaleController(AbstractBaseController):
         confirm = self.app.pargs.force
 
         scaleops.scale(app_name, env_name, number, confirm, timeout=timeout)
-
-    def complete_command(self, commands):
-        if not self.complete_region(commands):
-            if len(commands) == 2 and not commands[-1].startswith('-'):
-                app_name = fileoperations.get_application_name()
-                io.echo(*elasticbeanstalk.get_environment_names(app_name))

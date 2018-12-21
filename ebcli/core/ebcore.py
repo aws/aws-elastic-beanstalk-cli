@@ -54,7 +54,6 @@ from ebcli.controllers.tags import TagsController
 from ebcli.controllers.terminate import TerminateController
 from ebcli.controllers.upgrade import UpgradeController
 from ebcli.controllers.use import UseController
-from ebcli.core.completer import CompleterController
 from ebcli.labs.controller import LabsController
 from ebcli.resources.strings import flag_text
 from ebcli.lib import utils
@@ -119,8 +118,6 @@ class EB(foundation.CementApp):
 
         for controller in environment_controllers:
             controller._add_to_handler(handler)
-
-        handler.register(CompleterController)
 
         super(EB, self).setup()
 

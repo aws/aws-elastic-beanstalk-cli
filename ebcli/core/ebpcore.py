@@ -18,7 +18,6 @@ from cement.core import foundation, handler, hook
 from cement.utils.misc import init_defaults
 
 from ebcli.core import ebglobals, base, hooks
-from ebcli.core.completer import CompleterController
 import ebcli.core.ebrun as ebrun
 from ebcli.controllers.platform.list import EBPListController
 from ebcli.controllers.platform.use import EBPUseController
@@ -103,8 +102,6 @@ class EBP(foundation.CementApp):
         ]
 
         [controller._add_to_handler(handler) for controller in platform_controllers]
-
-        handler.register(CompleterController)
 
         super(EBP, self).setup()
 

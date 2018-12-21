@@ -33,17 +33,6 @@ class PlatformController(AbstractBaseController):
     def _add_to_handler(cls, handler):
         handler.register(cls)
 
-    def complete_command(self, commands):
-        workspace_type = fileoperations.get_workspace_type(Constants.WorkSpaceTypes.APPLICATION)
-
-        if len(commands) == 1:
-            if Constants.WorkSpaceTypes.APPLICATION == workspace_type:
-                io.echo(*['list', 'use', 'status'])
-            elif Constants.WorkSpaceTypes.PLATFORM == workspace_type:
-                io.echo(*['create', 'delete', 'events', 'init', 'list', 'status', 'use'])
-        elif len(commands) > 1:
-            pass
-
     @property
     def _help_text(self):
         """

@@ -129,6 +129,3 @@ class CloneController(AbstractBaseController):
             nohang=nohang,
             timeout=timeout
         )
-
-    def complete_command(self, commands):
-        super(CloneController, self).complete_command(commands)

@@ -56,9 +56,3 @@ class SetEnvController(AbstractBaseController):
         timeout = self.app.pargs.timeout
 
         envvarops.setenv(app_name, env_name, var_list, timeout)
-
-    def complete_command(self, commands):
-        self.complete_region(commands)
-        if commands[-1] in ['-e', '--environment']:
-            app_name = fileoperations.get_application_name()
-            io.echo(*elasticbeanstalk.get_environment_names(app_name))

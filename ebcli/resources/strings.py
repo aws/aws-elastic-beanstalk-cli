@@ -874,7 +874,7 @@ responses = {
     'event.yellowmessage': 'Environment health has been set to YELLOW',
     'event.greenmessage': 'Environment health has been set to GREEN',
     'event.launchsuccess': 'Successfully launched environment:',
-    'event.launchbad': 'Create environment operation is CompleterController, '
+    'event.launchbad': 'Create environment operation is complete, '
                        'but with errors',
     'event.failedlaunch': 'Failed to launch environment.',
     'event.faileddeploy': 'Failed to deploy application.',

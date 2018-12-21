@@ -35,6 +35,3 @@ class ListController(AbstractBaseController):
         verbose = self.app.pargs.verbose
 
         listops.list_env_names(app_name, verbose, all_apps)
-
-    def complete_command(self, commands):
-        self.complete_region(commands)

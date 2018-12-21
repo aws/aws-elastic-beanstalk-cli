@@ -302,13 +302,6 @@ class InitController(AbstractBaseController):
 
         return keyname
 
-    def complete_command(self, commands):
-        self.complete_region(commands)
-        #Note, completing solution stacks is only going to work
-        ## if they already have their keys set up with region
-        if commands[-1] in ['-s', '--solution']:
-            io.echo(*elasticbeanstalk.get_available_solution_stacks())
-
     def get_old_values(self):
         if fileoperations.old_eb_config_present() and \
                 not fileoperations.config_file_present():

@@ -142,19 +142,6 @@ class AbstractBaseController(controller.CementBaseController):
 
         return env_name
 
-    def complete_command(self, commands):
-        if not self.complete_region(commands):
-            if len(commands) == 1:
-                app_name = fileoperations.get_application_name()
-                io.echo(*elasticbeanstalk.get_environment_names(app_name))
-
-    def complete_region(self, commands):
-        cmd = commands[-1]
-        if cmd == '-r' or cmd == '--region':
-            io.echo(*[r.name for r in region.get_all_regions()])
-            return True
-        return False
-
     @classmethod
     def _add_to_handler(cls, handler):
         handler.register(cls)

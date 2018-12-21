@@ -30,15 +30,6 @@ if not sys.platform.startswith('win'):
     requires.append('docker-compose >= 1.21.2, < 1.22.0')
     requires.append('blessed>=1.9.5')
 
-try:
-    with open('/etc/bash_completion.d/eb_completion.extra', 'w') as eo:
-        eo.write('')
-        data_files = [
-            ('/etc/bash_completion.d/', ['bin/eb_completion.bash'])
-        ]
-except:
-    # print('User does not have write access to /etc. Completion will not work.')
-    data_files = []
 
 setup_options = dict(
     name='awsebcli',
@@ -46,7 +37,7 @@ setup_options = dict(
     description='Command Line Interface for AWS EB.',
     long_description=open('README.rst').read() + open('CHANGES.rst').read(),
     scripts=['bin/eb', 'bin/eb_completion.bash'],
-    data_files=data_files,
+    data_files=[],
     author='AWS Elastic Beanstalk',
     author_email='aws-eb-cli@amazon.com',
     url='http://aws.amazon.com/elasticbeanstalk/',
