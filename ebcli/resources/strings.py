@@ -14,7 +14,6 @@ import os
 
 
 strings = {
-    # Inform customers that this has created the platform builder environment
     'platformbuildercreation.info': "Note: An environment called '{0}' has been "
                                     "created in order to build your application. "
                                     "This environment will not automatically be "
@@ -22,16 +21,12 @@ strings = {
                                     "with it. Once your platform creation has "
                                     "completed you can terminate this builder "
                                     "environment using the command 'eb terminate'.",
-    # Version message got 'eb --version'
     'app.version_message': 'EB CLI',
-    # When an update is available on PyPi
     'base.update_available': 'An update to the EB CLI is available. '
                              'Run "pip install --upgrade awsebcli" to '
                              'get the latest version.',
-    # Initial text that you see on a 'eb --help'
     'base.info': 'Welcome to the Elastic Beanstalk Command Line Interface (EB CLI). \n'
                  'For more information on a specific command, type "eb {cmd} --help".',
-    # Initial epilog (last line) that you see on 'eb --help'
     'base.epilog': 'To get started type "eb init". Then type "eb create" and "eb open"',
     'ebpbase.info': """Welcome to the Elastic Beanstalk Command Line Interface (EB CLI).
 The "ebp" command is equivalent to "eb platform". It offers sub-commands for managing platforms.
@@ -40,7 +35,6 @@ For more information on a specific command, enter "eb platform {cmd} --help".
 To get started, enter "eb platform init". Then enter "eb platform create".""",
     'ebpbase.epilog': 'To get started type "ebp init". Then type "ebp create"',
 
-    # All .infos are for --help text. All .epilogs are the epilogs shown on the given command
     'init.info': 'Initializes your directory with the EB CLI. Creates the application.',
     'init.epilog': 'This command is safe when run in a previously initialized'
                    ' directory. To re-initialize with different options, '
@@ -184,7 +178,6 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'local.status.info': 'Gets container information and status.',
     'local.setenv.epilog': 'Use this command to set environment variables by typing a space-separated '
                            'list of key=value pairs.',
-    # Error when --sample and --label flag are both used on create
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" options together.',
     'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
     'create.single_and_elb_type': 'You cannot use the "--single" and "--elb-type" options together.',
@@ -200,7 +193,6 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                                               'with a \'+\', but a group suffix was provided. Please '
                                               'add a trailing \'+\' to the environment name',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',
-    # Text shown if 'eb terminate' is called while no environment is selected as default
     'terminate.noenv': 'To delete the application and all application versions, type "eb terminate '
                        '--all".',
 
@@ -208,16 +200,11 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                     'You must provide your credentials.',
     'prompt.invalid': 'You did not provide a valid value.',
     'prompt.yes-or-no': 'Type either "Y" or "N".',
-    # Default description for apps created with cli
     'app.description': 'Application created from the EB CLI using "eb init"',
-    # Default description for environment created with cli
     'env.description': 'Environment created from the EB CLI using "eb create"',
-    # Same as above but for cloned environments
     'env.clonedescription': 'Environment cloned from {env-name} from the EB CLI using "eb clone"',
-    # Default template description
     'template.description': 'Configuration created from the EB CLI using "eb config save".',
     'env.exists': 'An environment with that name already exists.',
-    # Error, no solution stacks returned. Almost always due to permissions
     'sstacks.notfound': 'Elastic Beanstalk could not find any platforms. Ensure you have the '
                         'necessary permissions to access Elastic Beanstalk.',
     'sstacks.notaversion': 'Elastic Beanstalk could not find any supported platforms for the '
@@ -235,7 +222,6 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                      'region by including the "--region" option with the command.',
     'exit.platformworkspaceempty': 'The current directory does not contain any Platform '
                                    'configuration files. Unable to create new Platform.',
-    # Typical response when an environment is in pending state
     'exit.invalidstate': 'The operation cannot be completed at this time due to a pending '
                          'operation. Try again later.',
     'exit.argerror': 'There was an argument error in the given command',
@@ -268,9 +254,7 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                              'Credentials will now be stored in ~/.aws/config',
     'ssh.noip': 'This instance does not have a Public IP address. This is possibly because the '
                 'instance is terminating.',
-    # Error thrown when someone provides a cname with a worker tier
     'worker.cname': 'Worker tiers do not support a CNAME.',
-    # Error thrown when available cname is not available
     'cname.unavailable': 'The CNAME prefix {cname} is already in use.',
     'ssh.openingport': 'INFO: Attempting to open port 22.',
     'ssh.portopen': 'INFO: SSH port 22 open.',
@@ -338,17 +322,14 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'compose.novalidmodules': 'No valid modules were found. No environments will be created.',
     'instance.processes.health': '{healthy}/{total} processes healthy.',
 
-    # codesource
     'codesource.info': 'Configures the code source for the EB CLI to use by default.',
     'codesource.localmsg': 'Default set to use local sources',
     'restore.info': 'Restores a terminated environment.',
 
-    # Resotre Environment
     'restore.no_env': 'No terminated environments found.\nEnvironments are available for six weeks after '
                       'termination.',
     'restore.displayheader': 'Select a terminated environment to restore',
 
-    # Log command/ Beanstalk logs
     'logs.info': 'Gets recent logs.',
     'logs.epilog': 'This command displays the last 100 lines of logs. To retrieve '
                    'all logs, use the "--all" option.',
@@ -399,7 +380,6 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
         'Can\'t find instance "{}" in the environment\'s instance logs on '
         'CloudWatch Logs.',
 
-    # labs cloudwatch-setup command
     'cloudwatch-setup.info': 'Create .ebextensions files necessary for setting up '
                              'CloudWatch used in logging instance deployment.',
     'cloudwatch-setup.alreadysetup': 'CloudWatch file {filename} is already set up.',
@@ -418,7 +398,6 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                                    'an run\n'
                                    '"eb deploy".',
 
-    # Log streaming
     'cloudwatch_log_streaming.not_setup': os.linesep.join([
         'Could not find log group; CloudWatch log streaming might not enabled for this '
         'environment.',
@@ -441,7 +420,6 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
         'Disabling health transition log streaming to CloudWatch for your environment',
 
 
-    # The link to Cloudwatch console is different for BJS:
     'cloudwatch-logs.link': 'After the environment is updated you can view your logs '
                             'by following the link:\n'
                             'https://console.aws.amazon.com/cloudwatch/home?region={region}'
@@ -460,7 +438,6 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'cloudwatch_environment_health_log_streaming.already_disabled':
         'CloudWatch health transition log streaming is already disabled for your environment',
 
-    # lifecycle
     'lifecycle.info': 'Modifying application version lifecycle policy',
     'lifecycle.epilog': 'Use this command to work with application lifecycle '
                         'configuration settings. \n'
@@ -476,9 +453,7 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                                'an error; The lifecycle configuration will not be '
                                'updated',
 
-    # appversion
     'appversion.create': 'Creating application version archive "{version}".',
-    # When create is called, if we cant find any files, we say this
     'appversion.none': 'The current directory does not contain any source code. '
                        'Elastic Beanstalk is launching the sample application instead.',
     'appversion.processfailed': 'Pre-processing of application version {app_version} '
@@ -499,7 +474,6 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                                     'attributes. Unable to continue with deployment.',
     'appversion.attribute.success': 'Found attributes for application version {app_version}',
 
-    # CodeCommit
     'codecommit.nosc': 'Cannot setup CodeCommit because there is no Source Control setup, '
                        'continuing with initialization',
     'codecommit.norepo': 'Repository does not exist in CodeCommit',
@@ -507,7 +481,6 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'codecommit.badregion': 'AWS CodeCommit is not supported in this region; continuing '
                             'initialization without CodeCommit',
 
-    # CodeBuild
     'codebuild.noheader': 'Beanstalk configuration header \'{header}\' is missing from '
                           'Buildspec file; will not use Beanstalk Code Build integration',
     'codebuild.latestplatform': 'Buildspec file is present but no image is specified; '
@@ -520,7 +493,6 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                              'One will be configured once you create a platform version.',
     'codebuild.buildlogs': 'You can find logs for the CodeBuild build here: {logs_link}',
 
-    # Tags
     'tags.duplicate_across_delete_and_update_lists':
         "A tag with the key '{0}' is specified for both '--delete' and '--update'. You can either "
         "delete or update each tag in a single operation.",
@@ -600,7 +572,6 @@ prompts = {
     'keypair.prompt': 'Select a keypair.',
     'keypair.nameprompt': 'Type a keypair name.',
     'tier.prompt': 'Select an environment tier.',
-    # Error given on terminate when the user input does not match name
     'terminate.nomatch': 'Names do not match. Exiting.',
     'ssh.nokey': 'This environment is not set up for SSH. Use "eb ssh --setup" '
                  'to set up SSH for the environment.',
@@ -668,7 +639,6 @@ prompts = {
     'general.pressenter': 'Press enter to continue',
     'compose.groupname': 'Please enter the group name to be used',
 
-    # Restore
     'restore.prompt': 'Enter a environment # to restore. ESC to exit.',
     'restore.selectedenv': '\n'
                            'Selected environment {env_id}\n'
@@ -680,10 +650,8 @@ prompts = {
                            'Terminated:    {dat_term}\n'
                            'Restore this environment? [y/n]\n',
 
-    # codesource
     'codesource.codesourceprompt': 'Select your codesource',
 
-    # appversion
     'appversion.redeploy.validate': 'Do you want to deploy a previous or '
                                     'different version? (y/n)',
     'appversion.redeploy.prompt': 'Select a version # to deploy (1 to {}).',
@@ -693,11 +661,9 @@ prompts = {
                                   'version with label: {}? (y/n)',
     'appversion.delete.prompt': 'Select a version # to delete (1 to {}).',
 
-    # CodeCommit
     'codecommit.usecc': 'Do you wish to continue with CodeCommit? (y/N) '
                         '(default is n)',
 
-    # CodeBuild
     'codebuild.getplatform': 'Could not determine best image for buildspec '
                              'file please select from list.\n Current chosen '
                              'platform: {platform}',
@@ -712,7 +678,6 @@ alerts = {
 }
 
 flag_text = {
-    # General
     'general.env': 'environment name',
     'base.version': 'show application/version info',
     'base.verbose': 'toggle verbose output',
@@ -721,7 +686,6 @@ flag_text = {
     'general.timeout': 'timeout period in minutes',
     'base.noverify': "don't verify AWS SSL certificates",
 
-    # Clone
     'clone.env': 'name of environment to clone',
     'clone.name': 'desired name for environment clone',
     'clone.cname': 'cname prefix',
@@ -730,14 +694,12 @@ flag_text = {
     'clone.nohang': 'return immediately, do not wait for clone to be completed',
     'clone.exact': 'match the platform version of the original environment',
 
-    # Config
     'config.nohang': 'return immediately, do not wait for config to be completed',
     'config.codesource': 'configure the settings for which source the CLI will use '
                          'for your code.'
                          ' Availables sources: {codecommit}. Available actions: '
                          '{enable, disable}',
 
-    # Create
     'create.name': 'desired Environment name',
     'create.cname': 'cname prefix',
     'create.itype': 'instance type i.e. t1.micro',
@@ -763,7 +725,6 @@ flag_text = {
     'create.source': 'source of code to create from directly; example source_location/repo/branch',
     'create.process': 'enable preprocessing of the application version',
 
-    # Deploy
     'deploy.env': 'environment name',
     'deploy.modules': 'modules to deploy',
     'deploy.version': 'existing version label to deploy',
@@ -775,38 +736,30 @@ flag_text = {
     'deploy.source': 'source of code to deploy directly; example source_location/repo/branch',
     'deploy.process': 'enable preprocessing of the application version',
 
-    # Events
     'platformevents.version': 'version to retrieve events for',
     'events.follow': 'wait and continue to print events as they come',
 
-    # Init
     'init.name': 'application name',
     'init.platform': 'default Platform',
     'init.keyname': 'default EC2 key name',
     'init.interactive': 'force interactive mode',
 
-    # Platform create
     'platformcreate.instanceprofile': 'the instance profile to use when creating AMIs '
                                       'for custom platforms',
 
-    # SSH
     'ssh.keyname': 'EC2 key to use with ssh',
     'init.module': 'module directory',
     'init.source': 'source of code to set as default; example source_location/repo/branch',
 
-    # labs
     'labs.cwl.remove': 'remove .ebextensions',
 
-    # List
     'list.all': 'show environments for all applications',
 
-    # Local
     'local.run.envvars': 'a comma-separated list of environment variables as key=value pairs',
     'local.run.hostport': 'the host port that is exposed and mapped to the container port',
     'local.run.insecuressl': 'Allow insecure connections to the docker registry',
     'local.setenv.vars': 'space-separated list in format: VAR_NAME=KEY',
 
-    # Logs
     'logs.all': 'retrieve all logs',
     'logs.zip': 'retrieve all logs as .zip',
     'logs.instance': 'retrieve logs only for this instance',
@@ -823,18 +776,14 @@ flag_text = {
         ]
     ),
 
-    # Restore
     'restore.env': 'The ID of the environment to restore',
 
-    # Scale
     'scale.number': 'number of desired instances',
     'scale.force': 'skip confirmation prompt',
 
-    # Setenv
     'setenv.vars': 'space-separated list in format: VAR_NAME=KEY',
     'setenv.env': 'environment name',
 
-    # SSH
     'ssh.number': 'index of instance in list',
     'ssh.instance': 'instance id',
     'ssh.keepopen': 'keep port 22 open',
@@ -847,27 +796,22 @@ flag_text = {
     'ssh.timeout': "Specify the timeout period in minutes. Can only be used with the "
                    "'--setup' argument.",
 
-    # Cleanup
     'cleanup.resources': 'Valid values include (builder, versions, all). You can specify '
                          '"builder" to terminate the environment used to create this platform. '
                          'You can use "versions" to clean up platform versions in the Failed state',
     'cleanup.force': 'skip confirmation prompt',
 
-    # Delete
     'platformdelete.force': 'skip confirmation prompt',
     'platformdelete.cleanup': 'remove all platform versions in the "Failed" state',
     'platformdelete.allplatforms': 'enables cleanup for all of your platforms.',
 
-    # terminate
     'terminate.force': 'skip confirmation prompt',
     'terminate.all': 'terminate everything',
     'terminate.nohang': 'return immediately, do not wait for terminate to be completed',
     'terminate.ignorelinks': 'terminate even if environment is linked',
 
-    # Platform
     'platforminit.name': 'platform name',
 
-    # Platform: Create Version
     'platformcreateversion.version': 'platform version',
     'platformcreateversion.major': 'major version increment',
     'platformcreateversion.minor': 'minor version increment',
@@ -876,13 +820,10 @@ flag_text = {
     'platformcreateversion.vpc.subnets': 'specify subnets to launch Packer builder into',
     'platformcreateversion.vpc.publicip': 'associate public IPs to EC2 instances launched if specified',
 
-    # logs
     'platformlogs.version': 'platform version to retrieve logs for',
 
-    # Platform: Delete Version
     'platformdeleteversion.version': 'platform version',
 
-    # Platform: Show Version
     'platformshowversion.version': 'platform version',
 
     'platformlist.all': """lists the versions of all platforms owned by your account
@@ -893,30 +834,23 @@ flag_text = {
 
     'platformworkspace.platform': 'platform name',
 
-    # Upgrade
     'upgrade.noroll': 'do not enable rolling updates before upgrade',
 
-    # use
     'use.env': 'environment name',
     'use.source': 'source of code to set as default; example source_location/repo/branch',
     'use.repo': 'default code commit repository',
     'use.branch': 'default code commit branch will use default repository if none is specified',
 
-    # swap
     'swap.env': 'name of source environment',
     'swap.name': 'name of destination environment',
 
-    # codesource
     'codesource.sourcename': 'name of the code source to set as default',
 
-    # appversion
     'appversion.delete': 'delete the specified application version',
 
-    # lifecycle
     'lifecycle.print': 'prints the current application version lifecycle policy',
     'lifecycle.update': 'allows an inline update to a application version lifecycle policy',
 
-    # Tags
     'tags.add': 'create new environment tags provided as a comma-separated list of key=value pairs',
     'tags.delete': 'delete existing environment tags provided as a comma-separated list of keys',
     'tags.env': 'environment on which to perform tags operation',
@@ -944,7 +878,6 @@ responses = {
                        'but with errors',
     'event.failedlaunch': 'Failed to launch environment.',
     'event.faileddeploy': 'Failed to deploy application.',
-    # Event fails with 'Failed to deploy configuration.' but the the terminal event is below
     'event.failedupdate': 'The environment was reverted to the previous configuration setting.',
     'event.updatebad': 'Update environment operation is complete, but with errors.',
     'event.updatefailed': 'Failed to deploy configuration.',
@@ -977,16 +910,15 @@ responses = {
     'tags.tag_update_successful': 'Environment tag update completed successfully.',
     'tags.no_tags_to_update': 'Environment tag update failed.',
 
-    # Env Restore display table
     'restore.norestore': 'Environment will not be restored',
 }
 
 
 git_ignore = [
-    '# Elastic Beanstalk Files',        # comment line
-    '.elasticbeanstalk/*',              # ignore eb files
-    '!.elasticbeanstalk/*.cfg.yml',       # don't ignore configuration templates
-    '!.elasticbeanstalk/*.global.yml',    # don't ignore global configurations
+    '# Elastic Beanstalk Files',
+    '.elasticbeanstalk/*',
+    '!.elasticbeanstalk/*.cfg.yml',
+    '!.elasticbeanstalk/*.global.yml',
 ]
 
 docker_ignore = git_ignore[:2] + ['.git', '.gitignore']

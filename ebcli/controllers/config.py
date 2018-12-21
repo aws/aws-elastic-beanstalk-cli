@@ -47,10 +47,8 @@ class ConfigController(AbstractBaseController):
         nohang = self.app.pargs.nohang
         cfg = self.app.pargs.cfg
 
-        # input_exists = False
         input_exists = not sys.stdin.isatty()
         if not cfg and not input_exists:
-            # No input, run interactive editor
             configops.update_environment_configuration(app_name, env_name,
                                                        nohang,
                                                        timeout=timeout)

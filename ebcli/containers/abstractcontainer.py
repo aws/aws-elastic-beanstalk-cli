@@ -112,7 +112,7 @@ class AbstractContainer(object):
 
         if self.pathconfig.dockerfile_exists():
             return self.pathconfig.dockerfile_path()
-        else:  # Then we create one at .elasticbeanstalk/Dockerfile.local
+        else:
             return self.pathconfig.new_dockerfile_path()
 
     def _require_pull(self):

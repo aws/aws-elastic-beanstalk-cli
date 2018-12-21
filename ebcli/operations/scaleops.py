@@ -19,18 +19,15 @@ from ebcli.operations import commonops
 
 def scale(app_name, env_name, number, confirm, timeout=None):
     options = []
-    # get environment
     env = elasticbeanstalk.describe_configuration_settings(
         app_name, env_name
     )['OptionSettings']
 
-    # if single instance, offer to switch to load-balanced
     namespace = 'aws:elasticbeanstalk:environment'
     setting = next((n for n in env if n["Namespace"] == namespace), None)
     value = setting['Value']
     if value == 'SingleInstance':
         if not confirm:
-            # prompt to switch to LoadBalanced environment type
             io.echo(prompts['scale.switchtoloadbalance'])
             io.log_warning(prompts['scale.switchtoloadbalancewarn'])
             switch = io.get_boolean_response()
@@ -41,7 +38,6 @@ def scale(app_name, env_name, number, confirm, timeout=None):
                         'OptionName': 'EnvironmentType',
                         'Value': 'LoadBalanced'})
 
-    # change autoscaling min AND max to number
     namespace = 'aws:autoscaling:asg'
     max = 'MaxSize'
     min = 'MinSize'

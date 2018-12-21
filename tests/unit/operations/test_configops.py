@@ -39,17 +39,12 @@ class TestConfigOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.configops.elasticbeanstalk')
     @mock.patch('ebcli.operations.configops.fileoperations')
     def test_update_environment_configuration_solution_stack_changed(self, mock_fileops, mock_elasticbeanstalk, mock_env_settings, mock_commonops):
-        # Mock the configuration returned by api
         mock_elasticbeanstalk.describe_configuration_settings.return_value = self.api_model
-        # Mock the configuration after user edition
         mock_fileops.get_environment_from_file.return_value = self.usr_model
-        # Assume no change or removals
         mock_env_settings.return_value = mock_env_settings
         mock_env_settings.convert_api_to_usr_model.return_value = self.usr_model
         mock_env_settings.collect_changes.return_value = self.changes, self.remove
-        # Mock out the file operations
         mock_fileops.save_env_file.return_value = self.file_location
-        # Do the actual call
         configops.update_environment_configuration(self.app_name, self.env_name, self.nohang)
         # verify that changes will be made
         mock_commonops.update_environment.assert_called_with(self.env_name, self.changes, self.nohang,
@@ -62,19 +57,13 @@ class TestConfigOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.configops.elasticbeanstalk')
     @mock.patch('ebcli.operations.configops.fileoperations')
     def test_update_environment_configuration_no_change(self, mock_fileops, mock_elasticbeanstalk, mock_env_settings, mock_commonops):
-        # Mock the configuration returned by api
         mock_elasticbeanstalk.describe_configuration_settings.return_value = self.usr_model
-        # Mock the configuration after user edition
         mock_fileops.get_environment_from_file.return_value = self.usr_model
-        # Assume no change or removals
         mock_env_settings.return_value = mock_env_settings
         mock_env_settings.convert_api_to_usr_model.return_value = self.usr_model
         mock_env_settings.collect_changes.return_value = None, None
-        # Mock out the file operations
         mock_fileops.save_env_file.return_value = self.file_location
-        # Do the actual call
         configops.update_environment_configuration(self.app_name, self.env_name, self.nohang)
-        # verify that no changes will be made
         mock_commonops.update_environment.assert_not_called()
 
     @mock.patch('ebcli.operations.configops.commonops')
@@ -83,16 +72,10 @@ class TestConfigOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.configops.fileoperations')
     def test_update_environment_configuration_bad_usr_modification(self, mock_fileops, mock_elasticbeanstalk, mock_env_settings,
                                                         mock_commonops):
-        # Mock the configuration returned by api
         mock_elasticbeanstalk.describe_configuration_settings.return_value = self.usr_model
-        # Mock the configuration after user edition
         mock_fileops.get_environment_from_file.side_effect = InvalidSyntaxError("Bad user changes")
-        # Assume no change or removals
         mock_env_settings.return_value = mock_env_settings
         mock_env_settings.convert_api_to_usr_model.return_value = self.usr_model
-        # Mock out the file operations
         mock_fileops.save_env_file.return_value = self.file_location
-        # Do the actual call
         configops.update_environment_configuration(self.app_name, self.env_name, self.nohang)
-        # verify that no changes will be made
         mock_commonops.update_environment.assert_not_called()

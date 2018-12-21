@@ -22,7 +22,6 @@ class TestAbort(BaseIntegrationTest):
 
     def setUp(self):
         super(TestAbort, self).setUp()
-        # Create all app stuff
         fileoperations.create_config_file('myEBCLItest', 'us-west-2',
                                           'my-stack-stack')
         commonops.set_environment_for_current_branch('my-env')
@@ -48,7 +47,7 @@ class TestAbort(BaseIntegrationTest):
             {'Action': u'AbortEnvironmentUpdate',
              'EnvironmentName': 'single-env',
              'Version': u'2010-12-01'}))
-        self.mock_input.assert_called_with('(default is 1)', 1)  # Test we prompted for env
+        self.mock_input.assert_called_with('(default is 1)', 1)
 
     def test_abort_single(self):
         mockservice.enqueue('elasticbeanstalk',
@@ -61,7 +60,7 @@ class TestAbort(BaseIntegrationTest):
             {'Action': u'AbortEnvironmentUpdate',
              'EnvironmentName': 'single-env',
              'Version': u'2010-12-01'}))
-        self.mock_input.assert_not_called()  # Test we didn't prompt
+        self.mock_input.assert_not_called()
 
     def test_abort_none(self):
         mockservice.enqueue('elasticbeanstalk',
@@ -72,12 +71,11 @@ class TestAbort(BaseIntegrationTest):
             self.run_command('abort')
             self.fail('Should have thrown exception')
         except NotFoundError:
-            # Expected
             pass
         self.assertEqual(len(mockservice.get_calls('elasticbeanstalk',
                                                    'AbortEnvironmentUpdate')),
                          0)
-        self.mock_input.assert_not_called()  # Test we didn't prompt'
+        self.mock_input.assert_not_called()
 
 
     def test_abort_provided(self):
@@ -91,7 +89,7 @@ class TestAbort(BaseIntegrationTest):
             {'Action': u'AbortEnvironmentUpdate',
              'EnvironmentName': 'bad-env',
              'Version': u'2010-12-01'}))
-        self.mock_input.assert_not_called()  # Test we didn't prompt for env
+        self.mock_input.assert_not_called()
 
 
 def standard_abort():

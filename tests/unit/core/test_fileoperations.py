@@ -60,11 +60,9 @@ class TestFileOperations(unittest.TestCase):
                 shutil.rmtree('testDir')
 
     def test_get_aws_home(self):
-        # Just make sure no errors are thrown
         fileoperations.get_aws_home()
 
     def test_get_ssh_folder(self):
-        # Just make sure no errors are thrown
         try:
             fileoperations.get_ssh_folder()
         except OSError as ex:
@@ -73,7 +71,6 @@ class TestFileOperations(unittest.TestCase):
                 pass
 
     def test_create_config_file_no_file(self):
-        # make sure file doesn't exist
         if os.path.exists(fileoperations.local_config_file):
             os.remove(fileoperations.local_config_file)
         self.assertFalse(os.path.exists(fileoperations.local_config_file))
@@ -83,15 +80,12 @@ class TestFileOperations(unittest.TestCase):
         solution = 'my-solution-stack'
         fileoperations.create_config_file(app_name, region, solution)
 
-        # Make sure file now exists
         self.assertTrue(os.path.exists(fileoperations.local_config_file))
 
-        #grab value saved
         rslt = fileoperations.get_config_setting('global', 'application_name')
         self.assertEqual(app_name, rslt)
 
     def test_create_config_file_no_dir(self):
-        # make sure directory doesn't exist
         if os.path.exists(fileoperations.beanstalk_directory):
             shutil.rmtree(fileoperations.beanstalk_directory)
         self.assertFalse(os.path.exists(fileoperations.beanstalk_directory))
@@ -101,21 +95,16 @@ class TestFileOperations(unittest.TestCase):
         solution = 'my-solution-stack'
         fileoperations.create_config_file(app_name, region, solution)
 
-        # Make sure file and dir now exists
         self.assertTrue(os.path.exists(fileoperations.beanstalk_directory))
         self.assertTrue(os.path.exists(fileoperations.local_config_file))
 
-        #grab value saved
         rslt = fileoperations.get_config_setting('global', 'application_name')
         self.assertEqual(app_name, rslt)
 
     def test_create_config_file_file_exists(self):
-        # write to file without overriding anything besides global app name
-
         fileoperations.write_config_setting('global', 'randomKey', 'val')
         fileoperations.write_config_setting('test', 'application_name', 'app1')
 
-        # call create
         app_name = 'ebcli-test'
         region = 'us-east-1'
         solution = 'my-solution-stack'
@@ -130,36 +119,29 @@ class TestFileOperations(unittest.TestCase):
         self.assertEqual(test, 'app1')
 
     def test_project_root__traverse_at_root(self):
-        # make sure we are at root
         if not os.path.exists(fileoperations.beanstalk_directory):
             os.makedirs(fileoperations.beanstalk_directory)
 
-        # save current directory
         cwd = os.getcwd()
 
         fileoperations.ProjectRoot.traverse()
 
-        # get new working directory - make sure its the same as the original
         nwd = os.getcwd()
         self.assertEqual(cwd, nwd)
 
     def test_project_root__traverse_deep(self):
-        # save current directory
         cwd = os.getcwd()
 
-        # create and swap to deep subdirectory
         dir = 'fol1' + os.path.sep + 'fol2' + os.path.sep + 'fol3'
         os.makedirs(dir)
         os.chdir(dir)
 
         fileoperations.ProjectRoot.traverse()
 
-        # get new working directory - make sure its the same as the original
         nwd = os.getcwd()
         self.assertEqual(cwd, nwd)
 
     def test_project_root__traverse_no_root(self):
-        # move up 2 directories first to make sure we are not in a project root
         cwd = os.getcwd()
         try:
             os.chdir(os.path.pardir)
@@ -169,7 +151,7 @@ class TestFileOperations(unittest.TestCase):
                 fileoperations.ProjectRoot.traverse()
                 raise Exception('Should have thrown NotInitializedException')
             except fileoperations.NotInitializedError:
-                pass  # expected
+                pass
         finally:
             os.chdir(cwd)
 
@@ -222,76 +204,61 @@ class TestFileOperations(unittest.TestCase):
             )
 
     def test_write_config_setting_no_section(self):
-        # create config file
         fileoperations.create_config_file('ebcli-test', 'us-east-1',
                                           'my-solution-stack')
 
-        #make sure section does not exist
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
         self.assertFalse('mytestsection' in dict)
 
-        # now do write
         fileoperations.write_config_setting('mytestsection',
                                             'testkey', 'value')
 
-        # make sure section now exists
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
         self.assertTrue('mytestsection' in dict)
 
     def test_write_config_setting_no_option(self):
-        # create config file
         fileoperations.create_config_file('ebcli-test', 'us-east-1',
                                           'my-solution-stack')
 
-        #make sure section does exists, but option doesn't
         fileoperations.write_config_setting('mytestsection', 'notmykey', 'val')
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
 
         self.assertTrue('mytestsection' in dict)
         self.assertFalse('testkey' in dict['mytestsection'])
 
-        # now do write
         fileoperations.write_config_setting('mytestsection',
                                             'testkey', 'value')
 
-        # make sure section now exists
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
         self.assertTrue('mytestsection' in dict)
         self.assertTrue('testkey' in dict['mytestsection'])
         self.assertEqual(dict['mytestsection']['testkey'], 'value')
 
     def test_write_config_setting_override(self):
-        # create config file
         fileoperations.create_config_file('ebcli-test', 'us-east-1',
                                           'my-solution-stack')
 
-        #make sure app name exists
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
         self.assertTrue('global' in dict)
         self.assertTrue('application_name' in dict['global'])
         self.assertTrue('application_name' in dict['global'])
         self.assertEqual(dict['global']['application_name'], 'ebcli-test')
 
-        # now override
         fileoperations.write_config_setting('global',
                                             'application_name', 'new_name')
 
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
         self.assertEqual(dict['global']['application_name'], 'new_name')
 
-
     def test_write_config_setting_no_file(self):
-        # make sure file doesn't exist
         if os.path.exists(fileoperations.local_config_file):
             os.remove(fileoperations.local_config_file)
 
         self.assertFalse(os.path.exists(fileoperations.local_config_file))
 
-        # now do write
         fileoperations.write_config_setting('mytestsection',
                                             'testkey', 'value')
 
-        # make sure section and file now exists
         self.assertTrue(os.path.exists(fileoperations.local_config_file))
         dict = fileoperations._get_yaml_dict(fileoperations.local_config_file)
         self.assertTrue('mytestsection' in dict)
@@ -302,74 +269,61 @@ class TestFileOperations(unittest.TestCase):
         self.assertEqual(result, 'value')
 
     def test_get_config_setting_no_global(self):
-        # make sure global file does not exist
         if os.path.exists(fileoperations.global_config_file):
             os.remove(fileoperations.global_config_file)
         self.assertFalse(os.path.exists(fileoperations.global_config_file))
 
-        # Now create local
         fileoperations.create_config_file('ebcli-test', 'us-east-1',
                                           'my-solution-stack')
 
-        #get app name
         result = fileoperations.get_config_setting('global',
                                                    'application_name')
 
         self.assertEqual(result, 'ebcli-test')
 
     def test_get_config_setting_no_local(self):
-        # create global file
         config = {'global': {'application_name': 'myApp'}}
         with open(fileoperations.global_config_file, 'w') as f:
             f.write(yaml.dump(config, default_flow_style=False))
 
         self.assertTrue(os.path.exists(fileoperations.global_config_file))
 
-        # make sure local file does not exist
         if os.path.exists(fileoperations.local_config_file):
             os.remove(fileoperations.local_config_file)
         self.assertFalse(os.path.exists(fileoperations.local_config_file))
 
-        #get app name
         result = fileoperations.get_config_setting('global',
                                                    'application_name')
 
         self.assertEqual(result, 'myApp')
 
     def test_get_config_setting_no_files(self):
-        # make sure local file doesn't exist
         if os.path.exists(fileoperations.local_config_file):
             os.remove(fileoperations.local_config_file)
         self.assertFalse(os.path.exists(fileoperations.local_config_file))
 
-        # make sure global file does not exist
         if os.path.exists(fileoperations.global_config_file):
             os.remove(fileoperations.global_config_file)
         self.assertFalse(os.path.exists(fileoperations.global_config_file))
 
-        # now get setting
         result = fileoperations.get_config_setting('global',
                                                    'application_name')
 
         self.assertEqual(result, None)
 
     def test_get_config_setting_merge(self):
-        # create global file
         config = {'global':{'application_name':'myApp'}}
         with open(fileoperations.global_config_file, 'w') as f:
             f.write(yaml.dump(config, default_flow_style=False))
 
         self.assertTrue(os.path.exists(fileoperations.global_config_file))
 
-        # Now create local
         fileoperations.create_config_file('ebcli-test', 'us-east-1',
                                           'my-solution-stack')
 
-        #get app name
         result = fileoperations.get_config_setting('global',
                                                    'application_name')
 
-        # should return result from local NOT global
         self.assertEqual(result, 'ebcli-test')
 
     def test_get_project_root_at_root(self):
@@ -430,7 +384,6 @@ class TestFileOperations(unittest.TestCase):
     @patch('ebcli.core.fileoperations.codecs')
     @patch('ebcli.core.fileoperations.safe_load')
     def test_get_build_spec_info(self, mock_yaml_load, mock_codecs):
-        # Setup mocks
         image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3'
         compute_type = 'BUILD_GENERAL1_SMALL'
         service_role = 'eb-test'
@@ -451,7 +404,6 @@ class TestFileOperations(unittest.TestCase):
     @patch('ebcli.core.fileoperations.codecs')
     @patch('ebcli.core.fileoperations.safe_load')
     def test_get_build_spec_info_with_bad_header(self, mock_yaml_load, mock_codecs):
-        # Setup mocks
         image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3'
         compute_type = 'BUILD_GENERAL1_SMALL'
         service_role = 'eb-test'
@@ -469,7 +421,6 @@ class TestFileOperations(unittest.TestCase):
     @patch('ebcli.core.fileoperations.codecs')
     @patch('ebcli.core.fileoperations.safe_load')
     def test_get_build_spec_info_with_no_values(self, mock_yaml_load, mock_codecs):
-        # Setup mocks
         mock_yaml_load.return_value = {fileoperations.buildspec_config_header: None}
         actual_build_config = fileoperations.get_build_configuration()
         self.assertIsNone(actual_build_config.compute_type)
@@ -478,7 +429,6 @@ class TestFileOperations(unittest.TestCase):
         self.assertIsNone(actual_build_config.timeout)
 
     def test_build_spec_file_exists_yaml(self):
-        # Create buildspec file quickly
         file = 'buildspec.yaml'
         open(file, 'a').close()
         self.assertFalse(fileoperations.build_spec_exists(),
@@ -486,7 +436,6 @@ class TestFileOperations(unittest.TestCase):
         os.remove(file)
 
     def test_build_spec_file_exists_yml(self):
-        # Create buildspec file quickly
         file = 'buildspec.yml'
         open(file, 'a').close()
         self.assertTrue(fileoperations.build_spec_exists(),

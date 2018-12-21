@@ -42,7 +42,6 @@ class LifecycleConfiguration(ConversionConfiguration):
         :param usr_model: User model, key-value style
         :return: api_model
         """
-        # Validate the service role they gave us exists
         if 'ServiceRole' in usr_model['Configurations']:
             service_role = usr_model['Configurations']['ServiceRole'].split('/')[-1]
             try:
@@ -60,7 +59,6 @@ class LifecycleConfiguration(ConversionConfiguration):
         """
 
         usr_model = dict()
-        # Grab only data we care about
         self._copy_api_entry('ApplicationName', usr_model)
         self._copy_api_entry('DateUpdated', usr_model)
         if 'ResourceLifecycleConfig' in self.api_model:
@@ -68,14 +66,12 @@ class LifecycleConfiguration(ConversionConfiguration):
         else:
             usr_model['Configurations'] = DEFAULT_LIFECYCLE_CONFIG
 
-            # If the service role is not in the current user model put the default role in it's place.
         if 'ServiceRole' not in usr_model['Configurations']:
             try:
                 role = get_role(DEFAULT_LIFECYCLE_SERVICE_ROLE)
                 if u'Arn' in role:
                     arn = role[u'Arn']
                 else:
-                    # IAM should always return the arn, just being extra safe
                     arn = DEFAULT_ARN_STRING
             except (NotFoundError, ServiceError):
                 arn = DEFAULT_ARN_STRING

@@ -33,16 +33,13 @@ class AppVersionController(AbstractBaseController):
 
     def do_command(self):
         self.app_name = self.get_app_name()
-        # For appversion, it's fine if environment is not defined
         self.env_name = self.get_env_name(noerror=True)
 
-        # if user passed in a app version label to delete
         if self.app.pargs.delete is not None:
             version_label_to_delete = self.app.pargs.delete
             appversionops.delete_app_version_label(self.app_name, version_label_to_delete)
             return
 
-        # if none of above, enter interactive mode
         self.interactive_list_version()
 
     def interactive_list_version(self):

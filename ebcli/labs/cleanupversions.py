@@ -50,7 +50,6 @@ class CleanupVersionsController(AbstractBaseController):
         app_versions = elasticbeanstalk.get_application_versions(app_name)['ApplicationVersions']
         app_versions.sort(key=itemgetter('DateUpdated'), reverse=True)
 
-        # Filter out versions currently being used
         app_versions = [v for v in app_versions if v['VersionLabel'] not in versions_in_use]
 
         total_num_unused_versions = len(app_versions)
@@ -62,12 +61,10 @@ class CleanupVersionsController(AbstractBaseController):
             )
             return
 
-        # Filter out versions newer than filter date
         app_versions = [v for v in app_versions if
                         utils.get_delta_from_now_and_datetime(
                             v['DateUpdated']).days > older_than]
 
-        # dont include most recent
         app_versions = app_versions[num_to_leave:]
 
         if app_versions:

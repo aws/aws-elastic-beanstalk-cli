@@ -70,12 +70,10 @@ class GenericPlatformLogsController(AbstractBaseController):
                     platform_name,
                     version,
                     log_name="%s/%s" % (platform_name, version),
-                    # Packer is our only builder type at this point
                     formatter=platformops.PackerStreamFormatter())
             except NotFoundError:
                 raise NotFoundError('Unable to find logs in CloudWatch.')
         else:
-            # print with paginator
             paginate_cloudwatch_logs(platform_name, version)
 
 

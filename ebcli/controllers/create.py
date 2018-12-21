@@ -117,7 +117,6 @@ class CreateController(AbstractBaseController):
         ]
 
     def do_command(self):
-        # save command line args
         env_name = self.app.pargs.environment_name
         modules = self.app.pargs.modules
         if modules and len(modules) > 0:
@@ -187,7 +186,6 @@ class CreateController(AbstractBaseController):
         database = self.form_database_object()
         vpc = self.form_vpc_object(tier, single)
 
-        # avoid prematurely timing out in the CLI when an environment is launched with a RDS DB
         if not timeout and database:
             timeout = 15
 
@@ -244,7 +242,6 @@ class CreateController(AbstractBaseController):
         instance = self.app.pargs.db_instance
         version = self.app.pargs.db_version
 
-        # Do we want a database?
         if create_db or username or password or engine or size \
                 or instance or version:
             db_object = dict()
@@ -276,7 +273,6 @@ class CreateController(AbstractBaseController):
         database = self.app.pargs.database
 
         if vpc:
-            # Interactively ask for vpc settings
             io.echo()
             vpc_id = vpc_id or io.get_input(prompts['vpc.id'])
 
@@ -341,7 +337,6 @@ class CreateController(AbstractBaseController):
 
             io.echo('--- Creating application version for module: {0} ---'.format(module))
 
-            # Re-run hooks to get values from .elasticbeanstalk folders of modules
             hooks.set_region(None)
             hooks.set_ssl(None)
             hooks.set_profile(None)
@@ -556,7 +551,6 @@ def get_template_name(app_name, cfg):
     :return: normalized
     """
     if not cfg:
-        # See if a default template exists
         if not saved_configs.resolve_config_location('default'):
             return
         else:

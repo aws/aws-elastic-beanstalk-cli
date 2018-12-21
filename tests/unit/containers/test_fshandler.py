@@ -65,8 +65,6 @@ class TestContainerFSHandler(TestCase):
     @patch('ebcli.containers.fshandler.fileoperations')
     @patch('ebcli.containers.fshandler.os')
     def test_require_append_dockerignore_true(self, os, fileoperations):
-        # That is, user already has a .dockerignore but is not ignoring
-        # .elasticbeanstalk and others
         os.path.isfile.return_value = True
         fileoperations.readlines_from_text_file.return_value = []
 

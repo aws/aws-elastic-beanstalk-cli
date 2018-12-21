@@ -128,12 +128,10 @@ class GenericPlatformCreateController(AbstractBaseController):
         )
 
     def get_instance_profile(self):
-        # Check to see if it was specified on the command line
         profile_name = self.app.pargs.instance_profile
 
         if profile_name is None:
             try:
-                # Check to see if it is associated with the workspace
                 profile_name = fileoperations.get_instance_profile()
             except NotInitializedError:
                 pass
@@ -145,7 +143,6 @@ class GenericPlatformCreateController(AbstractBaseController):
                 iam_attributes.DEFAULT_CUSTOM_PLATFORM_BUILDER_POLICIES
             )
 
-        # Save to disk
         write_config_setting('global', 'instance_profile', profile_name)
 
 

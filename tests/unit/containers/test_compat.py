@@ -115,7 +115,6 @@ class TestCompat(TestCase):
     def test_boot2docker_init_and_start(self, is_boot2docker_installed, utils):
         is_boot2docker_installed.return_value = True
 
-        # init=None, status='poweroff', start=None, ip=192.168.59.103
         utils.exec_cmd_quiet.side_effect = [None, 'poweroff',
                                             None, '192.168.59.103']
 
@@ -155,7 +154,6 @@ class TestCompat(TestCase):
 
     def test_remove_leading_zeros_from_version(self):
         versions_tests = []
-        # tuples of (input, expected_result)
         versions_tests.append(('0001.000.000', '1.0.0'))
         versions_tests.append(('1.0001.0000-rc.1', '1.1.0-rc.1'))
         versions_tests.append(('1.3.0', '1.3.0'))

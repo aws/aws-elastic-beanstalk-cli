@@ -160,14 +160,12 @@ def create_platform_version(
                 'Value': 'true'
             })
 
-    # Always enable healthd for the Platform Builder environment
     option_settings.append({
         'Namespace': namespaces.HEALTH_SYSTEM,
         'OptionName': option_names.SYSTEM_TYPE,
         'Value': 'enhanced'
     })
 
-    # Attach service role
     option_settings.append({
         'Namespace': namespaces.ENVIRONMENT,
         'OptionName': option_names.SERVICE_ROLE,
@@ -236,10 +234,8 @@ def create_environment(environment):
     kwargs = environment.convert_to_kwargs()
 
     if environment.database:
-        # need to know region for database string
         region = aws.get_region_name()
 
-        # Database is a dictionary
         kwargs['TemplateSpecification'] = {
             'TemplateSnippets': [
                 {'SnippetName': 'RdsExtensionEB',
@@ -252,7 +248,6 @@ def create_environment(environment):
 
     result = _make_api_call('create_environment', **kwargs)
 
-    # convert to object
     env = Environment.json_to_environment_object(result)
     request_id = result['ResponseMetadata']['RequestId']
     return env, request_id
@@ -268,7 +263,6 @@ def clone_environment(clone):
 
     result = _make_api_call('create_environment', **kwargs)
 
-    # convert to object
     environment = Environment.json_to_environment_object(result)
     request_id = result['ResponseMetadata']['RequestId']
     return environment, request_id
@@ -580,10 +574,8 @@ def get_environment_resources(env_name):
 def get_new_events(app_name, env_name, request_id,
                    last_event_time=None, version_label=None, platform_arn=None):
     LOG.debug('Inside get_new_events api wrapper')
-    # make call
+
     if last_event_time is not None:
-        # In python 2 time is a datetime, in 3 it is a string
-        # Convert to string for compatibility
         time = last_event_time
         new_time = time + datetime.timedelta(0, 0, 1000)
     else:

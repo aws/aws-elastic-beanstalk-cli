@@ -54,7 +54,6 @@ class SetupSSLController(AbstractBaseController):
         certchain = self.app.pargs.cert_chain
         cert_name = self.app.pargs.name
 
-        # Make sure arguments are valid
         if certfile or privatekey or certfile:
             if not (certfile and privatekey):
                 raise InvalidOptionsError(
@@ -65,7 +64,6 @@ class SetupSSLController(AbstractBaseController):
         if not cert_name:
             cert_name = env_name
 
-        # Check environment is not single instance
         if _is_single_instance(app_name, env_name):
             raise NotSupportedError('This command is currently not supported '
                                     'for single instance environments. \n'
@@ -73,7 +71,6 @@ class SetupSSLController(AbstractBaseController):
                                     'http://docs.aws.amazon.com/elasticbeanstalk/'
                                     'latest/dg/SSL.SingleInstance.html')
 
-        # Generate cert if not provided
         if not certfile:
             privatekey, certfile = generate_self_signed_cert(cert_name)
 
@@ -86,7 +83,6 @@ class SetupSSLController(AbstractBaseController):
                                                privatekey, chain=certchain)
         arn = result['Arn']
 
-        # Update environment
         option_settings = [
             elasticbeanstalk.create_option_setting(
                 namespaces.LOAD_BALANCER,
@@ -130,7 +126,6 @@ def generate_self_signed_cert(cert_name):
         raise CommandError('This command requires openssl to be '
                            'installed on the PATH')
 
-    # Create private key
     if not os.path.isfile(privatekey_dir):
         utils.exec_cmd_quiet(['openssl', 'genrsa', '-out', privatekey_dir])
 

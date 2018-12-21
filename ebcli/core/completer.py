@@ -43,13 +43,11 @@ class CompleterController(controller.CementBaseController):
 
         commands = self.app.pargs.cmplt.strip('"')
 
-        # Get commands, filter out last one
         commands = commands.split(' ')
         word_so_far = commands[-1]
         commands = commands[0:-1]
         commands = list(filter(lambda x: len(x) > 0, commands))
 
-        # Get the list of controllers
         self.controllers = handler.list('controller')
         self._filter_controllers()
 

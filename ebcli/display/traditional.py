@@ -135,7 +135,6 @@ class TraditionalHealthScreen(Screen):
 
     def draw_banner_info_lines(self, lines, data):
         if lines > 2:
-            # Get instance health count
             term.echo_line('instances:',
                            io.bold(data.get('Total', 0)), 'Total,',
                            io.bold(data.get('InService', 0)), 'InService,',

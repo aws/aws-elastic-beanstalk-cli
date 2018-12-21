@@ -49,18 +49,14 @@ def recursive_print_api_dict(config, spaced=2):
 
 
 def interactive_update_lifcycle_policy(app_name):
-    # Get current application settings
     api_model = elasticbeanstalk.describe_application(app_name)
 
-    # Convert into yaml format from raw API
     lifecycle_config = LifecycleConfiguration(api_model)
     usr_model = lifecycle_config.convert_api_to_usr_model()
 
-    # Save yaml file into temp file
     file_location = fileoperations.save_app_file(usr_model)
     fileoperations.open_file_for_editing(file_location)
 
-    # Update and delete file
     try:
         usr_model = fileoperations.get_application_from_file(app_name)
         config_changes = lifecycle_config.collect_changes(usr_model)
@@ -71,7 +67,6 @@ def interactive_update_lifcycle_policy(app_name):
         return
 
     if not config_changes:
-        # no changes made, exit
         io.log_warning(strings['lifecycle.updatenochanges'])
         return
 

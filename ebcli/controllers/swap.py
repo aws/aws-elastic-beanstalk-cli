@@ -36,18 +36,14 @@ class SwapController(AbstractBaseController):
         destination_env = self.app.pargs.destination_name
 
         if not destination_env:
-            # Ask interactively for an env to swap with
             envs = elasticbeanstalk.get_environment_names(app_name)
             if len(envs) < 2:
                 raise NotSupportedError(strings['swap.unsupported'])
 
-            # Filter out current env
             envs = [e for e in envs if e != source_env]
             if len(envs) == 1:
-                # Don't ask for env, just swap with only other environment
                 destination_env = envs[0]
             else:
-                # Ask for env to swap with
                 io.echo()
                 io.echo(prompts['swap.envprompt'])
                 destination_env = utils.prompt_for_item_in_list(envs)

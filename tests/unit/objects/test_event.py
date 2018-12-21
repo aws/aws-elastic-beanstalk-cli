@@ -45,7 +45,6 @@ class TestEvent(unittest.TestCase):
         self.assertEqual(events[0], events[1])
 
     def test_events__unequal(self):
-        # 'ApplicationName' is misspelt
         event_1 = {
             'EventDate': '2018-03-12T22:14:14.292Z',
             'Message': 'Deleting SNS topic for environment my-environment.',
@@ -55,7 +54,6 @@ class TestEvent(unittest.TestCase):
             'Severity': 'INFO'
         }
 
-        # 'Severity' differs
         event_2 = {
             'EventDate': '2018-03-12T22:14:14.292Z',
             'Message': 'Deleting SNS topic for environment my-environment.',
@@ -65,7 +63,6 @@ class TestEvent(unittest.TestCase):
             'Severity': 'SEVERE'
         }
 
-        # candidate Event object
         event_candidate = {
             'EventDate': '2018-03-12T22:14:14.292Z',
             'Message': 'Deleting SNS topic for environment my-environment.',

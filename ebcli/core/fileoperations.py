@@ -62,7 +62,6 @@ def get_ssh_folder():
 
 
 beanstalk_directory = '.elasticbeanstalk' + os.path.sep
-# TODO: Need to support yaml and yml
 buildspec_name = "buildspec.yml"
 buildspec_config_header = 'eb_codebuild_settings'
 global_config_file = beanstalk_directory + 'config.global.yml'
@@ -94,9 +93,9 @@ class ProjectRoot(object):
         if not os.path.isdir(beanstalk_directory):
             LOG.debug('beanstalk directory not found in ' + cwd +
                       '  -Going up a level')
-            os.chdir(os.path.pardir)  # Go up one directory
+            os.chdir(os.path.pardir)
 
-            if cwd == os.getcwd():  # We can't move any further
+            if cwd == os.getcwd():
                 LOG.debug('Still at the same directory ' + cwd)
                 raise NotInitializedError('EB is not yet initialized')
 
@@ -122,7 +121,6 @@ def is_git_directory_present():
 
 
 def clean_up():
-    # remove dir
     cwd = os.getcwd()
     try:
         ProjectRoot.traverse()
@@ -308,7 +306,6 @@ def get_global_value(key, default=_marker):
     if result is not None:
         return result
 
-    # get_config_setting should throw error if directory is not set up
     LOG.debug('Directory found, but no config or app name exists')
     if default is _marker:
         raise NotInitializedError
@@ -350,7 +347,6 @@ def create_config_file(
                     if dir_path
                     else beanstalk_directory)
 
-    # add to global without writing over any settings if they exist
     write_config_setting('global', 'application_name', app_name, dir_path=dir_path)
     write_config_setting('global', 'default_region', region, dir_path=dir_path)
     write_config_setting('global', 'default_platform', solution_stack, dir_path=dir_path)
@@ -384,7 +380,6 @@ def get_zip_location(file_name):
     try:
         ProjectRoot.traverse()
         if not os.path.isdir(app_version_folder):
-            # create it
             os.makedirs(app_version_folder)
 
         return os.path.abspath(app_version_folder) + os.path.sep + file_name
@@ -398,7 +393,6 @@ def get_logs_location(folder_name):
     try:
         ProjectRoot.traverse()
         if not os.path.isdir(logs_folder):
-            # create it
             os.makedirs(logs_folder)
 
         return os.path.abspath(os.path.join(logs_folder, folder_name))
@@ -416,7 +410,6 @@ def os_which(program):
     for p in path.split(os.path.pathsep):
         p = os.path.join(p, program)
         if sys.platform.startswith('win'):
-            # Add .exe for windows
             p += '.exe'
         if os.path.exists(p) and os.access(p, os.X_OK):
             return p
@@ -498,9 +491,6 @@ def _zipdir(path, zipf, ignore_list=None):
                 zipInfo.filename = os.path.join(root, d)
 
                 # 2716663808L is the "magic code" for symlinks
-
-                # Python 3 merged "int" and "long" into int, so we must check the version
-                # to determine what type to use
                 if sys.version_info > (3,):
                     zipInfo.external_attr = 2716663808
                 else:
@@ -523,10 +513,6 @@ def _zipdir(path, zipf, ignore_list=None):
                     zipInfo = zipfile.ZipInfo()
                     zipInfo.filename = os.path.join(root, f)
 
-                    # 2716663808L is the "magic code" for symlinks
-
-                    # Python 3 merged "int" and "long" into int, so we must check the
-                    # version to determine what type to use
                     if sys.version_info > (3,):
                         zipInfo.external_attr = 2716663808
                     else:
@@ -594,7 +580,6 @@ def get_editor():
 def save_app_file(app):
     cwd = os.getcwd()
     env_name = app['ApplicationName']
-    # ..yml extension helps editors enable syntax highlighting
     file_name = env_name + '.app.yml'
 
     file_name = beanstalk_directory + file_name
@@ -616,7 +601,6 @@ def save_app_file(app):
 def save_env_file(env):
     cwd = os.getcwd()
     env_name = env['EnvironmentName']
-    # ..yml extension helps editors enable syntax highlighting
     file_name = env_name + '.env.yml'
 
     file_name = beanstalk_directory + file_name
@@ -692,7 +676,7 @@ def get_keyname():
 
 
 def write_config_setting(section, key_name, value, dir_path=None, file=local_config_file):
-    cwd = os.getcwd()  # save working directory
+    cwd = os.getcwd()
     if dir_path:
         os.chdir(dir_path)
     try:
@@ -715,12 +699,11 @@ def write_config_setting(section, key_name, value, dir_path=None, file=local_con
                               line_break=os.linesep))
 
     finally:
-        os.chdir(cwd)  # go back to working directory
+        os.chdir(cwd)
 
 
 def get_config_setting(section, key_name, default=_marker):
-    # get setting from global if it exists
-    cwd = os.getcwd()  # save working directory
+    cwd = os.getcwd()
 
     try:
         ProjectRoot.traverse()
@@ -738,7 +721,7 @@ def get_config_setting(section, key_name, default=_marker):
             if config_local:
                 value = config_local[section][key_name]
         except KeyError:
-            pass  # Revert to global value
+            pass
 
         if value is None and default != _marker:
             return default
@@ -748,7 +731,7 @@ def get_config_setting(section, key_name, default=_marker):
         else:
             return default
     finally:
-        os.chdir(cwd)  # move back to working directory
+        os.chdir(cwd)
     return value
 
 
@@ -803,21 +786,18 @@ def build_spec_exists():
 
 
 def get_build_configuration():
-    # Values expected in the eb config section in BuildSpec
     service_role_key = 'CodeBuildServiceRole'
     image_key = 'Image'
     compute_key = 'ComputeType'
     timeout_key = 'Timeout'
 
-    # get setting from global if it exists
-    cwd = os.getcwd()  # save working directory
+    cwd = os.getcwd()
 
     try:
         ProjectRoot.traverse()
 
         build_spec = _get_yaml_dict(buildspec_name)
 
-        # Assert that special beanstalk section exists
         if build_spec is None or buildspec_config_header not in build_spec.keys():
             LOG.debug("Buildspec Keys: {0}".format(build_spec.keys()))
             io.log_warning(strings['codebuild.noheader'].replace('{header}', buildspec_config_header))
@@ -838,7 +818,7 @@ def get_build_configuration():
             timeout=beanstalk_build_configs.get(timeout_key)
         )
     finally:
-        os.chdir(cwd)  # move back to working directory
+        os.chdir(cwd)
 
     return build_configuration
 
@@ -939,7 +919,6 @@ def get_filename_without_extension(file_location):
     filename = os.path.basename(file_location)
     extension = 'fake'
     while extension != '':
-        # Split multiple extensions
         filename, extension = os.path.splitext(filename)
     return filename
 
@@ -969,7 +948,6 @@ def get_platform_from_env_yaml():
 
 
 def open_file_for_editing(file_location):
-    # Added this line for windows whitespace escaping
     file_location = '"{0}"'.format(file_location)
     editor = get_editor()
     try:

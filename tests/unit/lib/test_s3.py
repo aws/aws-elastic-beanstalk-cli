@@ -403,7 +403,6 @@ class TestS3(unittest.TestCase):
         _all_parts_were_uploaded_mock.return_value = True
 
         self.assertTrue(
-            # complete_multipart_upload_return,
             s3.multithreaded_upload('bucket', 'key', 'tempfile.txt')
         )
         _get_multipart_upload_id_mock.assert_called_once_with('bucket', 'key')
@@ -519,7 +518,7 @@ class TestS3(unittest.TestCase):
         _get_part_etag_mock.side_effect = [
             None,
             {'ETag': 'Tag 1'},
-            s3.EndOfTestError  # deliberately raise to exit infinite loop
+            s3.EndOfTestError
         ]
         make_api_call_mock.return_value = 'response 1'
         lock = threading.Lock()
@@ -680,5 +679,4 @@ class TestS3(unittest.TestCase):
             s3._read_next_section_from_file(file_mock, lock)
         self.assertEqual(2, s3._read_next_section_from_file.part_num)
 
-        # Restore original value that was set at the time of module import
         setattr(s3._read_next_section_from_file, 'part_num', 0)

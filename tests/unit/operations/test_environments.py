@@ -53,7 +53,6 @@ class TestCreateEnvironment(baseinttest.BaseOperationsTest):
             createops.create_env(env_request, interactive=False)
             self.fail('Should have thrown InvalidParameterValueError')
         except InvalidParameterValueError:
-            # Expected
             pass
 
     def test_create_new_environment_cname_taken(self):
@@ -85,7 +84,6 @@ class TestCreateEnvironment(baseinttest.BaseOperationsTest):
             createops.create_env(env_request, interactive=False)
             self.fail('Should have thrown InvalidParameterValueError')
         except InvalidParameterValueError:
-            # Expected
             pass
 
     def test_create_new_environment_app_notexists(self):
@@ -101,7 +99,6 @@ class TestCreateEnvironment(baseinttest.BaseOperationsTest):
             createops.create_env(env_request, interactive=True)
             self.fail('Should have thrown InvalidParameterValueError')
         except InvalidParameterValueError:
-            # Expected
             pass
 
     def test_create_new_environment_app_notexists_script(self):
@@ -117,5 +114,4 @@ class TestCreateEnvironment(baseinttest.BaseOperationsTest):
             createops.create_env(env_request, interactive=False)
             self.fail('Should have thrown InvalidParameterValueError')
         except InvalidParameterValueError:
-            #Expected
             pass

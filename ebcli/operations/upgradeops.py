@@ -75,7 +75,6 @@ def upgrade_env(app_name, env_name, timeout, confirm, noroll):
             io.echo()
 
         if not confirm:
-            # Get confirmation
             io.validate_action(prompts['upgrade.validate'], env.name)
 
         add_rolling = _should_add_rolling(single, rolling_enabled, noroll)

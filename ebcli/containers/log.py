@@ -101,13 +101,12 @@ def _get_last_local_logs(root_log):
 
 
 def _symlink_new_log_dir(root_log_dir, new_local_dir):
-    # Symlink latest
     latest_symlink_path = _symlink_path(root_log_dir)
 
     try:
         os.unlink(latest_symlink_path)
     except OSError:
-        pass  # Windows or latest_symlink_path is not a symlink
+        pass
     try:
         os.symlink(new_local_dir, latest_symlink_path)
     except OSError:

@@ -58,7 +58,6 @@ def setup(
         repository=repository,
         branch=branch)
 
-    # Handle tomcat special case
     if (
         solution is not None
         and 'tomcat' in solution.lower()

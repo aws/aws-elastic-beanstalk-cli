@@ -34,12 +34,10 @@ class TestAppVersionsOperations(unittest.TestCase):
         self.mock_elasticbeanstalk = self.patcher_elasticbeanstalk.start()
         self.mock_io = self.patcher_io.start()
 
-        # define mock get app_versions behaviour
         self.mock_elasticbeanstalk.get_application_versions.return_value = {u'ApplicationVersions': [
             {u'ApplicationName': self.app_name, u'VersionLabel': self.version_to_delete},
             {u'ApplicationName': self.app_name, u'VersionLabel': self.version_deployed}
         ]}
-        # define mock get_app_environments behaviour
         self.mock_elasticbeanstalk.get_app_environments.return_value = \
             [Environment(version_label=self.version_deployed, app_name=self.app_name, name='wow')]
 
@@ -49,15 +47,12 @@ class TestAppVersionsOperations(unittest.TestCase):
         self.patcher_io.stop()
 
     def test_delete_none_app_version_label(self):
-        # if version label is not defined, throw exception
         self.assertRaises(NotFoundError, appversionops.delete_app_version_label, self.app_name, None)
 
     def test_delete_nonexist_app_version_label(self):
-        # if version label does not exist at all, throw exception
         self.assertRaises(ValidationError, appversionops.delete_app_version_label, self.app_name, self.version_nonexist)
 
     def test_delete_deployed_app_version_label(self):
-        # if version label is deployed, throw exception
         self.assertRaises(ValidationError, appversionops.delete_app_version_label, self.app_name, self.version_deployed)
 
     def test_delete_correct_app_version_label(self):

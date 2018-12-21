@@ -27,7 +27,6 @@ LOG = minimal_logger(__name__)
 
 def make_cloned_env(clone_request, nohang=False, timeout=None):
     io.log_info('Cloning environment')
-    # get app version from environment
     env = elasticbeanstalk.get_environment(
         app_name=clone_request.app_name,
         env_name=clone_request.original_name
@@ -35,7 +34,6 @@ def make_cloned_env(clone_request, nohang=False, timeout=None):
     clone_request.version_label = env.version_label
     result, request_id = clone_env(clone_request)
 
-    # Print status of env
     result.print_env_details(
         io.echo,
         elasticbeanstalk.get_environments,

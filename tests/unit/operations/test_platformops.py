@@ -261,7 +261,6 @@ class TestPlatformOperations(unittest.TestCase):
 
     def setUp(self):
         disable_socket()
-        # set up test directory
         if not os.path.exists('testDir'):
             os.makedirs('testDir')
         os.chdir('testDir')

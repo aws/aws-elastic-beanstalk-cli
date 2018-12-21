@@ -24,7 +24,6 @@ def deploy(app_name, env_name, version, label, message, group_name=None,
            process_app_versions=False, staged=False, timeout=5, source=None):
     region_name = aws.get_region_name()
 
-    # Parse and get Build Configuration from BuildSpec if it exists
     build_config = None
     if fileoperations.build_spec_exists() and version is None:
         build_config = fileoperations.get_build_configuration()
@@ -51,7 +50,6 @@ def deploy(app_name, env_name, version, label, message, group_name=None,
         io.echo("Starting environment deployment via CodeCommit")
         process_app_versions = True
     else:
-        # Create app version
         app_version_label = commonops.create_app_version(
             app_name,
             process=process_app_versions,
@@ -73,7 +71,6 @@ def deploy(app_name, env_name, version, label, message, group_name=None,
         if not success:
             return
 
-    # swap env to new app version
     request_id = elasticbeanstalk.update_env_application_version(
         env_name, app_version_label, group_name)
 

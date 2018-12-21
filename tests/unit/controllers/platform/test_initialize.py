@@ -73,7 +73,6 @@ class TestEBPlatform(TestInitialize):
         app.setup()
         app.run()
 
-        # runs once in EBP.setup, then against in initialize.py
         set_region_mock.assert_has_calls([mock.call(None), mock.call('us-west-2')])
         set_up_credentials_mock.assert_called_once_with(None, 'us-west-2', False)
         setup_mock.assert_called_once_with(
@@ -115,7 +114,6 @@ class TestEBPlatform(TestInitialize):
         app.setup()
         app.run()
 
-        # runs once in EBP.setup, then against in initialize.py
         set_region_mock.assert_has_calls([mock.call(None), mock.call('us-west-2')])
         set_up_credentials_mock.assert_called_once_with(None, 'us-west-2', False)
         setup_mock.assert_called_once_with(
@@ -160,7 +158,6 @@ class TestEBPlatform(TestInitialize):
         app.setup()
         app.run()
 
-        # runs once in EBP.setup, then against in initialize.py
         set_region_mock.assert_has_calls([mock.call(None), mock.call('us-west-2')])
         set_up_credentials_mock.assert_called_once_with(None, 'us-west-2', True)
         setup_mock.assert_called_once_with(
@@ -206,7 +203,6 @@ class TestEBPlatform(TestInitialize):
         app.setup()
         app.run()
 
-        # runs once in EBP.setup, then against in initialize.py
         set_region_mock.assert_has_calls([mock.call(None), mock.call('us-west-2')])
         set_up_credentials_mock.assert_called_once_with(None, 'us-west-2', True)
         setup_mock.assert_called_once_with(
@@ -252,7 +248,6 @@ class TestEBPlatform(TestInitialize):
         app.setup()
         app.run()
 
-        # runs once in EBP.setup, then against in initialize.py
         set_region_mock.assert_has_calls([mock.call(None), mock.call('us-west-2')])
         set_up_credentials_mock.assert_called_once_with(None, 'us-west-2', True)
         setup_mock.assert_called_once_with(
@@ -297,7 +292,6 @@ class TestEBPlatform(TestInitialize):
         app.setup()
         app.run()
 
-        # runs once in EBP.setup, then against in initialize.py
         set_region_mock.assert_has_calls([mock.call(None), mock.call('us-west-2')])
         set_up_credentials_mock.assert_called_once_with(None, 'us-west-2', True)
         setup_mock.assert_called_once_with(
@@ -343,7 +337,6 @@ class TestEBP(TestInitialize):
         app.setup()
         app.run()
 
-        # runs once in EBP.setup, then against in initialize.py
         set_region_mock.assert_has_calls([mock.call(None), mock.call('us-west-2')])
         set_up_credentials_mock.assert_called_once_with(None, 'us-west-2', False)
         setup_mock.assert_called_once_with(
@@ -385,7 +378,6 @@ class TestEBP(TestInitialize):
         app.setup()
         app.run()
 
-        # runs once in EBP.setup, then against in initialize.py
         set_region_mock.assert_has_calls([mock.call(None), mock.call('us-west-2')])
         set_up_credentials_mock.assert_called_once_with(None, 'us-west-2', False)
         setup_mock.assert_called_once_with(
@@ -430,7 +422,6 @@ class TestEBP(TestInitialize):
         app.setup()
         app.run()
 
-        # runs once in EBP.setup, then against in initialize.py
         set_region_mock.assert_has_calls([mock.call(None), mock.call('us-west-2')])
         set_up_credentials_mock.assert_called_once_with(None, 'us-west-2', True)
         setup_mock.assert_called_once_with(
@@ -476,7 +467,6 @@ class TestEBP(TestInitialize):
         app.setup()
         app.run()
 
-        # runs once in EBP.setup, then against in initialize.py
         set_region_mock.assert_has_calls([mock.call(None), mock.call('us-west-2')])
         set_up_credentials_mock.assert_called_once_with(None, 'us-west-2', True)
         setup_mock.assert_called_once_with(
@@ -522,7 +512,6 @@ class TestEBP(TestInitialize):
         app.setup()
         app.run()
 
-        # runs once in EBP.setup, then against in initialize.py
         set_region_mock.assert_has_calls([mock.call(None), mock.call('us-west-2')])
         set_up_credentials_mock.assert_called_once_with(None, 'us-west-2', True)
         setup_mock.assert_called_once_with(
@@ -567,7 +556,6 @@ class TestEBP(TestInitialize):
         app.setup()
         app.run()
 
-        # runs once in EBP.setup, then against in initialize.py
         set_region_mock.assert_has_calls([mock.call(None), mock.call('us-west-2')])
         set_up_credentials_mock.assert_called_once_with(None, 'us-west-2', True)
         setup_mock.assert_called_once_with(

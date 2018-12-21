@@ -23,7 +23,6 @@ from ebcli.core import io
 class TestIo(unittest.TestCase):
     @mock.patch('ebcli.core.io.prompt')
     def test_prompt_for_environment_name(self, mock_prompt):
-        # Make a list of bad environment Names
         invalid_cases = [
             'Inv@lid',
             'sml',
@@ -46,7 +45,6 @@ class TestIo(unittest.TestCase):
             'standard-name',
         ]
 
-        # Make a list of good names
         valid_cases = [
             'ALL-UPPER',
             'MiXeD-CaSe',
@@ -61,12 +59,10 @@ class TestIo(unittest.TestCase):
 
         mock_prompt.side_effect = invalid_cases
 
-        # Do invalid cases. Should loop through them all
         result = io.prompt_for_environment_name()
         self.assertEqual(result, 'standard-name')
         self.assertEqual(mock_prompt.call_count, len(invalid_cases))
 
-        # Do valid cases
         mock_prompt.side_effect = valid_cases
         for case in valid_cases:
             value = io.prompt_for_environment_name()
@@ -74,24 +70,22 @@ class TestIo(unittest.TestCase):
 
     @mock.patch('ebcli.core.io.get_input')
     def test_get_boolean_response_bad(self, mock_io):
-        # populate with all bad responses
-        # Last response must be valid in order to terminate loop
         response_list = ['a', '1', 'Ys', 'x', '', 'nah', '?', 'y']
         mock_io.side_effect = response_list
         result = io.get_boolean_response()
 
-        #test
         self.assertTrue(result)
         self.assertEqual(mock_io.call_count, len(response_list))
 
     @mock.patch('ebcli.core.io.get_input')
     def test_get_boolean_response_true(self, mock_io):
         mock_io.side_effect = ['y', 'Y', 'YES', 'yes', 'Yes']
-        result1 = io.get_boolean_response()  # test with y
-        result2 = io.get_boolean_response()  # test with Y
-        result3 = io.get_boolean_response()  # test with YES
-        result4 = io.get_boolean_response()  # test with yes
-        result5 = io.get_boolean_response()  # test with Yes
+
+        result1 = io.get_boolean_response()
+        result2 = io.get_boolean_response()
+        result3 = io.get_boolean_response()
+        result4 = io.get_boolean_response()
+        result5 = io.get_boolean_response()
         self.assertTrue(result1)
         self.assertTrue(result2)
         self.assertTrue(result3)
@@ -101,11 +95,11 @@ class TestIo(unittest.TestCase):
     @mock.patch('ebcli.core.io.get_input')
     def test_get_boolean_response_false(self, mock_io):
         mock_io.side_effect = ['n', 'N', 'NO', 'no', 'No']
-        result1 = io.get_boolean_response()  # test with n
-        result2 = io.get_boolean_response()  # test with N
-        result3 = io.get_boolean_response()  # test with NO
-        result4 = io.get_boolean_response()  # test with no
-        result5 = io.get_boolean_response()  # test with No
+        result1 = io.get_boolean_response()
+        result2 = io.get_boolean_response()
+        result3 = io.get_boolean_response()
+        result4 = io.get_boolean_response()
+        result5 = io.get_boolean_response()
         self.assertFalse(result1)
         self.assertFalse(result2)
         self.assertFalse(result3)

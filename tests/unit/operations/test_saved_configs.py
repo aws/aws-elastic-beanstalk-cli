@@ -31,12 +31,10 @@ class TestResolveConfigLocations(unittest.TestCase):
 
     def setUp(self):
         disable_socket()
-        # set up test directory
         if not os.path.exists('testDir'):
             os.makedirs('testDir/.elasticbeanstalk/')
         os.chdir('testDir')
 
-        # set up mock elastic beanstalk directory
         if not os.path.exists(fileoperations.beanstalk_directory):
             os.makedirs(fileoperations.beanstalk_directory)
 
@@ -127,7 +125,6 @@ class TestResolveConfigLocations(unittest.TestCase):
         self.assertEqual(result, location)
 
     def test_resolve_config_location_correct_resolve(self):
-        # make both, make sure private is resolved
         cfg_name = 'myfile'
         location_public = cfg_name + '.cfg.yml'
         location_private = 'saved_configs' + os.path.sep + cfg_name + '.cfg.yml'
@@ -145,7 +142,6 @@ class TestResolveConfigLocations(unittest.TestCase):
         self.assertEqual(result, location_private)
 
     def test_resolve_config_location_correct_resolve_with_extension(self):
-        # make both, make sure private is resolved
         cfg_name = 'myfile.cfg.yml'
         location_public = cfg_name
         location_private = 'saved_configs' + os.path.sep + cfg_name

@@ -36,7 +36,7 @@ LOG = minimal_logger(__name__)
 
 class Screen(object):
     def __init__(self):
-        self.term = None  # terminal object
+        self.term = None
         self.tables = []
         self.vertical_offset = 0
         self.horizontal_offset = 0

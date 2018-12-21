@@ -120,7 +120,6 @@ class EnvironmentSettings(ConversionConfiguration):
             if 'ResourceName' in setting:
                 namespace = setting['ResourceName'] + '.' + namespace
             if namespace not in usr_model_settings:
-                # create it
                 usr_model_settings[namespace] = dict()
 
             key = setting['OptionName']

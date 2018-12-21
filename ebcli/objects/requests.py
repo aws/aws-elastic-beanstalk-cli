@@ -219,7 +219,6 @@ class CreateEnvironmentRequest(object):
 
     def add_client_defaults(self):
         if self.template_name:
-            # dont add client defaults if a template is being used
             return
 
         if self.platform and self.platform.has_healthd_support:
@@ -325,6 +324,5 @@ class CloneEnvironmentRequest(CreateEnvironmentRequest):
 
     def compile_option_settings(self):
         if not self.compiled:
-            # dont compile extras like vpc/database/etc.
             self.compile_common_options()
             self.compiled = True

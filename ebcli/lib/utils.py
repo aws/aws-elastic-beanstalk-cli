@@ -46,7 +46,7 @@ def prompt_for_index_in_list(lst, default=1):
             choice = int(io.prompt('default is ' + str(default),
                                    default=default))
             if not (0 < choice <= len(lst)):
-                raise ValueError  # Also thrown by non int numbers
+                raise ValueError
             else:
                 break
         except ValueError:
@@ -57,12 +57,6 @@ def prompt_for_index_in_list(lst, default=1):
 
 
 def get_unique_name(name, current_uniques):
-    # with warnings.catch_warnings():
-    #     warnings.simplefilter('ignore')
-    #     if sys.version_info[0] >= 3:
-    #         base_name = name
-    #     else:
-    #         base_name = name.decode('utf8')
     base_name = name
 
     number = 2
@@ -102,7 +96,6 @@ def print_list_in_columns(lst):
 
             io.echo_and_justify(42, *line)
     else:
-        # Dont print in columns if using pipe
         for i in lst:
             io.echo(i)
 
@@ -270,7 +263,7 @@ def prettydate(d):
     :return str
     """
 
-    if isinstance(d, float):  # epoch timestamp
+    if isinstance(d, float):
         d = datetime.utcfromtimestamp(d)
 
     diff = datetime.utcnow() - d

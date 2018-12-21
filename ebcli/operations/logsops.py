@@ -728,7 +728,6 @@ def wait_for_log_group_to_come_into_existence(log_group_name, sleep_time=10):
 
 
 def _attempt_update_symlink_to_latest_logs_retrieved(logs_location):
-    # `symlink` is not defined on Python 2.7 for Windows
     if not getattr(os, 'symlink', None):
         LOG.debug("Couldn't create symlink to latest logs retrieved")
 
@@ -836,7 +835,6 @@ def _get_cloudwatch_messages(
                 formatted_message = '[{1}] {0}'.format(message, stream_name)
 
             messages.append(formatted_message)
-        # Set the next token
         next_token = response.get('nextForwardToken')
 
     return messages, next_token, latest_event_timestamp

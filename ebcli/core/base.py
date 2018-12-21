@@ -29,7 +29,6 @@ class EbBaseController(controller.CementBaseController):
     class Meta:
         label = 'base'
         description = strings['base.info']
-        # usage = eb {cmd} --option
         arguments = [
             (['--version'], dict(action='store_true',
                                  help=flag_text['base.version'])),

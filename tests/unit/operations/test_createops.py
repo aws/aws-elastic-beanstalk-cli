@@ -100,7 +100,6 @@ class TestCreateOps(unittest.TestCase):
     ):
         get_template_response = {}
 
-        # save original definition of io.log_warning
         io._log_warning = io.log_warning
         io.log_warning = mock.MagicMock()
 
@@ -117,7 +116,6 @@ class TestCreateOps(unittest.TestCase):
             wait_until_stack_exists_mock,
             get_environment_mock
     ):
-        # save original definition of io.log_warning
         io._log_warning = io.log_warning
         io.log_warning = mock.MagicMock()
 

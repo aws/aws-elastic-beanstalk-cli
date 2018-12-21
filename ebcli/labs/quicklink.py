@@ -48,16 +48,11 @@ def get_quick_link(app_name, env_name):
         option_settings, 'aws:autoscaling:launchconfiguration', 'InstanceType')
 
     link = 'https://console.aws.amazon.com/elasticbeanstalk/home?'
-    # add region
     region = aws.get_region_name()
     link += 'region=' + urllib.parse.quote(region)
-    # add quicklaunch flag
     link += '#/newApplication'
-    # add application name
     link += '?applicationName=' + urllib.parse.quote(app_name)
-    # add solution stack
     link += '&solutionStackName=' + urllib.parse.quote(env.platform.platform_shorthand)
-    # add
     link += '&tierName=' + env.tier.name
     if environment_type:
         link += '&environmentType=' + environment_type

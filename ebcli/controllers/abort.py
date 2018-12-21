@@ -31,20 +31,16 @@ class AbortController(AbstractBaseController):
         provided_env_name = bool(self.app.pargs.environment_name)
 
         if not provided_env_name:
-            # Ask interactively for an env to abort
             envs = abortops.get_abortable_envs(app_name)
             if len(envs) < 1:
                 raise NotFoundError(strings['abort.noabortableenvs'])
             if len(envs) == 1:
-                # Don't ask for env, just abort only abortable environment
                 env_name = envs[0].name
             else:
-                # Ask for env to abort
                 io.echo()
                 io.echo(prompts['abort.envprompt'])
                 env_name = utils.prompt_for_item_in_list(envs).name
         else:
-            # Just do the abort if env_name is provided
             pass
 
         abortops.abort_operation(env_name)

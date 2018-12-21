@@ -146,7 +146,6 @@ def _get_client(service_name):
         LOG.debug('Creating new Botocore Client for ' + str(service_name))
         client = session.create_client(service_name,
                                        endpoint_url=endpoint_url,
-                                       # region_name=_region_name,
                                        aws_access_key_id=aws_access_key_id,
                                        aws_secret_access_key=aws_secret_key,
                                        verify=_verify_ssl,
@@ -266,7 +265,6 @@ def _handle_response_code(response_data, attempt, aggregated_error_message):
     except KeyError:
         message = ""
     if status == 400:
-        # Convert to correct 400 error
         error = _get_400_error(response_data, message)
         if isinstance(error, ThrottlingError):
             LOG.debug('Received throttling error')
@@ -357,7 +355,6 @@ def _get_400_error(response_data, message):
         ]
         return TooManyConfigurationTemplatesException(' '.join(message))
     else:
-        # Not tracking this error
         return ServiceError(message, code=code)
 
 

@@ -73,7 +73,6 @@ class EB(foundation.CementApp):
     def setup(self):
         ebglobals.app = self
 
-        # Add hooks
         hook.register('post_argument_parsing', hooks.pre_run_hook)
 
         environment_controllers = [
@@ -121,7 +120,6 @@ class EB(foundation.CementApp):
         for controller in environment_controllers:
             controller._add_to_handler(handler)
 
-        # Add special controllers
         handler.register(CompleterController)
 
         super(EB, self).setup()

@@ -100,7 +100,6 @@ def _get_solution_stack():
     solution_string = solution_stack_ops.get_default_solution_stack()
     soln_stk = None
 
-    # Test out sstack and tier before we ask any questions (Fast Fail)
     if solution_string:
         if PlatformVersion.is_custom_platform_arn(solution_string):
             try:

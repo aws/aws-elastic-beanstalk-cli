@@ -57,7 +57,6 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
     start = datetime.utcnow()
     timediff = timedelta(seconds=timeout_in_minutes * 60)
 
-    # default to now, will update if request_id is provided
     last_time = start
 
     if streamer is None:
@@ -68,14 +67,11 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
 
     events = []
 
-    # If the even stream is terminated before we finish streaming application version events we will not
-    #   be able to continue the command so we must warn the user it is not safe to quit.
     safe_to_quit = True
     if version_label is not None and request_id is None:
         safe_to_quit = False
 
     try:
-        # Get first event in order to get start time
         if request_id:
             while not events:
                 events = elasticbeanstalk.get_new_events(
@@ -108,7 +104,6 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                 else:
                     _sleep(sleep_time)
 
-        # Get remaining events
         while not _timeout_reached(start, timediff):
             _sleep(sleep_time)
 
@@ -138,8 +133,6 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                         ),
                         safe_to_quit=safe_to_quit
                     )
-                    # We dont need to update last_time if we are not printing.
-                    # This can solve timing issues
                     last_time = event.event_date
 
                 _raise_if_error_event(event.message)
@@ -147,7 +140,6 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                     return
     finally:
         streamer.end_stream()
-    # We have timed out
 
     if not timeout_error_message:
         timeout_error_message = strings['timeout.error'].format(timeout_in_minutes=timeout_in_minutes)
@@ -200,8 +192,6 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
     compose_events = []
 
     for i in range(len(grouped_envs)):
-        # Like indices of last_times and events_matrix correspond
-        # to the same environment
         last_times.append(datetime.utcnow())
         events_matrix.append([])
         successes.append(False)
@@ -211,13 +201,10 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
         streamer.prompt += strings['events.abortmessage']
 
     try:
-        # Poll for events from all environments
         while not _timeout_reached(start, timediff):
-            # Check for success from all environments
             if all(successes):
                 return
 
-            # Poll for ComposeEnvironments events
             compose_events = elasticbeanstalk.get_new_events(app_name=app_name,
                                                              env_name=None,
                                                              request_id=request_id,
@@ -248,7 +235,6 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
     finally:
         streamer.end_stream()
 
-    # TODO: Must raise TimeoutError here
     io.log_error(strings['timeout.error'])
 
 
@@ -383,7 +369,6 @@ def get_app_version_s3_location(app_name, version_label):
 
 
 def create_app(app_name, default_env=None):
-    # Attempt to create app
     try:
         io.log_info('Creating application: ' + app_name)
         elasticbeanstalk.create_application(
@@ -404,14 +389,11 @@ def create_app(app_name, default_env=None):
 
 
 def pull_down_app_info(app_name, default_env=None):
-    # App exists, set up default environment
     envs = elasticbeanstalk.get_app_environments(app_name)
     if len(envs) == 0:
-        # no envs, set None as default to override
         set_environment_for_current_branch(None)
         return None, None
     elif len(envs) == 1:
-        # Set only env as default
         env = envs[0]
         io.log_info('Setting only environment "' +
                     env.name + '" as default')
@@ -423,14 +405,12 @@ def pull_down_app_info(app_name, default_env=None):
                 env = next((env for env in envs if env.name == default_env),
                            None)
         if not default_env or env is None:
-            # Prompt for default
             io.echo(prompts['init.selectdefaultenv'])
             env = utils.prompt_for_item_in_list(envs)
 
     set_environment_for_current_branch(env.name)
 
     io.log_info('Pulling down defaults from environment ' + env.name)
-    # Get keyname
     keyname = elasticbeanstalk.get_specific_configuration_for_env(
         app_name, env.name, 'aws:autoscaling:launchconfiguration',
         'EC2KeyName'
@@ -450,13 +430,13 @@ def open_webpage_in_browser(url, ssl=False):
             url = 'http://' + url
     LOG.debug('url={}'.format(url))
     if utils.is_ssh() or platform.system().startswith('Win'):
-        # Prefered way for ssh or windows
-        # Windows cant do a fork so we have to do inline
+        # Preferred way for ssh or windows
+        # Windows can't do a fork so we have to do inline
         LOG.debug('Running webbrowser inline.')
         import webbrowser
         webbrowser.open_new_tab(url)
     else:
-        # this is the prefered way to open a web browser on *nix.
+        # This is the preferred way to open a web browser on *nix.
         # It squashes all output which can be typical on *nix.
         LOG.debug('Running webbrowser as subprocess.')
         from subprocess import Popen, PIPE
@@ -486,7 +466,6 @@ def open_webpage_in_browser(url, ssl=False):
         pid = os.fork()
         if pid == 0:  # Is child
             p.communicate()
-        # Else exit
 
 
 def create_dummy_app_version(app_name):
@@ -509,17 +488,14 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
     if source_control.untracked_changes_exist():
         io.log_warning(strings['sc.unstagedchanges'])
 
-    # get version_label
     if label:
         version_label = label
     else:
         version_label = source_control.get_version_label()
         if staged:
-            # Make a unique version label
             timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
             version_label = version_label + '-stage-' + timestamp
 
-    # get description
     if message:
         description = message
     else:
@@ -528,7 +504,6 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
     if len(description) > 200:
         description = description[:195] + '...'
 
-    # Check for zip or artifact deploy
     artifact = fileoperations.get_config_setting('deploy', 'artifact')
     if artifact:
         file_name, file_extension = os.path.splitext(artifact)
@@ -537,10 +512,8 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
         s3_key = None
         s3_bucket = None
     else:
-        # Check if the app version already exists
         s3_bucket, s3_key = get_app_version_s3_location(app_name, version_label)
 
-        # Create zip file if the application version doesn't exist
         if s3_bucket is None and s3_key is None:
             file_name, file_path = _zip_up_project(
                 version_label, source_control, staged=staged)
@@ -548,22 +521,17 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
             file_name = None
             file_path = None
 
-    # Get s3 location
     bucket = elasticbeanstalk.get_storage_location() if s3_bucket is None else s3_bucket
     key = app_name + '/' + file_name if s3_key is None else s3_key
 
-    # Upload to S3 if needed
     try:
         s3.get_object_info(bucket, key)
         io.log_info('S3 Object already exists. Skipping upload.')
     except NotFoundError:
-        # If we got the bucket/key from the app version describe call and it doesn't exist then
-        #   the application version must have been deleted out-of-band and we should throw an exception
         if file_name is None and file_path is None:
             raise NotFoundError('Application Version does not exist in the S3 bucket.'
                                 ' Try uploading the Application Version again.')
 
-        # Otherwise attempt to upload the local application version
         io.log_info('Uploading archive to s3 location: ' + key)
         s3.upload_application_version(bucket, key, file_path)
 
@@ -588,13 +556,11 @@ def create_codecommit_app_version(app_name, process=False, label=None, message=N
     if source_control.untracked_changes_exist():
         io.log_warning(strings['sc.unstagedchanges'])
 
-    # get version_label
     if label:
         version_label = label
     else:
         version_label = source_control.get_version_label()
 
-    # get description
     if message:
         description = message
     else:
@@ -603,15 +569,12 @@ def create_codecommit_app_version(app_name, process=False, label=None, message=N
     if len(description) > 200:
         description = description[:195] + '...'
 
-    # Push code with git
     try:
         source_control.push_codecommit_code()
     except CommandError as e:
         io.echo("Could not push code to the CodeCommit repository:")
         raise e
 
-    # Get additional arguments for deploying code commit and poll
-    #  for the commit to propagate to code commit.
     from ebcli.operations import gitops
     repository = gitops.get_default_repository()
     commit_id = source_control.get_current_commit()
@@ -619,7 +582,6 @@ def create_codecommit_app_version(app_name, process=False, label=None, message=N
     if repository is None or commit_id is None:
         raise ServiceError("Could not find repository or commit id to create an application version")
 
-    # Deploy Application version with freshly pushed git commit
     io.log_info('Creating AppVersion ' + version_label)
     return _create_application_version(app_name, version_label, description,
                                        None, None, process, repository=repository, commit_id=commit_id,
@@ -647,13 +609,11 @@ def create_app_version_from_source(
     if source_control.untracked_changes_exist():
         io.log_warning(strings['sc.unstagedchanges'])
 
-    # get version_label
     if label:
         version_label = label
     else:
         version_label = source_control.get_version_label()
 
-    # get description
     if message:
         description = message
     else:
@@ -662,7 +622,6 @@ def create_app_version_from_source(
     if len(description) > 200:
         description = description[:195] + '...'
 
-    # Parse the source and attempt to push via code commit
     source_location, repository, branch = utils.parse_source(source)
 
     if source_location == "codecommit":
@@ -690,7 +649,6 @@ def create_app_version_from_source(
             )
         )
 
-    # Deploy Application version with freshly pushed git commit
     io.log_info('Creating AppVersion ' + version_label)
     return _create_application_version(app_name, version_label, description,
                                        None, None, process, repository=repository, commit_id=commit_id,
@@ -727,27 +685,21 @@ def _create_application_version(app_name, version_label, description,
         except InvalidParameterValueError as e:
             if e.message.startswith('Application Version ') and \
                         e.message.endswith(' already exists.'):
-                # we must be deploying with an existing app version
                 if warning:
                     io.log_warning('Deploying a previously deployed commit.')
                 return version_label
             elif e.message == responses['app.notexists'].replace(
                         '{app-name}', '\'' + app_name + '\''):
-                # App doesnt exist, must be a new region.
-                # Lets create the app in the region
                 create_app(app_name)
             else:
                 raise
 
 
 def _zip_up_project(version_label, source_control, staged=False):
-    # Create zip file
     file_name = version_label + '.zip'
     file_path = fileoperations.get_zip_location(file_name)
 
-    # Check to see if file already exists from previous attempt
     if not fileoperations.file_exists(file_path):
-        # If it doesn't already exist, create it
         io.echo(strings['appversion.create'].replace('{version}',
                                                      version_label))
         ignore_files = fileoperations.get_ebignore_list()
@@ -784,7 +736,6 @@ def update_environment(env_name, changes, nohang, remove=None,
                             can_abort=True)
 
 
-# BRANCH-DEFAULTS FOR CONFIG FILE
 def write_setting_to_current_branch(keyname, value):
     source_control = SourceControl.get_source_control()
 
@@ -987,7 +938,6 @@ def create_instance_profile(
 
         iam.add_role_to_profile(profile_name, role_name)
     except NotAuthorizedError:
-        # Not a root account. Just assume role exists
         io.log_warning(strings['platformcreateiamdescribeerror.info'].format(profile_name=profile_name))
 
     return profile_name

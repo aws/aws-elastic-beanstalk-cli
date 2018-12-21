@@ -89,7 +89,6 @@ class EBP(foundation.CementApp):
     def setup(self):
         ebglobals.app = self
 
-        # Add hooks
         hook.register('post_argument_parsing', hooks.pre_run_hook)
 
         platform_controllers = [
@@ -105,7 +104,6 @@ class EBP(foundation.CementApp):
 
         [controller._add_to_handler(handler) for controller in platform_controllers]
 
-        # Add special controllers
         handler.register(CompleterController)
 
         super(EBP, self).setup()

@@ -61,11 +61,9 @@ def display_interactive_health(
     else:
         raise NotSupportedError('The health dashboard is currently not supported for this environment.')
 
-    # Start getting health data
     poller = poller(app_name, env_name)
     poller.start_background_polling()
 
-    # Start
     try:
         screen.start_screen(poller, env, refresh,
                             mono=mono, default_table=default_view)

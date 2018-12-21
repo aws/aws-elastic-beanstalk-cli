@@ -98,26 +98,20 @@ class BaseIntegrationTest(CementTestCase):
         self.mock_endpoint = self.patcher_endpoint.start()
         instance = self.mock_endpoint.return_value
         instance.make_request = mockservice.handle_response
-        # Mocking our host should force botocore to never call actual service
-        # Also required for python3 tests
         instance.host = 'http://someurl.test/something'
 
-        # set up test directory
         if not os.path.exists('testDir/'):
             os.makedirs('testDir/')
         os.chdir('testDir')
 
-        # set up mock elastic beanstalk directory
         if not os.path.exists(fileoperations.beanstalk_directory):
             os.makedirs(fileoperations.beanstalk_directory)
 
         fileoperations.default_section = 'ebcli_test_default'
 
-        #set up mock home dir
         if not os.path.exists('home'):
             os.makedirs('home')
 
-        # change directory to mock home
         fileoperations.aws_config_folder = 'home' + os.path.sep
         fileoperations.aws_config_location \
             = fileoperations.aws_config_folder + 'config'

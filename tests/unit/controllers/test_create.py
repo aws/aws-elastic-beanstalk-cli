@@ -475,7 +475,6 @@ class TestCreate(TestCreateBase):
         get_unique_cname_mock.return_value = self.app_name + '-dev'
         get_input_mock.return_value = None
 
-        # explicitly pass in load balancer type as it is not possible to simulate hitting return for this input
         self.app = EB(argv=['create', '--elb-type', 'classic'])
         self.app.setup()
         self.app.run()

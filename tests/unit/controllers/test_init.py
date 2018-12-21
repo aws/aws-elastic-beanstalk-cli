@@ -97,7 +97,6 @@ class TestInit(unittest.TestCase):
         app.setup()
         app.run()
 
-        # make sure setup was called correctly
         initops_mock.setup.assert_called_with(
             self.app_name,
             'us-west-2',
@@ -148,7 +147,6 @@ class TestInit(unittest.TestCase):
             'n',  # Set up ssh selection
         ]
 
-        # Mock out source control so we don't depend on git
         sourcecontrol_mock.get_source_control.return_value = git_mock
         git_mock.is_setup.return_value = None
 
@@ -156,7 +154,6 @@ class TestInit(unittest.TestCase):
         app.setup()
         app.run()
 
-        # make sure setup was called correctly
         initops_mock.setup.assert_called_with(
             self.app_name,
             'us-west-2',
@@ -210,7 +207,6 @@ class TestInit(unittest.TestCase):
         app.setup()
         app.run()
 
-        # make sure we setup credentials
         initops_mock.setup_credentials.assert_called_with()
         initops_mock.setup.assert_called_with(
             self.app_name,
@@ -1073,7 +1069,7 @@ class TestInitModule(unittest.TestCase):
                 'cloneUrlHttp': 'https://git-codecommit.fake.amazonaws.com/v1/repos/my-repo'
             }
         }
-        prompt_for_item_in_list_mock.return_value = 2 # initialize with 'master' branch
+        prompt_for_item_in_list_mock.return_value = 2  # initialize with 'master' branch
 
         initialize.get_branch_interactive('my-repo')
 

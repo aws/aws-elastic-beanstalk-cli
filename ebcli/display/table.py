@@ -43,7 +43,6 @@ class Table(object):
         self.set_data(table_data)
         self.visible_rows = num_of_rows
         if self.vertical_offset > self.get_max_offset():
-            # Adjust for changing size of data
             self.vertical_offset = self.get_max_offset()
         self.first_column = min(self.screen.horizontal_offset + 1,
                                 len(self.columns) - 1)
@@ -59,7 +58,6 @@ class Table(object):
     MAX_DESCRIPTION = 100
 
     def draw_header_row(self):
-        # Print headers
         t = term.get_terminal()
         labels = [' ']
         width = self.width
@@ -75,7 +73,7 @@ class Table(object):
                     column_size = self.MAX_DESCRIPTION
                 column.fit_size = column_size
             header = justify_and_trim(column.name, column_size, column.justify)
-            if (self.screen.sort_index and  # We are sorting
+            if (self.screen.sort_index and
                     self.screen.sort_index[1] == c and  # Sort column
                     self.name == self.screen.sort_index[0] and  # sort table
                     len(' '.join(labels)) < width):  # Column is on screen

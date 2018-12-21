@@ -151,8 +151,6 @@ def setenv(app_name, env_name, var_list, timeout=None):
                                                      remove=options_to_remove)
 
     if timeout is None:
-        # specify a lower timeout duration because the `UpdateEnvironment`
-        # workflow does not take very long to just set environment variables.
         timeout = 4
 
     commonops.wait_for_success_events(request_id,

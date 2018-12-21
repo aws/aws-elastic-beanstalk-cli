@@ -32,7 +32,6 @@ class LocalController(AbstractBaseController):
     @classmethod
     def _add_to_handler(cls, handler):
         handler.register(cls)
-        # Register child controllers
         for child_controller in cls._get_child_controllers():
             handler.register(child_controller)
 
@@ -46,7 +45,7 @@ class LocalController(AbstractBaseController):
         if len(commands) == 1:
             aliases = [c.Meta.aliases[0] for c in self._get_child_controllers()]
             io.echo(*aliases)
-        else:  # Need to pass to next controller
+        else:
             pass
 
 
@@ -76,7 +75,6 @@ class LocalRunController(AbstractBaseController):
 
 class LocalLogsController(AbstractBaseController):
     class Meta:
-        # Workaround since labels must be unique and 'logs' is already taken
         label = 'local_logs'
         description = strings['local.logs.info']
         aliases = ['logs']

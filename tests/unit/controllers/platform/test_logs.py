@@ -89,7 +89,6 @@ class TestEBPlatformLogs(LogsTest):
             app.setup()
             app.run()
 
-        # This message is inappropriate since the message assumes an application workspace
         self.assertEqual(
             'This command is not supported outside Platform workspaces.',
             str(context_manager.exception)
@@ -309,7 +308,6 @@ class TestEBPLogs(LogsTest):
             app.setup()
             app.run()
 
-        # This message is inappropriate since the message assumes an application workspace
         self.assertEqual(
             'This command is not supported outside Platform workspaces.',
             str(context_manager.exception)

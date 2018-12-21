@@ -97,7 +97,6 @@ def initialize_codecommit():
         return
 
     if codecommit.region_supported(commonops.get_default_region()):
-        # Show the current setup if there is one and ask if they want to continue
         codecommit_setup = print_current_codecommit_settings()
         if codecommit_setup:
             try:
@@ -105,15 +104,12 @@ def initialize_codecommit():
             except ValidationError:
                 return
 
-        # Setup git config settings for code commit credentials
         source_control.setup_codecommit_cred_config()
 
-        # Get user desired repository
         from ebcli.controllers import initialize
         repository = initialize.get_repository_interactive()
         branch = initialize.get_branch_interactive(repository)
 
-        # set defaults for current environment
         set_repo_default_for_current_environment(repository)
         set_branch_default_for_current_environment(branch)
     else:
@@ -121,7 +117,6 @@ def initialize_codecommit():
 
 
 def disable_codecommit():
-    # Remove the default branch and repo if they deny so we do not depoloy to CodeCommit by default
     LOG.debug("Denied option to use CodeCommit removing default values")
     set_repo_default_for_current_environment(None)
     set_branch_default_for_current_environment(None)
@@ -131,7 +126,6 @@ def disable_codecommit():
 
 
 def print_current_codecommit_settings():
-    # Show the current setup if there is one and ask if they want to continue
     default_branch = get_default_branch()
     default_repo = get_default_repository()
     codecommit_setup = default_repo or default_branch

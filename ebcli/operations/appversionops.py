@@ -26,9 +26,7 @@ LOG = minimal_logger(__name__)
 def delete_app_version_label(app_name, version_label):
 
     if version_label:
-        # check if version_label exists under app_name
         app_versions = elasticbeanstalk.get_application_versions(app_name)['ApplicationVersions']
-        #  if the given version label does not exist at all!
         if not any(version_label == app_version['VersionLabel'] for app_version in app_versions):
             raise ValidationError(strings['appversion.delete.notfound'].format(app_name, version_label))
 
@@ -36,7 +34,6 @@ def delete_app_version_label(app_name, version_label):
 
         versions_in_use = [(e.version_label, e.name) for e in envs]
 
-        # find all the environments that are using the app version
         used_envs = [version[1] for version in versions_in_use if version[0] == version_label]
 
         if used_envs:

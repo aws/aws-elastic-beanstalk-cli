@@ -32,7 +32,6 @@ class TestSolutionstackOps(unittest.TestCase):
             solution_stack_lister_mock
     ):
         solution_strings = [
-            # EB platforms specified in the format displayed by `eb platform list`
             'docker-1.11.2',
             'docker-1.12.6',
             'docker-1.6.2',
@@ -84,7 +83,6 @@ class TestSolutionstackOps(unittest.TestCase):
             'tomcat-7-java-7',
             'tomcat-8-java-8',
 
-            # EB platforms specified as language names
             'Node.js',
             'PHP',
             'Python',
@@ -98,7 +96,6 @@ class TestSolutionstackOps(unittest.TestCase):
             'Java',
             'Packer',
 
-            # EB environments listed in the full format
             '64bit Windows Server Core 2016 v1.2.0 running IIS 10.0',
             '64bit Windows Server 2016 v1.2.0 running IIS 10.0',
             '64bit Windows Server Core 2012 R2 v1.2.0 running IIS 8.5',
@@ -218,7 +215,6 @@ class TestSolutionstackOps(unittest.TestCase):
             '64bit Amazon Linux 2017.03 v2.3.1 running Packer 1.0.3',
             '64bit Amazon Linux 2017.03 v2.2.2 running Packer 1.0.0',
 
-            # EB platforms specified in a format customers might specify
             'Node.js',
             'PHP 5.6',
             'PHP 5.3',
@@ -557,7 +553,6 @@ class TestSolutionstackOps(unittest.TestCase):
             'Tomcat'
         ]
 
-        # 2nd item in list of platforms
         index_prompter_mock.return_value = 1
 
         self.assertEqual(
@@ -585,7 +580,6 @@ class TestSolutionstackOps(unittest.TestCase):
             }
         ]
 
-        # 3rd item in list of platform versions
         index_prompter_mock.return_value = 2
 
         self.assertEqual(
@@ -737,7 +731,6 @@ class TestSolutionstackOps(unittest.TestCase):
         platforms_lister_mock.return_value = []
         boolean_response_mock.return_value = False
 
-        # Choose PHP in the main menu and then PHP 7.1 in the sub-menu
         input_prompter_mock.side_effect = [
             0,
             0

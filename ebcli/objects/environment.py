@@ -143,13 +143,11 @@ class Environment(object):
             links = {}
             linked_envs = []
 
-            # Process information returned in EnvironmentLinks
             for link in self.environment_links:
                 link_data = dict(link_name=link['LinkName'], env_name=link['EnvironmentName'])
                 links[link_data['env_name']] = link_data
                 linked_envs.append(link_data['env_name'])
 
-            # Call DescribeEnvironments for linked environments
             linked_env_descriptions = get_environments_callback(linked_envs)
 
             for linked_environment in linked_env_descriptions:

@@ -60,22 +60,17 @@ class TestLifecycleOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.lifecycleops.recursive_print_api_dict')
     @mock.patch('ebcli.operations.lifecycleops.aws.get_region_name')
     def test_print_lifecycle_policy(self, mock_region, mock_recursive_print):
-        # Mock out methods
         self.mock_beanstalk.describe_application.return_value = self.app_response
         mock_region.return_value = self.region
 
-        # Make actual call
         lifecycleops.print_lifecycle_policy(self.app_name)
 
-        # Assert methods were called
         self.mock_beanstalk.describe_application.assert_called_with(self.app_name)
         mock_recursive_print.assert_called_with(self.app_response[u'ResourceLifecycleConfig'])
 
     def test_recursive_print(self):
-        # Make actual call
         lifecycleops.recursive_print_api_dict(self.app_response[u'ResourceLifecycleConfig'])
 
-        # Assert correct methods were called
         io_echo_calls = [call('{0}VersionLifecycleConfig:'.format(lifecycleops.SPACER * 2)),
                          call('{0}MaxCountRule:'.format(lifecycleops.SPACER * 3)),
                          call('{0}DeleteSourceFromS3: False'.format(lifecycleops.SPACER * 4)),
@@ -90,7 +85,6 @@ class TestLifecycleOperations(unittest.TestCase):
 
     @mock.patch('ebcli.operations.lifecycleops.LifecycleConfiguration')
     def test_interactive_update_lifecycle_policy(self, mock_lifecycle_config):
-        # Mock out methods
         self.mock_beanstalk.describe_application.return_value = self.app_response
         mock_lifecycle_config.return_value = mock_lifecycle_config
         mock_lifecycle_config.convert_api_to_usr_model.return_value = self.usr_model
@@ -98,10 +92,8 @@ class TestLifecycleOperations(unittest.TestCase):
         self.mock_fileops.get_application_from_file.return_value = self.usr_model
         mock_lifecycle_config.collect_changes.return_value = self.usr_model
 
-        # Make actual call
         lifecycleops.interactive_update_lifcycle_policy(self.app_name)
 
-        # Assert correct methods were called
         self.mock_beanstalk.describe_application.assert_called_with(self.app_name)
         mock_lifecycle_config.assert_called_with(self.app_response)
         self.mock_fileops.save_app_file.assert_called_with(self.usr_model)
@@ -113,7 +105,6 @@ class TestLifecycleOperations(unittest.TestCase):
 
     @mock.patch('ebcli.operations.lifecycleops.LifecycleConfiguration')
     def test_interactive_update_lifecycle_policy_no_changes(self, mock_lifecycle_config):
-        # Mock out methods
         self.mock_beanstalk.describe_application.return_value = self.app_response
         mock_lifecycle_config.return_value = mock_lifecycle_config
         mock_lifecycle_config.convert_api_to_usr_model.return_value = self.usr_model
@@ -121,10 +112,8 @@ class TestLifecycleOperations(unittest.TestCase):
         self.mock_fileops.get_application_from_file.return_value = self.usr_model
         mock_lifecycle_config.collect_changes.return_value = {}
 
-        # Make actual call
         lifecycleops.interactive_update_lifcycle_policy(self.app_name)
 
-        # Assert correct methods were called
         self.mock_beanstalk.describe_application.assert_called_with(self.app_name)
         mock_lifecycle_config.assert_called_with(self.app_response)
         self.mock_fileops.save_app_file.assert_called_with(self.usr_model)
@@ -136,17 +125,14 @@ class TestLifecycleOperations(unittest.TestCase):
 
     @mock.patch('ebcli.operations.lifecycleops.LifecycleConfiguration')
     def test_interactive_update_lifecycle_policy_bad_user_input(self, mock_lifecycle_config):
-        # Mock out methods
         self.mock_beanstalk.describe_application.return_value = self.app_response
         mock_lifecycle_config.return_value = mock_lifecycle_config
         mock_lifecycle_config.convert_api_to_usr_model.return_value = self.usr_model
         self.mock_fileops.save_app_file.return_value = self.file_location
         self.mock_fileops.get_application_from_file.side_effect = InvalidSyntaxError("Bad syntax in config.")
 
-        # Make actual call
         lifecycleops.interactive_update_lifcycle_policy(self.app_name)
 
-        # Assert correct methods were called
         self.mock_beanstalk.describe_application.assert_called_with(self.app_name)
         mock_lifecycle_config.assert_called_with(self.app_response)
         self.mock_fileops.save_app_file.assert_called_with(self.usr_model)

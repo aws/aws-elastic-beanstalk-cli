@@ -32,9 +32,8 @@ class LifecycleController(AbstractBaseController):
         app_name = self.get_app_name()
         print_policy = getattr(self.app.pargs, 'print')
 
-        if print_policy is not None and print_policy:
+        if print_policy:
             lifecycleops.print_lifecycle_policy(app_name)
             return
 
-        # If no flags are set run interactive
         lifecycleops.interactive_update_lifcycle_policy(app_name)

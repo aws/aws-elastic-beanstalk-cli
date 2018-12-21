@@ -47,22 +47,14 @@ class TestDeployOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.deployops.aws')
     @mock.patch('ebcli.operations.deployops.fileoperations')
     def test_plain_deploy(self, mock_fileops, mock_aws, mock_gitops, mock_commonops, mock_beanstalk):
-        # Mock out methods
-        # Give a valid region
         mock_aws.get_region_name.return_value = 'us-east-1'
-        # Mock out the check for buildspec file so we don't attempt to process that
         mock_fileops.build_spec_exists.return_value = False
-        # Ensure we do not attempt a deployment for CodeCommit
         mock_gitops.git_management_enabled.return_value = False
-        # Mock out the actual call to create the app version
         mock_commonops.create_app_version.return_value = self.app_version_name
-        # Mock the update of the deployment
         mock_beanstalk.update_env_application_version.return_value = self.request_id
 
-        # Make the actual call
         deployops.deploy(self.app_name, self.env_name, None, self.app_version_name, self.description)
 
-        # Assert methods were called with the right params and returned the correct values
         mock_commonops.create_app_version.assert_called_with(self.app_name, process=False,
                                                              label=self.app_version_name, message=self.description,
                                                              staged=False, build_config=None)
@@ -80,19 +72,12 @@ class TestDeployOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.deployops.aws')
     @mock.patch('ebcli.operations.deployops.fileoperations')
     def test_deploy_with_specified_version(self, mock_fileops, mock_aws, mock_gitops, mock_commonops, mock_beanstalk):
-        # Mock out methods
-        # Give a valid region
         mock_aws.get_region_name.return_value = 'us-east-1'
-        # Mock out the check for buildspec file so we don't attempt to process that
         mock_fileops.build_spec_exists.return_value = False
-        # Mock the update of the deployment
         mock_beanstalk.update_env_application_version.return_value = self.request_id
 
-        # Make the actual call
         deployops.deploy(self.app_name, self.env_name, self.app_version_name, None, self.description)
 
-        # Assert methods were called with the right params and returned the correct values
-        # TODO: Verify this is the correct assert
         mock_commonops.create_app_version.assert_not_called()
         mock_beanstalk.update_env_application_version.assert_called_with(self.env_name, self.app_version_name, None)
         mock_commonops.wait_for_success_events.assert_called_with(
@@ -108,26 +93,17 @@ class TestDeployOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.deployops.aws')
     @mock.patch('ebcli.operations.deployops.fileoperations')
     def test_deployment_with_source(self, mock_fileops, mock_aws, mock_gitops, mock_commonops, mock_beanstalk):
-        # Set local variables for this test
         given_source = 'codecommit/test-repo/foo-branch'
 
-        # Mock out methods
-        # Give a valid region
         mock_aws.get_region_name.return_value = 'us-east-1'
-        # Mock out the check for buildspec file so we don't attempt to process that
         mock_fileops.build_spec_exists.return_value = False
-        # Mock out the actual call to create the app version with the given source
         mock_commonops.create_app_version_from_source.return_value = self.app_version_name
-        # Mock out waiting for the app version to process
         mock_commonops.wait_for_processed_app_versions.return_value = True
-        # Mock the update of the deployment
         mock_beanstalk.update_env_application_version.return_value = self.request_id
 
-        # Make the actual call
         deployops.deploy(self.app_name, self.env_name, None, self.app_version_name, self.description,
                          source=given_source, timeout=10)
 
-        # Assert methods were called with the right params and returned the correct values
         mock_commonops.create_app_version_from_source.assert_called_with(self.app_name, given_source, process=False,
                                                              label=self.app_version_name, message=self.description,
                                                              build_config=None)
@@ -146,24 +122,15 @@ class TestDeployOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.deployops.aws')
     @mock.patch('ebcli.operations.deployops.fileoperations')
     def test_deploy_with_codecommit(self, mock_fileops, mock_aws, mock_gitops, mock_commonops, mock_beanstalk):
-        # Mock out methods
-        # Give a valid region
         mock_aws.get_region_name.return_value = 'us-east-1'
-        # Mock out the check for buildspec file so we don't attempt to process that
         mock_fileops.build_spec_exists.return_value = False
-        # Ensure we attempt a deployment for CodeCommit
         mock_gitops.git_management_enabled.return_value = True
-        # Mock out waiting for the app version to process
         mock_commonops.wait_for_processed_app_versions.return_value = True
-        # Mock out the actual call to create the app version with codecommit
         mock_commonops.create_codecommit_app_version.return_value = self.app_version_name
-        # Mock the update of the deployment
         mock_beanstalk.update_env_application_version.return_value = self.request_id
 
-        # Make the actual call
         deployops.deploy(self.app_name, self.env_name, None, self.app_version_name, self.description)
 
-        # Assert methods were called with the right params and returned the correct values
         mock_commonops.create_codecommit_app_version.assert_called_with(self.app_name, process=False,
                                                                         label=self.app_version_name,
                                                                         message=self.description, build_config=None)
@@ -184,27 +151,18 @@ class TestDeployOperations(unittest.TestCase):
     @mock.patch('ebcli.operations.deployops.fileoperations')
     def test_plain_deploy_with_codebuild_buildspec(self, mock_fileops, mock_aws, mock_gitops, mock_commonops,
                                                    mock_beanstalk, mock_buildspecops):
-        # Mock out methods
-        # Give a valid region
         mock_aws.get_region_name.return_value = 'us-east-1'
-        # Mock out the check for buildspec file so we return the set BuildConfiguration
         mock_fileops.build_spec_exists.return_value = True
         mock_build_config = self.build_config
         mock_build_config.timeout = 60
         mock_fileops.get_build_configuration.return_value = mock_build_config 
-        # Ensure we do not attempt a deployment for CodeCommit
         mock_gitops.git_management_enabled.return_value = False
-        # Mock out the actual call to create the app version
         mock_commonops.create_app_version.return_value = self.app_version_name
-        # Mock out waiting for CodeBuild success events
         mock_beanstalk.get_application_versions.return_value = [{"BuildArn": "arn::build:project"}]
-        # Mock the update of the deployment
         mock_beanstalk.update_env_application_version.return_value = self.request_id
 
-        # Make the actual call
         deployops.deploy(self.app_name, self.env_name, None, self.app_version_name, self.description)
 
-        # Assert methods were called with the right params and returned the correct values
         mock_buildspecops.stream_build_configuration_app_version_creation.assert_called_with(self.app_name, self.app_version_name, mock_build_config)
         mock_commonops.create_app_version.assert_called_with(self.app_name, process=False,
                                                              label=self.app_version_name, message=self.description,

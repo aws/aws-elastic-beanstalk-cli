@@ -69,7 +69,6 @@ def prepare_for_ssh(env_name, instance, keep_open, force, setup, number,
 
 
 def setup_ssh(env_name, keyname, timeout=None):
-    # Instance does not have a keypair
     io.log_warning(prompts['ssh.setupwarn'].replace('{env-name}',
                                                     env_name))
 
@@ -93,7 +92,6 @@ def ssh_into_instance(instance_id, keep_open=False, force_open=False, custom_ssh
     try:
         ip = instance['PublicIpAddress']
     except KeyError:
-        # Now allows access to private subnet
         if 'PrivateIpAddress' in instance:
             ip = instance['PrivateIpAddress']
         else:
@@ -102,18 +100,15 @@ def ssh_into_instance(instance_id, keep_open=False, force_open=False, custom_ssh
 
     user = 'ec2-user'
 
-    # Get security group to open
     ssh_group = None
     has_restriction = False
     rule_existed_before = False
     group_id = None
     for group in security_groups:
         group_id = group['GroupId']
-        # see if group has ssh rule
         group = ec2.describe_security_group(group_id)
         for permission in group.get('IpPermissions', []):
             if permission.get('ToPort', None) == 22:
-                # SSH Port group
                 ssh_group = group_id
                 for rng in permission.get('IpRanges', []):
                     ip_restriction = rng.get('CidrIp', None)
@@ -126,12 +121,10 @@ def ssh_into_instance(instance_id, keep_open=False, force_open=False, custom_ssh
     if has_restriction and not force_open:
         io.log_warning(strings['ssh.notopening'])
     elif group_id:
-        # Open up port for ssh
         io.echo(strings['ssh.openingport'])
         ec2.authorize_ssh(ssh_group or group_id)
         io.echo(strings['ssh.portopen'])
 
-    # do ssh
     try:
         if custom_ssh:
             custom_ssh = custom_ssh.split()
@@ -152,7 +145,6 @@ def ssh_into_instance(instance_id, keep_open=False, force_open=False, custom_ssh
     except OSError:
         CommandError(strings['ssh.notpresent'])
     finally:
-        # Close port for ssh
         if keep_open:
             pass
         elif (not has_restriction or force_open) and group_id and not rule_existed_before:
@@ -190,7 +182,6 @@ def prompt_for_ec2_keyname(env_name=None, message=None, keyname=None):
     if keyname:
         for index, key in enumerate(keys):
             if key == keyname:
-                # The selection is between 1 and len(keys)
                 default_option = index + 1
 
     if len(keys) < 1:
@@ -210,7 +201,6 @@ def prompt_for_ec2_keyname(env_name=None, message=None, keyname=None):
 
 
 def _generate_and_upload_keypair(keys):
-    # Get filename
     io.echo()
     io.echo(prompts['keypair.nameprompt'])
     unique = utils.get_unique_name('aws-eb', keys)
@@ -225,8 +215,6 @@ def _generate_and_upload_keypair(keys):
         raise CommandError(strings['ssh.notpresent'])
 
     if exitcode == 0 or exitcode == 1:
-        # if exitcode is 1, they file most likely exists, and they are
-        # just uploading it
         commonops.upload_keypair_if_needed(keyname)
         return keyname
     else:

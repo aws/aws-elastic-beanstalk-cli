@@ -138,13 +138,10 @@ def term_is_live():
 def echo_on_line(line_num, *strings):
     init_terminal()
     if term_is_live():
-        # if line_num == 0:
-        #     io.echo(terminal.clear_eos())
         with terminal.location(x=0, y=line_num):
             io.echo(terminal.clear_eol())
         with terminal.location(x=0, y=line_num):
             io.echo(*strings)
-        # move_cursor(counter, 1)
     else:
         io.echo(*strings)
 
@@ -183,9 +180,6 @@ class WindowsTerminal(object):
             size = shutil.get_terminal_size()
             return size.lines, size.columns
         except AttributeError:
-            # shutil doesn't have the method. Probably on an older version of python
-            # We will attempt to get the size ourselves
-            # We can use colorama's win32 wrapper
             screen = self._get_screen_info()
             window = screen.srWindow
             h = window.Bottom - window.Top
@@ -240,11 +234,9 @@ class WindowsTerminal(object):
         return ' ' * (size[1] - 1)
 
     def hide_cursor(self):
-        # toDo research, is this possible on windows?
         return ''
 
     def normal_cursor(self):
-        # todo linked to above
         return ''
 
     def location(self, x=0, y=0):

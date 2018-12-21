@@ -71,11 +71,6 @@ class DeployController(AbstractBaseController):
         if self.version and (self.message or self.label):
             raise InvalidOptionsError(strings['deploy.invalidoptions'])
 
-        # ToDo add support for deploying to multiples?
-        # for arg in self.app.pargs.environment_name:
-        #     # deploy to every environment listed
-        #     ## Right now you can only list one
-
         process_app_versions = fileoperations.env_yaml_exists() or self.process
 
         deployops.deploy(self.app_name, self.env_name, self.version, self.label,
@@ -105,8 +100,6 @@ class DeployController(AbstractBaseController):
 
             chdir(top_dir)
 
-        # We currently do not want to support multiple deploys when some of the
-        # modules do not contain env.yaml files
         if len(missing_env_yaml) > 0:
             module_list = ''
             for module_name in missing_env_yaml:
@@ -145,7 +138,6 @@ class DeployController(AbstractBaseController):
 
             io.echo('--- Creating application version for module: {0} ---'.format(module))
 
-            # Re-run hooks to get values from .elasticbeanstalk folders of apps
             hooks.set_region(None)
             hooks.set_ssl(None)
             hooks.set_profile(None)

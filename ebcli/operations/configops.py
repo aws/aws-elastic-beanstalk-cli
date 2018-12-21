@@ -21,22 +21,18 @@ from ebcli.operations import commonops
 
 def update_environment_configuration(app_name, env_name, nohang,
                                      timeout=None):
-    # get environment setting
     api_model = elasticbeanstalk.describe_configuration_settings(
         app_name, env_name
     )
 
-    # Convert the raw api return to yaml format
     env_settings = EnvironmentSettings(api_model)
     usr_model = env_settings.convert_api_to_usr_model()
 
-    # Save the yaml in a temp file
     file_location = fileoperations.save_env_file(usr_model)
     fileoperations.open_file_for_editing(file_location)
 
     platform_arn = None
 
-    # Update and delete file
     try:
         usr_model = fileoperations.get_environment_from_file(env_name)
         changes, remove = env_settings.collect_changes(usr_model)
@@ -48,7 +44,6 @@ def update_environment_configuration(app_name, env_name, nohang,
         return
 
     if not changes and not remove and not platform_arn:
-        # no changes made, exit
         io.log_warning('No changes made. Exiting.')
         return
 

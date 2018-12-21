@@ -30,7 +30,6 @@ def fix_path():
     parent_folder = os.path.dirname(__file__)
     parent_dir = os.path.abspath(parent_folder)
     while not parent_folder.endswith('ebcli'):
-        # Keep going up until we get to the right folder
         parent_folder = os.path.dirname(parent_folder)
         parent_dir = os.path.abspath(parent_folder)
 
@@ -49,7 +48,6 @@ def run_app(app):
         app.setup()
         app.run()
         app.close()
-    # Handle General Exceptions
     except CaughtSignal:
         io.echo()
         app.close(code=5)
@@ -84,8 +82,6 @@ def run_app(app):
 
         app.close(code=4)
     except Exception as e:
-        # Generic catch all
-
         if str(e):
             message = '{exception_class} - {message}'.format(
                 exception_class=e.__class__.__name__,

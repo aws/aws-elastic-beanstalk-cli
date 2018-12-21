@@ -34,14 +34,10 @@ class LabsController(AbstractBaseController):
         self.app.args.print_help()
 
     def complete_command(self, commands):
-        # We only care about regions
         if len(commands) == 1:
-            # They only have the main command so far
-            # lets complete for next level command
             labels = [c.Meta.label for c in self._get_child_controllers()]
             io.echo(*(label.replace('_', '-') for label in labels))
         elif len(commands) > 1:
-            # pass to next level controller
             controllers = self._get_child_controllers()
             for c in controllers:
                 if commands[1] == c.Meta.label.replace('_', '-'):
@@ -61,6 +57,5 @@ class LabsController(AbstractBaseController):
     @classmethod
     def _add_to_handler(cls, handler):
         handler.register(cls)
-        # Register child controllers
         for c in cls._get_child_controllers():
             handler.register(c)

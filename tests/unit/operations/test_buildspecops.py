@@ -75,7 +75,6 @@ class TestBuildSpecOps(unittest.TestCase):
     @mock.patch('ebcli.operations.commonops.wait_for_success_events')
     @mock.patch('ebcli.operations.buildspecops.wait_for_app_version_attribute')
     def test_stream_build_config_app_creation_happy_case(self, mock_wait_attribute, mock_success_events):
-        # Setup mock returns
         mock_wait_attribute.return_value = True
         self.mock_beanstalk.get_application_versions.return_value = self.app_version_raw_response
         self.mock_codebuild.batch_get_builds.return_value = self.build_response
@@ -83,10 +82,8 @@ class TestBuildSpecOps(unittest.TestCase):
         build_spec = MagicMock()
         build_spec.timeout = 364
 
-        # Make actual call we want to test
         buildspecops.stream_build_configuration_app_version_creation(self.app_name, self.version_label, build_spec)
 
-        # Assert we made the correct calls
         mock_wait_attribute.assert_called_with(self.app_name, [self.version_label], timeout=1)
         self.mock_beanstalk.get_application_versions.assert_called_with(self.app_name,
                                                                         version_labels=[self.version_label])
@@ -109,7 +106,6 @@ class TestBuildSpecOps(unittest.TestCase):
     @mock.patch('ebcli.operations.commonops.wait_for_success_events')
     @mock.patch('ebcli.operations.buildspecops.wait_for_app_version_attribute')
     def test_stream_build_config_app_creation__no_timeout_specified__timeout_defaults_to_60_Minutes(self, mock_wait_attribute, mock_success_events):
-        # Setup mock returns
         mock_wait_attribute.return_value = True
         self.mock_beanstalk.get_application_versions.return_value = self.app_version_raw_response
         self.mock_codebuild.batch_get_builds.return_value = self.build_response
@@ -117,10 +113,8 @@ class TestBuildSpecOps(unittest.TestCase):
         build_spec = MagicMock()
         build_spec.timeout = None
 
-        # Make actual call we want to test
         buildspecops.stream_build_configuration_app_version_creation(self.app_name, self.version_label, build_spec)
 
-        # Assert we made the correct calls
         mock_wait_attribute.assert_called_with(self.app_name, [self.version_label], timeout=1)
         self.mock_beanstalk.get_application_versions.assert_called_with(self.app_name,
                                                                         version_labels=[self.version_label])
@@ -144,7 +138,6 @@ class TestBuildSpecOps(unittest.TestCase):
     @mock.patch('ebcli.operations.buildspecops.wait_for_app_version_attribute')
     def test_stream_build_config_app_creation_no_build_arn_failed_to_create(self, mock_wait_attribute,
                                                                             mock_success_events):
-        # Setup mock returns
         mock_wait_attribute.return_value = False
         self.mock_beanstalk.get_application_versions.return_value = self.app_version_raw_response
         mock_success_events.side_effect = ServiceError('Failed to create application version')
@@ -152,12 +145,10 @@ class TestBuildSpecOps(unittest.TestCase):
         build_spec = MagicMock()
         build_spec.timeout = 60
 
-        # Make actual call we want to test
         self.assertRaises(ServiceError,
                           buildspecops.stream_build_configuration_app_version_creation,
                           self.app_name, self.version_label, build_spec)
 
-        # Assert we made the correct calls
         mock_wait_attribute.assert_called_with(self.app_name, [self.version_label], timeout=1)
         self.mock_beanstalk.get_application_versions.assert_called_with(self.app_name,
                                                                         version_labels=[self.version_label])
@@ -178,25 +169,20 @@ class TestBuildSpecOps(unittest.TestCase):
         self.mock_beanstalk.delete_application_version.assert_called_with(self.app_name, self.version_label)
 
     def test_validate_build_config_without_service_role(self):
-        # Mock out methods called
         build_config = copy.deepcopy(self.build_config)
         build_config.service_role = None
         build_config.timeout = 60
 
-        # Make the call we want to test
         self.assertRaises(ValidationError, buildspecops.validate_build_config, build_config)
 
     @mock.patch('ebcli.lib.iam.get_roles')
     def test_validate_build_config_without_image(self, mock_get_roles):
-        # Mock out methods called
         build_config = copy.deepcopy(self.build_config)
         build_config.image = None
         mock_get_roles.return_value = self.list_roles_response
 
-        # Make the call we want to test
         self.assertRaises(ValidationError, buildspecops.validate_build_config, build_config)
 
-        # Assert we made the correct calls
         mock_get_roles.assert_called_with()
 
 
@@ -204,24 +190,18 @@ class TestBuildSpecOps(unittest.TestCase):
     def test_validate_build_config_with_invalid_role(self, mock_get_roles):
         build_config = copy.deepcopy(self.build_config)
         build_config.service_role = 'bad-role'
-        # Mock out methods called
         mock_get_roles.return_value = self.list_roles_response
 
-        # Make the call we want to test
         self.assertRaises(ValidationError, buildspecops.validate_build_config, build_config)
 
-        # Assert we made the correct calls
         mock_get_roles.assert_called_with()
 
     @mock.patch('ebcli.lib.iam.get_roles')
     def test_validate_build_config_happy_case(self, mock_get_roles):
-        # Mock out methods called
         mock_get_roles.return_value = self.list_roles_response
 
-        # Make the call we want to test
         buildspecops.validate_build_config(self.build_config)
 
-        # Assert we made the correct calls
         mock_get_roles.assert_called_with()
 
     @mock.patch('ebcli.operations.buildspecops.elasticbeanstalk.get_application_versions')

@@ -39,7 +39,6 @@ def handle_response(operational_model, *args, **kwargs):
     try:
         return dequeue(service, operation)
     except six.moves.queue.Empty:
-        # Get standard responses
         if service == 'elasticbeanstalk':
             handler = MockBeanstalk
         elif service == 's3':

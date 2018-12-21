@@ -55,9 +55,6 @@ class TestCompleter(unittest.TestCase):
         self.app.setup()
         self.app.run()
 
-        # Its best to hard code this
-        # That way we can make sure this list matches exactly
-        # What we would expect, nothing more.
         expected = {
             'logs',
             'terminate',

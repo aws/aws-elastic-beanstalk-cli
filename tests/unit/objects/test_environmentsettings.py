@@ -22,7 +22,6 @@ from ebcli.objects.environmentsettings import EnvironmentSettings
 
 
 class TestEnvironmentSettings(unittest.TestCase):
-    # This allows for larger error printouts
     maxDiff = None
     api_model = {u'ApplicationName': 'lifecycle', u'EnvironmentName': 'lifecycle-dev',
                        u'Description': 'Environment created from the EB CLI using "eb create"',
@@ -57,44 +56,35 @@ class TestEnvironmentSettings(unittest.TestCase):
     @mock.patch('ebcli.objects.environmentsettings._get_option_setting_dict')
     @mock.patch('ebcli.objects.environmentsettings._get_namespace_and_resource_name')
     def test_collect_no_changes(self, mock_get_namespace, mock_get_option_dict):
-        # Mock out methods
         mock_get_option_dict.return_value = None
 
-        # Make actual call
         env_settings = EnvironmentSettings(copy.deepcopy(self.api_model))
         changes, remove = env_settings.collect_changes(copy.deepcopy(self.usr_model))
 
-        # Make sure the correct methods were called
         self.assertEqual((changes, remove), ([], []))
 
     @mock.patch('ebcli.objects.environmentsettings._get_namespace_and_resource_name')
     def test_collect_added_changes(self, mock_get_namespace):
-        # Mock out methods
         change_asg_max_size = copy.deepcopy(self.usr_model)
         change_asg_max_size['settings']['aws:autoscaling:asg']['MaxSize'] = 3
         change_asg_max_size['settings']['aws:autoscaling:updatepolicy:rollingupdate'] = {'MinInstancesInService': 2}
         mock_get_namespace.return_value = 'updatepolicy', 'rollingupdate'
 
-        # Make actual call
         env_settings = EnvironmentSettings(copy.deepcopy(self.api_model))
         changes, remove = env_settings.collect_changes(change_asg_max_size)
 
-        # Make sure the correct methods were called
         self.assertEqual((changes, remove), ([{u'OptionName': 'MaxSize', u'Namespace': 'aws:autoscaling:asg', u'Value': 3},
                                               {'OptionName': 'MinInstancesInService', 'Namespace': 'updatepolicy', 'Value': 2, 'ResourceName': 'rollingupdate'}], []))
 
     @mock.patch('ebcli.objects.environmentsettings._get_namespace_and_resource_name')
     def test_collect_removed_changes(self, mock_get_namespace):
-        # Mock out methods
         change_asg_max_size = copy.deepcopy(self.usr_model)
         del change_asg_max_size['settings']['aws:autoscaling:asg']
         mock_get_namespace.return_value = None, None
 
-        # Make actual call
         env_settings = EnvironmentSettings(copy.deepcopy(self.api_model))
         changes, remove = env_settings.collect_changes(change_asg_max_size)
 
-        # Make sure the correct methods were called
         self.assertEqual((changes, remove), ([], [{'OptionName': 'Availability Zones', 'Namespace': 'aws:autoscaling:asg'},
                                                   {'OptionName': 'Cooldown', 'Namespace': 'aws:autoscaling:asg'},
                                                   {'OptionName': 'Custom Availability Zones', 'Namespace': 'aws:autoscaling:asg'},
@@ -106,9 +96,7 @@ class TestEnvironmentSettings(unittest.TestCase):
         Testing convert_api_to_usr_model
     '''
     def test_convert_api_to_usr_model(self):
-        # Make actual call
         env_settings = EnvironmentSettings(copy.deepcopy(self.api_model))
         actual_usr_model = env_settings.convert_api_to_usr_model()
 
-        # Assert correct methods weere called
         self.assertEqual(self.usr_model, actual_usr_model)

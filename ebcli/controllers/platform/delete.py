@@ -64,7 +64,6 @@ class GenericPlatformDeleteController(AbstractBaseController):
         cleanup = self.app.pargs.cleanup
         force = self.app.pargs.force
 
-        # TODO: raise if 'version' and 'cleanup' are both specified
         if cleanup:
             self.cleanup_platforms()
         else:
@@ -82,7 +81,6 @@ class GenericPlatformDeleteController(AbstractBaseController):
         else:
             platform_name = fileoperations.get_platform_name()
 
-        # We clean up all failed platform versions
         failed_versions = sorted(
             platformops.list_custom_platform_versions(
                 platform_name=platform_name,

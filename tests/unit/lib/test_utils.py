@@ -40,7 +40,6 @@ class TestUtils(TestCase):
 
         self.assertEqual(utils.exec_cmd(HAPPY_ARGS), expected_output)
         LOG.debug.assert_called_once_with(' '.join(HAPPY_ARGS))
-        # Intercept stdout and ensure msg is printed
         self.assertEqual(out.getvalue(), expected_output)
 
     @patch('ebcli.lib.utils.LOG')

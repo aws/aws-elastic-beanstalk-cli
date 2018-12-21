@@ -38,7 +38,7 @@ class LocalState(object):
         try:
             data = fileoperations.read_from_data_file(path)
             return cPickle.loads(data)
-        except IOError:  # file doesn't exist, so no local state
+        except IOError:
             return cls(EnvvarCollector())
 
     @classmethod

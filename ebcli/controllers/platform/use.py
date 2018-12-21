@@ -65,7 +65,6 @@ class GenericPlatformUseController(AbstractBaseController):
 
         if platform_name is None:
             platform_name, platform_version = get_platform_name_and_version_interactive()
-            # The platform has already been validated
             verify = False
 
         set_platform(platform_name, platform_version, verify)

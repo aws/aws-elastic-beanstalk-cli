@@ -53,10 +53,7 @@ class CloneController(AbstractBaseController):
         provided_clone_name = clone_name is not None
         platform = None
 
-        # Get original environment
         env = elasticbeanstalk.get_environment(app_name=app_name, env_name=env_name)
-
-        # Get tier of original environment
         tier = env.tier
         if 'worker' in tier.name.lower() and cname:
             raise InvalidOptionsError(strings['worker.cname'])
@@ -66,11 +63,9 @@ class CloneController(AbstractBaseController):
                 raise AlreadyExistsError(strings['cname.unavailable'].
                                          replace('{cname}', cname))
 
-        # get tags
         tags = get_and_validate_tags(tags)
         envvars = get_and_validate_envars(envvars)
 
-        # Get env_name for clone
         if not clone_name:
             if len(env_name) < 16:
                 unique_name = env_name + '-clone'
@@ -93,14 +88,13 @@ class CloneController(AbstractBaseController):
                 cname = None
 
         if not exact:
-            if not provided_clone_name:  # interactive mode
+            if not provided_clone_name:
                 latest = solution_stack_ops.find_solution_stack_from_string(
                     env.platform.name,
                     find_newer=True
                 )
 
                 if latest != env.platform:
-                    # ask for latest or exact
                     io.echo()
                     io.echo(prompts['clone.latest'])
                     lst = ['Latest  (' + str(latest) + ')',
@@ -111,7 +105,6 @@ class CloneController(AbstractBaseController):
                 else:
                     platform = latest
             else:
-                # assume latest - get original platform
                 platform = solution_stack_ops.find_solution_stack_from_string(
                     env.platform.name,
                     find_newer=True

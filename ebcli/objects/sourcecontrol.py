@@ -60,7 +60,6 @@ class SourceControl(object):
 
     @staticmethod
     def get_source_control():
-        # First check for setting in config file
         try:
             git_installed = fileoperations.get_config_setting('global', 'sc')
         except NotInitializedError:
@@ -85,7 +84,6 @@ class NoSC(SourceControl):
         return None
 
     def get_version_label(self):
-        # use timestamp as version
         suffix = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
         return 'app-' + suffix
 
@@ -141,7 +139,6 @@ class Git(SourceControl):
                     'most likely because there are no commits present'
                 )
 
-        # Something else happened
         raise CommandError('An error occurred while handling git command.'
                            '\nError code: ' + str(exitcode) + ' Error: ' +
                            stderr)
@@ -152,7 +149,6 @@ class Git(SourceControl):
             self._run_cmd(['git', 'describe', '--always', '--abbrev=4'])
 
         version_label = 'app-{}-{:%y%m%d_%H%M%S}'.format(stdout, datetime.datetime.now())
-        # Replace dots with underscores
         return version_label.replace('.', '_')
 
     def untracked_changes_exist(self):
@@ -167,7 +163,6 @@ class Git(SourceControl):
             LOG.debug('`git diff --numstat` resulted in an error: ' + str(e))
 
     def get_current_repository(self):
-        # it's possible 'origin' isn't the name of their remote so attempt to get their current remote
         current_branch = self.get_current_branch()
         get_remote_name_command = ['git', 'config', '--get', 'branch.{0}.remote'.format(current_branch)]
         LOG.debug(
@@ -236,14 +231,12 @@ class Git(SourceControl):
                                                   '-o', sub_location, commit_id])
         io.log_info('git archive output: {0}'.format(stderr))
 
-        # append and remove the submodule archive
         fileoperations.zip_append_archive(main_location, sub_location)
         fileoperations.delete_file(sub_location)
 
     def do_zip(self, location, staged=False):
         cwd = os.getcwd()
         try:
-            # must be in project root for git archive to work.
             fileoperations.ProjectRoot.traverse()
 
             if staged:
@@ -262,7 +255,6 @@ class Git(SourceControl):
             must_zip_submodules = fileoperations.get_config_setting('global', 'include_git_submodules')
 
             if must_zip_submodules:
-                # individually zip submodules if there are any
                 stdout, stderr, exitcode = self._run_cmd(['git', 'submodule', 'foreach', '--recursive'])
 
                 for index, line in enumerate(stdout.splitlines()):
@@ -288,8 +280,6 @@ class Git(SourceControl):
 
     def is_setup(self):
         if fileoperations.is_git_directory_present():
-            # We know that the directory has git, but
-            # is git on the path?
             if not fileoperations.program_is_installed('git'):
                 raise CommandError(strings['sc.gitnotinstalled'])
             else:
@@ -353,7 +343,6 @@ class Git(SourceControl):
 
         stdout, stderr, exitcode = self._run_cmd(remote_add_command, handle_exitcode=False)
 
-        # Setup the remote repository with code commit
         if exitcode != 0:
             if exitcode == 128:
                 remote_set_url_command = [
@@ -406,13 +395,10 @@ class Git(SourceControl):
     def setup_new_codecommit_branch(self, branch_name):
         LOG.debug("Setting up CodeCommit branch")
 
-        # Get fetch to ensure the remote repository is up to date
         self.fetch_remote_branches(self.codecommit_remote_name)
 
-        # Attempt to check out the desired branch, if it doesn't exist create it from the current HEAD
         self.checkout_branch(branch_name, create_branch=True)
 
-        # Push the current code and set the remote as the current working remote
         stdout, stderr, exitcode = self._run_cmd(
             ['git', 'push', '-u', self.codecommit_remote_name, branch_name],
             handle_exitcode=False
@@ -427,10 +413,8 @@ class Git(SourceControl):
 
         LOG.debug('git push result: ' + stdout)
 
-        # Get fetch to ensure the remote repository is up to date because we just pushed a new branch
         self.fetch_remote_branches(self.codecommit_remote_name)
 
-        # Set the remote branch up so it's not using the presigned remote OR if the push failed.
         stdout, stderr, exitcode = self._run_cmd(
             [
                 'git',
@@ -447,13 +431,10 @@ class Git(SourceControl):
         LOG.debug('git branch result: ' + stdout)
 
     def setup_existing_codecommit_branch(self, branch_name, remote_url=None):
-        # Get fetch to ensure the remote repository is up to date
         self.fetch_remote_branches(self.codecommit_remote_name, remote_url)
 
-        # Attempt to check out the desired branch, if it doesn't exist create it from the current HEAD
         self.checkout_branch(branch_name, create_branch=True)
 
-        # Setup the remote branch with the local git directory
         stdout, stderr, exitcode = self._run_cmd(
             [
                 'git', 'branch', '--set-upstream-to', "{0}/{1}".format(
@@ -473,7 +454,6 @@ class Git(SourceControl):
         return True
 
     def checkout_branch(self, branch_name, create_branch=False):
-        # Attempt to checkout an existing branch and if it doesn't exist create a new one.
         stdout, stderr, exitcode = self._run_cmd(['git', 'checkout', branch_name], handle_exitcode=False)
 
         if exitcode != 0:
@@ -558,7 +538,7 @@ class Git(SourceControl):
         codecommit_url_regex = re.compile(r'.*git-codecommit\..*\.amazonaws.com.*')
 
         if not codecommit_url_regex.search(remote_url):
-            # Prevent communiocating with non-CodeCommit repositories because of unknown security implications
+            # Prevent communications with non-CodeCommit repositories because of unknown security implications
             # Integration with non-CodeCommit repositories is not something Beanstalk presently supports
             raise NoSourceControlError('Could not connect to repository located at {}'.format(remote_url))
 

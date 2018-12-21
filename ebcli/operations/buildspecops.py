@@ -53,7 +53,6 @@ def stream_build_configuration_app_version_creation(app_name, app_version_label,
     else:
         io.log_warning("Could not retrieve CloudWatch link for CodeBuild logs")
 
-    # Wait for the success events
     try:
         # Need to lazy-import `ebcli.lib.commonops` because `pytest` is unable to load it
         # at module load-time using Python 2.7 and Python 3.4
@@ -80,7 +79,6 @@ def stream_build_configuration_app_version_creation(app_name, app_version_label,
 
 def validate_build_config(build_config):
     if build_config.service_role is not None:
-        # Verify that the service role exists in the customers account
         from ebcli.lib.iam import get_roles
         role = build_config.service_role
         validated_role = None
@@ -100,9 +98,7 @@ def validate_build_config(build_config):
             "setting-up.html#setting-up-service-role"
         )
         raise ValidationError("No service role specified in buildspec; this is a required argument.")
-        # Fail because the service role is required
     if build_config.image is None:
-        #  Fail because the image is required
         raise ValidationError("No image specified in buildspec; this is a required argument.")
 
 

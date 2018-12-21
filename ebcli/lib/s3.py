@@ -66,7 +66,6 @@ def get_object_info(bucket, object_key):
     if len(objects) == 1:
         return objects[0]
     else:
-        # There is more than one result, search for correct one
         s3_object = next((s3_object for s3_object in objects if s3_object['Key'] == object_key), None)
 
         if not s3_object:
@@ -149,7 +148,6 @@ def multithreaded_upload(bucket, key, file_path):
     total_parts = math.ceil(size / CHUNK_SIZE)  # Number of parts needed
     LOG.debug('Doing multi-threaded upload. Parts Needed=' + str(total_parts))
 
-    # Begin multi-part upload
     upload_id = _get_multipart_upload_id(bucket, key)
     io.update_upload_progress(0)
 
@@ -249,17 +247,15 @@ def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id):
 
                 progress = (1/total_parts) * len(etaglist)
                 io.update_upload_progress(progress)
-                # No errors, break out of loop
                 break
             except EndOfTestError:
                 return
             except Exception as e:
                 # We want to swallow all exceptions or else they will be
-                # printed as a stack trace to the Console
+                # printed as a stack trace to the Console.
                 # Exceptions are typically connections reset and
-                # Various things
+                # Various things.
                 LOG.debug('Exception raised: ' + str(e))
-                # Loop will cause a retry
 
 
 def _get_part_etag(bucket, key, part, upload_id):
@@ -294,9 +290,8 @@ def _get_multipart_upload_id(bucket, key):
             if r['Key'] == key:
                 return r['UploadId']
     except KeyError:
-        pass  # There are no uploads with that prefix
+        pass
 
-    # Not found, lets initiate the upload
     response = _make_api_call('create_multipart_upload',
                               Bucket=bucket,
                               Key=key)
@@ -313,4 +308,4 @@ def _read_next_section_from_file(f, lock):
             return data, _read_next_section_from_file.part_num
     except ValueError as e:
         LOG.debug('Reading file raised error: ' + str(e))
-        return '', None  # File was closed, Process was terminated
+        return '', None

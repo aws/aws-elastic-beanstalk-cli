@@ -76,10 +76,8 @@ class StatusTable(RequestTable):
 
     def expand_rows(self, data):
         new_data = list()
-        # Get overall data
         total = copy(self.screen.data['environment'])
         total['InstanceId'] = '  Overall'
-        # new_data.append(total)
         causes = total.get('Causes', [])
         for i in range(1, len(causes)):
             c = causes[i]

@@ -32,9 +32,6 @@ def supported_docker_installed():
     try:
         clean_version = remove_leading_zeros_from_version(commands.version())
         return Version(clean_version) >= Version(SUPPORTED_DOCKER_V)
-    # OSError = Not installed
-    # CommandError = docker versions less than 1.5 give exit code 1
-    # with 'docker --version'.
     except (OSError, CommandError):
         return False
 
@@ -82,12 +79,9 @@ def boot2docker_setup(env=os.environ):
     if not _is_boot2docker_running():
         _start_boot2docker()
 
-    # The rest of this function is really hacky and I need to fix it soon,
-    # but I'm not sure how to fix it yet. boot2docker hasn't a good api to use.
     boot2docker_certs_path = os.path.sep.join(['.boot2docker', 'certs',
                                                'boot2docker-vm'])
 
-    # If they are not set, set it to the defaults (in boot2docker shellinit)
     if DOCKER_HOST not in env:
         env[DOCKER_HOST] = 'tcp://{}:2376'.format(_boot2docker_ip())
 

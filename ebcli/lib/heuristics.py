@@ -146,7 +146,7 @@ def _get_file_list(*args):
 
 def _contains_file_types(*args):
     lst = _get_file_list(*args)
-    if lst:  # if not empty
+    if lst:
         return True
     else:
         return False

@@ -124,7 +124,6 @@ class TestCommands(TestCase):
         expected_args = ['docker', 'run', '-i', '-t', '--rm', '-p', port_map,
                          '--env', 'a=0', '--env', 'b=1', MOCK_IMG_ID]
 
-        # actual_args is a list of arguments.
         actual_args, _ = exec_cmd_live_output.call_args
 
         self.assertEqual(1, len(actual_args))

@@ -29,7 +29,6 @@ from ebcli.objects.exceptions import(
 
 class TestNoSourceControl(unittest.TestCase):
     def setUp(self):
-        # set up test directory
         if not os.path.exists('testDir{}'.format(os.path.sep)):
             os.makedirs('testDir{}'.format(os.path.sep))
         os.chdir('testDir')
@@ -54,7 +53,6 @@ class TestNoSourceControl(unittest.TestCase):
         self.assertEqual(sourcecontrol.NoSC().get_name(), None)
 
     def test_get_current_branch(self):
-        #Hardcoded, but should test for backwards compatibility
         self.assertEqual(sourcecontrol.NoSC().get_current_branch(), 'default')
 
     @mock.patch('ebcli.objects.sourcecontrol.fileoperations')
@@ -62,14 +60,9 @@ class TestNoSourceControl(unittest.TestCase):
         sourcecontrol.NoSC().do_zip('file.zip')
         mock_file.zip_up_project.assert_called_with('file.zip')
 
-    def test_get_message(self):
-        # Just a hardcoded string, dont really need to test
-        pass
-
 
 class TestGitSourceControl(unittest.TestCase):
     def setUp(self):
-        # set up test directory
         if not os.path.exists('testDir{}'.format(os.path.sep)):
             os.makedirs('testDir{}'.format(os.path.sep))
         os.chdir('testDir')
@@ -84,7 +77,6 @@ class TestGitSourceControl(unittest.TestCase):
         subprocess.call(['git', 'add', 'myFile'])
         subprocess.call(['git', 'commit', '-m', 'Initial'])
 
-        # Add a second commit
         with open('myFile2', 'w') as f:
             f.write('Hello There')
         subprocess.call(['git', 'add', 'myFile2'])
@@ -121,13 +113,11 @@ class TestGitSourceControl(unittest.TestCase):
 
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_current_branch_detached_head(self):
-        # Checkout a commit back to get us in detached head state
         subprocess.call(['git', 'checkout', 'HEAD^'])
         self.assertEqual(sourcecontrol.Git().get_current_branch(), 'default')
 
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_do_zip(self):
-        #Just want to make sure no errors happen
         sourcecontrol.Git().do_zip(os.getcwd() + os.path.sep + 'file.zip')
 
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
@@ -193,12 +183,10 @@ class TestGitSourceControl(unittest.TestCase):
     def test_get_current_branch__detached_head_state(self, log_warning_mock):
         self.assertIsNotNone(sourcecontrol.Git().get_current_branch())
 
-        # find commit SHA of HEAD
         p = subprocess.Popen(['git', 'rev-parse', 'HEAD'], stdout=subprocess.PIPE)
         stdout, _ = p.communicate()
         commit_of_head = stdout.decode().strip()
 
-        # enter detached HEAD state
         p = subprocess.Popen(['git', 'checkout', commit_of_head], stdout=subprocess.PIPE)
         p.communicate()
 

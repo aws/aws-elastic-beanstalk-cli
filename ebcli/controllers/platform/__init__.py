@@ -36,10 +36,7 @@ class PlatformController(AbstractBaseController):
     def complete_command(self, commands):
         workspace_type = fileoperations.get_workspace_type(Constants.WorkSpaceTypes.APPLICATION)
 
-        # We only care about regions
         if len(commands) == 1:
-            # They only have the main command so far
-            # lets complete for next level command
             if Constants.WorkSpaceTypes.APPLICATION == workspace_type:
                 io.echo(*['list', 'use', 'status'])
             elif Constants.WorkSpaceTypes.PLATFORM == workspace_type:

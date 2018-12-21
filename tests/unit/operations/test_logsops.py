@@ -657,7 +657,6 @@ class TestLogsOperations(unittest.TestCase):
 
         logsops.get_cloudwatch_log_stream_events(self.specified_log_group, self.instance_id_alt)
 
-        # Assert the correct methods were called and response returned
         get_log_events_mock.assert_called_with(self.specified_log_group, self.instance_id_alt, limit=None)
 
     @mock.patch('ebcli.operations.logsops.cloudwatch.get_log_events')
@@ -666,7 +665,6 @@ class TestLogsOperations(unittest.TestCase):
 
         logsops.get_cloudwatch_log_stream_events(self.specified_log_group, self.instance_id, num_log_events=50)
 
-        # Assert the correct methods were called and response returned
         get_log_events_mock.assert_called_with(self.specified_log_group, self.instance_id, limit=50)
 
     @mock.patch('ebcli.operations.logsops.elasticbeanstalk.describe_configuration_settings')
@@ -1240,7 +1238,7 @@ class TestLogsOperations(unittest.TestCase):
 
         _get_cloudwatch_messages_mock.side_effect = [
             Exception('This is a general exception'),
-            KeyboardInterrupt   # force exit
+            KeyboardInterrupt
         ]
         streamer = mock.MagicMock()
 

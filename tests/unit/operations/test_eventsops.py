@@ -69,7 +69,6 @@ class TestEventOps(unittest.TestCase):
                 ]
             )
         ]
-        # raise the 3rd time to allow exiting from the infinite `while` loop
         _sleep_mock.side_effect = [
             mock.MagicMock(),
             mock.MagicMock(),

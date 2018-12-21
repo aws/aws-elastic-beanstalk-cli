@@ -117,10 +117,8 @@ class AbstractBaseController(controller.CementBaseController):
         return app_name
 
     def get_env_name(self, cmd_example=None, noerror=False, varname='environment_name'):
-        # Try to get env_name from args using varname, if not found, env_name is None here
         env_name = getattr(self.app.pargs, varname, None)
         if not env_name:
-            # If env name not provided, grab branch default
             env_name = commonops. \
                 get_current_branch_environment()
 
@@ -130,7 +128,6 @@ class AbstractBaseController(controller.CementBaseController):
             if Constants.WorkSpaceTypes.PLATFORM == workspace_type:
                 raise EBCLIException(strings['platform.nobuilderenv'])
 
-            # No default env, lets ask for one
             if noerror:
                 return None
 
@@ -147,13 +144,11 @@ class AbstractBaseController(controller.CementBaseController):
 
     def complete_command(self, commands):
         if not self.complete_region(commands):
-            if len(commands) == 1:  # They only have the main command so far
-                # lets complete for positional args
+            if len(commands) == 1:
                 app_name = fileoperations.get_application_name()
                 io.echo(*elasticbeanstalk.get_environment_names(app_name))
 
     def complete_region(self, commands):
-        # we only care about top command
         cmd = commands[-1]
         if cmd == '-r' or cmd == '--region':
             io.echo(*[r.name for r in region.get_all_regions()])
@@ -185,7 +180,6 @@ class AbstractBaseController(controller.CementBaseController):
 
         help_txt = ''
         for label in self._visible_commands:
-            # get longest command
             if len(label) > longest:
                 longest = len(label)
 
@@ -232,5 +226,4 @@ def cli_update_exists(current_version):
         latest = data['info']['version']
         return latest != current_version
     except:
-        # Ignore all exceptions. We want to fail silently.
         return False

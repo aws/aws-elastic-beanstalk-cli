@@ -518,7 +518,6 @@ def set_platform(platform_name, platform_version=None, verify=True):
 
     io.echo(strings['platformset.version'])
 
-    # This could fail if the customer elected to create a new platform
     try:
         get_version_status(platform_version)
     except InvalidPlatformVersionError:
@@ -565,7 +564,6 @@ def stream_platform_logs(response, platform_name, version, timeout):
     arn = response['PlatformSummary']['PlatformArn']
     request_id = response['ResponseMetadata']['RequestId']
 
-    # Share streamer for platform events and builder events
     streamer = io.get_event_streamer()
 
     builder_events = threading.Thread(
@@ -573,7 +571,6 @@ def stream_platform_logs(response, platform_name, version, timeout):
         args=(platform_name, version, streamer, 5, None, PackerStreamFormatter()))
     builder_events.daemon = True
 
-    # Watch events from builder logs
     builder_events.start()
     commonops.wait_for_success_events(
         request_id,
@@ -612,7 +609,6 @@ def _enable_healthd():
         'value': 'enhanced'
     })
 
-    # Attach service role
     option_settings.append({
         'namespace': namespaces.ENVIRONMENT,
         'option_name': option_names.SERVICE_ROLE,
@@ -633,7 +629,6 @@ def _enable_healthd():
     for option in option_settings:
         found_option = False
         for platform_option in platform_options:
-            # Don't add an option if it was defined by the customer
             if option['namespace'] == (
                     platform_option['namespace']
                     and option['option_name'] == platform_option['option_name']
@@ -644,7 +639,6 @@ def _enable_healthd():
         if not found_option:
             options_to_inject.append(option)
 
-    # inject new options
     platform_options.extend(options_to_inject)
 
     platform_yaml['option_settings'] = list(platform_options)
@@ -730,7 +724,6 @@ def _raise_if_version_format_is_invalid(version):
 def _resolve_version_label(source_control, staged):
     version_label = source_control.get_version_label()
     if staged:
-        # Make a unique version label
         timestamp = _datetime_now().strftime("%y%m%d_%H%M%S")
         version_label = version_label + '-stage-' + timestamp
     return version_label
@@ -785,7 +778,6 @@ def _resolve_s3_bucket_and_key(
             staged
         )
     finally:
-        # Restore original platform.yaml
         move(platform_yaml_copy, 'platform.yaml')
 
     return s3_bucket, s3_key, file_path
@@ -830,7 +822,6 @@ def __formatted_platform_descriptions(platforms_list, show_status):
             }
         )
 
-    # Sort by name, then by version
     platform_tuples.sort(
         key=lambda platform_tuple: (
             PlatformVersion.get_platform_name(platform_tuple['PlatformArn']),
