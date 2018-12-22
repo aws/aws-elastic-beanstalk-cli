@@ -2,6 +2,7 @@
 
 ARTIFACTS_DIRECTORY="$HOME/awsebcli_artifacts"
 GIT_COMMIT=`git rev-parse HEAD`
+
 if [[ ! $GIT_BRANCH ]]; then
     GIT_BRANCH = `git rev-parse --abbrev-ref HEAD`
 fi
@@ -9,17 +10,23 @@ PYTHON_INSTALLATION=$1
 PYTHON_VERSION=`${PYTHON_INSTALLATION} -c 'import sys; print(".".join(map(str, sys.version_info[:3])))'`
 VENV_ENV_NAME="$PYTHON_VERSION-$GIT_COMMIT"
 USAGE_TEXT=$(cat <<usage
+This Bash script runs the unit tests of the current Git commit in an exclusive
+virtualenv created from the Python installation described by the first argument
+to it. If the current branch is a `master` branch (irrespective of the `remote`),
+the script generates an EBCLI artifact tar file available for consumers such as an
+end-to-end tests runner, and for the purposes of uploading to PyPi.
+
 Usage:
 
-    bash runner.py <PYTHON_EXECUTABLE>
+    ./scripts/jenkins/runner.sh <PYTHON_EXECUTABLE>
 
 e.g., to test this project against Python 2.7 and Python 3.6, you would:
 
-    python runner.py /usr/local/bin/python2.7
+    ../scripts/jenkins/runner.sh /usr/local/bin/python2.7
 
         and
 
-    python runner.py /usr/local/bin/python3.6
+    ./scripts/jenkins/runner.sh /usr/local/bin/python3.6
 
 usage
 )
@@ -112,10 +119,10 @@ step_title "Verifying Python binary path is valid"
 validate_python_version_name
 increment_step_number
 
-step_title "Ensure AWSEBCLI installs correctly after AWSCLI"
+step_title "Ensuring AWSEBCLI installs correctly after AWSCLI"
 ensure_awsebcli_installs_correctly_after_awscli()
 {
-    substep_title "Create new Python $PYTHON_VERSION virtualenv"
+    substep_title "Creating new Python $PYTHON_VERSION virtualenv"
     virtualenv -p $PYTHON_INSTALLATION $VENV_ENV_NAME
     exit_upon_substep_failure
 
@@ -142,10 +149,10 @@ ensure_awsebcli_installs_correctly_after_awscli()
 ensure_awsebcli_installs_correctly_after_awscli
 increment_step_number
 
-step_title "Ensure AWSCLI installs correctly after AWSEBCLI"
+step_title "Ensuring AWSCLI installs correctly after AWSEBCLI"
 ensure_awscli_installs_correctly_after_awsebcli()
 {
-    substep_title "Create new Python $PYTHON_VERSION virtualenv"
+    substep_title "Creating new Python $PYTHON_VERSION virtualenv"
     virtualenv -p $PYTHON_INSTALLATION $VENV_ENV_NAME
     exit_upon_substep_failure
 
@@ -176,7 +183,7 @@ ensure_awscli_installs_correctly_after_awsebcli()
 ensure_awscli_installs_correctly_after_awsebcli
 increment_step_number
 
-step_title "Create new Python $PYTHON_VERSION virtualenv"
+step_title "Creating new Python $PYTHON_VERSION virtualenv"
 virtualenv -p $PYTHON_INSTALLATION $VENV_ENV_NAME
 exit_upon_failure
 

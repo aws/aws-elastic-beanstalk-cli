@@ -1,26 +1,26 @@
 <#
 .DESCRIPTION
-Script runs the unit tests of the current Git commit in an exclusive virtualenv created
-from the the PYTHON_INSTALLATION path passed. If the current branch is a `master` branch
-(irrespective of the `remote`), the script generates an EBCLI artifact tar file available
-for consumers such as an end-to-end tests runner, and for the purposes of uploading to
-PyPi.
+This PowerShell script runs the unit tests of the current Git commit in an exclusive
+virtualenv created from the the PYTHON_INSTALLATION path passed. If the current branch
+is a `master` branch (irrespective of the `remote`), the script generates an EBCLI
+artifact tar file available for consumers such as an end-to-end tests runner, and for
+the purposes of uploading to PyPi.
 
 .EXAMPLE
 Usage:
 
-    bash runner.py <PYTHON_EXECUTABLE>
+    .\scripts\jenkins\runner <PYTHON_EXECUTABLE>
 
 e.g., to test this project against Python 2.7 and Python 3.6, you would:
 
-    python runner.py C:\Python27\python.exe
+    .\scripts\jenkins\runner C:\Python27\python.exe
 
         and
 
-    python runner.py C:\Python36\python.exe
+    .\scripts\jenkins\runner C:\Python36\python.exe
 
 .SYNOPSIS
-EBCLI test runner + artifact generation tool
+EBCLI test suite runner + artifact generation tool
 #>
 Param(
     [Parameter(Mandatory=$True,Position=1)]
@@ -89,7 +89,7 @@ Print-StepTitle "Verifying Python binary path is valid"
 Validate-PythonVersionName
 Exit-UponFailure
 
-Print-StepTitle "Ensure AWSEBCLI installs correctly after AWSCLI"
+Print-StepTitle "Ensuring AWSEBCLI installs correctly after AWSCLI"
 function Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI()
 {
     Print-SubStepTitle "Create new Python $PYTHON_VERSION virtualenv"
@@ -119,7 +119,7 @@ function Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI()
 }
 Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI
 
-Print-StepTitle "Ensure AWSCLI installs correctly after AWSEBCLI"
+Print-StepTitle "Ensuring AWSCLI installs correctly after AWSEBCLI"
 function Ensure-AWSCLIInstallsCorrectlyAfterAWSEBCLI()
 {
     Print-SubStepTitle "Create new Python $PYTHON_VERSION virtualenv"
@@ -188,7 +188,6 @@ if ( $env:GIT_BRANCH -like '*master' ) {
     Increment-SubStepNumber
 
     Print-SubStepTitle "Packaging awsebcli to store in $ARTIFACTS_DIRECTORY\$PYTHON_VERSION"
-    Write-Output "******************************************************"
     Invoke-Expression "python setup.py sdist --dist-dir '$ARTIFACTS_DIRECTORY\$PYTHON_VERSION'"
     Increment-SubStepNumber
 } else {
