@@ -12,7 +12,6 @@ from ebcli.operations import commonops
 from .. import mock_responses
 
 
-@unittest.skip
 class TestHealth(unittest.TestCase):
     def setUp(self):
         self.root_dir = os.getcwd()
@@ -24,6 +23,11 @@ class TestHealth(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
+
+    @classmethod
+    def tearDownClass(cls):
+        import time
+        time.sleep(0.5)
 
     @mock.patch('ebcli.controllers.health.healthops.elasticbeanstalk.describe_configuration_settings')
     @mock.patch('ebcli.display.data_poller.elasticbeanstalk.get_environment_health')
