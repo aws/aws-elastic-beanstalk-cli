@@ -54,9 +54,3 @@ def update_environment_configuration(app_name, env_name, nohang,
                                  remove=remove, timeout=timeout,
                                  solution_stack_name=None,
                                  platform_arn=platform_arn)
-
-
-def save_env_file(api_model):
-    usr_model = configuration.convert_api_to_usr_model(api_model)
-    file_location = fileoperations.save_env_file(usr_model)
-    return file_location
