@@ -20,7 +20,7 @@ from botocore.compat import six
 from mock import patch
 
 from ebcli.lib import utils
-from ebcli.objects.exceptions import CommandError
+from ebcli.objects.exceptions import CommandError, InvalidOptionsError
 StringIO = six.moves.StringIO
 
 
@@ -95,3 +95,35 @@ class TestUtils(TestCase):
         expected = {'a': 'high_a', 'b': 'high_b', 'd': 'low_d', 'e': 'high_e'}
 
         self.assertDictEqual(expected, utils.merge_dicts(low_priority, high_priority))
+
+    def test_parse_source__source_is_blank(self):
+        self.assertEqual(
+            None,
+            utils.parse_source('')
+        )
+
+    def test_parse_source__source_is_not_codecommit(self):
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            utils.parse_source('github')
+        self.assertEqual(
+            'Source location "github" is not supported by the EBCLI',
+            str(context_manager.exception)
+        )
+
+    def test_parse_source__source_location_is_specified__repository_and_branch_are_not(self):
+        self.assertEqual(
+            ('codecommit', '', ''),
+            utils.parse_source('codecommit')
+        )
+
+    def test_parse_source__source_location_repository_and_branch_are_specified(self):
+        self.assertEqual(
+            ('codecommit', 'repository', 'branch'),
+            utils.parse_source('codecommit/repository/branch')
+        )
+
+    def test_parse_source__branch_name_has_forward_slash(self):
+        self.assertEqual(
+            ('codecommit', 'repository', 'my/branch/name'),
+            utils.parse_source('codecommit/repository/my/branch/name')
+        )
