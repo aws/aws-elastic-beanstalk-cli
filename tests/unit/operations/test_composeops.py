@@ -15,19 +15,12 @@
 
 import mock
 from mock import Mock
-from pytest_socket import enable_socket, disable_socket
 import unittest
 
 from ebcli.operations import composeops
 
 
 class TestComposeOps(unittest.TestCase):
-    def setUp(self):
-        disable_socket()
-
-    def tearDown(self):
-        enable_socket()
-
     @mock.patch('ebcli.operations.composeops.commonops.wait_for_processed_app_versions')
     @mock.patch('ebcli.operations.composeops.compose_apps')
     def test_compose_no_events__app_versions_processing_was_successful(

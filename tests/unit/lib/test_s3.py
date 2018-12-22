@@ -18,7 +18,6 @@ import threading
 
 from dateutil import tz
 import mock
-from pytest_socket import  disable_socket, enable_socket
 import unittest
 
 from ebcli.core import fileoperations
@@ -29,7 +28,6 @@ from .. import mock_responses
 
 class TestS3(unittest.TestCase):
     def setUp(self):
-        disable_socket()
         self.root_dir = os.getcwd()
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
@@ -37,7 +35,6 @@ class TestS3(unittest.TestCase):
         os.chdir('testDir')
 
     def tearDown(self):
-        enable_socket()
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
 

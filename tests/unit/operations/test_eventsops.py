@@ -15,7 +15,6 @@ import os
 
 from dateutil import tz
 import mock
-from pytest_socket import enable_socket, disable_socket
 import unittest
 
 from ebcli.operations import eventsops
@@ -23,12 +22,6 @@ from ebcli.objects.event import Event
 
 
 class TestEventOps(unittest.TestCase):
-    def setUp(self):
-        disable_socket()
-
-    def tearDown(self):
-        enable_socket()
-
     @mock.patch('ebcli.operations.eventsops.io.get_event_streamer')
     @mock.patch('ebcli.operations.eventsops.elasticbeanstalk.get_new_events')
     @mock.patch('ebcli.operations.eventsops._sleep')

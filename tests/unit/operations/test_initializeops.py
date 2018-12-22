@@ -20,7 +20,6 @@ import shutil
 import unittest
 
 import mock
-from pytest_socket import enable_socket, disable_socket
 
 from ebcli.core import fileoperations
 from ebcli.operations import initializeops
@@ -29,7 +28,6 @@ from ebcli.operations import initializeops
 class TestInitializeOperations(unittest.TestCase):
 
     def setUp(self):
-        disable_socket()
         if not os.path.exists('testDir'):
             os.makedirs('testDir')
         os.chdir('testDir')
@@ -48,7 +46,6 @@ class TestInitializeOperations(unittest.TestCase):
                                           'my-solution-stack')
 
     def tearDown(self):
-        enable_socket()
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
             if sys.platform.startswith('win'):

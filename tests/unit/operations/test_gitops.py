@@ -14,7 +14,6 @@ import datetime
 
 from dateutil import tz
 import mock
-from pytest_socket import enable_socket, disable_socket
 import unittest
 
 from ebcli.operations import gitops
@@ -22,12 +21,6 @@ from ebcli.objects.event import Event
 
 
 class TestEventOps(unittest.TestCase):
-    def setUp(self):
-        disable_socket()
-
-    def tearDown(self):
-        enable_socket()
-
     @mock.patch('ebcli.operations.gitops.get_default_branch')
     @mock.patch('ebcli.operations.gitops.get_default_repository')
     @mock.patch('ebcli.operations.gitops.io.echo')

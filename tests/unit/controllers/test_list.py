@@ -14,7 +14,6 @@ import os
 import shutil
 
 import unittest
-from pytest_socket import disable_socket, enable_socket
 import mock
 
 from ebcli.core.ebcore import EB
@@ -22,7 +21,6 @@ from ebcli.core.ebcore import EB
 
 class TestListController(unittest.TestCase):
     def setUp(self):
-        disable_socket()
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
@@ -32,8 +30,6 @@ class TestListController(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
-
-        enable_socket()
 
     @mock.patch('ebcli.controllers.list.ListController.get_app_name')
     @mock.patch('ebcli.controllers.list.listops.list_env_names')

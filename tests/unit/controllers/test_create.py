@@ -15,7 +15,6 @@ import shutil
 
 import mock
 import unittest
-from pytest_socket import disable_socket, enable_socket
 
 from ebcli.controllers import create
 from ebcli.core import fileoperations
@@ -50,7 +49,6 @@ class TestCreateBase(unittest.TestCase):
     ]
 
     def setUp(self):
-        disable_socket()
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
@@ -66,8 +64,6 @@ class TestCreateBase(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
-
-        enable_socket()
 
     def assertEnvironmentRequestsEqual(self, expected_request, actual_request):
         error_message = os.linesep.join(

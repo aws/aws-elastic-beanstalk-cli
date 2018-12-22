@@ -14,7 +14,6 @@
 # language governing permissions and limitations under the License.
 
 import unittest
-from pytest_socket import disable_socket, enable_socket
 import mock
 
 from ebcli.operations import appversionops
@@ -28,7 +27,6 @@ class TestAppVersionsOperations(unittest.TestCase):
     version_nonexist = 'nonexisting'
 
     def setUp(self):
-        disable_socket()
         self.patcher_elasticbeanstalk = mock.patch('ebcli.operations.appversionops.elasticbeanstalk')
         self.patcher_io = mock.patch('ebcli.operations.appversionops.io')
         self.mock_elasticbeanstalk = self.patcher_elasticbeanstalk.start()
@@ -42,7 +40,6 @@ class TestAppVersionsOperations(unittest.TestCase):
             [Environment(version_label=self.version_deployed, app_name=self.app_name, name='wow')]
 
     def tearDown(self):
-        enable_socket()
         self.patcher_elasticbeanstalk.stop()
         self.patcher_io.stop()
 

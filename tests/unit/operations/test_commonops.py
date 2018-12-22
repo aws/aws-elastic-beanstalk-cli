@@ -19,7 +19,6 @@ import shutil
 
 from dateutil import tz
 import mock
-from pytest_socket import disable_socket, enable_socket
 from mock import Mock
 import unittest
 
@@ -57,8 +56,6 @@ class TestCommonOperations(unittest.TestCase):
                                       service_role=service_role, timeout=timeout)
 
     def setUp(self):
-        disable_socket()
-
         if not os.path.exists('testDir'):
             os.makedirs('testDir')
         os.chdir('testDir')
@@ -77,8 +74,6 @@ class TestCommonOperations(unittest.TestCase):
                                           'my-solution-stack')
 
     def tearDown(self):
-        enable_socket()
-
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
             if sys.platform.startswith('win'):

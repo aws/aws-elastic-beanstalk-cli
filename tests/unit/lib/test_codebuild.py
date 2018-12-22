@@ -11,7 +11,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import mock
-from pytest_socket import disable_socket, enable_socket
 import unittest
 
 from ebcli.lib import codebuild
@@ -20,12 +19,6 @@ from .. import mock_responses
 
 
 class TestCloudWatch(unittest.TestCase):
-    def setUp(self):
-        disable_socket()
-
-    def tearDown(self):
-        enable_socket()
-
     @mock.patch('ebcli.lib.codebuild.aws.make_api_call')
     def test_batch_get_builds(
             self,

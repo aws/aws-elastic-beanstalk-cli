@@ -14,7 +14,6 @@ import datetime
 
 from dateutil import tz
 import mock
-from pytest_socket import enable_socket, disable_socket
 import unittest
 
 from ebcli.operations import statusops
@@ -26,12 +25,6 @@ from .. import mock_responses
 
 
 class TestStatusOps(unittest.TestCase):
-    def setUp(self):
-        disable_socket()
-
-    def tearDown(self):
-        enable_socket()
-
     @mock.patch('ebcli.operations.statusops.elasticbeanstalk.get_environment')
     @mock.patch('ebcli.operations.statusops.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.statusops.io.log_alert')

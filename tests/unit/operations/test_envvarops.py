@@ -15,7 +15,6 @@
 from collections import Counter
 
 import mock
-from pytest_socket import disable_socket, enable_socket
 from six import iteritems
 import unittest
 
@@ -29,12 +28,6 @@ class TestEnvvarOps(unittest.TestCase):
         return self.assertEqual(
             Counter(frozenset(iteritems(d)) for d in ls1),
             Counter(frozenset(iteritems(d)) for d in ls2))
-
-    def setUp(self):
-        disable_socket()
-
-    def tearDown(self):
-        enable_socket()
 
     def test_sanitize_environment_variables_from_customer_input(self):
         environment_variables_input = '  """  DB_USER"""   =     "\"  r=o\"o\'t\"\"  "   ,  DB_PAS\ = SWORD="\"pass=\'\"word\""'

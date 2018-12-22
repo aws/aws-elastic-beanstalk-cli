@@ -14,7 +14,6 @@ import os
 import shutil
 
 import mock
-from pytest_socket import disable_socket, enable_socket
 import unittest
 
 from ebcli.core import fileoperations
@@ -39,7 +38,6 @@ class ListTest(unittest.TestCase):
     )
 
     def setUp(self):
-        disable_socket()
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
@@ -50,7 +48,6 @@ class ListTest(unittest.TestCase):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
         aws.set_region(None)
-        enable_socket()
 
     def setup_platform_workspace(self):
         fileoperations.create_config_file(

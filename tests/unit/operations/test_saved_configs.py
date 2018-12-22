@@ -16,7 +16,6 @@ import shutil
 import sys
 
 import mock
-from pytest_socket import enable_socket, disable_socket
 import unittest
 
 from ebcli.core import fileoperations
@@ -30,7 +29,6 @@ class TestResolveConfigLocations(unittest.TestCase):
     cfg_name = 'myfile.cfg.yml'
 
     def setUp(self):
-        disable_socket()
         if not os.path.exists('testDir'):
             os.makedirs('testDir/.elasticbeanstalk/')
         os.chdir('testDir')
@@ -44,7 +42,6 @@ class TestResolveConfigLocations(unittest.TestCase):
             self.data = ''
 
     def tearDown(self):
-        disable_socket()
         os.chdir(os.path.pardir)
         if os.path.exists('testDir'):
             if sys.platform.startswith('win'):

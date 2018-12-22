@@ -14,7 +14,6 @@ import datetime
 from dateutil import tz
 
 import unittest
-import pytest_socket
 import mock
 
 from ebcli.display import data_poller
@@ -141,12 +140,6 @@ class TestDataPoller(unittest.TestCase):
             }
         ]
     }
-
-    def setUp(self):
-        pytest_socket.disable_socket()
-
-    def tearDown(self):
-        pytest_socket.enable_socket()
 
     def test_format_float(self):
         self.assertEqual('1.0', data_poller.format_float(flt=1, number_of_places=1))

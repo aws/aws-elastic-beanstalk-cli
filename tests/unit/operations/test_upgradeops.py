@@ -14,7 +14,6 @@ import os
 import shutil
 
 import mock
-import pytest_socket
 import unittest
 
 from ebcli.operations import upgradeops
@@ -24,14 +23,12 @@ from ebcli.objects.environment import Environment
 
 class TestUpgradeOps(unittest.TestCase):
     def setUp(self):
-        pytest_socket.disable_socket()
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
         os.chdir('testDir')
 
     def tearDown(self):
-        pytest_socket.enable_socket()
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
 

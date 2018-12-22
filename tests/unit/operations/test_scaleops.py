@@ -15,7 +15,6 @@ import shutil
 from copy import deepcopy
 
 import mock
-from pytest_socket import enable_socket, disable_socket
 import unittest
 
 from ebcli.operations import scaleops
@@ -25,14 +24,12 @@ from .. import mock_responses
 
 class TestSSHOps(unittest.TestCase):
     def setUp(self):
-        disable_socket()
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
         os.chdir('testDir')
 
     def tearDown(self):
-        enable_socket()
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
 

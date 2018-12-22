@@ -4,7 +4,6 @@ import threading
 
 import mock
 import unittest
-from pytest_socket import disable_socket, enable_socket
 
 from ebcli.core.ebcore import EB
 from ebcli.core import fileoperations
@@ -16,7 +15,6 @@ from .. import mock_responses
 @unittest.skip
 class TestHealth(unittest.TestCase):
     def setUp(self):
-        disable_socket()
         self.root_dir = os.getcwd()
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
@@ -26,7 +24,6 @@ class TestHealth(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
-        enable_socket()
 
     @mock.patch('ebcli.controllers.health.healthops.elasticbeanstalk.describe_configuration_settings')
     @mock.patch('ebcli.display.data_poller.elasticbeanstalk.get_environment_health')

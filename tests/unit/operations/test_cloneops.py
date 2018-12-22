@@ -11,7 +11,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import mock
-from pytest_socket import enable_socket, disable_socket
 import unittest
 
 from ebcli.operations import cloneops
@@ -21,12 +20,6 @@ from .. import mock_responses
 
 
 class TestCloneOps(unittest.TestCase):
-    def setUp(self):
-        disable_socket()
-
-    def tearDown(self):
-        enable_socket()
-
     @mock.patch('ebcli.operations.cloneops.elasticbeanstalk.clone_environment')
     def test_clone_env(
             self,

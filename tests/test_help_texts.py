@@ -20,8 +20,6 @@ import sys
 import threading
 import types
 
-from pytest_socket import disable_socket, enable_socket
-
 from ebcli.core import fileoperations
 from ebcli.core import io
 
@@ -1687,7 +1685,6 @@ optional arguments:
 class PlatformWorkspaceTests(TestHelpTexts, HelpTestsMixin):
     @classmethod
     def setUpClass(cls):
-        disable_socket()
         cls.root_dir = os.getcwd()
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
@@ -1703,15 +1700,12 @@ class PlatformWorkspaceTests(TestHelpTexts, HelpTestsMixin):
 
     @classmethod
     def tearDownClass(cls):
-        enable_socket()
-
         os.chdir(cls.root_dir)
 
 
 class ApplicationWorkspaceTests(TestHelpTexts, HelpTestsMixin):
     @classmethod
     def setUpClass(cls):
-        disable_socket()
         cls.root_dir = os.getcwd()
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
@@ -1727,16 +1721,12 @@ class ApplicationWorkspaceTests(TestHelpTexts, HelpTestsMixin):
 
     @classmethod
     def tearDownClass(cls):
-        enable_socket()
-
         os.chdir(cls.root_dir)
 
 
 class NoWorkspaceTests(TestHelpTexts, HelpTestsMixin):
     @classmethod
     def setUpClass(cls):
-        disable_socket()
-
         cls.root_dir = os.getcwd()
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
@@ -1755,8 +1745,6 @@ class NoWorkspaceTests(TestHelpTexts, HelpTestsMixin):
 
     @classmethod
     def tearDownClass(cls):
-        enable_socket()
-
         os.chdir(cls.root_dir)
 
 

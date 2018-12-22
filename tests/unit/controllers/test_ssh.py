@@ -15,7 +15,6 @@ import os
 import shutil
 
 import unittest
-import pytest_socket
 import mock
 
 from ebcli.controllers import ssh
@@ -25,7 +24,6 @@ from ebcli.core.ebcore import EB
 
 class TestInit(unittest.TestCase):
     def setUp(self):
-        pytest_socket.disable_socket()
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
@@ -37,8 +35,6 @@ class TestInit(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
-
-        pytest_socket.enable_socket()
 
     @mock.patch('ebcli.controllers.ssh.SSHController.get_env_name')
     @mock.patch('ebcli.controllers.ssh.sshops.prepare_for_ssh')

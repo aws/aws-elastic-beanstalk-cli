@@ -14,7 +14,6 @@ import os
 import shutil
 
 import mock
-import pytest_socket
 import unittest
 
 from ebcli.core.ebcore import EB
@@ -23,7 +22,6 @@ from ebcli.core import fileoperations
 
 class TestUpgrade(unittest.TestCase):
     def setUp(self):
-        pytest_socket.disable_socket()
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
@@ -35,8 +33,6 @@ class TestUpgrade(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
-
-        pytest_socket.enable_socket()
 
     @mock.patch('ebcli.controllers.upgrade.upgradeops.upgrade_env')
     @mock.patch('ebcli.controllers.upgrade.UpgradeController.get_env_name')

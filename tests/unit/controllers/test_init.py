@@ -15,7 +15,6 @@ import os
 import shutil
 
 import unittest
-from pytest_socket import disable_socket, enable_socket
 import mock
 
 from ebcli.controllers import initialize
@@ -32,7 +31,6 @@ class TestInit(unittest.TestCase):
     app_name = 'ebcli-intTest-app'
 
     def setUp(self):
-        disable_socket()
         self.root_dir = os.getcwd()
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
@@ -42,8 +40,6 @@ class TestInit(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
-
-        enable_socket()
 
     @mock.patch('ebcli.controllers.initialize.SourceControl.Git')
     @mock.patch('ebcli.controllers.initialize.SourceControl')
@@ -772,7 +768,6 @@ class TestInitModule(unittest.TestCase):
     app_name = 'ebcli-intTest-app'
 
     def setUp(self):
-        disable_socket()
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
@@ -788,8 +783,6 @@ class TestInitModule(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
-
-        enable_socket()
 
     def test_get_region_from_inputs__region_was_passed(self):
         self.assertEqual(
@@ -1524,7 +1517,6 @@ class TestInitMultipleModules(unittest.TestCase):
     )
 
     def setUp(self):
-        disable_socket()
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
@@ -1534,8 +1526,6 @@ class TestInitMultipleModules(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
-
-        enable_socket()
 
     def test_multiple_modules__none_of_the_specified_modules_actually_exists(self):
         app = EB(

@@ -10,19 +10,12 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from pytest_socket import disable_socket, enable_socket
 import unittest
 
 from ebcli.core.ebcore import EB
 
 
 class TestAbstractController(unittest.TestCase):
-    def setUp(self):
-        disable_socket()
-
-    def tearDown(self):
-        enable_socket()
-
     def test_eb_command_subcommand_help(self):
         with self.assertRaises(SystemExit):
             app = EB(argv=['config', 'save', '--help'])

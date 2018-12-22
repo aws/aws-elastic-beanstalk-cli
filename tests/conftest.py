@@ -13,9 +13,13 @@
 import sys
 
 import pytest
+import pytest_socket
 
 from ebcli.core import fileoperations, io
 from ebcli.core.ebrun import fix_path
+
+
+pytest_socket.disable_socket()
 
 
 def ensure_eb_application_has_not_been_initialized():

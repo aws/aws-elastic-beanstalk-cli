@@ -11,7 +11,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import mock
-from pytest_socket import disable_socket, enable_socket
 import unittest
 
 from ebcli.lib import codecommit
@@ -20,12 +19,6 @@ from .. import mock_responses
 
 
 class TestCloudWatch(unittest.TestCase):
-    def setUp(self):
-        disable_socket()
-
-    def tearDown(self):
-        enable_socket()
-
     def test_region_not_supported(self):
         region_supported = codecommit.region_supported('fake_region')
         self.assertFalse(region_supported)

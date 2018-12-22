@@ -14,12 +14,10 @@ import os
 import shutil
 
 import mock
-from pytest_socket import disable_socket, enable_socket
 import unittest
 
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
-from ebcli.objects.solutionstack import SolutionStack
 
 
 class TestAppVersions(unittest.TestCase):
@@ -27,7 +25,6 @@ class TestAppVersions(unittest.TestCase):
     solution = '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5'
 
     def setUp(self):
-        disable_socket()
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
@@ -43,8 +40,6 @@ class TestAppVersions(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
-
-        enable_socket()
 
     @mock.patch('ebcli.controllers.appversion.appversionops')
     def test_delete_particular_version_label(

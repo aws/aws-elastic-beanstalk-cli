@@ -14,7 +14,6 @@ import os
 import shutil
 
 import mock
-from pytest_socket import disable_socket, enable_socket
 import unittest
 
 from ebcli.core import fileoperations
@@ -28,7 +27,6 @@ class TestLogs(unittest.TestCase):
     SPECIFIED_LOG_GROUP = '/aws/elasticbeanstalk/foo/specific/error.log'
 
     def setUp(self):
-        disable_socket()
         if os.path.exists('testDir'):
             shutil.rmtree('testDir')
         os.mkdir('testDir')
@@ -44,7 +42,6 @@ class TestLogs(unittest.TestCase):
         self.setup_application_workspace()
 
     def tearDown(self):
-        enable_socket()
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
         self.patcher_base_get_app.stop()

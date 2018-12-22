@@ -11,7 +11,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import mock
-from pytest_socket import  disable_socket, enable_socket
 import unittest
 
 from ebcli.lib import cloudformation
@@ -20,12 +19,6 @@ from .. import mock_responses
 
 
 class TestCloudFormation(unittest.TestCase):
-    def setUp(self):
-        disable_socket()
-
-    def tearDown(self):
-        enable_socket()
-
     @mock.patch('ebcli.lib.cloudformation.aws.make_api_call')
     def test_wait_until_stack_exists__stack_does_not_exist(
             self,

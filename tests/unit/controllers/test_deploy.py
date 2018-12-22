@@ -14,7 +14,6 @@ import os
 import shutil
 
 import mock
-from pytest_socket import disable_socket, enable_socket
 import unittest
 
 from ebcli.controllers import deploy
@@ -29,7 +28,6 @@ class TestDeploy(unittest.TestCase):
     )
 
     def setUp(self):
-        disable_socket()
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
@@ -45,8 +43,6 @@ class TestDeploy(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
-
-        enable_socket()
 
 
 class TestErrorConditions(TestDeploy):
@@ -398,7 +394,6 @@ class TestMultipleAppDeploy(unittest.TestCase):
     )
 
     def setUp(self):
-        disable_socket()
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):
             os.mkdir('testDir')
@@ -408,8 +403,6 @@ class TestMultipleAppDeploy(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
-
-        enable_socket()
 
     @mock.patch('ebcli.controllers.deploy.io.log_error')
     def test_multiple_modules__none_of_the_specified_modules_actually_exists(

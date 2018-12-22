@@ -11,7 +11,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import mock
-from pytest_socket import disable_socket, enable_socket
 import unittest
 
 from ebcli.core import io
@@ -26,12 +25,6 @@ from ebcli.operations.tagops.taglist import TagList
 
 
 class TestCreateOps(unittest.TestCase):
-    def setUp(self):
-        disable_socket()
-
-    def tearDown(self):
-        enable_socket()
-
     def test_get_and_validate_tags__tags_is_empty(self):
         tags = ''
 
