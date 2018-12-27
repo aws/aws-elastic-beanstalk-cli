@@ -133,7 +133,7 @@ class NoRegionError(EBCLIException):
     pass
 
 
-class ConnectionError(EBCLIException):
+class ConnectionError(OSError):
     """ Region provided cannot be resolved    """
     pass
 

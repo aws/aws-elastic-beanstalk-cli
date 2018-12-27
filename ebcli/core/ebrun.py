@@ -26,6 +26,7 @@ from cement.core.exc import CaughtSignal
 
 from ebcli.core import io
 from ebcli.objects.exceptions import (
+    ConnectionError,
     NoEnvironmentForBranchError,
     InvalidStateError,
     NotInitializedError,
