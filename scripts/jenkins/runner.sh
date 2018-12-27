@@ -33,7 +33,7 @@ Usage:
 
 e.g., to test this project against Python 2.7 and Python 3.6, you would:
 
-    ../scripts/jenkins/runner.sh /usr/local/bin/python2.7
+    ./scripts/jenkins/runner.sh /usr/local/bin/python2.7
 
         and
 
