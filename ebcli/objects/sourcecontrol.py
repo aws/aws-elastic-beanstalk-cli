@@ -544,7 +544,4 @@ class Git(SourceControl):
 
 
 def credential_helper_command():
-    if sys.platform.startswith('win32'):
-        return '"!aws codecommit credential-helper $@"'
-    else:
-        return '!aws codecommit credential-helper $@'
+    return '!aws codecommit credential-helper $@'
