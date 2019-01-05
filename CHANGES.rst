@@ -2,6 +2,15 @@
 Changelog
 =========
 -------------------
+3.14.9 (2019-01-09)
+-------------------
+- Update `urllib3` requirement to `>=1.24.1,<1.25`
+- Update `docker-compose` requirement to `>=1.23.2,<1.24`
+- Update `botocore` requirement to `>=1.12.29.2,<1.13`
+- Update `six` requirement to `>=1.11.0,<1.12.0`
+- Added ability to reference CodeCommit branch names containing '/'s
+
+-------------------
 3.14.8 (2018-12-12)
 -------------------
 - Added eu-north-1 EU (Stockholm) region
