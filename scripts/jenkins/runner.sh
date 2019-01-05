@@ -130,6 +130,34 @@ step_title "Verifying Python binary path is valid"
 validate_python_version_name
 increment_step_number
 
+step_title "Checking for CVEs"
+check_for_cves()
+{
+    substep_title "Creating new Python $PYTHON_VERSION virtualenv"
+    virtualenv -p $PYTHON_INSTALLATION $VENV_ENV_NAME
+    exit_upon_substep_failure
+
+    substep_title "Loading Python $PYTHON_VERSION virtualenv"
+    source $VENV_ENV_NAME/bin/activate
+    exit_upon_substep_failure
+
+    substep_title "Installing AWSEBCLI and dependencies"
+    pip install . --no-cache-dir
+    exit_upon_substep_failure
+
+    substep_title "Installing package, 'safety'"
+    pip install safety --no-cache-dir
+    exit_upon_substep_failure
+
+    substep_title "Checking for known security vulnerabilities"
+    safety check
+    exit_upon_substep_failure
+    SUBSTEP_NUMBER=1
+}
+check_for_cves
+increment_step_number
+
+
 step_title "Ensuring AWSEBCLI installs correctly after AWSCLI"
 ensure_awsebcli_installs_correctly_after_awscli()
 {

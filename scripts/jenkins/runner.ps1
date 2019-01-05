@@ -100,6 +100,36 @@ Print-StepTitle "Verifying Python binary path is valid"
 Validate-PythonVersionName
 Exit-UponFailure
 
+Print-StepTitle "Checking for CVEs"
+function CheckFor-CVEs()
+{
+    Print-SubStepTitle "Create new Python $PYTHON_VERSION virtualenv"
+    Invoke-Expression "virtualenv.exe -p '$PYTHON_INSTALLATION' '$VENV_ENV_NAME'"
+    Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Loading Python $PYTHON_VERSION virtualenv"
+    Invoke-Expression ".\$VENV_ENV_NAME\Scripts\activate"
+    Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Installing AWSCLI and dependencies"
+    Invoke-Expression "pip install .  --no-cache-dir"
+    Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Installing package, 'safety'"
+    Invoke-Expression "pip install safety --no-cache-dir"
+    Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Checking for known security vulnerabilities"
+    Invoke-Expression "safety check"
+    Exit-UponSubStepFailure
+    $SUBSTEP_NUMBER = 1
+}
+# Jenkins is failing to run "safety check" using Python 3.5-3.7:
+#     https://github.com/pyupio/safety/issues/119
+#
+# CheckFor-CVEs
+# Exit-UponFailure
+
 Print-StepTitle "Ensuring AWSEBCLI installs correctly after AWSCLI"
 function Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI()
 {
