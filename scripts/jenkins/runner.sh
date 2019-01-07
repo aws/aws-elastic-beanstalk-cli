@@ -142,11 +142,11 @@ ensure_awsebcli_installs_correctly_after_awscli()
     exit_upon_substep_failure
 
     substep_title "Installing AWSCLI and dependencies"
-    pip install awscli
+    pip install awscli --no-cache-dir
     exit_upon_substep_failure
 
     substep_title "Installing AWSEBCLI and dependencies"
-    pip install .
+    pip install . --no-cache-dir
     exit_upon_substep_failure
 
     substep_title "Checking for missing dependencies and dependency mismatches in the package set"
@@ -172,7 +172,7 @@ ensure_awscli_installs_correctly_after_awsebcli()
     exit_upon_substep_failure
 
     substep_title "Installing AWSEBCLI and dependencies"
-    pip install .
+    pip install . --no-cache-dir
     exit_upon_substep_failure
 
     substep_title "Checking for missing dependencies and dependency mismatches in the package set"
@@ -180,7 +180,7 @@ ensure_awscli_installs_correctly_after_awsebcli()
     exit_upon_substep_failure
 
     substep_title "Installing AWSEBCLI and dependencies"
-    pip install awsebcli
+    pip install awsebcli --no-cache-dir
     exit_upon_substep_failure
 
     substep_title "Checking for missing dependencies and dependency mismatches in the package set"

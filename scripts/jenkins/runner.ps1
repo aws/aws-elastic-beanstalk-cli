@@ -112,11 +112,11 @@ function Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI()
     Exit-UponSubStepFailure
 
     Print-SubStepTitle "Installing AWSCLI and dependencies"
-    Invoke-Expression "pip install awscli"
+    Invoke-Expression "pip install awscli --no-cache-dir"
     Exit-UponSubStepFailure
 
     Print-SubStepTitle "Installing AWSEBCLI and dependencies"
-    Invoke-Expression "pip install ."
+    Invoke-Expression "pip install . --no-cache-dir"
     Exit-UponSubStepFailure
 
     Print-SubStepTitle "Check of missing dependencies and dependency mismatches in the package set"
@@ -142,11 +142,11 @@ function Ensure-AWSCLIInstallsCorrectlyAfterAWSEBCLI()
     Exit-UponSubStepFailure
 
     Print-SubStepTitle "Installing AWSEBCLI and dependencies"
-    Invoke-Expression "pip install ."
+    Invoke-Expression "pip install . --no-cache-dir"
     Exit-UponSubStepFailure
 
     Print-SubStepTitle "Installing AWSCLI and dependencies"
-    Invoke-Expression "pip install awscli"
+    Invoke-Expression "pip install awscli --no-cache-dir"
     Exit-UponSubStepFailure
 
     Print-SubStepTitle "Check of missing dependencies and dependency mismatches in the package set"

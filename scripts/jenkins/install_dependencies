@@ -33,5 +33,5 @@ except KeyError:
 p = Popen(['pip', 'uninstall', '-y', 'awsebcli'], stdout=PIPE)
 p.communicate()
 
-run('pip install .')
-run('pip install -r dev_requirements.txt')
+run('pip install . --no-cache-dir')
+run('pip install -r dev_requirements.txt --no-cache-dir')
