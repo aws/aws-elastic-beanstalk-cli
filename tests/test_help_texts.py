@@ -231,7 +231,6 @@ This command is safe when run in a previously initialized directory. To re-initi
             """usage: eb platform list [options...]
 
 In a platform workspace, lists versions of the custom platform associated with this workspace. You can reduce the result set by using filters.
-
 Elsewhere, shows a list of platforms for use with "eb init -p". Enter "--verbose" to get the full platform name.
 
 optional arguments:
@@ -1734,12 +1733,12 @@ class NoWorkspaceTests(TestHelpTexts, HelpTestsMixin):
         os.chdir('testDir')
 
         try:
-            fileoperations.eb_file_exists(os.getcwd())
-            raise EnvironmentError(
-                'Found a .elasticbeanstalk/config.yml at a level above CWD.'
-                'Before rerunning this test, ensure that all .elasticbeanstalk '
-                'directories directly above this directory are deleted.'
-            )
+            if fileoperations.eb_file_exists(os.getcwd()):
+                raise EnvironmentError(
+                    'Found a .elasticbeanstalk/config.yml at a level above CWD. '
+                    'Before rerunning this test, ensure that all .elasticbeanstalk '
+                    'directories directly above this directory are deleted.'
+                )
         except fileoperations.NotInitializedError:
             pass
 

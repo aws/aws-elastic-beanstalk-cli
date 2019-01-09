@@ -132,7 +132,7 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'platformselect.epilog': 'This command is an alternative to "eb init -i" and '
                              '"eb init -p". It doesn\'t change the platform on any '
                              'existing environments.\n'
-                             'To upgrade an environment\'s platform, enter:'
+                             'To upgrade an environment\'s platform, enter:\n'
                              '    eb upgrade',
     'platformevents.info': 'Displays events for the custom platform associated with '
                            'this workspace.',
