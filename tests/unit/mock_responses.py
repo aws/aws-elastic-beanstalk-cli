@@ -2260,6 +2260,39 @@ DESCRIBE_STACKS_RESPONSE = {
 }
 
 
+DESCRIBE_STACKS_RESPONSE__2 = {
+    'Stacks': [
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/'
+                       'sam-cfn-stack-2/13bfae60-b196-11e8-b2de-0ad5109330ec',
+            'StackName': 'sam-cfn-stack-2',
+            'Description': 'sam-app\nSample SAM Template for sam-app\n',
+            'CreationTime': datetime.datetime(2018, 9, 6, 5, 31, 16, 951000, tzinfo=tz.tzutc()),
+            'DeletionTime': datetime.datetime(2018, 9, 19, 4, 41, 12, 407000, tzinfo=tz.tzutc()),
+            'LastUpdatedTime': datetime.datetime(2018, 9, 19, 4, 41, 8, 956000, tzinfo=tz.tzutc()),
+            'RollbackConfiguration': {},
+            'StackStatus': 'ROLLBACK_COMPLETE',
+            'DisableRollback': False,
+            'NotificationARNs': [],
+            'Capabilities': ['CAPABILITY_IAM'],
+            'Tags': [],
+            'EnableTerminationProtection': False
+        }
+    ],
+    'ResponseMetadata': {
+        'RequestId': 'd7e5be6b-bc30-11e8-8808-394f6de86aea',
+        'HTTPStatusCode': 200,
+        'HTTPHeaders': {
+            'x-amzn-requestid': 'd7e5be6b-bc30-11e8-8808-394f6de86aea',
+            'content-type': 'text/xml',
+            'content-length': '1229',
+            'date': 'Wed, 19 Sep 2018 17:24:20 GMT'
+        },
+        'RetryAttempts': 0
+    }
+}
+
+
 DESCRIBE_LOG_STREAMS_RESPONSE = {
     'logStreams': [
         {
