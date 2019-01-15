@@ -1616,6 +1616,36 @@ class TestCommonOperations(unittest.TestCase):
         get_branch_mock.assert_called_once_with('my-repository', 'my-branch')
         _create_application_version_mock.assert_not_called()
 
+    @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
+    @mock.patch('ebcli.operations.commonops.heuristics.directory_is_empty')
+    @mock.patch('ebcli.operations.commonops.SourceControl.get_source_control')
+    @mock.patch('ebcli.operations.commonops._create_application_version')
+    def test_create_app_version_from_source__source_is_misformatted(
+            self,
+            _create_application_version_mock,
+            get_source_control_mock,
+            directory_is_empty_mock,
+            traverse_mock
+    ):
+        directory_is_empty_mock.return_value = False
+        source_control_mock = mock.MagicMock()
+        source_control_mock.get_version_label.return_value = 'version-label'
+        source_control_mock.get_message.return_value = 'label-message'
+        get_source_control_mock.return_value = source_control_mock
+        application_version_mock = mock.MagicMock()
+        _create_application_version_mock.return_value = application_version_mock
+
+        with self.assertRaises(commonops.InvalidOptionsError) as context_manager:
+            commonops.create_app_version_from_source(
+                'my-application',
+                'codecommit/my-branch'
+            )
+        self.assertEqual(
+            'Source argument must be of the form codecommit/repository-name/branch-name',
+            str(context_manager.exception)
+        )
+        _create_application_version_mock.assert_not_called()
+
     @mock.patch('ebcli.operations.commonops.fileoperations.get_zip_location')
     @mock.patch('ebcli.operations.commonops.fileoperations.file_exists')
     @mock.patch('ebcli.operations.commonops.fileoperations.get_ebignore_list')

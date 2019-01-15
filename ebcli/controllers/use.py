@@ -13,7 +13,7 @@
 from cement.utils.misc import minimal_logger
 
 from ebcli.lib import utils
-from ebcli.objects.exceptions import NotFoundError
+from ebcli.objects.exceptions import InvalidOptionsError, NotFoundError
 from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings, flag_text
@@ -33,7 +33,7 @@ class UseController(AbstractBaseController):
             ),
             (
                 ['--source'],
-                dict(type=utils.check_source, help=flag_text['deploy.source'])
+                dict(help=flag_text['deploy.source'])
             ),
         ]
         usage = 'eb use [environment_name] [options ...]'
@@ -59,6 +59,8 @@ class UseController(AbstractBaseController):
     @staticmethod
     def __attempt_to_checkout_branch_specified_in_source_input(source):
         source_location, repo, branch = utils.parse_source(source)
+        if not branch or not repo:
+            raise InvalidOptionsError(strings['codecommit.bad_source'])
 
         source_control = SourceControl.get_source_control()
         source_control.is_setup()

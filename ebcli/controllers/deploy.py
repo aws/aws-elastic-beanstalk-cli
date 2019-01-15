@@ -43,7 +43,7 @@ class DeployController(AbstractBaseController):
             (['--staged'], dict(
                 action='store_true', help=flag_text['deploy.staged'])),
             (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
-            (['--source'], dict(type=utils.check_source, help=flag_text['deploy.source'])),
+            (['--source'], dict(help=flag_text['deploy.source'])),
             (['-p', '--process'], dict(
                 action='store_true', help=flag_text['deploy.process'])),
             ]

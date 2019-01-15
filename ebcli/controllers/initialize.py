@@ -54,7 +54,7 @@ class InitController(AbstractBaseController):
             (['-k', '--keyname'], dict(help=flag_text['init.keyname'])),
             (['-i', '--interactive'], dict(
                 action='store_true', help=flag_text['init.interactive'])),
-            (['--source'], dict(type=utils.check_source, help=flag_text['init.source'])),
+            (['--source'], dict(help=flag_text['init.source'])),
         ]
         usage = 'eb init <application_name> [options ...]'
         epilog = strings['init.epilog']

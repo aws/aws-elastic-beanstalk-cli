@@ -624,6 +624,9 @@ def create_app_version_from_source(
 
     source_location, repository, branch = utils.parse_source(source)
 
+    if not branch or not repository:
+        raise InvalidOptionsError(strings['codecommit.bad_source'])
+
     if source_location == "codecommit":
         try:
             result = codecommit.get_branch(repository, branch)

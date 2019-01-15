@@ -355,6 +355,40 @@ class TestDeployNormal(TestDeploy):
     @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
     @mock.patch('ebcli.controllers.deploy.deployops.deploy')
+    def test_deploy__specify_codecommit_source_with_forward_slash_in_branch_name(
+            self,
+            deploy_mock,
+            get_env_name_mock,
+            get_app_name_mock
+    ):
+        get_app_name_mock.return_value = 'my-application'
+        get_env_name_mock.return_value = 'environment-1'
+
+        app = EB(
+            argv=[
+                'deploy',
+                '--source', 'codecommit/my-repository/my-branch/feature'
+            ]
+        )
+        app.setup()
+        app.run()
+
+        deploy_mock.assert_called_with(
+            'my-application',
+            'environment-1',
+            None,
+            None,
+            None,
+            group_name=None,
+            process_app_versions=False,
+            source='codecommit/my-repository/my-branch/feature',
+            staged=False,
+            timeout=None
+        )
+
+    @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
+    @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
+    @mock.patch('ebcli.controllers.deploy.deployops.deploy')
     def test_deploy__indicate_staged_changes_must_be_used(
             self,
             deploy_mock,

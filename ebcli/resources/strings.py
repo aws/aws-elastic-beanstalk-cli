@@ -480,6 +480,7 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'codecommit.nobranch': 'Branch does not exist in CodeCommit',
     'codecommit.badregion': 'AWS CodeCommit is not supported in this region; continuing '
                             'initialization without CodeCommit',
+    'codecommit.bad_source': 'Source argument must be of the form codecommit/repository-name/branch-name',
 
     'codebuild.noheader': 'Beanstalk configuration header \'{header}\' is missing from '
                           'Buildspec file; will not use Beanstalk Code Build integration',

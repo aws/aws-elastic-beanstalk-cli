@@ -815,6 +815,52 @@ CName: front-A08G28LG+""")
         self.assertEnvironmentRequestsEqual(expected_environment_request, actual_environment_request)
         self.assertEqual(1, get_input_mock.call_count)
 
+    @mock.patch('ebcli.operations.createops.make_new_env')
+    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    def test_create_non_interactively__with_forward_slash_in_branch(
+            self,
+            is_cname_available_mock,
+            get_default_keyname_mock,
+            find_solution_stack_from_string_mock,
+            get_solution_stack_from_customer_mock,
+            make_new_env_mock,
+    ):
+        get_solution_stack_from_customer_mock.return_value = self.solution
+        find_solution_stack_from_string_mock.return_value = self.solution
+        is_cname_available_mock.return_value = True
+        get_default_keyname_mock.return_value = None
+
+        self.app = EB(
+            argv=[
+                'create',
+                self.env_name,
+                '--source', 'codecommit/my-repository/my-branch/feature'
+            ]
+        )
+        self.app.setup()
+        self.app.run()
+
+        expected_environment_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            env_name=self.env_name,
+            platform=self.solution,
+        )
+        call_args, kwargs = make_new_env_mock.call_args
+        actual_environment_request = call_args[0]
+        self.assertEqual(actual_environment_request, expected_environment_request)
+        make_new_env_mock.assert_called_with(
+            expected_environment_request,
+            branch_default=False,
+            process_app_version=False,
+            nohang=False,
+            interactive=False,
+            timeout=None,
+            source='codecommit/my-repository/my-branch/feature'
+        )
+
 
 class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.core.io.get_input')

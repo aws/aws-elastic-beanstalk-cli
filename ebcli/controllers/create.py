@@ -72,7 +72,7 @@ class CreateController(AbstractBaseController):
             (['--tags'], dict(help=flag_text['create.tags'])),
             (['--envvars'], dict(help=flag_text['create.envvars'])),
             (['--cfg'], dict(help=flag_text['create.config'])),
-            (['--source'], dict(type=utils.check_source, help=flag_text['create.source'])),
+            (['--source'], dict(help=flag_text['create.source'])),
             (['--elb-type'], dict(help=flag_text['create.elb_type'])),
             (['-db', '--database'], dict(
                 action="store_true", help=flag_text['create.database'])),

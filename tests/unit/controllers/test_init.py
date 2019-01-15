@@ -299,7 +299,7 @@ class TestInit(unittest.TestCase):
             argv=[
                 'init',
                 '-p', 'ruby',
-                '--source', 'codecommit/my-repo/prod',
+                '--source', 'codecommit/my-repo/prod/mybranch',
                 '--region', 'us-east-1'
             ]
         )
@@ -312,7 +312,7 @@ class TestInit(unittest.TestCase):
             'ruby',
             dir_path=None,
             repository='my-repo',
-            branch='prod'
+            branch='prod/mybranch'
         )
 
         sourcecontrol_mock.setup_codecommit_cred_config.assert_not_called()
