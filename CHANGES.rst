@@ -2,12 +2,18 @@
 Changelog
 =========
 -------------------
+3.14.10 (2019-01-21)
+-------------------
+- Introduced direct dependency on `requests>=2.20.1,<2.21`
+- Fixed bug that failed `--source` arguments with '/'s in the branch name
+
+-------------------
 3.14.9 (2019-01-09)
 -------------------
-- Update `urllib3` requirement to `>=1.24.1,<1.25`
-- Update `docker-compose` requirement to `>=1.23.2,<1.24`
-- Update `botocore` requirement to `>=1.12.29,<1.13`
-- Update `six` requirement to `>=1.11.0,<1.12.0`
+- Updated `urllib3` requirement to `>=1.24.1,<1.25`
+- Updated `docker-compose` requirement to `>=1.23.2,<1.24`
+- Updated `botocore` requirement to `>=1.12.29,<1.13`
+- Updated `six` requirement to `>=1.11.0,<1.12.0`
 - Added ability to reference CodeCommit branch names containing '/'s
 
 -------------------
