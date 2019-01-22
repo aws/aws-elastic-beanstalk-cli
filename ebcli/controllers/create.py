@@ -32,6 +32,7 @@ from ebcli.operations import (
     saved_configs,
     solution_stack_ops
 )
+from ebcli.operations.tagops import tagops
 from ebcli.resources.strings import strings, prompts, flag_text
 from ebcli.resources.statics import elb_names
 
@@ -173,7 +174,7 @@ class CreateController(AbstractBaseController):
                 raise InvalidOptionsError(strings['create.single_and_elbpublic_or_elb_subnet'])
 
         app_name = self.get_app_name()
-        tags = createops.get_and_validate_tags(tags)
+        tags = tagops.get_and_validate_tags(tags)
         envvars = get_and_validate_envars(envvars)
         process_app_version = fileoperations.env_yaml_exists() or process
         platform = get_platform(solution_string, iprofile)

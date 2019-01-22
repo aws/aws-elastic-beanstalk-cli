@@ -234,3 +234,14 @@ class TagOps(object):
                 )
             )
             io.echo('')
+
+
+def get_and_validate_tags(addition_string):
+    if not addition_string:
+        return []
+
+    taglist = TagList([])
+    taglist.populate_add_list(addition_string)
+    validate_additions(taglist)
+
+    return taglist.additions

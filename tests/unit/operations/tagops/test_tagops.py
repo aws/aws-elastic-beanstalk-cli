@@ -18,6 +18,32 @@ from ebcli.operations.tagops.taglist import TagList
 
 
 class TestOperationsValidator(unittest.TestCase):
+    def test_get_and_validate_tags__tags_is_empty(self):
+        tags = ''
+
+        self.assertEqual([], tagops.get_and_validate_tags(tags))
+
+    def test_get_and_validate_tags__tags_is_empty__add_multiple_new_tags(self):
+        taglist = TagList([])
+
+        addition_string = ','.join(
+            [
+                'key1=value1',
+                'key2=value2',
+                'key3=value3'
+            ]
+        )
+
+        expected_additions_list = [
+            {'Key': 'key1', 'Value': 'value1'},
+            {'Key': 'key2', 'Value': 'value2'},
+            {'Key': 'key3', 'Value': 'value3'}
+        ]
+
+        self.assertEqual(
+            expected_additions_list,
+            tagops.get_and_validate_tags(addition_string)
+        )
     def setUp(self):
         self.current_list = [
             {

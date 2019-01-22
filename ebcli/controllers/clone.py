@@ -16,7 +16,7 @@ from ebcli.core import io
 from ebcli.operations import cloneops, solution_stack_ops
 from ebcli.lib import utils, elasticbeanstalk
 from ebcli.controllers.create import get_cname_from_customer, get_and_validate_envars
-from ebcli.operations.createops import get_and_validate_tags
+from ebcli.operations.tagops import tagops
 from ebcli.objects.exceptions import InvalidOptionsError, AlreadyExistsError
 from ebcli.objects.requests import CloneEnvironmentRequest
 
@@ -63,7 +63,7 @@ class CloneController(AbstractBaseController):
                 raise AlreadyExistsError(strings['cname.unavailable'].
                                          replace('{cname}', cname))
 
-        tags = get_and_validate_tags(tags)
+        tags = tagops.get_and_validate_tags(tags)
         envvars = get_and_validate_envars(envvars)
 
         if not clone_name:

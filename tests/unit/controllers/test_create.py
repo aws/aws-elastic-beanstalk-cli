@@ -525,7 +525,7 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.createops.get_and_validate_tags')
+    @mock.patch('ebcli.operations.tagops.tagops.get_and_validate_tags')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')

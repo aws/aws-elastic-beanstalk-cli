@@ -355,13 +355,3 @@ def _get_default_service_trust_document():
     }]
 }"""
 
-
-def get_and_validate_tags(addition_string):
-    if not addition_string:
-        return []
-
-    taglist = TagList([])
-    taglist.populate_add_list(addition_string)
-    tagops.validate_additions(taglist)
-
-    return taglist.additions
