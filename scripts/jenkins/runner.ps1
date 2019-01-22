@@ -96,12 +96,7 @@ function Print-SubStepTitle($title)
     Write-Output "    $STEP_NUMBER.$SUBSTEP_NUMBER $title"
 }
 
-Print-StepTitle "Verifying Python binary path is valid"
-Validate-PythonVersionName
-Exit-UponFailure
-
-Print-StepTitle "Checking for CVEs"
-function CheckFor-CVEs()
+function CreateAndLoad-Virtualenv()
 {
     Print-SubStepTitle "Create new Python $PYTHON_VERSION virtualenv"
     Invoke-Expression "virtualenv.exe -p '$PYTHON_INSTALLATION' '$VENV_ENV_NAME'"
@@ -110,6 +105,20 @@ function CheckFor-CVEs()
     Print-SubStepTitle "Loading Python $PYTHON_VERSION virtualenv"
     Invoke-Expression ".\$VENV_ENV_NAME\Scripts\activate"
     Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Installing pip 18.1"
+    Invoke-Expression "python -m pip install pip==18.1"
+    Exit-UponSubStepFailure
+}
+
+Print-StepTitle "Verifying Python binary path is valid"
+Validate-PythonVersionName
+Exit-UponFailure
+
+Print-StepTitle "Checking for CVEs"
+function CheckFor-CVEs()
+{
+    CreateAndLoad-Virtualenv
 
     Print-SubStepTitle "Installing AWSCLI and dependencies"
     Invoke-Expression "pip install .  --no-cache-dir"
@@ -133,13 +142,7 @@ function CheckFor-CVEs()
 Print-StepTitle "Ensuring AWSEBCLI installs correctly after AWSCLI"
 function Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI()
 {
-    Print-SubStepTitle "Create new Python $PYTHON_VERSION virtualenv"
-    Invoke-Expression "virtualenv.exe -p '$PYTHON_INSTALLATION' '$VENV_ENV_NAME'"
-    Exit-UponSubStepFailure
-
-    Print-SubStepTitle "Loading Python $PYTHON_VERSION virtualenv"
-    Invoke-Expression ".\$VENV_ENV_NAME\Scripts\activate"
-    Exit-UponSubStepFailure
+    CreateAndLoad-Virtualenv
 
     Print-SubStepTitle "Installing AWSCLI and dependencies"
     Invoke-Expression "pip install awscli --no-cache-dir"
@@ -163,13 +166,7 @@ Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI
 Print-StepTitle "Ensuring AWSCLI installs correctly after AWSEBCLI"
 function Ensure-AWSCLIInstallsCorrectlyAfterAWSEBCLI()
 {
-    Print-SubStepTitle "Create new Python $PYTHON_VERSION virtualenv"
-    Invoke-Expression "virtualenv.exe -p '$PYTHON_INSTALLATION' '$VENV_ENV_NAME'"
-    Exit-UponSubStepFailure
-
-    Print-SubStepTitle "Loading Python $PYTHON_VERSION virtualenv"
-    Invoke-Expression ".\$VENV_ENV_NAME\Scripts\activate"
-    Exit-UponSubStepFailure
+    CreateAndLoad-Virtualenv
 
     Print-SubStepTitle "Installing AWSEBCLI and dependencies"
     Invoke-Expression "pip install . --no-cache-dir"
@@ -197,6 +194,10 @@ Exit-UponFailure
 
 Print-StepTitle "Loading Python $PYTHON_VERSION virtualenv"
 Invoke-Expression ".\$VENV_ENV_NAME\Scripts\activate"
+Exit-UponFailure
+
+Print-StepTitle "Installing pip 18.1"
+Invoke-Expression "python -m pip install pip==18.1"
 Exit-UponFailure
 
 Print-StepTitle "(Re)Installing AWSEBCLI and dependencies using commit $env:GIT_BRANCH/$GIT_COMMIT"

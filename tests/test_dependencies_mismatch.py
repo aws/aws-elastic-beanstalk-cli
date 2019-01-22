@@ -10,13 +10,18 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+from pip import __version__ as pip_version
+
+if pip_version != '18.1':
+    raise RuntimeError('You need pip==18.1 to check for dependency incompatibilities.')
+
 try:
     from pip._internal.operations.check import (
         check_package_set,
         create_package_set_from_installed,
     )
 except ImportError:
-    raise ImportError('You need pip>=18.0 to check for dependency incompatibilities.')
+    raise RuntimeError('You need pip==18.1 to check for dependency incompatibilities.')
 
 from ebcli.core import io
 

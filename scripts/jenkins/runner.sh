@@ -130,8 +130,7 @@ step_title "Verifying Python binary path is valid"
 validate_python_version_name
 increment_step_number
 
-step_title "Checking for CVEs"
-check_for_cves()
+create_and_load_new_virtualenv()
 {
     substep_title "Creating new Python $PYTHON_VERSION virtualenv"
     virtualenv -p $PYTHON_INSTALLATION $VENV_ENV_NAME
@@ -140,6 +139,16 @@ check_for_cves()
     substep_title "Loading Python $PYTHON_VERSION virtualenv"
     source $VENV_ENV_NAME/bin/activate
     exit_upon_substep_failure
+
+    substep_title "Installing pip 18.1"
+    pip install pip=="18.1"
+    exit_upon_substep_failure
+}
+
+step_title "Checking for CVEs"
+check_for_cves()
+{
+    create_and_load_new_virtualenv
 
     substep_title "Installing AWSEBCLI and dependencies"
     pip install . --no-cache-dir
@@ -161,13 +170,7 @@ increment_step_number
 step_title "Ensuring AWSEBCLI installs correctly after AWSCLI"
 ensure_awsebcli_installs_correctly_after_awscli()
 {
-    substep_title "Creating new Python $PYTHON_VERSION virtualenv"
-    virtualenv -p $PYTHON_INSTALLATION $VENV_ENV_NAME
-    exit_upon_substep_failure
-
-    substep_title "Loading Python $PYTHON_VERSION virtualenv"
-    source $VENV_ENV_NAME/bin/activate
-    exit_upon_substep_failure
+    create_and_load_new_virtualenv
 
     substep_title "Installing AWSCLI and dependencies"
     pip install awscli --no-cache-dir
@@ -191,13 +194,7 @@ increment_step_number
 step_title "Ensuring AWSCLI installs correctly after AWSEBCLI"
 ensure_awscli_installs_correctly_after_awsebcli()
 {
-    substep_title "Creating new Python $PYTHON_VERSION virtualenv"
-    virtualenv -p $PYTHON_INSTALLATION $VENV_ENV_NAME
-    exit_upon_substep_failure
-
-    substep_title "Loading Python $PYTHON_VERSION virtualenv"
-    source $VENV_ENV_NAME/bin/activate
-    exit_upon_substep_failure
+    create_and_load_new_virtualenv
 
     substep_title "Installing AWSEBCLI and dependencies"
     pip install . --no-cache-dir
@@ -224,6 +221,10 @@ increment_step_number
 
 step_title "Creating new Python $PYTHON_VERSION virtualenv"
 virtualenv -p $PYTHON_INSTALLATION $VENV_ENV_NAME
+exit_upon_failure
+
+step_title "Installing pip 18.1"
+pip install pip=="18.1"
 exit_upon_failure
 
 step_title "Loading Python $PYTHON_VERSION virtualenv"
