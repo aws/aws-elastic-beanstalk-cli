@@ -366,6 +366,10 @@ class TestCloudWatch(unittest.TestCase):
             'my-instance-profile',
             'my-ec2-key-name',
             't2.micro',
+            tags=[
+                {'Key': 'a', 'Value': 'value1'},
+                {'Key': 'b', 'Value': 'value2'}
+            ],
             vpc={
                 'id': 'vpc-id',
                 'subnets': 'subnet-id-1,subnet-id-2',
@@ -423,7 +427,11 @@ class TestCloudWatch(unittest.TestCase):
                 'S3Key': 'my-key'
             },
             PlatformName='my-custom-platform',
-            PlatformVersion='1.2.3'
+            PlatformVersion='1.2.3',
+            Tags=[
+                {'Key': 'a', 'Value': 'value1'},
+                {'Key': 'b', 'Value': 'value2'}
+            ],
         )
 
     @mock.patch('ebcli.lib.elasticbeanstalk.aws.make_api_call')

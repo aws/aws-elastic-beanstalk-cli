@@ -38,6 +38,7 @@ from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.operations import commonops
 from ebcli.operations.commonops import _zip_up_project, get_app_version_s3_location
 from ebcli.operations.eventsops import print_events
+from ebcli.operations.tagops import tagops
 from ebcli.resources.statics import namespaces, option_names
 from ebcli.resources.strings import strings, prompts
 
@@ -148,7 +149,9 @@ def create_platform_version(
         instance_type,
         vpc=None,
         staged=False,
-        timeout=None):
+        timeout=None,
+        tags=None,
+        ):
 
     _raise_if_directory_is_empty()
     _raise_if_platform_definition_file_is_missing()
@@ -162,6 +165,7 @@ def create_platform_version(
         minor_increment,
         patch_increment
     )
+    tags = tagops.get_and_validate_tags(tags)
     source_control = SourceControl.get_source_control()
     io.log_warning(strings['sc.unstagedchanges']) if source_control.untracked_changes_exist() else None
     version_label = _resolve_version_label(source_control, staged)
@@ -169,7 +173,7 @@ def create_platform_version(
     _upload_platform_version_to_s3_if_necessary(bucket, key, file_path)
     io.log_info('Creating Platform Version ' + version_label)
     response = elasticbeanstalk.create_platform_version(
-        platform_name, version, bucket, key, instance_profile, key_name, instance_type, vpc)
+        platform_name, version, bucket, key, instance_profile, key_name, instance_type, tags, vpc)
 
     environment_name = 'eb-custom-platform-builder-packer'
 

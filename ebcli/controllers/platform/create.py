@@ -15,6 +15,7 @@ from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.core.fileoperations import write_config_setting
 from ebcli.objects.exceptions import NotInitializedError
 from ebcli.operations.platformops import create_platform_version
+from ebcli.operations.tagops import tagops
 from ebcli.resources.strings import strings, flag_text
 from ebcli.resources.statics import iam_attributes
 from ebcli.operations import commonops
@@ -103,6 +104,12 @@ class GenericPlatformCreateController(AbstractBaseController):
                     help=flag_text['general.timeout']
                 )
             ),
+            (
+                ['--tags'],
+                dict(
+                    help=flag_text['create.tags'],
+                )
+            ),
         ]
         epilog = strings['platformcreateversion.epilog']
 
@@ -112,6 +119,9 @@ class GenericPlatformCreateController(AbstractBaseController):
 
     def do_command(self):
         self.get_instance_profile()
+        tags = self.app.pargs.tags
+        if tags:
+            tags = tagops.get_and_validate_tags(tags)
 
         create_platform_version(
             self.app.pargs.version,
@@ -124,7 +134,8 @@ class GenericPlatformCreateController(AbstractBaseController):
                 'subnets': self.app.pargs.vpc_subnets,
                 'publicip': self.app.pargs.vpc_publicip
             },
-            timeout=self.app.pargs.timeout
+            timeout=self.app.pargs.timeout,
+            tags=tags,
         )
 
     def get_instance_profile(self):

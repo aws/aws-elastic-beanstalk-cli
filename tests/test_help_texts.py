@@ -142,6 +142,7 @@ optional arguments:
   --vpc.publicip        associate public IPs to EC2 instances launched if
                         specified
   --timeout TIMEOUT     timeout period in minutes
+  --tags TAGS           a comma separated list of tags as key=value pairs
 
 Creates a new platform version. If no version is specified then it will do a patch-increment based on the most recent platform version. The version and increment options are mutually exclusive.
 """.strip(),
@@ -393,6 +394,7 @@ optional arguments:
   --vpc.publicip        associate public IPs to EC2 instances launched if
                         specified
   --timeout TIMEOUT     timeout period in minutes
+  --tags TAGS           a comma separated list of tags as key=value pairs
 
 Creates a new platform version. If no version is specified then it will do a patch-increment based on the most recent platform version. The version and increment options are mutually exclusive.
 """.strip(),

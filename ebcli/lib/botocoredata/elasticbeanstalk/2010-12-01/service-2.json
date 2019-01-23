@@ -1986,6 +1986,7 @@
         "PlatformVersion":{"shape":"PlatformVersion"},
         "PlatformDefinitionBundle":{"shape":"S3Location"},
         "EnvironmentName":{"shape":"EnvironmentName"},
+        "Tags":{"shape":"Tags"},
         "OptionSettings":{"shape":"ConfigurationOptionSettingsList"}
       }
     },

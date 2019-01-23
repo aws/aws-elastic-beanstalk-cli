@@ -113,12 +113,16 @@ def create_platform_version(
         instance_profile,
         key_name,
         instance_type,
+        tags=[],
         vpc=None
 ):
     kwargs = dict()
 
     if s3_bucket and s3_key:
         kwargs['PlatformDefinitionBundle'] = {'S3Bucket': s3_bucket, 'S3Key': s3_key}
+
+    if tags is not None:
+        kwargs['Tags'] = tags
 
     option_settings = []
 

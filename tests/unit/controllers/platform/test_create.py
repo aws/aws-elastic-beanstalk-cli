@@ -71,6 +71,7 @@ class TestEBPlatform(TestCreate):
                 'subnets': None,
                 'publicip': False
             },
+            tags=None,
             timeout=None
         )
 
@@ -98,6 +99,35 @@ class TestEBPlatform(TestCreate):
                 'subnets': None,
                 'publicip': False
             },
+            tags=None,
+            timeout=None
+        )
+
+    @mock.patch('ebcli.controllers.platform.create.fileoperations.get_instance_profile')
+    @mock.patch('ebcli.controllers.platform.create.create_platform_version')
+    def test_create__create_with_tags(
+            self,
+            create_platform_version_mock,
+            get_instance_profile_mock
+    ):
+        get_instance_profile_mock.return_value = 'my-instance-profile'
+
+        app = EB(argv=['platform', 'create', '--tags', 'a=1, b=2'])
+        app.setup()
+        app.run()
+
+        create_platform_version_mock.assert_called_once_with(
+            None,
+            False,
+            False,
+            False,
+            None,
+            {
+                'id': None,
+                'subnets': None,
+                'publicip': False
+            },
+            tags=[{'Key': 'a', 'Value': '1'}, {'Key': 'b', 'Value': '2'}],
             timeout=None
         )
 
@@ -134,6 +164,7 @@ class TestEBPlatform(TestCreate):
                 'subnets': 'subnet-123123,subnet-2334545',
                 'publicip': True
             },
+            tags=None,
             timeout=None
         )
 
@@ -161,6 +192,7 @@ class TestEBPlatform(TestCreate):
                 'subnets': None,
                 'publicip': False
             },
+            tags=None,
             timeout=10
         )
 
@@ -190,6 +222,7 @@ class TestEBP(TestCreate):
                 'subnets': None,
                 'publicip': False
             },
+            tags=None,
             timeout=None
         )
 
@@ -217,6 +250,7 @@ class TestEBP(TestCreate):
                 'subnets': None,
                 'publicip': False
             },
+            tags=None,
             timeout=None
         )
 
@@ -252,6 +286,7 @@ class TestEBP(TestCreate):
                 'subnets': 'subnet-123123,subnet-2334545',
                 'publicip': True
             },
+            tags=None,
             timeout=None
         )
 
@@ -279,5 +314,6 @@ class TestEBP(TestCreate):
                 'subnets': None,
                 'publicip': False
             },
+            tags=None,
             timeout=10
         )

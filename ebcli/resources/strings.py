@@ -125,7 +125,7 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
 (application workspace only)""",
     'platformlist.info': 'In a platform workspace, lists versions of the custom '
                          'platform associated with this workspace. You can reduce '
-                         'the result set by using filters.\n'
+                         'the result set by using filters.\n\n'
                          'Elsewhere, shows a list of platforms for use with "eb init -p". '
                          'Enter "--verbose" to get the full platform name.',
     'platformworkspaceselect.info': 'Selects platform resources to use for this workspace.',

@@ -914,7 +914,8 @@ class TestPlatformOperations(unittest.TestCase):
             'default',
             'aws-eb-us-west-2',
             't2.micro',
-            None
+            [],
+            None,
         )
         update_platform_version_mock.assert_called_once_with('2.0.0')
         set_environment_for_current_branch_mock.assert_called_once_with(
