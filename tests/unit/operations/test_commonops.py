@@ -208,7 +208,7 @@ class TestCommonOperations(unittest.TestCase):
         mock_beanstalk.create_application_version.assert_called_with(self.app_name, self.app_version_name,
                                                                      self.description, self.s3_bucket, self.s3_key,
                                                                      False, None, None, None)
-        mock_beanstalk.create_application.assert_called_with(self.app_name, strings['app.description'])
+        mock_beanstalk.create_application.assert_called_with(self.app_name, strings['app.description'], [])
 
         write_config_calls = [mock.call('branch-defaults', self.branch, {'environment': None}),
                              mock.call('branch-defaults', self.branch, {'group_suffix': None})]
@@ -728,7 +728,45 @@ class TestCommonOperations(unittest.TestCase):
 
         create_application_mock.assert_called_once_with(
             'my-application',
-            'Application created from the EB CLI using "eb init"'
+            'Application created from the EB CLI using "eb init"',
+            []
+        )
+        set_group_suffix_for_current_branch_mock.assert_called_once_with(None)
+        set_environment_for_current_branch_mock.assert_called_once_with(None)
+        echo_mock.assert_called_once_with('Application', 'my-application', 'has been created.')
+
+    @mock.patch('ebcli.operations.commonops.elasticbeanstalk.create_application')
+    @mock.patch('ebcli.operations.commonops.set_environment_for_current_branch')
+    @mock.patch('ebcli.operations.commonops.set_group_suffix_for_current_branch')
+    @mock.patch('ebcli.operations.commonops.io.echo')
+    @mock.patch('ebcli.operations.commonops.io.log_info')
+    def test_create_app_with_tags(
+            self,
+            log_info_mock,
+            echo_mock,
+            set_group_suffix_for_current_branch_mock,
+            set_environment_for_current_branch_mock,
+            create_application_mock
+    ):
+        self.assertEqual(
+            (None, None),
+            commonops.create_app(
+                'my-application',
+                default_env='environment-1',
+                tags=[
+                    {'Key': 'testkey1', 'Value': 'testvalue1'},
+                    {'Key': 'testkey2', 'Value': 'testvalue2'}
+                ]
+            )
+        )
+
+        create_application_mock.assert_called_once_with(
+            'my-application',
+            'Application created from the EB CLI using "eb init"',
+            [
+                {'Key': 'testkey1', 'Value': 'testvalue1'},
+                {'Key': 'testkey2', 'Value': 'testvalue2'}
+            ]
         )
         set_group_suffix_for_current_branch_mock.assert_called_once_with(None)
         set_environment_for_current_branch_mock.assert_called_once_with(None)

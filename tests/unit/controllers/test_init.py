@@ -245,7 +245,7 @@ class TestInit(unittest.TestCase):
         get_solution_stack_mock.return_value = 'php'
 
         EB.Meta.exit_on_close = False
-        app = EB(argv=['init', '-p', 'php'])
+        app = EB(argv=['init', '-p', 'php', '--tags', 'testkey1=testvalue1, testkey2=testvalue2'])
         app.setup()
         app.run()
 
@@ -889,7 +889,7 @@ class TestInitModule(unittest.TestCase):
 
         self.assertEqual(
             ('php-5.5', 'keyname'),
-            initialize.create_app_or_use_existing_one('app_name', 'default_env')
+            initialize.create_app_or_use_existing_one('app_name', 'default_env', None)
         )
 
         application_exist_mock.assert_called_once_with('app_name')
@@ -910,11 +910,11 @@ class TestInitModule(unittest.TestCase):
 
         self.assertEqual(
             ('php-5.5', 'keyname'),
-            initialize.create_app_or_use_existing_one('app_name', 'default_env')
+            initialize.create_app_or_use_existing_one('app_name', 'default_env', None)
         )
 
         application_exist_mock.assert_called_once_with('app_name')
-        create_app_mock.assert_called_once_with('app_name', default_env='default_env')
+        create_app_mock.assert_called_once_with('app_name', default_env='default_env', tags=None)
         pull_down_app_info_mock.assert_not_called()
 
     def test_set_default_env__force_non_interactive(self):

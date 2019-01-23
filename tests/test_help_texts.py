@@ -964,6 +964,7 @@ optional arguments:
   -i, --interactive     force interactive mode
   --source SOURCE       source of code to set as default; example
                         source_location/repo/branch
+  --tags TAGS           a comma separated list of tags as key=value pairs
 
 This command is safe when run in a previously initialized directory. To re-initialize with different options, use the -i option. Note this command cannot change the workspace type of a directory that was already initialized.
 """.strip(),

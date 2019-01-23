@@ -89,11 +89,12 @@ def _list_platform_versions(kwargs, nextToken=None):
     return platforms, nextToken
 
 
-def create_application(app_name, descrip):
+def create_application(app_name, descrip, tags=[]):
     LOG.debug('Inside create_application api wrapper')
     try:
         result = _make_api_call('create_application',
                                 ApplicationName=app_name,
+                                Tags=tags,
                                 Description=descrip)
     except InvalidParameterValueError as e:
         string = responses['app.exists'].replace('{app-name}', app_name)

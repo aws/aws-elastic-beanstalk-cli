@@ -29,13 +29,14 @@ from ebcli.objects.exceptions import(
     ValidationError,
 )
 from ebcli.operations import (
-	commonops,
-	gitops,
-	initializeops,
-	platformops,
-	solution_stack_ops,
-	sshops
+    commonops,
+    gitops,
+    initializeops,
+    platformops,
+    solution_stack_ops,
+    sshops,
 )
+from ebcli.operations.tagops import tagops
 from ebcli.resources.strings import strings, flag_text, prompts
 
 LOG = minimal_logger(__name__)
@@ -53,6 +54,7 @@ class InitController(AbstractBaseController):
             (['-i', '--interactive'], dict(
                 action='store_true', help=flag_text['init.interactive'])),
             (['--source'], dict(help=flag_text['init.source'])),
+            (['--tags'], dict(help=flag_text['create.tags']))
         ]
         usage = 'eb init <application_name> [options ...]'
         epilog = strings['init.epilog']
@@ -70,6 +72,7 @@ class InitController(AbstractBaseController):
         app_name = self.app.pargs.application_name
         modules = self.app.pargs.modules
         force_non_interactive = customer_is_avoiding_non_interactive_flow(platform)
+        tags = self.app.pargs.tags
 
         # The user specifies directories to initialize
         if modules and len(modules) > 0:
@@ -90,7 +93,8 @@ class InitController(AbstractBaseController):
         commonops.set_up_credentials(profile, region_name, interactive)
         app_name = get_app_name(app_name, interactive, force_non_interactive)
         default_env = set_default_env(interactive, force_non_interactive)
-        sstack, keyname_of_existing_application = create_app_or_use_existing_one(app_name, default_env)
+        tags = tagops.get_and_validate_tags(tags)
+        sstack, keyname_of_existing_application = create_app_or_use_existing_one(app_name, default_env, tags)
         platform = get_solution_stack(platform, sstack, interactive)
 
         handle_buildspec_image(platform, force_non_interactive)
@@ -355,11 +359,11 @@ def configure_keyname(solution, keyname, keyname_of_existing_app, interactive, f
         )
 
 
-def create_app_or_use_existing_one(app_name, default_env):
+def create_app_or_use_existing_one(app_name, default_env, tags):
     if elasticbeanstalk.application_exist(app_name):
         return commonops.pull_down_app_info(app_name, default_env=default_env)
     else:
-        return commonops.create_app(app_name, default_env=default_env)
+        return commonops.create_app(app_name, default_env=default_env, tags=tags)
 
 
 def customer_is_avoiding_non_interactive_flow(platform):

@@ -377,12 +377,13 @@ def get_app_version_s3_location(app_name, version_label):
     return s3_bucket, s3_key
 
 
-def create_app(app_name, default_env=None):
+def create_app(app_name, default_env=None, tags=[]):
     try:
         io.log_info('Creating application: ' + app_name)
         elasticbeanstalk.create_application(
             app_name,
-            strings['app.description']
+            strings['app.description'],
+            tags
         )
 
         set_environment_for_current_branch(None)
