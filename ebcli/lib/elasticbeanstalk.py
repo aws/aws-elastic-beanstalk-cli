@@ -840,19 +840,19 @@ def get_environment_arn(env_name):
     return get_environments([env_name])[0].environment_arn
 
 
-def list_tags_for_resource(env_name):
+def list_tags_for_resource(resource_arn):
     response = _make_api_call(
         'list_tags_for_resource',
-        ResourceArn=get_environment_arn(env_name)
+        ResourceArn=resource_arn
     )
 
     return sorted(response['ResourceTags'], key=lambda tag: tag['Key'])
 
 
-def update_tags_for_resource(env_name, tags_to_add, tags_to_remove):
+def update_tags_for_resource(resource_arn, tags_to_add, tags_to_remove):
     response = _make_api_call(
         'update_tags_for_resource',
-        ResourceArn=get_environment_arn(env_name),
+        ResourceArn=resource_arn,
         TagsToAdd=tags_to_add,
         TagsToRemove=tags_to_remove
     )

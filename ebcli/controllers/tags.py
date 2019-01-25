@@ -13,6 +13,7 @@
 
 from ebcli.core import io
 from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.lib import elasticbeanstalk
 from ebcli.objects.exceptions import InvalidOptionsError, NoEnvironmentForBranchError
 from ebcli.operations import commonops
 from ebcli.operations.tagops.tagops import TagOps
@@ -49,9 +50,10 @@ class TagsController(AbstractBaseController):
 
         self.verbose = self.app.pargs.verbose
 
-        tagops = TagOps(self.environment_name, self.verbose)
-
         self.__assert_list_argument_xor_modifier_arguments_specified()
+
+        resource_arn = elasticbeanstalk.get_environment_arn(self.environment_name)
+        tagops = TagOps(resource_arn, self.verbose)
 
         if self.list_argument:
             tagops.list_tags()

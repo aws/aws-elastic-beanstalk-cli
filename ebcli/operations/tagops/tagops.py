@@ -125,23 +125,24 @@ class TagOps(object):
     Tag Operations class that delegates the tasks of validating syntax and uniqueness
     of tags, and performing EB API calls to other classes.
     """
-    def __init__(self, env_name, verbose):
-        self.env_name = env_name
+    def __init__(self, resource_arn, verbose):
+        self.resource_arn = resource_arn
         self.taglist = None
         self.verbose = verbose
 
     def retrieve_taglist(self):
         if self.taglist is None:
-            self.taglist = TagList(elasticbeanstalk.list_tags_for_resource(self.env_name))
+            self.taglist = TagList(elasticbeanstalk.list_tags_for_resource(self.resource_arn))
 
     def list_tags(self):
         self.retrieve_taglist()
 
-        self.taglist.print_tags(self.env_name)
+        if self.taglist.current_list:
+            self.taglist.print_tags(self.resource_arn)
 
     def update_tags(self):
         request_id = elasticbeanstalk.update_tags_for_resource(
-            self.env_name,
+            self.resource_arn,
             self.taglist.additions + self.taglist.updates,
             self.taglist.deletions
         )

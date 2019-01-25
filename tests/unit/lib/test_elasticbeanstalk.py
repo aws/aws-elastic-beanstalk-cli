@@ -1594,7 +1594,6 @@ class TestCloudWatch(unittest.TestCase):
             make_api_call_mock
     ):
         make_api_call_mock.side_effect = [
-            mock_responses.DESCRIBE_ENVIRONMENTS_RESPONSE__SINGLE_ENVIRONMENT,
             mock_responses.LIST_TAGS_FOR_RESOURCE_RESPONSE,
         ]
 
@@ -1613,17 +1612,11 @@ class TestCloudWatch(unittest.TestCase):
                     'Value': 'environment-1'
                 }
             ],
-            elasticbeanstalk.list_tags_for_resource('my-environment')
+            elasticbeanstalk.list_tags_for_resource('arn:aws:elasticbeanstalk:us-west-2:123123123123:environment/my-application/environment-1')
         )
 
         make_api_call_mock.assert_has_calls(
             [
-                mock.call(
-                    'elasticbeanstalk',
-                    'describe_environments',
-                    EnvironmentNames=['my-environment'],
-                    IncludeDeleted=False
-                ),
                 mock.call(
                     'elasticbeanstalk',
                     'list_tags_for_resource',
@@ -1637,29 +1630,14 @@ class TestCloudWatch(unittest.TestCase):
             self,
             make_api_call_mock
     ):
-        make_api_call_mock.side_effect = [
-            mock_responses.DESCRIBE_ENVIRONMENTS_RESPONSE__SINGLE_ENVIRONMENT,
-            {
-                'ResponseMetadata': {
-                    'RequestId': '134123413413413431234'
-                }
-            }
-        ]
-
         elasticbeanstalk.update_tags_for_resource(
-            'my-environment',
+            'arn:aws:elasticbeanstalk:us-west-2:123123123123:environment/my-application/environment-1',
             tags_to_add='KEY1=VALUE1,KEY2=VALUE2',
             tags_to_remove='KEY3'
         )
 
         make_api_call_mock.assert_has_calls(
             [
-                mock.call(
-                    'elasticbeanstalk',
-                    'describe_environments',
-                    EnvironmentNames=['my-environment'],
-                    IncludeDeleted=False
-                ),
                 mock.call(
                     'elasticbeanstalk',
                     'update_tags_for_resource',
