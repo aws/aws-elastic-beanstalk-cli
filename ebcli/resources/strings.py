@@ -513,6 +513,8 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                               "white space, and these characters are allowed: _ . : / = + - @.",
     'tags.list_with_other_arguments': "You can't specify the '--list' option with the '--add', "
                                       "'--delete', or '--update' option.",
+    'tags.resource_environment_conflict': "You can't specify the '--resource' option with the "
+                                      "'environment' positional argument",
     'tags.resource_tags_missing': "The response of the 'list_tags_for_resource' API call is "
                                   "missing the 'ResourceTags' field.",
     'tags.tag_keys_already_exist': "Tags with the following keys can't be added because they "
@@ -861,6 +863,7 @@ flag_text = {
     'tags.env': 'environment on which to perform tags operation',
     'tags.info': 'Allows adding, deleting, updating, and listing of environment tags.',
     'tags.list': 'lists all environment resource tags',
+    'tags.resource': "Finds tags associated with given resource.",
     'tags.update': 'update existing environment tags provided as a comma-separated list of keys=value pairs',
 }
 

@@ -35,12 +35,16 @@ class TagsController(AbstractBaseController):
             (['-l', '--list'], dict(action='store_true', help=flag_text['tags.list'])),
             (['-a', '--add'], dict(metavar='key1=value1[,key2=value2,...]', help=flag_text['tags.add'])),
             (['-d', '--delete'], dict(metavar='key1[,key2,...]', help=flag_text['tags.delete'])),
-            (['-u', '--update'], dict(metavar='key1=value1[,key2=value2,...]', help=flag_text['tags.update']))
+            (['-u', '--update'], dict(metavar='key1=value1[,key2=value2,...]', help=flag_text['tags.update'])),
+            (['--resource'], dict(help=flag_text['tags.resource']))
         ]
         usage = 'eb tags [<environment_name>] option [options ...]'
 
     def do_command(self):
+        self.environment_passed = self.app.pargs.environment_name
         self.environment_name = self.get_env_name()
+        self.resource = self.app.pargs.resource
+        self.environment_exists = not not self.environment_name
 
         self.list_argument = self.app.pargs.list
 
@@ -51,9 +55,14 @@ class TagsController(AbstractBaseController):
         self.verbose = self.app.pargs.verbose
 
         self.__assert_list_argument_xor_modifier_arguments_specified()
+        self.__assert_resource_argument_conflict()
 
-        resource_arn = elasticbeanstalk.get_environment_arn(self.environment_name)
-        tagops = TagOps(resource_arn, self.verbose)
+        if self.environment_passed:
+            self.resource_arn = elasticbeanstalk.get_environment_arn(self.environment_name)
+        if self.resource:
+            self.resource_arn = self.resource
+
+        tagops = TagOps(self.resource_arn, self.verbose)
 
         if self.list_argument:
             tagops.list_tags()
@@ -74,6 +83,10 @@ class TagsController(AbstractBaseController):
         else:
             if not self.__modifier_arguments_specified():
                 raise InvalidOptionsError('usage: {0}'.format(self._usage_text))
+
+    def __assert_resource_argument_conflict(self):
+        if self.environment_passed and self.resource:
+            raise InvalidOptionsError(strings['tags.resource_environment_conflict'])
 
     def __modifier_arguments_specified(self):
         return self.add_arguments or self.delete_arguments or self.update_arguments

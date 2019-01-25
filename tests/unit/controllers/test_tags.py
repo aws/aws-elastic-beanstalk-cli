@@ -21,7 +21,6 @@ from ebcli.objects.exceptions import NoEnvironmentForBranchError, InvalidOptions
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
 
-
 class TestTags(unittest.TestCase):
 
     def setUp(self):
@@ -145,3 +144,63 @@ class TestTags(unittest.TestCase):
 
         with self.assertRaises(InvalidOptionsError):
             app.run()
+
+    @patch('ebcli.controllers.tags.TagsController.get_env_name')
+    @patch('ebcli.operations.tagops.tagops.TagOps.update_tags')
+    @patch('ebcli.operations.tagops.tagops.TagOps.handle_update_string')
+    @patch('ebcli.operations.tagops.tagops.TagOps.handle_deletion_string')
+    @patch('ebcli.operations.tagops.tagops.TagOps.handle_addition_string')
+    @patch('ebcli.lib.elasticbeanstalk.get_environment_arn')
+    def test_tags__resource__supplied_through_command_line__add(
+            self,
+            get_environment_arn_mock,
+            handle_addition_mock,
+            handle_delete_mock,
+            handle_update_mock,
+            update_tags_mock,
+            get_env_name_mock,
+    ):
+        get_env_name_mock.return_value = ''
+        get_environment_arn_mock.return_value = 'my_env_arn'
+        app = EB(argv=['tags', '--resource', 'test_arn_name', '--add', 'key1=value1'])
+        app.setup()
+        app.run()
+
+        handle_delete_mock.assert_not_called()
+        handle_addition_mock.assert_called_once_with('key1=value1')
+        handle_update_mock.assert_not_called()
+
+        update_tags_mock.assert_called_once_with()
+
+    @patch('ebcli.controllers.tags.TagsController.get_env_name')
+    def test_tags__resource_and_environment_name_specified__failure(
+            self,
+            get_env_name_mock,
+    ):
+        get_env_name_mock.return_value = 'my_env'
+        app = EB(argv=['tags', 'my_env', '--add', 'key1=value1', '--resource', 'my_arn'])
+        app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            app.run()
+
+        self.assertEqual(
+            "You can't specify the '--resource' option with the "
+            "'environment' positional argument",
+            str(context_manager.exception))
+
+    @patch('ebcli.controllers.tags.TagsController.get_env_name')
+    def test_tags__failure_case__no_action(
+            self,
+            get_env_name_mock,
+    ):
+        get_env_name_mock.return_value = 'my_env'
+        app = EB(argv=['tags', 'my_env'])
+        app.setup()
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            app.run()
+
+        self.assertEqual(
+            'usage: eb tags [<environment_name>] option [options ...]',
+            str(context_manager.exception)
+        )

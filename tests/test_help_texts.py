@@ -1600,6 +1600,8 @@ optional arguments:
   -u key1=value1[,key2=value2,...], --update key1=value1[,key2=value2,...]
                         update existing environment tags provided as a comma-
                         separated list of keys=value pairs
+  --resource-arn RESOURCE_ARN
+                        Finds tags associated with given resource.
 """.strip(),
             self.output_of(['eb', 'tags', '--help'])
         )
