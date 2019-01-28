@@ -42,7 +42,7 @@ class TestTags(unittest.TestCase):
         )
 
         with self.assertRaises(NoEnvironmentForBranchError):
-            controller.env_name()
+            controller.get_env_name()
 
     def test_tags__env_name__supplied_through_command_line(self):
         controller = TagsController()
@@ -57,7 +57,7 @@ class TestTags(unittest.TestCase):
             }
         )
 
-        self.assertEqual('my_env', controller.env_name())
+        self.assertEqual('my_env', controller.get_env_name())
 
     @patch('ebcli.core.io.log_error')
     def test_tags_command_fails_when_list_appears_with_add_delete_or_update(self, log_error):

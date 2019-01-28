@@ -39,7 +39,7 @@ class TagsController(AbstractBaseController):
         usage = 'eb tags [<environment_name>] option [options ...]'
 
     def do_command(self):
-        self.environment_name = self.env_name()
+        self.environment_name = self.get_env_name()
 
         self.list_argument = self.app.pargs.list
 
@@ -63,20 +63,6 @@ class TagsController(AbstractBaseController):
         tagops.handle_update_string(self.update_arguments) if self.update_arguments else None
 
         tagops.update_tags()
-
-    def env_name(self):
-        if self.app.pargs.environment_name:
-            env_name = self.app.pargs.environment_name
-        else:
-            env_name = commonops.get_current_branch_environment()
-
-        if not env_name:
-            message = strings['branch.noenv'].replace('{cmd}', self.Meta.label)
-            io.log_error(message)
-
-            raise NoEnvironmentForBranchError()
-
-        return env_name
 
     def __assert_list_argument_xor_modifier_arguments_specified(self):
         if self.list_argument:
