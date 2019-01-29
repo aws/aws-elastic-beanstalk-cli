@@ -11,101 +11,137 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
+import os
+import shutil
+
 import unittest
 from mock import MagicMock, patch
 
 from ebcli.objects.exceptions import NoEnvironmentForBranchError, InvalidOptionsError
-from ebcli.controllers.tags import TagsController
+from ebcli.core import fileoperations
+from ebcli.core.ebcore import EB
 
 
 class TestTags(unittest.TestCase):
 
-    @patch('ebcli.core.io.log_error')
-    @patch('ebcli.operations.commonops.get_current_branch_environment')
-    def test_tags_command_fails_when_branch_has_no_default_environment(
+    def setUp(self):
+        self.root_dir = os.getcwd()
+        if not os.path.exists('testDir'):
+            os.mkdir('testDir')
+
+        os.chdir('testDir')
+
+        fileoperations.create_config_file(
+            'test-app',
+            'us-west-2',
+            'php'
+        )
+
+    def tearDown(self):
+        os.chdir(self.root_dir)
+        shutil.rmtree('testDir')
+
+    @patch('ebcli.controllers.tags.TagsController.get_env_name')
+    def test_tags__command_fails_when_branch_has_no_default_environment(
             self,
-            get_current_branch_environment,
-            log_error
+            get_env_name_mock,
     ):
-        get_current_branch_environment.return_value = None
-        log_error.return_value = None
+        get_env_name_mock.side_effect = NoEnvironmentForBranchError
 
-        controller = TagsController()
-        controller.app = MagicMock()
-        controller.app.pargs = self.__create_pargs(
-            {
-                'environment_name': None,
-                'add': None,
-                'delete': None,
-                'update': None
-            }
-        )
-
+        app = EB(argv=['tags', '--list'])
+        app.setup()
         with self.assertRaises(NoEnvironmentForBranchError):
-            controller.get_env_name()
+            app.run()
 
-    def test_tags__env_name__supplied_through_command_line(self):
-        controller = TagsController()
-        controller.app = MagicMock()
+    @patch('ebcli.controllers.tags.TagsController.get_env_name')
+    @patch('ebcli.operations.tagops.tagops.TagOps.update_tags')
+    @patch('ebcli.operations.tagops.tagops.TagOps.handle_update_string')
+    @patch('ebcli.operations.tagops.tagops.TagOps.handle_deletion_string')
+    @patch('ebcli.operations.tagops.tagops.TagOps.handle_addition_string')
+    @patch('ebcli.lib.elasticbeanstalk.get_environment_arn')
+    def test_tags__env_name__supplied_through_command_line__update(
+            self,
+            get_environment_arn_mock,
+            handle_addition_mock,
+            handle_delete_mock,
+            handle_update_mock,
+            update_tags_mock,
+            get_env_name_mock,
+    ):
+        get_env_name_mock.return_value = 'my_env'
+        get_environment_arn_mock.return_value = 'my_env_arn'
+        app = EB(argv=['tags', 'my_env', '--update', 'key1=value1'])
+        app.setup()
+        app.run()
 
-        controller.app.pargs = self.__create_pargs(
-            {
-                'environment_name': 'my_env',
-                'add': None,
-                'delete': None,
-                'update': 'key1=value1'
-            }
-        )
+        handle_addition_mock.assert_not_called()
+        handle_delete_mock.assert_not_called()
+        handle_update_mock.assert_called_once_with('key1=value1')
 
-        self.assertEqual('my_env', controller.get_env_name())
+        update_tags_mock.assert_called_once_with()
 
-    @patch('ebcli.core.io.log_error')
-    def test_tags_command_fails_when_list_appears_with_add_delete_or_update(self, log_error):
-        log_error.return_value = None
-        controller = TagsController()
-        controller.app = MagicMock()
+    @patch('ebcli.controllers.tags.TagsController.get_env_name')
+    @patch('ebcli.operations.tagops.tagops.TagOps.update_tags')
+    @patch('ebcli.operations.tagops.tagops.TagOps.handle_update_string')
+    @patch('ebcli.operations.tagops.tagops.TagOps.handle_deletion_string')
+    @patch('ebcli.operations.tagops.tagops.TagOps.handle_addition_string')
+    @patch('ebcli.lib.elasticbeanstalk.get_environment_arn')
+    def test_tags__env_name__supplied_through_command_line__delete(
+            self,
+            get_environment_arn_mock,
+            handle_addition_mock,
+            handle_delete_mock,
+            handle_update_mock,
+            update_tags_mock,
+            get_env_name_mock,
+    ):
+        get_env_name_mock.return_value = 'my_env'
+        get_environment_arn_mock.return_value = 'my_env_arn'
+        app = EB(argv=['tags', 'my_env', '--delete', 'key1'])
+        app.setup()
+        app.run()
 
-        controller.app.pargs = self.__create_pargs(
-            {
-                'environment_name': 'my_env',
-                'add': 'key1=value1',
-                'delete': None,
-                'update': None
-            }
-        )
-        self.__invoke_do_command_with_invalid_options_exception(controller)
+        handle_addition_mock.assert_not_called()
+        handle_delete_mock.assert_called_once_with('key1')
+        handle_update_mock.assert_not_called()
 
-        controller.app.pargs = self.__create_pargs(
-            {
-                'environment_name': 'my_env',
-                'add': None,
-                'delete': 'key1',
-                'update': None
-            }
-        )
-        self.__invoke_do_command_with_invalid_options_exception(controller)
+        update_tags_mock.assert_called_once_with()
 
-        controller.app.pargs = self.__create_pargs(
-            {
-                'environment_name': 'my_env',
-                'add': None,
-                'delete': None,
-                'update': 'key1=value1'
-            }
-        )
-        self.__invoke_do_command_with_invalid_options_exception(controller)
+    @patch('ebcli.controllers.tags.TagsController.get_env_name')
+    @patch('ebcli.operations.tagops.tagops.TagOps.update_tags')
+    @patch('ebcli.operations.tagops.tagops.TagOps.handle_update_string')
+    @patch('ebcli.operations.tagops.tagops.TagOps.handle_deletion_string')
+    @patch('ebcli.operations.tagops.tagops.TagOps.handle_addition_string')
+    @patch('ebcli.lib.elasticbeanstalk.get_environment_arn')
+    def test_tags__env_name__supplied_through_command_line__add(
+            self,
+            get_environment_arn_mock,
+            handle_addition_mock,
+            handle_delete_mock,
+            handle_update_mock,
+            update_tags_mock,
+            get_env_name_mock,
+    ):
+        get_env_name_mock.return_value = 'my_env'
+        get_environment_arn_mock.return_value = 'my_env_arn'
+        app = EB(argv=['tags', 'my_env', '--add', 'key1=value1'])
+        app.setup()
+        app.run()
 
-    def __invoke_do_command_with_invalid_options_exception(self, controller):
+        handle_delete_mock.assert_not_called()
+        handle_addition_mock.assert_called_once_with('key1=value1')
+        handle_update_mock.assert_not_called()
+
+        update_tags_mock.assert_called_once_with()
+
+    @patch('ebcli.controllers.tags.TagsController.get_env_name')
+    def test_tags_command_fails_when_list_appears_with_add_delete_or_update(
+            self,
+            get_env_name_mock,
+    ):
+        get_env_name_mock.return_value = 'my_env'
+        app = EB(argv=['tags', 'my_env', '--add', 'key1=value1', '--list'])
+        app.setup()
+
         with self.assertRaises(InvalidOptionsError):
-            controller.do_command()
-
-    def __create_pargs(self, args):
-        pargs = MagicMock()
-
-        pargs.environment_name = args['environment_name']
-        pargs.list = MagicMock(return_value='')
-        pargs.add = MagicMock(return_value=args['add'])
-        pargs.delete = MagicMock(return_value=args['delete'])
-        pargs.update = MagicMock(return_value=args['update'])
-
-        return pargs
+            app.run()
