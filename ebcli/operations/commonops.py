@@ -253,6 +253,21 @@ def _raise_if_error_event(message):
         raise ServiceError(message)
     if message.startswith(responses['event.updatebad']):
         raise ServiceError(message)
+    if message.startswith(responses['event.platformdeletefailed']):
+        raise ServiceError(message)
+    if message.startswith(responses['event.platformcreatefailed']):
+        raise ServiceError(message)
+    if message.startswith(responses['event.completewitherrors']):
+        raise ServiceError(message)
+    if message.startswith(responses['event.platform_ami_region_service_region_mismatch']):
+        raise ServiceError(message)
+    if (
+            message.startswith(responses['event.launched_environment'])
+            and 'However, there were issues during launch.' in message
+    ):
+        raise ServiceError(message)
+    if responses['tags.no_tags_to_update'] in message:
+        raise ServiceError(message)
     if message.startswith(responses['logs.fail']):
         raise ServiceError(message)
     if message.startswith(responses['create.ecsdockerrun1']):
@@ -280,19 +295,7 @@ def _is_success_event(message):
         return True
     if responses['tags.tag_update_successful'] in message:
         return True
-    if responses['tags.no_tags_to_update'] in message:
-        return True
-    if message.startswith(responses['event.completewitherrors']):
-        return True
-    if message.startswith(responses['event.launched_environment']):
-        return True
     if message.startswith(responses['event.platformdeletesuccess']):
-        return True
-    if message.startswith(responses['event.platformdeletefailed']):
-        return True
-    if message.startswith(responses['event.platformcreatefailed']):
-        return True
-    if message.startswith(responses['event.platform_ami_region_service_region_mismatch']):
         return True
     if message.startswith(responses['event.platformcreatesuccess']):
         return True

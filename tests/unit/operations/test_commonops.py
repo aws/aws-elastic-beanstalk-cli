@@ -95,6 +95,12 @@ class TestCommonOperations(unittest.TestCase):
 
         with self.assertRaises(commonops.ServiceError):
             commonops._raise_if_error_event(
+                'Launched environment: my-environment. However, there were '
+                'issues during launch. See event log for details'
+            )
+
+        with self.assertRaises(commonops.ServiceError):
+            commonops._raise_if_error_event(
                 'Failed to pull logs for environment instances.'
             )
 
