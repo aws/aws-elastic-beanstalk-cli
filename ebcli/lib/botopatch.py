@@ -15,6 +15,8 @@
 Apply botocore fixes as monkey patches.
 This allows us to use any version of botocore.
 """
+import datetime
+import time
 
 from botocore import parsers
 
@@ -56,7 +58,13 @@ def fix_botocore_to_pass_response_date():
             # BEGIN PATCH
             # Here we inject the date
             parsed['ResponseMetadata']['date'] = (
-                response['headers']['date']
+                response['headers'].get(
+                    'date',
+                    datetime.datetime.fromtimestamp(
+                        time.time(),
+                        datetime.timezone.utc
+                    )
+                )
             )
             # END PATCH
         return parsed
