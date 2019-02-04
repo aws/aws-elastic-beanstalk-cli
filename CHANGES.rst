@@ -2,6 +2,13 @@
 Changelog
 =========
 -------------------
+3.14.11 (2019-02-07)
+-------------------
+- Fixed `eb init` behaviour of selecting EC2 keyname in interactive mode
+- Fixed behaviour of `eb` commands whereby error events were being classified as successful
+- Fixed bug that rejected `--profile` argument in favor of environment variables representing credentials
+
+-------------------
 3.14.10 (2019-01-21)
 -------------------
 - Introduced direct dependency on `requests>=2.20.1,<2.21`
