@@ -54,10 +54,7 @@ class TestFileOperations(unittest.TestCase):
         fileoperations.ProjectRoot._reset_root()
         os.chdir(self.test_root)
         if os.path.exists('testDir'):
-            if sys.platform.startswith('win'):
-                os.system('rmdir /S /Q testDir')
-            else:
-                shutil.rmtree('testDir')
+            shutil.rmtree('testDir',ignore_errors=True)
 
     def test_get_aws_home(self):
         fileoperations.get_aws_home()
@@ -87,7 +84,7 @@ class TestFileOperations(unittest.TestCase):
 
     def test_create_config_file_no_dir(self):
         if os.path.exists(fileoperations.beanstalk_directory):
-            shutil.rmtree(fileoperations.beanstalk_directory)
+            shutil.rmtree(fileoperations.beanstalk_directory, ignore_errors=True)
         self.assertFalse(os.path.exists(fileoperations.beanstalk_directory))
 
         app_name = 'ebcli-test'
@@ -189,7 +186,7 @@ class TestFileOperations(unittest.TestCase):
 
     def test_project_root__traverse__file_system_root_reached(self):
         if os.path.isdir('.elasticbeanstalk'):
-            shutil.rmtree('.elasticbeanstalk')
+            shutil.rmtree('.elasticbeanstalk', ignore_errors=True)
 
         cwd = os.getcwd()
         with patch('os.getcwd') as getcwd_mock:
@@ -348,7 +345,7 @@ class TestFileOperations(unittest.TestCase):
         self.assertTrue(fileoperations.inside_ebcli_project())
 
     def test_inside_ebcli_project__false(self):
-        shutil.rmtree(fileoperations.beanstalk_directory)
+        shutil.rmtree(fileoperations.beanstalk_directory, ignore_errors=True)
 
         self.assertFalse(fileoperations.inside_ebcli_project())
 
@@ -692,7 +689,7 @@ ccc""",
 
     @unittest.skipIf(not hasattr(os, 'symlink'), reason='"symlink" appears to not have been defined on "os"')
     def test_zip_up_project(self):
-        shutil.rmtree('home')
+        shutil.rmtree('home', ignore_errors=True)
         os.mkdir('src')
         os.mkdir(os.path.join('src', 'lib'))
         open(os.path.join('src', 'lib', 'app.py'), 'w').write('import os')

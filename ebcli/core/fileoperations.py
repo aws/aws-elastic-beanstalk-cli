@@ -125,7 +125,7 @@ def clean_up():
     try:
         ProjectRoot.traverse()
         if os.path.isdir(beanstalk_directory):
-            shutil.rmtree(beanstalk_directory)
+            shutil.rmtree(beanstalk_directory, ignore_errors=True)
     finally:
         os.chdir(cwd)
 
@@ -422,7 +422,7 @@ def delete_file(location):
 
 def delete_directory(location):
     if os.path.isdir(location):
-        shutil.rmtree(location)
+        shutil.rmtree(location, ignore_errors=True)
 
 
 def delete_app_versions():
