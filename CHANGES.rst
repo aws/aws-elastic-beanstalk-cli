@@ -4,10 +4,9 @@ Changelog
 -------------------
 3.14.11 (2019-02-07)
 -------------------
-- Fixed `eb init` behaviour of selecting EC2 keyname in interactive mode
 - Fixed behaviour of `eb` commands whereby error events were being classified as successful
 - Fixed bug that rejected `--profile` argument in favor of environment variables representing credentials
-- Ensure deletion of temporary application versions directory
+- Fixed bug that caused `eb create/deploy` to abort following failure to delete temporary application versions directory
 
 -------------------
 3.14.10 (2019-01-21)
