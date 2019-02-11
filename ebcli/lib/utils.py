@@ -14,7 +14,10 @@ import argparse
 import os
 import re
 import pkg_resources
+import random
+import string
 import sys
+import textwrap
 from datetime import datetime
 
 from dateutil import tz, parser
@@ -196,16 +199,6 @@ def exec_cmd_quiet(args):
     return exec_cmd(args, False)
 
 
-def flatten(lists):
-    """
-    Return a new (shallow) flattened list.
-    :param lists: list: a list of lists
-    :return list
-    """
-
-    return [item for sublist in lists for item in sublist]
-
-
 def anykey(d):
     """
     Return any key in dictionary.
@@ -370,3 +363,186 @@ def monkey_patch_warn():
         kwargs = self._get_logging_kwargs(namespace, **kw)
         self.backend.warning(msg, **kwargs)
     LoggingLogHandler.warn = warn
+
+
+def flatten(list_):
+    """
+    Method returns a new list that is a one-dimensional flattening of `list_` (recursively)
+    :param list_: an object of instance-type `list` composed of zero or more elements each
+                of which may in turn be n-dimensional lists.
+    :return: a new list that is a one-dimensional flattening of `list_`
+    """
+    flattened_list = []
+    for element in list_:
+        if isinstance(element, list):
+            flattened_list.extend(element)
+        else:
+            flattened_list.append(element)
+
+    while [element for element in flattened_list if isinstance(element, list)]:
+        flattened_list = flatten(flattened_list)
+
+    return flattened_list
+
+
+def left_padded_string(text, padding=0):
+    """
+    Method returns a modified version of `text` with `padding` number of space
+    characters prepended.
+    :param text: a string to prepend spaces to
+    :param padding: the number of space characters to prepend to `text`
+    :return: a modified version of `text` with `padding` number of space
+             characters prepended.
+    """
+    try:
+        padding = int(padding)
+    except ValueError:
+        padding = 0
+
+    padding = 0 if padding < 0 else padding
+
+    return ' ' * padding + text
+
+
+def longest_string(strings):
+    """
+    Method returns the longest string from a list of strings
+    :param strings: a list of string objects
+    :return: the longest string from a `strings`
+    """
+    return max(strings, key=len)
+
+
+def padded_line(text, padding=0):
+    """
+    Method returns a modified version of `text` with `padding` number of space
+    characters prepended and the '\n' character appended.
+    :param text: a string to prepend spaces to
+    :param padding: the number of space characters to prepend to `text`
+    :return: a modified version of `text` with `padding` number of space
+             characters prepended.
+    """
+    return left_padded_string(text, padding=padding) + '\n'
+
+
+def padded_list(candidate, reference_list):
+    """
+    Method creates a `list` where the first element is `candidate` and the rest
+    `len(reference_list) - 1` elements are empty strings (''s).
+
+    This is operation is useful when trying to construct tables where empty
+    strings can represent empty cells.
+
+    :param candidate: a list of strings
+    :param reference_list: another list such that `candidate` should match it in
+                           terms of number of elements
+    :return: [text] + [''] * (len(reference_list) - 1)]
+    """
+    if not reference_list:
+        raise AttributeError('The reference_list argument must be non-empty.'.format(reference_list))
+    pad_length = len(reference_list) - len(candidate)
+    return candidate + [''] * pad_length
+
+
+def random_string(length=4):
+    """
+    Method generates a random 10-character string from the alphabet (downcase)
+    :return: a random 10-character string from the alphabet (downcase)
+    """
+    return ''.join(
+        [
+            random.choice(string.ascii_lowercase + string.digits)
+            for _ in range(length)
+        ]
+    )
+
+
+def right_padded_string(text, padding=0):
+    """
+    Method returns a modified version of `text` with `padding` number of space
+    characters appended.
+    :param text: a string to append spaces to
+    :param padding: the number of space characters to append to `text`
+    :return: a modified version of `text` with `padding` number of space
+             characters appended.
+    """
+    try:
+        padding = int(padding)
+    except ValueError:
+        padding = 0
+
+    padding = 0 if padding < 0 else padding
+
+    return text + ' ' * padding
+
+
+def row_wrapper(string_width_mappings, padding=3):
+    """
+    Method returns a wrapped version of a list of strings expected to be columnar
+    fashion.
+    :param string_width_mappings: a list of dicts of the form:
+
+                {
+                    'string': ...,
+                    'width': ...
+                }
+
+            such as:
+
+                [
+                    {
+                        'string': '2018-08-12 18:36:42',
+                        'width': 19
+                    },
+                    {
+                        'string': 'MY_RESOURCE_STATE',
+                        'width': 35
+                    },
+                    {
+                        'string': 'SomeResourceDeployment47fc2d5f9d (AWS::SomeResource::Instance)\n'
+                                  'The API gateway, SomeResourceDeployment47fc2d5f9d, was successfully built',
+                        'width': 67
+                    },
+                ]
+
+    :param padding: the number of space characters to insert between columns
+    :return: a wrapped version of row of strings expressed as a list of strings
+             such that no string occupied more than the stipulated number of
+             characters. For the input shown above, the following is returned:
+
+                [
+                    '2018-08-12 18:36:42   MY_RESOURCE_STATE   SomeResourceDeployment47fc2d5f9d (AWS::SomeResource::Instance)',
+                    '                                          The API gateway, SomeResourceDeployment47fc2d5f9d, was        ',
+                    '                                          successfully built                                            ',
+                ]
+    """
+    wrapped_strings = list()
+    longest_column = list()
+
+    for mapping in string_width_mappings:
+        wrapped_string = textwrap.wrap(mapping['string'], mapping['width'])
+        if len(wrapped_string) > len(longest_column):
+            longest_column = wrapped_string
+        wrapped_strings.append(wrapped_string)
+
+    number_of_columns = len(wrapped_strings)
+    for i in range(number_of_columns):
+        wrapped_strings[i] = padded_list(wrapped_strings[i], longest_column)
+        max_width = string_width_mappings[i]['width']
+        for j in range(len(wrapped_strings[i])):
+            if len(wrapped_strings[i][j]) < max_width:
+                wrapped_strings[i][j] = right_padded_string(
+                    wrapped_strings[i][j],
+                    padding=max_width - len(wrapped_strings[i][j])
+                )
+
+    __wrapped_strings = list()
+    for row in range(len(longest_column)):
+        __wrapped_strings += [
+            (' ' * padding).join(
+                [
+                    column[row] for column in wrapped_strings
+                ]
+            )
+        ]
+    return __wrapped_strings

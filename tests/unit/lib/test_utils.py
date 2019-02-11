@@ -17,7 +17,7 @@ import unittest
 from unittest import TestCase
 
 from botocore.compat import six
-from mock import patch
+from mock import call, patch
 
 from ebcli.lib import utils
 from ebcli.objects.exceptions import CommandError, InvalidOptionsError
@@ -61,6 +61,22 @@ class TestUtils(TestCase):
 
     def test_flatten_nested_long_list(self):
         self.assertEqual([0, 1, 2], utils.flatten([[0], [1], [2]]))
+
+    def test_flatten__string_list(self):
+        self.assertEqual(
+            [
+                '2018-09-15 19:41:43',
+                'CREATE_IN_PROGRESS       ',
+                'my-cfn-stack (AWS::CloudFormation::Stack)\nUser Initiated         '
+            ],
+            utils.flatten(
+                [
+                    ['2018-09-15 19:41:43'],
+                    ['CREATE_IN_PROGRESS       '],
+                    ['my-cfn-stack (AWS::CloudFormation::Stack)\nUser Initiated         ']
+                ]
+            )
+        )
 
     @patch('os.path.getmtime')
     def test_last_modified_file(self, getmtime):
@@ -127,3 +143,94 @@ class TestUtils(TestCase):
             ('codecommit', 'repository', 'my/branch/name'),
             utils.parse_source('codecommit/repository/my/branch/name')
         )
+
+    def test_pad_list(self):
+        self.assertEqual(['text'], utils.padded_list(['text'], [1]))
+        self.assertEqual(['text', '', '', ''], utils.padded_list(['text'], [1, 2, 3, 4]))
+        self.assertEqual(
+            ['text', 'hello, world', '', ''],
+            utils.padded_list(['text', 'hello, world'], [1, 2, 3, 4])
+        )
+        self.assertEqual(
+            ['text', 'hello, world'],
+            utils.padded_list(['text', 'hello, world'], [1])
+        )
+        with self.assertRaises(AttributeError) as context_manager:
+            utils.padded_list(['text'], [])
+
+        self.assertEqual(
+            'The reference_list argument must be non-empty.',
+            str(context_manager.exception)
+        )
+
+    def test_pad_line(self):
+        self.assertEqual('hello, world!\n', utils.padded_line('hello, world!'))
+        self.assertEqual('  hello, world!\n', utils.padded_line('hello, world!', padding=2))
+        self.assertEqual('hello, world!\n', utils.padded_line('hello, world!', padding=-1))
+        self.assertEqual('hello, world!\n', utils.padded_line('hello, world!', padding='a'))
+
+    def test_left_padded_string(self):
+        self.assertEqual('  hello, world', utils.left_padded_string('hello, world', padding=2))
+
+    def test_right_padded_string(self):
+        self.assertEqual('hello, world  ', utils.right_padded_string('hello, world', padding=2))
+
+    def test_longest_string(self):
+        self.assertEqual(
+            'abcde',
+            utils.longest_string(['a', 'abc', 'abcde'])
+        )
+
+    def test_row_wrapper(self):
+        string_width_mappings = [
+            {
+                'string': '2018-08-12 18:36:42',
+                'width': 19
+            },
+            {
+                'string': 'CREATE_COMPLETE',
+                'width': 35
+            },
+            {
+                'string': 'ServerlessRestApiDeployment47fc2d5f9d (AWS::ApiGateway::Deployment)\n'
+                          'The API gateway, ServerlessRestApiDeployment47fc2d5f9d, was successfully built',
+                'width': 67
+            },
+        ]
+        self.assertEqual(
+            [
+                '2018-08-12 18:36:42   CREATE_COMPLETE                       ServerlessRestApiDeployment47fc2d5f9d (AWS::ApiGateway::Deployment)',
+                '                                                            The API gateway, ServerlessRestApiDeployment47fc2d5f9d, was        ',
+                '                                                            successfully built                                                 '
+            ],
+            utils.row_wrapper(string_width_mappings)
+        )
+
+    def test_row_wrapper__lengthy_resource_status(self):
+        string_width_mappings = [
+            {
+                'string': '2018-08-12 18:36:42',
+                'width': 19
+            },
+            {
+                'string': 'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS',
+                'width': 35
+            },
+            {
+                'string': 'ServerlessRestApiDeployment47fc2d5f9d (AWS::ApiGateway::Deployment)\n'
+                          'The API gateway, ServerlessRestApiDeployment47fc2d5f9d, was successfully built',
+                'width': 67
+            },
+        ]
+        self.assertEqual(
+            [
+                '2018-08-12 18:36:42   UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN   ServerlessRestApiDeployment47fc2d5f9d (AWS::ApiGateway::Deployment)',
+                '                      _PROGRESS                             The API gateway, ServerlessRestApiDeployment47fc2d5f9d, was        ',
+                '                                                            successfully built                                                 '
+            ],
+            utils.row_wrapper(string_width_mappings)
+        )
+
+    def test_random_string(self):
+        utils.random_string()
+        utils.random_string(length=10)
