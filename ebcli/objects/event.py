@@ -131,6 +131,9 @@ class CFNEvent(object):
             )
         )
 
+    def happened_after(self, other_datetime):
+        return self.timestamp.replace(tzinfo=None) > other_datetime.replace(tzinfo=None)
+
     @classmethod
     def json_to_event_objects(cls, json):
         events = []

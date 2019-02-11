@@ -16,12 +16,45 @@ from cement.utils.misc import minimal_logger
 
 from ebcli.lib import aws, utils
 from ebcli.objects.exceptions import EBCLIException
+from ebcli.objects.event import CFNEvent
 
 LOG = minimal_logger(__name__)
 
 
 def _make_api_call(operation_name, **operation_options):
     return aws.make_api_call('cloudformation', operation_name, **operation_options)
+
+
+
+def events(stack_name, start_time=None):
+    LOG.debug('Inside describe_stack_events api wrapper')
+
+    next_token = None
+    _events = []
+
+    while True:
+        if next_token:
+            result = _make_api_call(
+                'describe_stack_events',
+                StackName=stack_name,
+                NextToken=next_token
+            )
+        else:
+            result = _make_api_call('describe_stack_events', StackName=stack_name)
+
+        _events.extend(CFNEvent.json_to_event_objects(result['StackEvents']))
+        next_token = result.get('NextToken')
+
+        if not next_token:
+            break
+
+        if start_time and _events and not _events[-1].happened_after(start_time):
+            break
+        utils.prevent_throttling()
+
+    if start_time:
+        return [event for event in _events if event.happened_after(start_time)]
+    return _events
 
 
 def get_template(stack_name):

@@ -539,3 +539,7 @@ def sleep(sleep_time=5):
 
 def datetime_utcnow():
     return datetime.utcnow()
+
+
+def prevent_throttling():
+    time.sleep(0.5)

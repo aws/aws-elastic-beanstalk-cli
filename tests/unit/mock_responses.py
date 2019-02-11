@@ -4355,3 +4355,808 @@ LIST_BUCKETS_RESPONSE = {
         'ID': '12341342134fd2684e6218e27436c04d71093667b756f3435c1dcad2247c7124'
     }
 }
+
+
+DESCRIBE_STACK_EVENTS_RESPONSE = {
+    'StackEvents': [
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'b31b10d0-9e5e-11e8-8eb0-02c3ece5f9fa',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'sam-cfn-stack',
+            'PhysicalResourceId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'ResourceType': 'AWS::CloudFormation::Stack',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 37, 0, 365000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'HelloWorldFunctionHelloWorldPermissionProd-CREATE_COMPLETE-2018-08-12T18:36:58.371Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'HelloWorldFunctionHelloWorldPermissionProd',
+            'PhysicalResourceId': 'sam-cfn-stack-HelloWorldFunctionHelloWorldPermissionProd-W56I7KRNMPOT',
+            'ResourceType': 'AWS::Lambda::Permission',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 58, 371000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"FunctionName":"sam-cfn-stack-HelloWorldFunction-1RD6BAM5MKPH5","Action":"lambda:invokeFunction","SourceArn":"arn:aws:execute-api:us-west-2:123123123123:9bpc31p3ij/Prod/GET/hello","Principal":"apigateway.amazonaws.com"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'HelloWorldFunctionHelloWorldPermissionTest-CREATE_COMPLETE-2018-08-12T18:36:58.294Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'HelloWorldFunctionHelloWorldPermissionTest',
+            'PhysicalResourceId': 'sam-cfn-stack-HelloWorldFunctionHelloWorldPermissionTest-2XLHA0LFS2T7',
+            'ResourceType': 'AWS::Lambda::Permission',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 58, 294000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"FunctionName":"sam-cfn-stack-HelloWorldFunction-1RD6BAM5MKPH5","Action":"lambda:invokeFunction","SourceArn":"arn:aws:execute-api:us-west-2:123123123123:9bpc31p3ij/*/GET/hello","Principal":"apigateway.amazonaws.com"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'ServerlessRestApiProdStage-CREATE_COMPLETE-2018-08-12T18:36:52.617Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'ServerlessRestApiProdStage',
+            'PhysicalResourceId': 'Prod',
+            'ResourceType': 'AWS::ApiGateway::Stage',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 52, 617000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"DeploymentId":"mydbce","StageName":"Prod","RestApiId":"9bpc31p3ij"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'ServerlessRestApiProdStage-CREATE_IN_PROGRESS-2018-08-12T18:36:51.865Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'ServerlessRestApiProdStage',
+            'PhysicalResourceId': 'Prod',
+            'ResourceType': 'AWS::ApiGateway::Stage',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 51, 865000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"DeploymentId":"mydbce","StageName":"Prod","RestApiId":"9bpc31p3ij"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'ServerlessRestApiProdStage-CREATE_IN_PROGRESS-2018-08-12T18:36:51.037Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'ServerlessRestApiProdStage',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::ApiGateway::Stage',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 51, 37000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"DeploymentId":"mydbce","StageName":"Prod","RestApiId":"9bpc31p3ij"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'ServerlessRestApiDeployment47fc2d5f9d-CREATE_COMPLETE-2018-08-12T18:36:49.176Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'ServerlessRestApiDeployment47fc2d5f9d',
+            'PhysicalResourceId': 'mydbce',
+            'ResourceType': 'AWS::ApiGateway::Deployment',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 49, 176000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"Description":"RestApi deployment id: 47fc2d5f9d21ad56f83937abe2779d0e26d7095e","StageName":"Stage","RestApiId":"9bpc31p3ij"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'ServerlessRestApiDeployment47fc2d5f9d-CREATE_IN_PROGRESS-2018-08-12T18:36:48.716Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'ServerlessRestApiDeployment47fc2d5f9d',
+            'PhysicalResourceId': 'mydbce',
+            'ResourceType': 'AWS::ApiGateway::Deployment',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 48, 716000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"Description":"RestApi deployment id: 47fc2d5f9d21ad56f83937abe2779d0e26d7095e","StageName":"Stage","RestApiId":"9bpc31p3ij"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'HelloWorldFunctionHelloWorldPermissionProd-CREATE_IN_PROGRESS-2018-08-12T18:36:47.984Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'HelloWorldFunctionHelloWorldPermissionProd',
+            'PhysicalResourceId': 'sam-cfn-stack-HelloWorldFunctionHelloWorldPermissionProd-W56I7KRNMPOT',
+            'ResourceType': 'AWS::Lambda::Permission',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 47, 984000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"FunctionName":"sam-cfn-stack-HelloWorldFunction-1RD6BAM5MKPH5","Action":"lambda:invokeFunction","SourceArn":"arn:aws:execute-api:us-west-2:123123123123:9bpc31p3ij/Prod/GET/hello","Principal":"apigateway.amazonaws.com"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'ServerlessRestApiDeployment47fc2d5f9d-CREATE_IN_PROGRESS-2018-08-12T18:36:47.928Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'ServerlessRestApiDeployment47fc2d5f9d',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::ApiGateway::Deployment',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 47, 928000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"Description":"RestApi deployment id: 47fc2d5f9d21ad56f83937abe2779d0e26d7095e","StageName":"Stage","RestApiId":"9bpc31p3ij"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'HelloWorldFunctionHelloWorldPermissionTest-CREATE_IN_PROGRESS-2018-08-12T18:36:47.741Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'HelloWorldFunctionHelloWorldPermissionTest',
+            'PhysicalResourceId': 'sam-cfn-stack-HelloWorldFunctionHelloWorldPermissionTest-2XLHA0LFS2T7',
+            'ResourceType': 'AWS::Lambda::Permission',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 47, 741000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"FunctionName":"sam-cfn-stack-HelloWorldFunction-1RD6BAM5MKPH5","Action":"lambda:invokeFunction","SourceArn":"arn:aws:execute-api:us-west-2:123123123123:9bpc31p3ij/*/GET/hello","Principal":"apigateway.amazonaws.com"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'HelloWorldFunctionHelloWorldPermissionProd-CREATE_IN_PROGRESS-2018-08-12T18:36:47.661Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'HelloWorldFunctionHelloWorldPermissionProd',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::Lambda::Permission',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 47, 661000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"FunctionName":"sam-cfn-stack-HelloWorldFunction-1RD6BAM5MKPH5","Action":"lambda:invokeFunction","SourceArn":"arn:aws:execute-api:us-west-2:123123123123:9bpc31p3ij/Prod/GET/hello","Principal":"apigateway.amazonaws.com"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'HelloWorldFunctionHelloWorldPermissionTest-CREATE_IN_PROGRESS-2018-08-12T18:36:47.460Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'HelloWorldFunctionHelloWorldPermissionTest',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::Lambda::Permission',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 47, 460000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"FunctionName":"sam-cfn-stack-HelloWorldFunction-1RD6BAM5MKPH5","Action":"lambda:invokeFunction","SourceArn":"arn:aws:execute-api:us-west-2:123123123123:9bpc31p3ij/*/GET/hello","Principal":"apigateway.amazonaws.com"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'ServerlessRestApi-CREATE_COMPLETE-2018-08-12T18:36:45.977Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'ServerlessRestApi',
+            'PhysicalResourceId': '9bpc31p3ij',
+            'ResourceType': 'AWS::ApiGateway::RestApi',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 45, 977000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"Body":{"paths":{"/hello":{"get":{"responses":{},"x-amazon-apigateway-integration":{"httpMethod":"POST","type":"aws_proxy","uri":"arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123123123123:function:sam-cfn-stack-HelloWorldFunction-1RD6BAM5MKPH5/invocations"}}}},"swagger":"2.0","info":{"title":"sam-cfn-stack","version":"1.0"}}}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'ServerlessRestApi-CREATE_IN_PROGRESS-2018-08-12T18:36:45.329Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'ServerlessRestApi',
+            'PhysicalResourceId': '9bpc31p3ij',
+            'ResourceType': 'AWS::ApiGateway::RestApi',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 45, 329000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"Body":{"paths":{"/hello":{"get":{"responses":{},"x-amazon-apigateway-integration":{"httpMethod":"POST","type":"aws_proxy","uri":"arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123123123123:function:sam-cfn-stack-HelloWorldFunction-1RD6BAM5MKPH5/invocations"}}}},"swagger":"2.0","info":{"title":"sam-cfn-stack","version":"1.0"}}}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'ServerlessRestApi-CREATE_IN_PROGRESS-2018-08-12T18:36:44.771Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'ServerlessRestApi',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::ApiGateway::RestApi',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 44, 771000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"Body":{"paths":{"/hello":{"get":{"responses":{},"x-amazon-apigateway-integration":{"httpMethod":"POST","type":"aws_proxy","uri":"arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123123123123:function:sam-cfn-stack-HelloWorldFunction-1RD6BAM5MKPH5/invocations"}}}},"swagger":"2.0","info":{"title":"sam-cfn-stack","version":"1.0"}}}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'HelloWorldFunction-CREATE_COMPLETE-2018-08-12T18:36:42.962Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'HelloWorldFunction',
+            'PhysicalResourceId': 'sam-cfn-stack-HelloWorldFunction-1RD6BAM5MKPH5',
+            'ResourceType': 'AWS::Lambda::Function',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 42, 962000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"Role":"arn:aws:iam::123123123123:role/sam-cfn-stack-HelloWorldFunctionRole-A8CQME7PUBXU","Runtime":"nodejs8.10","Timeout":"3","Environment":{"Variables":{"PARAM1":"VALUE"}},"Handler":"app.lambda_handler","Code":{"S3Bucket":"elasticbeanstalk-us-west-2-123123123123","S3Key":"20f0cf89dc7c0f65c6140381a82feb19"},"Tags":[{"Value":"SAM","Key":"lambda:createdBy"}]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'HelloWorldFunction-CREATE_IN_PROGRESS-2018-08-12T18:36:42.183Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'HelloWorldFunction',
+            'PhysicalResourceId': 'sam-cfn-stack-HelloWorldFunction-1RD6BAM5MKPH5',
+            'ResourceType': 'AWS::Lambda::Function',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 42, 183000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"Role":"arn:aws:iam::123123123123:role/sam-cfn-stack-HelloWorldFunctionRole-A8CQME7PUBXU","Runtime":"nodejs8.10","Timeout":"3","Environment":{"Variables":{"PARAM1":"VALUE"}},"Handler":"app.lambda_handler","Code":{"S3Bucket":"elasticbeanstalk-us-west-2-123123123123","S3Key":"20f0cf89dc7c0f65c6140381a82feb19"},"Tags":[{"Value":"SAM","Key":"lambda:createdBy"}]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'HelloWorldFunction-CREATE_IN_PROGRESS-2018-08-12T18:36:41.227Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'HelloWorldFunction',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::Lambda::Function',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 41, 227000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"Role":"arn:aws:iam::123123123123:role/sam-cfn-stack-HelloWorldFunctionRole-A8CQME7PUBXU","Runtime":"nodejs8.10","Timeout":"3","Environment":{"Variables":{"PARAM1":"VALUE"}},"Handler":"app.lambda_handler","Code":{"S3Bucket":"elasticbeanstalk-us-west-2-123123123123","S3Key":"20f0cf89dc7c0f65c6140381a82feb19"},"Tags":[{"Value":"SAM","Key":"lambda:createdBy"}]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'HelloWorldFunctionRole-CREATE_COMPLETE-2018-08-12T18:36:38.990Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'HelloWorldFunctionRole',
+            'PhysicalResourceId': 'sam-cfn-stack-HelloWorldFunctionRole-A8CQME7PUBXU',
+            'ResourceType': 'AWS::IAM::Role',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 38, 990000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"ManagedPolicyArns":["arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"],"AssumeRolePolicyDocument":{"Version":"2012-10-17","Statement":[{"Action":["sts:AssumeRole"],"Effect":"Allow","Principal":{"Service":["lambda.amazonaws.com"]}}]}}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'HelloWorldFunctionRole-CREATE_IN_PROGRESS-2018-08-12T18:36:24.677Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'HelloWorldFunctionRole',
+            'PhysicalResourceId': 'sam-cfn-stack-HelloWorldFunctionRole-A8CQME7PUBXU',
+            'ResourceType': 'AWS::IAM::Role',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 24, 677000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"ManagedPolicyArns":["arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"],"AssumeRolePolicyDocument":{"Version":"2012-10-17","Statement":[{"Action":["sts:AssumeRole"],"Effect":"Allow","Principal":{"Service":["lambda.amazonaws.com"]}}]}}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': 'HelloWorldFunctionRole-CREATE_IN_PROGRESS-2018-08-12T18:36:24.311Z',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'HelloWorldFunctionRole',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::IAM::Role',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 24, 311000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"ManagedPolicyArns":["arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"],"AssumeRolePolicyDocument":{"Version":"2012-10-17","Statement":[{"Action":["sts:AssumeRole"],"Effect":"Allow","Principal":{"Service":["lambda.amazonaws.com"]}}]}}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': '9c5d1320-9e5e-11e8-afcd-50a68d01a68d',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'sam-cfn-stack',
+            'PhysicalResourceId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'ResourceType': 'AWS::CloudFormation::Stack',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 36, 22, 220000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'User Initiated'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'EventId': '5bf721f0-9e5d-11e8-99f3-0206b4669a7e',
+            'StackName': 'sam-cfn-stack',
+            'LogicalResourceId': 'sam-cfn-stack',
+            'PhysicalResourceId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/sam-cfn-stack/5bf79720-9e5d-11e8-99f3-0206b4669a7e',
+            'ResourceType': 'AWS::CloudFormation::Stack',
+            'Timestamp': datetime.datetime(2018, 8, 12, 18, 27, 24, 711000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'REVIEW_IN_PROGRESS',
+            'ResourceStatusReason': 'User Initiated'
+        }
+    ],
+    'ResponseMetadata': {
+        'RequestId': '5754212c-bab8-11e8-88df-cdf3c9f5e602',
+        'HTTPStatusCode': 200,
+        'HTTPHeaders': {
+            'x-amzn-requestid': '5754212c-bab8-11e8-88df-cdf3c9f5e602',
+            'content-type': 'text/xml',
+            'content-length': '49435',
+            'vary': 'Accept-Encoding',
+            'date': 'Mon, 17 Sep 2018 20:29:13 GMT'
+        },
+        'RetryAttempts': 0
+    }
+}
+
+
+DESCRIBE_STACK_EVENTS_RESPONSE__CREATE_FAILED = {
+    'StackEvents': [
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'f3ea0660-b921-11e8-a287-02493f0d1b56',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'my-cfn-stack',
+            'PhysicalResourceId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'ResourceType': 'AWS::CloudFormation::Stack',
+            'Timestamp': datetime.datetime(2018, 9, 15, 20, 0, 11, 189000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_FAILED',
+            'ResourceStatusReason': 'The following resource(s) failed to create: [AWSEBInstanceLaunchWaitCondition]. '
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBInstanceLaunchWaitCondition-CREATE_FAILED-2018-09-15T20:00:10.397Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBInstanceLaunchWaitCondition',
+            'PhysicalResourceId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4/AWSEBInstanceLaunchWaitHandle',
+            'ResourceType': 'AWS::CloudFormation::WaitCondition',
+            'Timestamp': datetime.datetime(2018, 9, 15, 20, 0, 10, 397000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_FAILED',
+            'ResourceStatusReason': 'WaitCondition timed out. Received 0 conditions when expecting 1',
+            'ResourceProperties': '{"Timeout":"900","Count":"1","Handle":"https://cloudformation-waitcondition-us-west-2.s3-us-west-2.amazonaws.com/arn%3Aaws%3Acloudformation%3Aus-west-2%3A123123123123%3Astack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4/AWSEBInstanceLaunchWaitHandle?AWSAccessKeyId=AKIAI5ZDPCT4PV2AKKAA&Expires=1537126906&Signature=ZMzoAUTwL5OU2ImILgqCmBXwsvo%3D"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBV2LoadBalancerListener-CREATE_COMPLETE-2018-09-15T19:44:05.532Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBV2LoadBalancerListener',
+            'PhysicalResourceId': 'arn:aws:elasticloadbalancing:us-west-2:123123123123:listener/app/awseb-AWSEB-1VGXTCA62TZW5/f58275dd12edce24/442e932df2317ed3',
+            'ResourceType': 'AWS::ElasticLoadBalancingV2::Listener',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 44, 5, 532000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"LoadBalancerArn":"arn:aws:elasticloadbalancing:us-west-2:123123123123:loadbalancer/app/awseb-AWSEB-1VGXTCA62TZW5/f58275dd12edce24","DefaultActions":[{"TargetGroupArn":"arn:aws:elasticloadbalancing:us-west-2:123123123123:targetgroup/awseb-AWSEB-17R8PVLEWQWEC/234d7a174f1aa491","Type":"forward"}],"Port":"80","Protocol":"HTTP"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBV2LoadBalancerListener-CREATE_IN_PROGRESS-2018-09-15T19:44:05.215Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBV2LoadBalancerListener',
+            'PhysicalResourceId': 'arn:aws:elasticloadbalancing:us-west-2:123123123123:listener/app/awseb-AWSEB-1VGXTCA62TZW5/f58275dd12edce24/442e932df2317ed3',
+            'ResourceType': 'AWS::ElasticLoadBalancingV2::Listener',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 44, 5, 215000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"LoadBalancerArn":"arn:aws:elasticloadbalancing:us-west-2:123123123123:loadbalancer/app/awseb-AWSEB-1VGXTCA62TZW5/f58275dd12edce24","DefaultActions":[{"TargetGroupArn":"arn:aws:elasticloadbalancing:us-west-2:123123123123:targetgroup/awseb-AWSEB-17R8PVLEWQWEC/234d7a174f1aa491","Type":"forward"}],"Port":"80","Protocol":"HTTP"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBV2LoadBalancerListener-CREATE_IN_PROGRESS-2018-09-15T19:44:04.860Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBV2LoadBalancerListener',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::ElasticLoadBalancingV2::Listener',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 44, 4, 860000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"LoadBalancerArn":"arn:aws:elasticloadbalancing:us-west-2:123123123123:loadbalancer/app/awseb-AWSEB-1VGXTCA62TZW5/f58275dd12edce24","DefaultActions":[{"TargetGroupArn":"arn:aws:elasticloadbalancing:us-west-2:123123123123:targetgroup/awseb-AWSEB-17R8PVLEWQWEC/234d7a174f1aa491","Type":"forward"}],"Port":"80","Protocol":"HTTP"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBV2LoadBalancer-CREATE_COMPLETE-2018-09-15T19:44:00.197Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBV2LoadBalancer',
+            'PhysicalResourceId': 'arn:aws:elasticloadbalancing:us-west-2:123123123123:loadbalancer/app/awseb-AWSEB-1VGXTCA62TZW5/f58275dd12edce24',
+            'ResourceType': 'AWS::ElasticLoadBalancingV2::LoadBalancer',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 44, 0, 197000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"SecurityGroups":["sg-088da58b23bc89ea2"],"Subnets":["subnet-0556027c","subnet-005248b6cc2dfa908"]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBCloudwatchAlarmLow-CREATE_COMPLETE-2018-09-15T19:43:15.732Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBCloudwatchAlarmLow',
+            'PhysicalResourceId': 'my-cfn-stack-AWSEBCloudwatchAlarmLow-1MFS7DYBPD2UZ',
+            'ResourceType': 'AWS::CloudWatch::Alarm',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 15, 732000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"AlarmActions":["arn:aws:autoscaling:us-west-2:123123123123:scalingPolicy:b2818a6b-eb82-46bf-8e2c-d356dd461be3:autoScalingGroupName/my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW:policyName/my-cfn-stack-AWSEBAutoScalingScaleDownPolicy-14H4PCTKAXIJ1"],"MetricName":"NetworkOut","ComparisonOperator":"LessThanThreshold","Statistic":"Average","AlarmDescription":"ElasticBeanstalk Default Scale Down alarm","Period":"300","Dimensions":[{"Value":"my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW","Name":"AutoScalingGroupName"}],"EvaluationPeriods":"1","Namespace":"AWS/EC2","Threshold":"2000000"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBCloudwatchAlarmLow-CREATE_IN_PROGRESS-2018-09-15T19:43:15.600Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBCloudwatchAlarmLow',
+            'PhysicalResourceId': 'my-cfn-stack-AWSEBCloudwatchAlarmLow-1MFS7DYBPD2UZ',
+            'ResourceType': 'AWS::CloudWatch::Alarm',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 15, 600000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"AlarmActions":["arn:aws:autoscaling:us-west-2:123123123123:scalingPolicy:b2818a6b-eb82-46bf-8e2c-d356dd461be3:autoScalingGroupName/my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW:policyName/my-cfn-stack-AWSEBAutoScalingScaleDownPolicy-14H4PCTKAXIJ1"],"MetricName":"NetworkOut","ComparisonOperator":"LessThanThreshold","Statistic":"Average","AlarmDescription":"ElasticBeanstalk Default Scale Down alarm","Period":"300","Dimensions":[{"Value":"my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW","Name":"AutoScalingGroupName"}],"EvaluationPeriods":"1","Namespace":"AWS/EC2","Threshold":"2000000"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBCloudwatchAlarmHigh-CREATE_COMPLETE-2018-09-15T19:43:15.499Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBCloudwatchAlarmHigh',
+            'PhysicalResourceId': 'my-cfn-stack-AWSEBCloudwatchAlarmHigh-N26UEPD6N8M3',
+            'ResourceType': 'AWS::CloudWatch::Alarm',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 15, 499000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"AlarmActions":["arn:aws:autoscaling:us-west-2:123123123123:scalingPolicy:65acc44b-d34a-4956-ba61-cfee4f9242be:autoScalingGroupName/my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW:policyName/my-cfn-stack-AWSEBAutoScalingScaleUpPolicy-96KTMSIQJPF0"],"MetricName":"NetworkOut","ComparisonOperator":"GreaterThanThreshold","Statistic":"Average","AlarmDescription":"ElasticBeanstalk Default Scale Up alarm","Period":"300","Dimensions":[{"Value":"my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW","Name":"AutoScalingGroupName"}],"EvaluationPeriods":"1","Namespace":"AWS/EC2","Threshold":"6000000"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBCloudwatchAlarmHigh-CREATE_IN_PROGRESS-2018-09-15T19:43:15.363Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBCloudwatchAlarmHigh',
+            'PhysicalResourceId': 'my-cfn-stack-AWSEBCloudwatchAlarmHigh-N26UEPD6N8M3',
+            'ResourceType': 'AWS::CloudWatch::Alarm',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 15, 363000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"AlarmActions":["arn:aws:autoscaling:us-west-2:123123123123:scalingPolicy:65acc44b-d34a-4956-ba61-cfee4f9242be:autoScalingGroupName/my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW:policyName/my-cfn-stack-AWSEBAutoScalingScaleUpPolicy-96KTMSIQJPF0"],"MetricName":"NetworkOut","ComparisonOperator":"GreaterThanThreshold","Statistic":"Average","AlarmDescription":"ElasticBeanstalk Default Scale Up alarm","Period":"300","Dimensions":[{"Value":"my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW","Name":"AutoScalingGroupName"}],"EvaluationPeriods":"1","Namespace":"AWS/EC2","Threshold":"6000000"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBCloudwatchAlarmLow-CREATE_IN_PROGRESS-2018-09-15T19:43:15.191Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBCloudwatchAlarmLow',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::CloudWatch::Alarm',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 15, 191000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"AlarmActions":["arn:aws:autoscaling:us-west-2:123123123123:scalingPolicy:b2818a6b-eb82-46bf-8e2c-d356dd461be3:autoScalingGroupName/my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW:policyName/my-cfn-stack-AWSEBAutoScalingScaleDownPolicy-14H4PCTKAXIJ1"],"MetricName":"NetworkOut","ComparisonOperator":"LessThanThreshold","Statistic":"Average","AlarmDescription":"ElasticBeanstalk Default Scale Down alarm","Period":"300","Dimensions":[{"Value":"my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW","Name":"AutoScalingGroupName"}],"EvaluationPeriods":"1","Namespace":"AWS/EC2","Threshold":"2000000"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBCloudwatchAlarmHigh-CREATE_IN_PROGRESS-2018-09-15T19:43:14.989Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBCloudwatchAlarmHigh',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::CloudWatch::Alarm',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 14, 989000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"AlarmActions":["arn:aws:autoscaling:us-west-2:123123123123:scalingPolicy:65acc44b-d34a-4956-ba61-cfee4f9242be:autoScalingGroupName/my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW:policyName/my-cfn-stack-AWSEBAutoScalingScaleUpPolicy-96KTMSIQJPF0"],"MetricName":"NetworkOut","ComparisonOperator":"GreaterThanThreshold","Statistic":"Average","AlarmDescription":"ElasticBeanstalk Default Scale Up alarm","Period":"300","Dimensions":[{"Value":"my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW","Name":"AutoScalingGroupName"}],"EvaluationPeriods":"1","Namespace":"AWS/EC2","Threshold":"6000000"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBAutoScalingScaleUpPolicy-CREATE_COMPLETE-2018-09-15T19:43:11.782Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBAutoScalingScaleUpPolicy',
+            'PhysicalResourceId': 'arn:aws:autoscaling:us-west-2:123123123123:scalingPolicy:65acc44b-d34a-4956-ba61-cfee4f9242be:autoScalingGroupName/my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW:policyName/my-cfn-stack-AWSEBAutoScalingScaleUpPolicy-96KTMSIQJPF0',
+            'ResourceType': 'AWS::AutoScaling::ScalingPolicy',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 11, 782000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"ScalingAdjustment":"1","AutoScalingGroupName":"my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW","AdjustmentType":"ChangeInCapacity"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBAutoScalingScaleUpPolicy-CREATE_IN_PROGRESS-2018-09-15T19:43:11.633Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBAutoScalingScaleUpPolicy',
+            'PhysicalResourceId': 'arn:aws:autoscaling:us-west-2:123123123123:scalingPolicy:65acc44b-d34a-4956-ba61-cfee4f9242be:autoScalingGroupName/my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW:policyName/my-cfn-stack-AWSEBAutoScalingScaleUpPolicy-96KTMSIQJPF0',
+            'ResourceType': 'AWS::AutoScaling::ScalingPolicy',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 11, 633000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"ScalingAdjustment":"1","AutoScalingGroupName":"my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW","AdjustmentType":"ChangeInCapacity"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBAutoScalingScaleDownPolicy-CREATE_COMPLETE-2018-09-15T19:43:11.449Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBAutoScalingScaleDownPolicy',
+            'PhysicalResourceId': 'arn:aws:autoscaling:us-west-2:123123123123:scalingPolicy:b2818a6b-eb82-46bf-8e2c-d356dd461be3:autoScalingGroupName/my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW:policyName/my-cfn-stack-AWSEBAutoScalingScaleDownPolicy-14H4PCTKAXIJ1',
+            'ResourceType': 'AWS::AutoScaling::ScalingPolicy',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 11, 449000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"ScalingAdjustment":"-1","AutoScalingGroupName":"my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW","AdjustmentType":"ChangeInCapacity"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBAutoScalingScaleDownPolicy-CREATE_IN_PROGRESS-2018-09-15T19:43:11.336Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBAutoScalingScaleDownPolicy',
+            'PhysicalResourceId': 'arn:aws:autoscaling:us-west-2:123123123123:scalingPolicy:b2818a6b-eb82-46bf-8e2c-d356dd461be3:autoScalingGroupName/my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW:policyName/my-cfn-stack-AWSEBAutoScalingScaleDownPolicy-14H4PCTKAXIJ1',
+            'ResourceType': 'AWS::AutoScaling::ScalingPolicy',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 11, 336000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"ScalingAdjustment":"-1","AutoScalingGroupName":"my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW","AdjustmentType":"ChangeInCapacity"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBAutoScalingScaleUpPolicy-CREATE_IN_PROGRESS-2018-09-15T19:43:11.202Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBAutoScalingScaleUpPolicy',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::AutoScaling::ScalingPolicy',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 11, 202000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"ScalingAdjustment":"1","AutoScalingGroupName":"my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW","AdjustmentType":"ChangeInCapacity"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBInstanceLaunchWaitCondition-CREATE_IN_PROGRESS-2018-09-15T19:43:11.104Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBInstanceLaunchWaitCondition',
+            'PhysicalResourceId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4/AWSEBInstanceLaunchWaitHandle',
+            'ResourceType': 'AWS::CloudFormation::WaitCondition',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 11, 104000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"Timeout":"900","Count":"1","Handle":"https://cloudformation-waitcondition-us-west-2.s3-us-west-2.amazonaws.com/arn%3Aaws%3Acloudformation%3Aus-west-2%3A123123123123%3Astack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4/AWSEBInstanceLaunchWaitHandle?AWSAccessKeyId=AKIAI5ZDPCT4PV2AKKAA&Expires=1537126906&Signature=ZMzoAUTwL5OU2ImILgqCmBXwsvo%3D"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBInstanceLaunchWaitCondition-CREATE_IN_PROGRESS-2018-09-15T19:43:10.945Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBInstanceLaunchWaitCondition',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::CloudFormation::WaitCondition',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 10, 945000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"Timeout":"900","Count":"1","Handle":"https://cloudformation-waitcondition-us-west-2.s3-us-west-2.amazonaws.com/arn%3Aaws%3Acloudformation%3Aus-west-2%3A123123123123%3Astack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4/AWSEBInstanceLaunchWaitHandle?AWSAccessKeyId=AKIAI5ZDPCT4PV2AKKAA&Expires=1537126906&Signature=ZMzoAUTwL5OU2ImILgqCmBXwsvo%3D"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBAutoScalingScaleDownPolicy-CREATE_IN_PROGRESS-2018-09-15T19:43:10.889Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBAutoScalingScaleDownPolicy',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::AutoScaling::ScalingPolicy',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 10, 889000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"ScalingAdjustment":"-1","AutoScalingGroupName":"my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW","AdjustmentType":"ChangeInCapacity"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBAutoScalingGroup-CREATE_COMPLETE-2018-09-15T19:43:07.525Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBAutoScalingGroup',
+            'PhysicalResourceId': 'my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW',
+            'ResourceType': 'AWS::AutoScaling::AutoScalingGroup',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 43, 7, 525000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"MinSize":"1","LaunchConfigurationName":"my-cfn-stack-AWSEBAutoScalingLaunchConfiguration-NZO3NRE5JEEN","TargetGroupARNs":["arn:aws:elasticloadbalancing:us-west-2:123123123123:targetgroup/awseb-AWSEB-17R8PVLEWQWEC/234d7a174f1aa491"],"AvailabilityZones":["us-west-2a","us-west-2b"],"Cooldown":"360","VPCZoneIdentifier":["subnet-0556027c","subnet-005248b6cc2dfa908"],"MaxSize":"4","Tags":[{"Value":"****","Key":"elasticbeanstalk:environment-name","PropagateAtLaunch":"true"},{"Value":"****","Key":"Name","PropagateAtLaunch":"true"},{"Value":"****","Key":"elasticbeanstalk:environment-id","PropagateAtLaunch":"true"}]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBAutoScalingGroup-CREATE_IN_PROGRESS-2018-09-15T19:42:14.636Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBAutoScalingGroup',
+            'PhysicalResourceId': 'my-cfn-stack-AWSEBAutoScalingGroup-UP1RZPYEFMGW',
+            'ResourceType': 'AWS::AutoScaling::AutoScalingGroup',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 42, 14, 636000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"MinSize":"1","LaunchConfigurationName":"my-cfn-stack-AWSEBAutoScalingLaunchConfiguration-NZO3NRE5JEEN","TargetGroupARNs":["arn:aws:elasticloadbalancing:us-west-2:123123123123:targetgroup/awseb-AWSEB-17R8PVLEWQWEC/234d7a174f1aa491"],"AvailabilityZones":["us-west-2a","us-west-2b"],"Cooldown":"360","VPCZoneIdentifier":["subnet-0556027c","subnet-005248b6cc2dfa908"],"MaxSize":"4","Tags":[{"Value":"****","Key":"elasticbeanstalk:environment-name","PropagateAtLaunch":"true"},{"Value":"****","Key":"Name","PropagateAtLaunch":"true"},{"Value":"****","Key":"elasticbeanstalk:environment-id","PropagateAtLaunch":"true"}]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBAutoScalingGroup-CREATE_IN_PROGRESS-2018-09-15T19:42:13.720Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBAutoScalingGroup',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::AutoScaling::AutoScalingGroup',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 42, 13, 720000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"MinSize":"1","LaunchConfigurationName":"my-cfn-stack-AWSEBAutoScalingLaunchConfiguration-NZO3NRE5JEEN","TargetGroupARNs":["arn:aws:elasticloadbalancing:us-west-2:123123123123:targetgroup/awseb-AWSEB-17R8PVLEWQWEC/234d7a174f1aa491"],"AvailabilityZones":["us-west-2a","us-west-2b"],"Cooldown":"360","VPCZoneIdentifier":["subnet-0556027c","subnet-005248b6cc2dfa908"],"MaxSize":"4","Tags":[{"Value":"****","Key":"elasticbeanstalk:environment-name","PropagateAtLaunch":"true"},{"Value":"****","Key":"Name","PropagateAtLaunch":"true"},{"Value":"****","Key":"elasticbeanstalk:environment-id","PropagateAtLaunch":"true"}]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBAutoScalingLaunchConfiguration-CREATE_COMPLETE-2018-09-15T19:42:07.901Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBAutoScalingLaunchConfiguration',
+            'PhysicalResourceId': 'my-cfn-stack-AWSEBAutoScalingLaunchConfiguration-NZO3NRE5JEEN',
+            'ResourceType': 'AWS::AutoScaling::LaunchConfiguration',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 42, 7, 901000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"****":"****"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBAutoScalingLaunchConfiguration-CREATE_IN_PROGRESS-2018-09-15T19:42:07.617Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBAutoScalingLaunchConfiguration',
+            'PhysicalResourceId': 'my-cfn-stack-AWSEBAutoScalingLaunchConfiguration-NZO3NRE5JEEN',
+            'ResourceType': 'AWS::AutoScaling::LaunchConfiguration',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 42, 7, 617000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"****":"****"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBAutoScalingLaunchConfiguration-CREATE_IN_PROGRESS-2018-09-15T19:42:06.998Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBAutoScalingLaunchConfiguration',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::AutoScaling::LaunchConfiguration',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 42, 6, 998000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"****":"****"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBSecurityGroup-CREATE_COMPLETE-2018-09-15T19:42:03.029Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBSecurityGroup',
+            'PhysicalResourceId': 'sg-0de671aa9d26f5fc0',
+            'ResourceType': 'AWS::EC2::SecurityGroup',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 42, 3, 29000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"GroupDescription":"VPC Security Group","VpcId":"vpc-574cb42f","SecurityGroupIngress":[{"FromPort":"80","ToPort":"80","IpProtocol":"tcp","SourceSecurityGroupId":"sg-088da58b23bc89ea2"}]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBSecurityGroup-CREATE_IN_PROGRESS-2018-09-15T19:42:02.027Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBSecurityGroup',
+            'PhysicalResourceId': 'sg-0de671aa9d26f5fc0',
+            'ResourceType': 'AWS::EC2::SecurityGroup',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 42, 2, 27000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"GroupDescription":"VPC Security Group","VpcId":"vpc-574cb42f","SecurityGroupIngress":[{"FromPort":"80","ToPort":"80","IpProtocol":"tcp","SourceSecurityGroupId":"sg-088da58b23bc89ea2"}]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBV2LoadBalancer-CREATE_IN_PROGRESS-2018-09-15T19:41:58.955Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBV2LoadBalancer',
+            'PhysicalResourceId': 'arn:aws:elasticloadbalancing:us-west-2:123123123123:loadbalancer/app/awseb-AWSEB-1VGXTCA62TZW5/f58275dd12edce24',
+            'ResourceType': 'AWS::ElasticLoadBalancingV2::LoadBalancer',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 58, 955000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"SecurityGroups":["sg-088da58b23bc89ea2"],"Subnets":["subnet-0556027c","subnet-005248b6cc2dfa908"]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBV2LoadBalancer-CREATE_IN_PROGRESS-2018-09-15T19:41:57.909Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBV2LoadBalancer',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::ElasticLoadBalancingV2::LoadBalancer',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 57, 909000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"SecurityGroups":["sg-088da58b23bc89ea2"],"Subnets":["subnet-0556027c","subnet-005248b6cc2dfa908"]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBSecurityGroup-CREATE_IN_PROGRESS-2018-09-15T19:41:57.478Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBSecurityGroup',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::EC2::SecurityGroup',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 57, 478000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"GroupDescription":"VPC Security Group","VpcId":"vpc-574cb42f","SecurityGroupIngress":[{"FromPort":"80","ToPort":"80","IpProtocol":"tcp","SourceSecurityGroupId":"sg-088da58b23bc89ea2"}]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBLoadBalancerSecurityGroup-CREATE_COMPLETE-2018-09-15T19:41:53.947Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBLoadBalancerSecurityGroup',
+            'PhysicalResourceId': 'sg-088da58b23bc89ea2',
+            'ResourceType': 'AWS::EC2::SecurityGroup',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 53, 947000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"GroupDescription":"Load Balancer Security Group","VpcId":"vpc-574cb42f","SecurityGroupIngress":[{"CidrIp":"0.0.0.0/0","FromPort":"80","ToPort":"80","IpProtocol":"tcp"}],"SecurityGroupEgress":[{"CidrIp":"0.0.0.0/0","FromPort":"80","ToPort":"80","IpProtocol":"tcp"}]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBLoadBalancerSecurityGroup-CREATE_IN_PROGRESS-2018-09-15T19:41:52.616Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBLoadBalancerSecurityGroup',
+            'PhysicalResourceId': 'sg-088da58b23bc89ea2',
+            'ResourceType': 'AWS::EC2::SecurityGroup',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 52, 616000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"GroupDescription":"Load Balancer Security Group","VpcId":"vpc-574cb42f","SecurityGroupIngress":[{"CidrIp":"0.0.0.0/0","FromPort":"80","ToPort":"80","IpProtocol":"tcp"}],"SecurityGroupEgress":[{"CidrIp":"0.0.0.0/0","FromPort":"80","ToPort":"80","IpProtocol":"tcp"}]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBV2LoadBalancerTargetGroup-CREATE_COMPLETE-2018-09-15T19:41:47.968Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBV2LoadBalancerTargetGroup',
+            'PhysicalResourceId': 'arn:aws:elasticloadbalancing:us-west-2:123123123123:targetgroup/awseb-AWSEB-17R8PVLEWQWEC/234d7a174f1aa491',
+            'ResourceType': 'AWS::ElasticLoadBalancingV2::TargetGroup',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 47, 968000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{"HealthCheckIntervalSeconds":"15","VpcId":"vpc-574cb42f","HealthyThresholdCount":"3","HealthCheckPath":"/","Port":"80","TargetGroupAttributes":[{"Value":"20","Key":"deregistration_delay.timeout_seconds"}],"Protocol":"HTTP","UnhealthyThresholdCount":"5","HealthCheckTimeoutSeconds":"5"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBLoadBalancerSecurityGroup-CREATE_IN_PROGRESS-2018-09-15T19:41:47.954Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBLoadBalancerSecurityGroup',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::EC2::SecurityGroup',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 47, 954000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"GroupDescription":"Load Balancer Security Group","VpcId":"vpc-574cb42f","SecurityGroupIngress":[{"CidrIp":"0.0.0.0/0","FromPort":"80","ToPort":"80","IpProtocol":"tcp"}],"SecurityGroupEgress":[{"CidrIp":"0.0.0.0/0","FromPort":"80","ToPort":"80","IpProtocol":"tcp"}]}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBBeanstalkMetadata-CREATE_COMPLETE-2018-09-15T19:41:47.843Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBBeanstalkMetadata',
+            'PhysicalResourceId': 'https://cloudformation-waitcondition-us-west-2.s3-us-west-2.amazonaws.com/arn%3Aaws%3Acloudformation%3Aus-west-2%3A123123123123%3Astack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4/AWSEBBeanstalkMetadata?AWSAccessKeyId=AKIAI5ZDPCT4PV2AKKAA&Expires=1537126907&Signature=IKsDdTYtxeYQRaCIgNyT5OQTqNQ%3D',
+            'ResourceType': 'AWS::CloudFormation::WaitConditionHandle',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 47, 843000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBBeanstalkMetadata-CREATE_IN_PROGRESS-2018-09-15T19:41:47.693Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBBeanstalkMetadata',
+            'PhysicalResourceId': 'https://cloudformation-waitcondition-us-west-2.s3-us-west-2.amazonaws.com/arn%3Aaws%3Acloudformation%3Aus-west-2%3A123123123123%3Astack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4/AWSEBBeanstalkMetadata?AWSAccessKeyId=AKIAI5ZDPCT4PV2AKKAA&Expires=1537126907&Signature=IKsDdTYtxeYQRaCIgNyT5OQTqNQ%3D',
+            'ResourceType': 'AWS::CloudFormation::WaitConditionHandle',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 47, 693000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBV2LoadBalancerTargetGroup-CREATE_IN_PROGRESS-2018-09-15T19:41:47.479Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBV2LoadBalancerTargetGroup',
+            'PhysicalResourceId': 'arn:aws:elasticloadbalancing:us-west-2:123123123123:targetgroup/awseb-AWSEB-17R8PVLEWQWEC/234d7a174f1aa491',
+            'ResourceType': 'AWS::ElasticLoadBalancingV2::TargetGroup',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 47, 479000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{"HealthCheckIntervalSeconds":"15","VpcId":"vpc-574cb42f","HealthyThresholdCount":"3","HealthCheckPath":"/","Port":"80","TargetGroupAttributes":[{"Value":"20","Key":"deregistration_delay.timeout_seconds"}],"Protocol":"HTTP","UnhealthyThresholdCount":"5","HealthCheckTimeoutSeconds":"5"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBBeanstalkMetadata-CREATE_IN_PROGRESS-2018-09-15T19:41:47.477Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBBeanstalkMetadata',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::CloudFormation::WaitConditionHandle',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 47, 477000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBV2LoadBalancerTargetGroup-CREATE_IN_PROGRESS-2018-09-15T19:41:47.079Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBV2LoadBalancerTargetGroup',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::ElasticLoadBalancingV2::TargetGroup',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 47, 79000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{"HealthCheckIntervalSeconds":"15","VpcId":"vpc-574cb42f","HealthyThresholdCount":"3","HealthCheckPath":"/","Port":"80","TargetGroupAttributes":[{"Value":"20","Key":"deregistration_delay.timeout_seconds"}],"Protocol":"HTTP","UnhealthyThresholdCount":"5","HealthCheckTimeoutSeconds":"5"}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBInstanceLaunchWaitHandle-CREATE_COMPLETE-2018-09-15T19:41:46.876Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBInstanceLaunchWaitHandle',
+            'PhysicalResourceId': 'https://cloudformation-waitcondition-us-west-2.s3-us-west-2.amazonaws.com/arn%3Aaws%3Acloudformation%3Aus-west-2%3A123123123123%3Astack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4/AWSEBInstanceLaunchWaitHandle?AWSAccessKeyId=AKIAI5ZDPCT4PV2AKKAA&Expires=1537126906&Signature=ZMzoAUTwL5OU2ImILgqCmBXwsvo%3D',
+            'ResourceType': 'AWS::CloudFormation::WaitConditionHandle',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 46, 876000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_COMPLETE',
+            'ResourceProperties': '{}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBInstanceLaunchWaitHandle-CREATE_IN_PROGRESS-2018-09-15T19:41:46.696Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBInstanceLaunchWaitHandle',
+            'PhysicalResourceId': 'https://cloudformation-waitcondition-us-west-2.s3-us-west-2.amazonaws.com/arn%3Aaws%3Acloudformation%3Aus-west-2%3A123123123123%3Astack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4/AWSEBInstanceLaunchWaitHandle?AWSAccessKeyId=AKIAI5ZDPCT4PV2AKKAA&Expires=1537126906&Signature=ZMzoAUTwL5OU2ImILgqCmBXwsvo%3D',
+            'ResourceType': 'AWS::CloudFormation::WaitConditionHandle',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 46, 696000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'Resource creation Initiated',
+            'ResourceProperties': '{}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': 'AWSEBInstanceLaunchWaitHandle-CREATE_IN_PROGRESS-2018-09-15T19:41:46.383Z',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'AWSEBInstanceLaunchWaitHandle',
+            'PhysicalResourceId': '',
+            'ResourceType': 'AWS::CloudFormation::WaitConditionHandle',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 46, 383000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceProperties': '{}'
+        },
+        {
+            'StackId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'EventId': '5f613150-b91f-11e8-bed7-027277c482a4',
+            'StackName': 'my-cfn-stack',
+            'LogicalResourceId': 'my-cfn-stack',
+            'PhysicalResourceId': 'arn:aws:cloudformation:us-west-2:123123123123:stack/my-cfn-stack/5f60bc20-b91f-11e8-bed7-027277c482a4',
+            'ResourceType': 'AWS::CloudFormation::Stack',
+            'Timestamp': datetime.datetime(2018, 9, 15, 19, 41, 43, 73000, tzinfo=tz.tzutc()),
+            'ResourceStatus': 'CREATE_IN_PROGRESS',
+            'ResourceStatusReason': 'User Initiated'
+        }
+    ],
+    'ResponseMetadata': {
+        'RequestId': '92b827b1-bafb-11e8-a480-cd9a64683a20',
+        'HTTPStatusCode': 200,
+        'HTTPHeaders': {
+            'x-amzn-requestid': '92b827b1-bafb-11e8-a480-cd9a64683a20',
+            'content-type': 'text/xml',
+            'content-length': '51972',
+            'vary': 'Accept-Encoding',
+            'date': 'Tue, 18 Sep 2018 04:30:29 GMT'
+        },
+        'RetryAttempts': 0
+    }
+}
