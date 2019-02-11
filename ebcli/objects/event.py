@@ -75,3 +75,80 @@ class Event(object):
             )
 
         return events
+
+
+class CFNEvent(object):
+    def __init__(
+            self,
+            stack_id=None,
+            event_id=None,
+            stack_name=None,
+            logical_resource_id=None,
+            physical_resource_id=None,
+            resource_type=None,
+            timestamp=None,
+            resource_status=None,
+            resource_status_reason=None,
+            resource_properties=None,
+            client_request_token=None,
+    ):
+        self.stack_id = stack_id
+        self.event_id = event_id
+        self.stack_name = stack_name
+        self.logical_resource_id = logical_resource_id
+        self.physical_resource_id = physical_resource_id
+        self.resource_type = resource_type
+        self.timestamp = timestamp
+        self.resource_status = resource_status
+        self.resource_status_reason = resource_status_reason
+        self.resource_properties = resource_properties
+        self.client_request_token = client_request_token
+
+    def __eq__(self, other):
+        return self.__hash__() == other.__hash__()
+
+    def __ne__(self, other):
+        return self.__hash__() != other.__hash__()
+
+    def __hash__(self):
+        """
+        __hash__ method for `OptionSetting` to enable comparison of sets of `OptionSetting`s objects.
+        :return: a hash of the `tuple` of the `OptionSetting` attributes
+        """
+        return hash(
+            (
+                self.stack_id,
+                self.event_id,
+                self.stack_name,
+                self.logical_resource_id,
+                self.physical_resource_id,
+                self.resource_type,
+                self.timestamp,
+                self.resource_status,
+                self.resource_status_reason,
+                self.resource_properties,
+                self.client_request_token
+            )
+        )
+
+    @classmethod
+    def json_to_event_objects(cls, json):
+        events = []
+        for event in json:
+            events.append(
+                CFNEvent(
+                    stack_id=event.get('StackId'),
+                    event_id=event.get('EventId'),
+                    stack_name=event.get('StackName'),
+                    logical_resource_id=event.get('LogicalResourceId'),
+                    physical_resource_id=event.get('PhysicalResourceId'),
+                    resource_type=event.get('ResourceType'),
+                    timestamp=event.get('Timestamp'),
+                    resource_status=event.get('ResourceStatus'),
+                    resource_status_reason=event.get('ResourceStatusReason'),
+                    resource_properties=event.get('ResourceProperties'),
+                    client_request_token=event.get('ClientRequestToken')
+                )
+            )
+
+        return events
