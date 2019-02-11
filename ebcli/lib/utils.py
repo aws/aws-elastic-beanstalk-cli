@@ -295,22 +295,6 @@ def merge_dicts(low_priority, high_priority):
     return result_dict
 
 
-def retract_string(string):
-    try:
-        string_len = len(string)
-        keep_characters = range(0, 4)
-        keep_characters.extend(range(string_len - 4, string_len))
-        retracted_string = []
-        for i, c in enumerate(string):
-            if i in keep_characters:
-                retracted_string.append(c)
-            else:
-                retracted_string.append('*')
-        return ''.join(retracted_string)
-    except:
-        return ''
-
-
 def check_source(value):
     match = re.match(r"([^/]+/[^/]+/[^/]+)", value)
     if match is None or len(value.split("/")) > 3:
