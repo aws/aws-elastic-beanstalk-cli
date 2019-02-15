@@ -10,6 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import unittest
 
 from ebcli.core import fileoperations
 from ebcli.objects.exceptions import NotFoundError
@@ -18,6 +19,7 @@ from tests.unit.baseinttest import BaseIntegrationTest
 from tests.unit.integration import mockservice
 
 
+@unittest.skip
 class TestAbort(BaseIntegrationTest):
 
     def setUp(self):
