@@ -204,8 +204,7 @@ def make_api_call(service_name, operation_name, **operation_options):
         attempt += 1
         if attempt > 1:
             LOG.debug('Retrying -- attempt #' + str(attempt))
-        delay = _get_delay(attempt)
-        time.sleep(delay)
+        _sleep(_get_delay(attempt))
         try:
             LOG.debug('Making api call: (' +
                       service_name + ', ' + operation_name +
@@ -363,6 +362,10 @@ def _handle_500_error(aggregated_error_message):
     raise MaxRetriesError('Max retries exceeded for '
                           'service error (5XX)\n' +
                           aggregated_error_message)
+
+
+def _sleep(delay):
+    time.sleep(delay)
 
 
 class InvalidParameterValueError(ServiceError):

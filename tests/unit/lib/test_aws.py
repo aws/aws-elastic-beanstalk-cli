@@ -96,16 +96,27 @@ class TestAws(unittest.TestCase):
 
         LOG.debug.assert_has_calls(calls)
 
-
-    def test_make_api_call__failure__status_code_5xx(self):
+    @mock.patch('ebcli.lib.aws._get_delay')
+    @mock.patch('ebcli.lib.aws._set_operation')
+    @mock.patch('ebcli.lib.aws._sleep')
+    def test_make_api_call__failure__status_code_5xx(
+            self,
+            _sleep_mock,
+            _set_operation_mock,
+            _get_delay_mock
+    ):
         self.maxDiff = None
-        expected_response = {'500'}
 
-        operation = MagicMock()
-        operation.side_effect = botocore.exceptions.ClientError(self.response_data, 'some_operation')
+        operation = MagicMock(
+            side_effect=botocore.exceptions.ClientError(
+                self.response_data,
+                'some_operation'
+            )
+        )
 
-        aws._set_operation = MagicMock(return_value=operation)
-        aws._get_delay = MagicMock(return_value=0)
+        _set_operation_mock.return_value = operation
+        _get_delay_mock.side_effect = None
+        _sleep_mock.side_effect = None
 
         with self.assertRaises(aws.MaxRetriesError) as cm:
             aws.make_api_call('some_service', 'some_operation')
