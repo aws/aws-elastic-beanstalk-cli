@@ -4174,3 +4174,48 @@ LIST_TOPICS_RESPONSE = {
         'RetryAttempts': 0
     }
 }
+
+
+LIST_KEYS_RESPONSE = {
+    'Keys': [
+        {
+            'KeyId': '12312312-a783-4f6c-8b8f-502a99545967',
+            'KeyArn': 'arn:aws:kms:us-west-2:123123123123:key/12312312-a783-4f6c-8b8f-502a99545967'
+        },
+        {
+            'KeyId': '12312312-c7d9-457a-a90d-943be31f6144',
+            'KeyArn': 'arn:aws:kms:us-west-2:123123123123:key/12312312-c7d9-457a-a90d-943be31f6144'
+        },
+        {
+            'KeyId': '12312312-ff32-4398-b352-a470ced64752',
+            'KeyArn': 'arn:aws:kms:us-west-2:123123123123:key/12312312-ff32-4398-b352-a470ced64752'
+        },
+        {
+            'KeyId': '12312312-36d5-43e6-89ef-c6e82f027d8b',
+            'KeyArn': 'arn:aws:kms:us-west-2:123123123123:key/12312312-36d5-43e6-89ef-c6e82f027d8b'
+        },
+        {
+            'KeyId': '12312312-c660-48ee-b5d1-02d6d1ffc275',
+            'KeyArn': 'arn:aws:kms:us-west-2:123123123123:key/12312312-c660-48ee-b5d1-02d6d1ffc275'
+        },
+        {
+            'KeyId': '12312312-eec7-49a1-a696-335efc664327',
+            'KeyArn': 'arn:aws:kms:us-west-2:123123123123:key/12312312-eec7-49a1-a696-335efc664327'
+        },
+        {
+            'KeyId': '12312312-87b5-4fe3-b69f-57494da80071',
+            'KeyArn': 'arn:aws:kms:us-west-2:123123123123:key/12312312-87b5-4fe3-b69f-57494da80071'
+        }
+    ],
+    'Truncated': False,
+    'ResponseMetadata': {
+        'RequestId': '4fe7eb3b-c547-47fc-a674-d79c652d8289',
+        'HTTPStatusCode': 200,
+        'HTTPHeaders': {
+            'x-amzn-requestid': '4fe7eb3b-c547-47fc-a674-d79c652d8289',
+            'content-type': 'application/x-amz-json-1.1',
+            'content-length': '993'
+        },
+        'RetryAttempts': 0
+    }
+}
