@@ -4148,3 +4148,29 @@ GET_USER_RESPONSE = {
         'RetryAttempts': 0
     }
 }
+
+
+LIST_TOPICS_RESPONSE = {
+    'Topics': [
+        {
+            'TopicArn': 'arn:aws:sns:us-west-2:123123123123:topic_1'
+        },
+        {
+            'TopicArn': 'arn:aws:sns:us-west-2:123123123123:topic_2'
+        },
+        {
+            'TopicArn': 'arn:aws:sns:us-west-2:123123123123:topic_3'
+        }
+    ],
+    'ResponseMetadata': {
+        'RequestId': '0a22bc17-eaa8-56be-847d-e80f0637f7cf',
+        'HTTPStatusCode': 200,
+        'HTTPHeaders': {
+            'x-amzn-requestid': '0a22bc17-eaa8-56be-847d-e80f0637f7cf',
+            'content-type': 'text/xml',
+            'content-length': '600',
+            'date': 'Sun, 16 Sep 2018 23:42:22 GMT'
+        },
+        'RetryAttempts': 0
+    }
+}
