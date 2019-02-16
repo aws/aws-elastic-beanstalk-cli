@@ -677,3 +677,60 @@ class TestS3(unittest.TestCase):
         self.assertEqual(2, s3._read_next_section_from_file.part_num)
 
         setattr(s3._read_next_section_from_file, 'part_num', 0)
+
+    @mock.patch('ebcli.lib.s3.aws.make_api_call')
+    def test_bucket_exists(
+            self,
+            make_api_call_mock
+    ):
+        make_api_call_mock.return_value = mock_responses.LIST_BUCKETS_RESPONSE
+
+        self.assertTrue(s3.bucket_exists('elasticbeanstalk-ap-northeast-1-123123123123'))
+
+    @mock.patch('ebcli.lib.s3.aws.make_api_call')
+    def test_bucket_exists__false(
+            self,
+            make_api_call_mock
+    ):
+        make_api_call_mock.return_value = mock_responses.LIST_BUCKETS_RESPONSE
+
+        self.assertFalse(s3.bucket_exists('absent-bucket'))
+
+    @mock.patch('ebcli.lib.s3.aws.make_api_call')
+    @mock.patch('ebcli.lib.s3.bucket_exists')
+    def test_elasticbeanstalk_bucket_for_account__bucket_already_exists(
+            self,
+            bucket_exists_mock,
+            make_api_call_mock
+    ):
+        bucket_exists_mock.return_value = True
+
+        self.assertEqual(
+            'elasticbeanstalk-us-west-2-123123123123',
+            s3.elasticbeanstalk_bucket_for_account('123123123123', region_name='us-west-2')
+        )
+
+        make_api_call_mock.assert_not_called()
+
+    @mock.patch('ebcli.lib.s3.aws.make_api_call')
+    @mock.patch('ebcli.lib.s3.bucket_exists')
+    def test_elasticbeanstalk_bucket_for_account__bucket_does_not_exist__attempt_is_made_to_create_one(
+            self,
+            bucket_exists_mock,
+            make_api_call_mock
+    ):
+        bucket_exists_mock.return_value = False
+
+        self.assertEqual(
+            'elasticbeanstalk-us-west-2-123123123123',
+            s3.elasticbeanstalk_bucket_for_account('123123123123', region_name='us-west-2')
+        )
+
+        make_api_call_mock.assert_called_once_with(
+            's3',
+            'create_bucket',
+            Bucket='elasticbeanstalk-us-west-2-123123123123',
+            CreateBucketConfiguration={
+                'LocationConstraint': 'us-west-2'
+            }
+        )

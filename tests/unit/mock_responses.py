@@ -4219,3 +4219,106 @@ LIST_KEYS_RESPONSE = {
         'RetryAttempts': 0
     }
 }
+
+LIST_BUCKETS_RESPONSE = {
+    'ResponseMetadata': {
+        'RequestId': '421450C9254B454A',
+        'HostId': 'gEp+QmtD0Vi/72Xl8uT4pAGBe9R7Wc7L97qNbt9H4R6kEKTt8NuXb/DDcRlwTbCMwiBs7mq94x4=',
+        'HTTPStatusCode': 200,
+        'HTTPHeaders': {
+            'x-amz-id-2': 'gEp+QmtD0Vi/72Xl8uT4pAGBe9R7Wc7L97qNbt9H4R6kEKTt8NuXb/DDcRlwTbCMwiBs7mq94x4=',
+            'x-amz-request-id': '421450C9254B454A',
+            'date': 'Sun, 16 Sep 2018 22:57:25 GMT',
+            'content-type': 'application/xml',
+            'transfer-encoding': 'chunked',
+            'server': 'AmazonS3'
+        },
+        'RetryAttempts': 0
+    },
+    'Buckets': [
+        {
+            'Name': 'cloudtrail-awslogs-123123123123-isengard-do-not-delete',
+            'CreationDate': datetime.datetime(2017, 5, 2, 20, 57, 56, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'config-bucket-123123123123',
+            'CreationDate': datetime.datetime(2018, 1, 28, 4, 21, 34, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'do-not-delete-gatedgarden-audit-123123123123',
+            'CreationDate': datetime.datetime(2018, 8, 30, 7, 27, 5, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-ap-northeast-1-123123123123',
+            'CreationDate': datetime.datetime(2018, 3, 26, 19, 47, 4, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-ap-northeast-2-123123123123',
+            'CreationDate': datetime.datetime(2017, 6, 27, 23, 3, 30, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-ap-northeast-3-123123123123',
+            'CreationDate': datetime.datetime(2018, 2, 21, 8, 8, 16, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-ap-south-1-123123123123',
+            'CreationDate': datetime.datetime(2017, 7, 5, 0, 4, 43, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-ap-southeast-1-123123123123',
+            'CreationDate': datetime.datetime(2017, 6, 9, 22, 44, 24, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-ap-southeast-2-123123123123',
+            'CreationDate': datetime.datetime(2017, 6, 9, 21, 54, 12, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-ca-central-1-123123123123',
+            'CreationDate': datetime.datetime(2017, 12, 18, 19, 42, 23, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-eu-central-1-123123123123',
+            'CreationDate': datetime.datetime(2017, 6, 28, 0, 27, 1, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-eu-west-1-123123123123',
+            'CreationDate': datetime.datetime(2017, 7, 3, 20, 34, 47, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-eu-west-2-123123123123',
+            'CreationDate': datetime.datetime(2017, 6, 27, 22, 54, 41, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-eu-west-3-123123123123',
+            'CreationDate': datetime.datetime(2018, 1, 8, 10, 40, 53, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-sa-east-1-123123123123',
+            'CreationDate': datetime.datetime(2017, 12, 18, 21, 28, 4, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-us-east-1-123123123123',
+            'CreationDate': datetime.datetime(2017, 7, 11, 1, 12, 26, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-us-east-2-123123123123',
+            'CreationDate': datetime.datetime(2017, 7, 12, 21, 59, 31, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-us-west-1-123123123123',
+            'CreationDate': datetime.datetime(2017, 7, 11, 0, 8, 58, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'elasticbeanstalk-us-west-2-123123123123',
+            'CreationDate': datetime.datetime(2018, 3, 26, 19, 47, 34, tzinfo=tz.tzutc())
+        },
+        {
+            'Name': 'images-app-bucket',
+            'CreationDate': datetime.datetime(2017, 8, 20, 0, 51, 8, tzinfo=tz.tzutc())
+        }
+    ],
+    'Owner': {
+        'DisplayName': 'someuser',
+        'ID': '12341342134fd2684e6218e27436c04d71093667b756f3435c1dcad2247c7124'
+    }
+}

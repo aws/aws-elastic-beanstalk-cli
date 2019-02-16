@@ -53,6 +53,33 @@ def __raise_if_bucket_is_empty(result):
         raise NotFoundError('Object not found.')
 
 
+def elasticbeanstalk_bucket_for_account(account_id, region_name):
+    LOG.debug('Inside create_bucket api wrapper')
+    bucket_name = 'elasticbeanstalk-{region_name}-{account_id}'.format(
+        region_name=region_name,
+        account_id=account_id
+    )
+
+    if not bucket_exists(bucket_name):
+        _make_api_call(
+            'create_bucket',
+            Bucket=bucket_name,
+            CreateBucketConfiguration={
+                'LocationConstraint': region_name
+            },
+        )
+
+    return bucket_name
+
+
+def bucket_exists(bucket):
+    LOG.debug('Inside list_buckets api wrapper')
+    return bucket in [
+        bucket['Name']
+        for bucket in _make_api_call('list_buckets')['Buckets']
+    ]
+
+
 def get_object_info(bucket, object_key):
     result = _make_api_call(
         'list_objects',
