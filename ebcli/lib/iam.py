@@ -10,6 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import re
 
 from cement.utils.misc import minimal_logger
 
@@ -17,10 +18,17 @@ from ebcli.lib import aws
 from ebcli.objects.exceptions import AlreadyExistsError
 
 LOG = minimal_logger(__name__)
+ACCOUNT_ID_REGEX = re.compile(r'arn:aws:iam::(\d+):.*')
 
 
 def _make_api_call(operation_name, **operation_options):
     return aws.make_api_call('iam', operation_name, **operation_options)
+
+
+def account_id():
+    user_arn = _make_api_call('get_user')['User']['Arn']
+
+    return re.search(ACCOUNT_ID_REGEX, user_arn).group(1)
 
 
 def get_instance_profiles():

@@ -4125,3 +4125,26 @@ DESCRIBE_INSTANCE_HEALTH = {
         }
     ]
 }
+
+
+
+GET_USER_RESPONSE = {
+    'User': {
+        'Path': '/',
+        'UserName': 'someuser',
+        'UserId': '123123123123123123123',
+        'Arn': 'arn:aws:iam::123123123123:user/someuser',
+        'CreateDate': datetime.datetime(2017, 7, 6, 22, 48, 47, tzinfo=tz.tzutc())
+    },
+    'ResponseMetadata': {
+        'RequestId': 'c9cbbd69-ba07-11e8-8950-bfd2975be980',
+        'HTTPStatusCode': 200,
+        'HTTPHeaders': {
+            'x-amzn-requestid': 'c9cbbd69-ba07-11e8-8950-bfd2975be980',
+            'content-type': 'text/xml',
+            'content-length': '473',
+            'date': 'Sun, 16 Sep 2018 23:25:24 GMT'
+        },
+        'RetryAttempts': 0
+    }
+}
