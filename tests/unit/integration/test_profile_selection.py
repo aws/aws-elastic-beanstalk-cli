@@ -84,6 +84,7 @@ class TestProfileSelection(unittest.TestCase):
 
     def run(self, result=None):
         aws._flush()
+        aws._profile_env_var = 'AWS_EB_PROFILE'
         aws._region_name = 'us-west-2'
         self.root_dir = os.getcwd()
         if os.path.exists('testDir'):
