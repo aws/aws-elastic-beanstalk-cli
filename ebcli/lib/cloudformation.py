@@ -11,11 +11,10 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from datetime import datetime, timedelta
-import time
 
 from cement.utils.misc import minimal_logger
 
-from ebcli.lib import aws
+from ebcli.lib import aws, utils
 from ebcli.objects.exceptions import EBCLIException
 
 LOG = minimal_logger(__name__)
@@ -29,6 +28,27 @@ def get_template(stack_name):
     result = _make_api_call('get_template',
                             StackName=stack_name)
     return result
+
+
+def describe_stacks(stack_name=None):
+    kwargs = dict()
+    if stack_name:
+        kwargs['StackName'] = stack_name
+    response = _make_api_call('describe_stacks', **kwargs)
+    next_token = response.get('NextToken')
+    all_stacks = response['Stacks']
+    while next_token:
+        utils.sleep(sleep_time=0.5)
+        response = _make_api_call('describe_stacks')
+        all_stacks.extend(response['Stacks'])
+        next_token = response.get('NextToken')
+    return all_stacks
+
+
+def stack_names():
+    all_stacks = describe_stacks()
+
+    return [stack['StackName'] for stack in all_stacks]
 
 
 def wait_until_stack_exists(stack_name, timeout=120):
@@ -50,12 +70,12 @@ def wait_until_stack_exists(stack_name, timeout=120):
                 "Could not find CFN stack, '{stack_name}'.".format(stack_name=stack_name)
             )
 
-        response = _make_api_call('describe_stacks')
+        all_stacks = describe_stacks()
 
-        if [stack for stack in response['Stacks'] if stack['StackName'] == stack_name]:
+        if [stack for stack in all_stacks if stack['StackName'] == stack_name]:
             stack_exists = True
         else:
-            time.sleep(5)
+            utils.sleep()
 
 
 class CFNTemplateNotFound(EBCLIException):

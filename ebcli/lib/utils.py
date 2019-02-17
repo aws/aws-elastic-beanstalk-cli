@@ -18,6 +18,7 @@ import random
 import string
 import sys
 import textwrap
+import time
 from datetime import datetime
 
 from dateutil import tz, parser
@@ -530,3 +531,7 @@ def row_wrapper(string_width_mappings, padding=3):
             )
         ]
     return __wrapped_strings
+
+
+def sleep(sleep_time=5):
+    time.sleep(sleep_time)

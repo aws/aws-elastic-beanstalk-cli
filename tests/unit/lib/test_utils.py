@@ -234,3 +234,6 @@ class TestUtils(TestCase):
     def test_random_string(self):
         utils.random_string()
         utils.random_string(length=10)
+
+    def test_sleep(self):
+        utils.sleep(sleep_time=0)

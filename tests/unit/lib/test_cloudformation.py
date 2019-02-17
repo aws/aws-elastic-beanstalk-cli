@@ -54,3 +54,15 @@ class TestCloudFormation(unittest.TestCase):
             mock_responses.GET_TEMPLATE_RESPONSE,
             cloudformation.get_template('mystackname')
         )
+
+    @mock.patch('ebcli.lib.cloudformation.aws.make_api_call')
+    def test_stack_names(
+            self,
+            make_api_call_mock
+    ):
+        make_api_call_mock.return_value = mock_responses.DESCRIBE_STACKS_RESPONSE
+
+        self.assertEqual(
+            ['stack_name'],
+            cloudformation.stack_names()
+        )
