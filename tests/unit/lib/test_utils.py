@@ -10,7 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
+import datetime
 import sys
 
 import unittest
@@ -237,3 +237,11 @@ class TestUtils(TestCase):
 
     def test_sleep(self):
         utils.sleep(sleep_time=0)
+
+    def test_datetime_utcnow(self):
+        now = datetime.datetime.utcnow()
+        a_little_later = utils.datetime_utcnow()
+        very_small_difference = datetime.timedelta(seconds=0.001)
+        self.assertTrue(
+            a_little_later - now < very_small_difference
+        )

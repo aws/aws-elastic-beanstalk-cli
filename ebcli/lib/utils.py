@@ -535,3 +535,7 @@ def row_wrapper(string_width_mappings, padding=3):
 
 def sleep(sleep_time=5):
     time.sleep(sleep_time)
+
+
+def datetime_utcnow():
+    return datetime.utcnow()
