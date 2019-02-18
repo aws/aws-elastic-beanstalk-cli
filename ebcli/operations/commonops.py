@@ -1041,6 +1041,8 @@ def set_up_credentials(given_profile, given_region, interactive, force_non_inter
     if given_profile:
         # Profile already set at abstractController
         profile = given_profile
+    elif os.environ.get('AWS_ACCESS_KEY_ID') and os.environ.get('AWS_SECRET_ACCESS_KEY'):
+        profile = None
     else:
         profile = 'eb-cli'
         aws.set_profile(profile)

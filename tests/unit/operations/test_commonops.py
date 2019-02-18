@@ -34,7 +34,17 @@ from ebcli.resources.strings import strings, responses
 from ebcli.resources.statics import iam_documents, iam_attributes
 
 from .. import mock_responses
+from ..test_helper import EnvVarSubstitutor
 
+class CredentialsEnvVarSubstituter(object):
+    def __init__(self, access_id, secret_key):
+        self.access_id = access_id
+        self.secret_key = secret_key
+
+    def __call__(self, func):
+        with EnvVarSubstitutor('AWS_ACCESS_KEY_ID', self.access_id):
+            with EnvVarSubstitutor('AWS_SECRET_ACCESS_KEY', self.secret_key):
+                func()
 
 class TestCommonOperations(unittest.TestCase):
     app_name = 'ebcli-app'
@@ -2579,6 +2589,37 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
         set_profile_mock.assert_called_once_with('eb-cli')
         setup_credentials_mock.assert_not_called()
         write_config_setting_mock.assert_called_once_with('global', 'profile', 'eb-cli')
+
+    @mock.patch('ebcli.operations.commonops.check_credentials')
+    @mock.patch('ebcli.operations.commonops.credentials_are_valid')
+    @mock.patch('ebcli.operations.commonops.setup_credentials')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    def test_set_up_credentials__env_variables_found(
+            self,
+            write_config_setting_mock,
+            setup_credentials_mock,
+            credentials_are_valid_mock,
+            check_credentials_mock,
+    ):
+        check_credentials_mock.return_value = [None, 'us-east-1']
+        credentials_are_valid_mock.return_value = True
+
+        @CredentialsEnvVarSubstituter('access_id', 'secret_key')
+        def check_creds():
+            commonops.set_up_credentials(
+                None,
+                'us-east-1',
+                False
+            )
+        check_credentials_mock.assert_called_once_with(
+                None,
+                None,
+                'us-east-1',
+                False,
+                False
+            )
+        setup_credentials_mock.assert_not_called()
+        write_config_setting_mock.assert_called_once_with('global', 'profile', None)
 
     @mock.patch('ebcli.operations.commonops.get_region_from_inputs')
     @mock.patch('ebcli.controllers.initialize.aws.set_region')
