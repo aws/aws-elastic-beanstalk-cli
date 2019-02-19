@@ -67,6 +67,7 @@ class TestCommonOperations(unittest.TestCase):
                                       service_role=service_role, timeout=timeout)
 
     def setUp(self):
+        self.root = os.getcwd()
         if not os.path.exists('testDir'):
             os.makedirs('testDir')
         os.chdir('testDir')
@@ -85,12 +86,8 @@ class TestCommonOperations(unittest.TestCase):
                                           'my-solution-stack')
 
     def tearDown(self):
-        os.chdir(os.path.pardir)
-        if os.path.exists('testDir'):
-            if sys.platform.startswith('win'):
-                os.system('rmdir /S /Q testDir')
-            else:
-                shutil.rmtree('testDir')
+        os.chdir(self.root)
+        shutil.rmtree('testDir')
 
     def test_is_success_event(self):
         self.assertTrue(commonops._is_success_event('Environment health has been set to GREEN'))
@@ -2654,3 +2651,26 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
 
         get_region_mock.assert_called_once_with('us-west-2', True, False)
         set_region_mock.assert_called_once_with('us-west-2')
+
+    def test_raise_if_inside_application_workspace(self):
+        with self.assertRaises(EnvironmentError) as context_manager:
+            commonops.raise_if_inside_application_workspace()
+
+        self.assertEqual(
+            'This directory is already initialized with an application workspace.',
+            str(context_manager.exception)
+        )
+
+    def test_raise_if_inside_application_workspace__directory_is_not_eb_inited(self):
+        shutil.rmtree('.elasticbeanstalk')
+        commonops.raise_if_inside_application_workspace()
+
+    def test_raise_if_inside_application_workspace__directory_is_inited_with_platform_workspace(self):
+        shutil.rmtree('.elasticbeanstalk')
+        fileoperations.create_config_file(
+            'my-application',
+            'us-west-2',
+            'php',
+            workspace_type='Platform'
+        )
+        commonops.raise_if_inside_application_workspace()

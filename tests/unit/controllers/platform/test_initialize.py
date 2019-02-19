@@ -16,6 +16,7 @@ import shutil
 import mock
 import unittest
 
+from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
 from ebcli.core.ebpcore import EBP
 from ebcli.controllers.platform import initialize
@@ -38,10 +39,27 @@ class TestInitialize(unittest.TestCase):
 
     def tearDown(self):
         os.chdir(self.root_dir)
-        shutil.rmtree('testDir')
+        shutil.rmtree('testDir', ignore_errors=True)
 
 
 class TestEBPlatform(TestInitialize):
+    def test_init__attempt_to_init_inside_application_workspace(self):
+        fileoperations.create_config_file(
+            'my-application',
+            'us-west-2',
+            'php',
+        )
+        app = EB(argv=['platform', 'init'])
+        app.setup()
+
+        with self.assertRaises(EnvironmentError) as context_manager:
+            app.run()
+
+        self.assertEqual(
+            'This directory is already initialized with an application workspace.',
+            str(context_manager.exception)
+        )
+
     @mock.patch('ebcli.controllers.platform.initialize.platformops.set_workspace_to_latest')
     @mock.patch('ebcli.controllers.platform.initialize.fileoperations.write_keyname')
     @mock.patch('ebcli.controllers.platform.initialize.fileoperations.touch_config_folder')
@@ -306,6 +324,23 @@ class TestEBPlatform(TestInitialize):
 
 
 class TestEBP(TestInitialize):
+    def test_init__attempt_to_init_inside_application_workspace(self):
+        fileoperations.create_config_file(
+            'my-application',
+            'us-west-2',
+            'php',
+        )
+        app = EB(argv=['platform', 'init'])
+        app.setup()
+
+        with self.assertRaises(EnvironmentError) as context_manager:
+            app.run()
+
+        self.assertEqual(
+            'This directory is already initialized with an application workspace.',
+            str(context_manager.exception)
+        )
+
     @mock.patch('ebcli.controllers.platform.initialize.platformops.set_workspace_to_latest')
     @mock.patch('ebcli.controllers.platform.initialize.fileoperations.write_keyname')
     @mock.patch('ebcli.controllers.platform.initialize.fileoperations.touch_config_folder')

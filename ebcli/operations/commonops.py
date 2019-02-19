@@ -23,6 +23,7 @@ from cement.utils.shell import exec_cmd
 
 from ebcli.operations import buildspecops
 from ebcli.core import fileoperations, io
+from ebcli.core.ebglobals import Constants
 from ebcli.lib import aws, ec2, elasticbeanstalk, heuristics, iam, s3, utils, codecommit
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.exceptions import (
@@ -1035,6 +1036,12 @@ def check_credentials(profile, given_profile, given_region, interactive, force_n
             profile = None
             aws.set_profile(profile)
             return check_credentials(profile, given_profile, given_region, interactive, force_non_interactive)
+
+
+def raise_if_inside_application_workspace():
+    workspace_type = fileoperations.get_workspace_type(None)
+    if workspace_type and workspace_type == Constants.WorkSpaceTypes.APPLICATION:
+        raise EnvironmentError(strings['platforminit.application_workspace_already_initialized'])
 
 
 def set_up_credentials(given_profile, given_region, interactive, force_non_interactive=False):

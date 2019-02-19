@@ -110,6 +110,8 @@ To get started, enter "eb platform init". Then enter "eb platform create".""",
                            ' directory. To re-initialize with different options, '
                            'use the -i option. Note this command cannot change the workspace type'
                            ' of a directory that was already initialized.',
+    'platforminit.application_workspace_already_initialized': 'This directory is already initialized with '
+                                                              'an application workspace.',
     'platforminit.noinstanceprofile': 'You are creating a workspace without an instance '
                                       'profile. Without an instance profile you cannot create a '
                                       'platform with a customized AMI. Use eb platform init -i '

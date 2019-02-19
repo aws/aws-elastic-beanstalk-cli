@@ -42,6 +42,8 @@ class GenericPlatformInitController(AbstractBaseController):
             return type('Meta', cls.__bases__, dict(cls.__dict__))
 
     def do_command(self):
+        commonops.raise_if_inside_application_workspace()
+
         fileoperations.touch_config_folder()
 
         self.interactive = self.app.pargs.interactive or not self.app.pargs.platform_name
