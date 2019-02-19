@@ -2674,3 +2674,26 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
             workspace_type='Platform'
         )
         commonops.raise_if_inside_application_workspace()
+
+    def test_raise_if_inside_platform_workspace(self):
+        shutil.rmtree('.elasticbeanstalk')
+        fileoperations.create_config_file(
+            'my-platform',
+            'us-west-2',
+            'php',
+            workspace_type='Platform'
+        )
+        with self.assertRaises(EnvironmentError) as context_manager:
+            commonops.raise_if_inside_platform_workspace()
+
+        self.assertEqual(
+            'This directory is already initialized with a platform workspace.',
+            str(context_manager.exception)
+        )
+
+    def test_raise_if_inside_platform_workspace__directory_is_not_eb_inited(self):
+        shutil.rmtree('.elasticbeanstalk')
+        commonops.raise_if_inside_platform_workspace()
+
+    def test_raise_if_inside_platform_workspace__directory_is_inited_with_application_workspace(self):
+        commonops.raise_if_inside_platform_workspace()

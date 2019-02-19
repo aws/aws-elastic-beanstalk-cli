@@ -1044,6 +1044,12 @@ def raise_if_inside_application_workspace():
         raise EnvironmentError(strings['platforminit.application_workspace_already_initialized'])
 
 
+def raise_if_inside_platform_workspace():
+    workspace_type = fileoperations.get_workspace_type(None)
+    if workspace_type and workspace_type == Constants.WorkSpaceTypes.PLATFORM:
+        raise EnvironmentError(strings['init.platform_workspace_already_initialized'])
+
+
 def set_up_credentials(given_profile, given_region, interactive, force_non_interactive=False):
     if given_profile:
         # Profile already set at abstractController

@@ -42,6 +42,8 @@ To get started, enter "eb platform init". Then enter "eb platform create".""",
                    ' of a directory that was already initialized.',
     'init.dir.notexists': 'The specified directory {dir} does not exist. '
                           'Please ensure that you are specifying the proper directory.',
+    'init.platform_workspace_already_initialized': 'This directory is already initialized with '
+                                                              'a platform workspace.',
     'init.usingenvyamlplatform': 'Using platform specified in env.yaml: {platform}',
     'create.info': 'Creates a new environment.',
     'create.epilog': 'Type "--vpc." or "--database." for more VPC and database options.',

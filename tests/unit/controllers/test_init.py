@@ -43,6 +43,24 @@ class TestInit(unittest.TestCase):
         os.chdir(self.root_dir)
         shutil.rmtree('testDir')
 
+    def test_init__attempt_to_initialize_in_platform_workspace(self):
+        fileoperations.create_config_file(
+            'my-app',
+            'us-west-2',
+            'my-custom-platform',
+            workspace_type='Platform'
+        )
+        app = EB(argv=['init'])
+        app.setup()
+
+        with self.assertRaises(EnvironmentError) as context_manager:
+            app.run()
+
+        self.assertEqual(
+            'This directory is already initialized with a platform workspace.',
+            str(context_manager.exception)
+        )
+
     @mock.patch('ebcli.controllers.initialize.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')

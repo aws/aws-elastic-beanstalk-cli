@@ -16,6 +16,7 @@ from cement.utils.misc import minimal_logger
 
 from ebcli.core import fileoperations, io
 from ebcli.core.abstractcontroller import AbstractBaseController
+from ebcli.core.ebglobals import Constants
 from ebcli.lib import utils, elasticbeanstalk, codecommit, aws
 from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.objects import solutionstack
@@ -57,6 +58,8 @@ class InitController(AbstractBaseController):
         epilog = strings['init.epilog']
 
     def do_command(self):
+        commonops.raise_if_inside_platform_workspace()
+
         interactive = self.app.pargs.interactive
         region_name = self.app.pargs.region
         noverify = self.app.pargs.no_verify_ssl
