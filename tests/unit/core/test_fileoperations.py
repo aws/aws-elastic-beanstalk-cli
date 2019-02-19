@@ -51,7 +51,6 @@ class TestFileOperations(unittest.TestCase):
         fileoperations.aws_config_location = os.path.join('home', '.aws', 'config')
 
     def tearDown(self):
-        fileoperations.ProjectRoot._reset_root()
         os.chdir(self.test_root)
         if os.path.exists('testDir'):
             shutil.rmtree('testDir',ignore_errors=True)

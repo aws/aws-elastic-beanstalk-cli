@@ -82,13 +82,8 @@ _marker = object()
 
 
 class ProjectRoot(object):
-    __root = None
-
     @classmethod
     def traverse(cls):
-        if cls.__root:
-            return cls.__root
-
         cwd = os.getcwd()
         if not os.path.isdir(beanstalk_directory):
             LOG.debug('beanstalk directory not found in ' + cwd +
@@ -101,12 +96,7 @@ class ProjectRoot(object):
 
             ProjectRoot.traverse()
         else:
-            cls.__root = cwd
             LOG.debug('Project root found at: ' + cwd)
-
-    @classmethod
-    def _reset_root(cls):
-        cls.__root = None
 
 
 def _get_option(config, section, key, default):
