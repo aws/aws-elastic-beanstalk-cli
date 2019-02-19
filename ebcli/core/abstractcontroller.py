@@ -58,30 +58,25 @@ class AbstractBaseController(controller.CementBaseController):
     @classmethod
     def validate_workspace(cls):
         workspace_type = fileoperations.get_workspace_type(None)
+        is_platform_workspace_only_command = cls.Meta.__dict__.get(
+            'is_platform_workspace_only_command'
+        )
+        requires_directory_initialization = cls.Meta.__dict__.get(
+            'requires_directory_initialization'
+        )
 
         if '--modules' in sys.argv:
             pass
         elif '--help' in sys.argv:
             pass
-        else:
-            is_platform_workspace_only_command = cls.Meta.__dict__.get(
-                'is_platform_workspace_only_command'
-            )
-            if (
-                is_platform_workspace_only_command is True
-                and Constants.WorkSpaceTypes.APPLICATION == workspace_type
-            ):
+        elif requires_directory_initialization and not workspace_type:
+            raise NotInitializedError(strings['exit.notsetup'])
+        elif is_platform_workspace_only_command:
+            if Constants.WorkSpaceTypes.APPLICATION == workspace_type:
                 raise ApplicationWorkspaceNotSupportedError(
                     strings['exit.applicationworkspacenotsupported']
                 )
 
-            requires_directory_initialization = cls.Meta.__dict__.get(
-                'requires_directory_initialization'
-            )
-            if requires_directory_initialization is None:
-                requires_directory_initialization = False
-            if requires_directory_initialization and not workspace_type:
-                raise NotInitializedError(strings['exit.notsetup'])
 
     @controller.expose(hide=True)
     def default(self):
