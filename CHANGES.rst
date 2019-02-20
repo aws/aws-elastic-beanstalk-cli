@@ -1,16 +1,22 @@
 =========
 Changelog
 =========
--------------------
+--------------------
+3.14.12 (2019-02-21)
+--------------------
+- Fixed `eb init` behaviour so that AWS credentials environment variables are checked before assuming "eb-cli" profile
+- Updated `pathspec` requirement to `0.5.9`
+
+--------------------
 3.14.11 (2019-02-07)
--------------------
+--------------------
 - Fixed behaviour of `eb` commands whereby error events were being classified as successful
 - Fixed bug that rejected `--profile` argument in favor of environment variables representing credentials
 - Fixed bug that caused `eb create/deploy` to abort following failure to delete temporary application versions directory
 
--------------------
+--------------------
 3.14.10 (2019-01-21)
--------------------
+--------------------
 - Introduced direct dependency on `requests>=2.20.1,<2.21`
 - Fixed bug that failed `--source` arguments with '/'s in the branch name
 
