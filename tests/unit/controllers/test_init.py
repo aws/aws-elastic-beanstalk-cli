@@ -1602,6 +1602,27 @@ class TestInitModule(unittest.TestCase):
         get_current_directory_name_mock.assert_called_once_with()
         _get_application_name_interactive_mock.assert_not_called()
 
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_application_name')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
+    @mock.patch('ebcli.controllers.initialize._get_application_name_interactive')
+    def test_get_app_name__app_name_not_passed__force_non_interactive_mode__however_interactive_argument_is_specified__customer_prompted_to_pick_application_name(
+            self,
+            _get_application_name_interactive_mock,
+            get_current_directory_name_mock,
+            get_application_name_mock
+    ):
+        get_application_name_mock.return_value = 'my-application'
+        get_current_directory_name_mock.return_value = 'my-application-dir'
+        _get_application_name_interactive_mock.return_value = 'customer-specified-application-name'
+        self.assertEqual(
+            'customer-specified-application-name',
+            initialize.get_app_name(None, True, True)
+        )
+
+        get_application_name_mock.assert_called_once_with(default=None)
+        get_current_directory_name_mock.assert_not_called()
+        _get_application_name_interactive_mock.assert_called_once_with()
+
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_default_solution_stack')
     @mock.patch('ebcli.controllers.initialize.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')

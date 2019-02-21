@@ -386,7 +386,7 @@ def get_app_name(customer_specified_app_name, interactive, force_non_interactive
     except NotInitializedError:
         app_name = None
 
-    if force_non_interactive:
+    if force_non_interactive and not interactive:
         return fileoperations.get_current_directory_name()
     elif interactive or not app_name:
         return _get_application_name_interactive()
