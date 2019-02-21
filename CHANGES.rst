@@ -2,10 +2,11 @@
 Changelog
 =========
 --------------------
-3.14.12 (2019-02-21)
+3.14.12 (2019-02-22)
 --------------------
 - Fixed `eb init` behaviour so that AWS credentials environment variables are checked before assuming "eb-cli" profile
 - Updated `pathspec` requirement to `0.5.9`
+- Introduced direct dependency on `wcwidth>=0.1.7,<0.2.0`
 
 --------------------
 3.14.11 (2019-02-07)
