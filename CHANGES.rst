@@ -2,6 +2,11 @@
 Changelog
 =========
 --------------------
+3.14.13 (2019-02-22)
+--------------------
+- Fix Python 2.7 EBCLI breakage
+
+--------------------
 3.14.12 (2019-02-22)
 --------------------
 - Fixed `eb init` behaviour so that AWS credentials environment variables are checked before assuming "eb-cli" profile

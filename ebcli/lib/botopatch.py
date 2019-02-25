@@ -18,6 +18,7 @@ This allows us to use any version of botocore.
 import datetime
 import time
 
+from dateutil import tz
 from botocore import parsers
 
 
@@ -58,13 +59,7 @@ def fix_botocore_to_pass_response_date():
             # BEGIN PATCH
             # Here we inject the date
             parsed['ResponseMetadata']['date'] = (
-                response['headers'].get(
-                    'date',
-                    datetime.datetime.fromtimestamp(
-                        time.time(),
-                        datetime.timezone.utc
-                    )
-                )
+                response['headers']['date']
             )
             # END PATCH
         return parsed
