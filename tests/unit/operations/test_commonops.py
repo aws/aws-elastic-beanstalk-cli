@@ -2370,6 +2370,78 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
         self.assertIsNone(commonops.get_region_from_inputs(None))
 
     @mock.patch('ebcli.operations.commonops.get_region_from_inputs')
+    @mock.patch('ebcli.objects.region.get_all_regions')
+    def test_get_region__valid_arn(
+            self,
+            get_all_regions_mock,
+            get_region_from_inputs_mock,
+    ):
+        get_region_from_inputs_mock.return_value = None
+
+        self.assertEqual(
+            'us-west-2',
+            commonops.get_region(
+                None,
+                False,
+                True,
+                'arn:aws:elasticbeanstalk:us-west-2::platform/Puma with Ruby 2.4 running on 64bit Amazon Linux/2.9.1',
+            )
+        )
+
+        get_all_regions_mock.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.get_region_from_inputs')
+    def test_get_region__language_passed_as_platform(
+            self,
+            get_region_from_inputs_mock,
+    ):
+        get_region_from_inputs_mock.return_value = None
+
+        self.assertEqual(
+            'us-west-2',
+            commonops.get_region(
+                None,
+                False,
+                True,
+                'node.js',
+            )
+        )
+
+    @mock.patch('ebcli.operations.commonops.get_region_from_inputs')
+    def test_get_region__solution_stack_passed_as_platform(
+            self,
+            get_region_from_inputs_mock,
+    ):
+        get_region_from_inputs_mock.return_value = None
+
+        self.assertEqual(
+            'us-west-2',
+            commonops.get_region(
+                None,
+                False,
+                True,
+                '64bit Amazon Linux 2018.03 v2.9.1 running Ruby 2.4 (Puma)',
+            )
+        )
+
+    @mock.patch('ebcli.operations.commonops.get_region_from_inputs')
+    def test_get_region__solution_stack_shorthand_passed_as_platform(
+            self,
+            get_region_from_inputs_mock,
+    ):
+        get_region_from_inputs_mock.return_value = None
+
+        self.assertEqual(
+            'us-west-2',
+            commonops.get_region(
+                None,
+                False,
+                True,
+                'custom_stack',
+            )
+        )
+
+    @mock.patch('ebcli.operations.commonops.get_region_from_inputs')
     @mock.patch('ebcli.operations.commonops.get_all_regions')
     @mock.patch('ebcli.operations.commonops.utils.prompt_for_item_in_list')
     def test_get_region__determine_region_from_inputs(
@@ -2649,7 +2721,34 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
             commonops.set_region_for_application(True, 'us-west-2', False)
         )
 
-        get_region_mock.assert_called_once_with('us-west-2', True, False)
+        get_region_mock.assert_called_once_with('us-west-2', True, False, None)
+        set_region_mock.assert_called_once_with('us-west-2')
+
+    @mock.patch('ebcli.operations.commonops.get_region')
+    @mock.patch('ebcli.controllers.initialize.aws.set_region')
+    def test_set_region_for_application__non_interactive(
+            self,
+            set_region_mock,
+            get_region_mock
+    ):
+        get_region_mock.return_value = 'us-west-2'
+
+        self.assertEqual(
+            'us-west-2',
+            commonops.set_region_for_application(
+                True,
+                None,
+                False,
+                'us-west-2'
+            )
+        )
+
+        get_region_mock.assert_called_once_with(
+            None,
+            True,
+            False,
+            'us-west-2'
+        )
         set_region_mock.assert_called_once_with('us-west-2')
 
     def test_raise_if_inside_application_workspace(self):

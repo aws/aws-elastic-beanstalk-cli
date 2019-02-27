@@ -71,6 +71,34 @@ class TestPlatform(unittest.TestCase):
             PlatformVersion.get_platform_version(arn)
         )
 
+    def test_get_region_from_platform_arn__valid_eb_managed_arn(self):
+        arn = 'arn:aws:elasticbeanstalk:us-west-2::platform/Multi-container Docker running on 64bit Amazon Linux/2.7.5'
+
+        self.assertEqual(
+            'us-west-2',
+            PlatformVersion.get_region_from_platform_arn(arn)
+        )
+
+    def test_get_region_from_platform_arn__custom_platform(self):
+        custom_platform = 'arn:aws:elasticbeanstalk:us-east-1:00000000000:platform/Name/0.0.0'
+
+        self.assertIsNone(PlatformVersion.get_region_from_platform_arn(custom_platform))
+
+    def test_get_region_from_platform_arn__valid_solution_stack(self):
+        solution_stack = 'Multi-container Docker running on 64bit Amazon Linux/2.7.5'
+
+        self.assertIsNone(PlatformVersion.get_region_from_platform_arn(solution_stack))
+
+    def test_get_region_from_platform_arn__solution_stack_shorthand(self):
+        solution_stack_shorthand = 'test-dev'
+
+        self.assertIsNone(PlatformVersion.get_region_from_platform_arn(solution_stack_shorthand))
+
+    def test_get_region_from_platform_arn__language_name(self):
+        language_name = 'node.js'
+
+        self.assertIsNone(PlatformVersion.get_region_from_platform_arn(language_name))
+
     def test_get_platform_version__returns_none_when_arn_is_not_found(self):
         arn = 'node.js'
 

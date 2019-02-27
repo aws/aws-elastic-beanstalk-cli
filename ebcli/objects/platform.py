@@ -66,6 +66,12 @@ class PlatformVersion(object):
         return platform_name
 
     @classmethod
+    def get_region_from_platform_arn(cls, arn):
+        if cls.is_eb_managed_platform_arn(arn):
+            split_string = arn.split(':')
+            return split_string[3]
+
+    @classmethod
     def match_with_complete_arn(
             cls,
             platforms,

@@ -86,7 +86,7 @@ class InitController(AbstractBaseController):
             return
 
         fileoperations.touch_config_folder()
-        region_name = commonops.set_region_for_application(interactive, region_name, force_non_interactive)
+        region_name = commonops.set_region_for_application(interactive, region_name, force_non_interactive, platform)
         commonops.set_up_credentials(profile, region_name, interactive)
         app_name = get_app_name(app_name, interactive, force_non_interactive)
         default_env = set_default_env(interactive, force_non_interactive)
