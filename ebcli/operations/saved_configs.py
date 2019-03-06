@@ -28,10 +28,10 @@ def _get_s3_keyname_for_template(app_name, cfg_name):
     return 'resources/templates/' + app_name + '/' + cfg_name
 
 
-def create_config(app_name, env_name, cfg_name):
+def create_config(app_name, env_name, cfg_name, tags=None):
     description = strings['template.description']
     elasticbeanstalk.create_configuration_template(
-        app_name, env_name, cfg_name, description
+        app_name, env_name, cfg_name, description, tags
     )
 
     download_config_from_s3(app_name, cfg_name)

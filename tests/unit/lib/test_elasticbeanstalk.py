@@ -1312,7 +1312,8 @@ class TestCloudWatch(unittest.TestCase):
                 'my-application',
                 'environment-1',
                 'my-template',
-                'my configuration template'
+                'my configuration template',
+                'mytag=tag-value'
             )
         )
         make_api_call_mock.assert_called_once_with(
@@ -1325,7 +1326,8 @@ class TestCloudWatch(unittest.TestCase):
                 'TemplateSource': {
                     'EnvironmentName': 'environment-1'
                 }
-            }
+            },
+            Tags='mytag=tag-value'
         )
 
     @mock.patch('ebcli.lib.elasticbeanstalk.aws.make_api_call')

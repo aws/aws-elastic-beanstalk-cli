@@ -20,6 +20,7 @@ from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings, flag_text
 from ebcli.core import io, fileoperations
 from ebcli.operations import configops, saved_configs, solution_stack_ops
+from ebcli.operations.tagops import tagops
 from ebcli.objects.exceptions import InvalidSyntaxError, NotFoundError
 from ebcli.lib import utils
 
@@ -36,7 +37,8 @@ class ConfigController(AbstractBaseController):
             (['-nh', '--nohang'], dict(action='store_true',
                                        help=flag_text['config.nohang'])),
             (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
-            (['--cfg'], dict(help='name of configuration'))
+            (['--cfg'], dict(help='name of configuration')),
+            (['--tags'], dict(help=flag_text['config.tags']))
         ]
         epilog = strings['config.epilog']
 
@@ -71,11 +73,13 @@ class ConfigController(AbstractBaseController):
         env_name = self.get_env_name(varname='name',
                                      cmd_example='eb config save')
         app_name = self.get_app_name()
+        tags = self.app.pargs.tags
+        tags = tagops.get_and_validate_tags(tags)
 
         if not cfg_name:
             cfg_name = self._choose_cfg_name(app_name, env_name)
 
-        saved_configs.create_config(app_name, env_name, cfg_name)
+        saved_configs.create_config(app_name, env_name, cfg_name, tags)
         if fileoperations.env_yaml_exists():
             io.echo(strings['config.envyamlexists'])
 

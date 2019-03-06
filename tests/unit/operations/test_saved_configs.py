@@ -215,7 +215,8 @@ class TestResolveConfigLocations(unittest.TestCase):
             'my-application',
             'environment-1',
             'config-template',
-            'Configuration created from the EB CLI using "eb config save".'
+            'Configuration created from the EB CLI using "eb config save".',
+            None
         )
 
     @mock.patch('ebcli.operations.saved_configs.commonops.update_environment')

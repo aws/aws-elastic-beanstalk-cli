@@ -184,7 +184,8 @@ class TestConfigSave(TestConfig):
         create_config_mock.assert_called_once_with(
             'my-application',
             'environment-1',
-            'my-cfg-name'
+            'my-cfg-name',
+            []
         )
 
     @mock.patch('ebcli.controllers.config.saved_configs.create_config')
@@ -206,7 +207,8 @@ class TestConfigSave(TestConfig):
         create_config_mock.assert_called_once_with(
             'my-application',
             'environment-1',
-            'my-cfg-name'
+            'my-cfg-name',
+            []
         )
 
     @mock.patch('ebcli.controllers.config.ConfigController._choose_cfg_name')
@@ -235,7 +237,8 @@ class TestConfigSave(TestConfig):
         create_config_mock.assert_called_once_with(
             'my-application',
             'environment-1',
-            'my-cfg-name'
+            'my-cfg-name',
+            []
         )
 
         echo_mock.assert_called_once_with(

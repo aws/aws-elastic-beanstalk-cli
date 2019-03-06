@@ -1952,7 +1952,8 @@
         "OptionSettings":{"shape":"ConfigurationOptionSettingsList"},
         "OptionsToRemove":{"shape":"OptionsSpecifierList"},
         "VersionLabel":{"shape":"VersionLabel"},
-        "TemplateSpecification":{"shape":"EnvironmentTemplateSpecification"}
+        "TemplateSpecification":{"shape":"EnvironmentTemplateSpecification"},
+        "Tags":{"shape":"Tags"}
       }
     },
     "CreateEnvironmentMessage":{

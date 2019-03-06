@@ -704,7 +704,7 @@ def terminate_environment(env_name, force_terminate=False):
 
 
 def create_configuration_template(app_name, env_name, template_name,
-                                  description):
+                                  description, tags):
     kwargs = {
         'TemplateName': template_name,
         'ApplicationName': app_name,
@@ -712,8 +712,8 @@ def create_configuration_template(app_name, env_name, template_name,
         'TemplateSpecification':
             {'TemplateSource':
                 {'EnvironmentName': env_name}},
+        'Tags': tags
     }
-
     try:
         result = _make_api_call('create_configuration_template', **kwargs)
     except InvalidParameterValueError as e:

@@ -706,7 +706,7 @@ flag_text = {
                          'for your code.'
                          ' Availables sources: {codecommit}. Available actions: '
                          '{enable, disable}',
-
+    'config.tags': 'a comma separated list of tags as key=value pairs',
     'create.name': 'desired Environment name',
     'create.cname': 'cname prefix',
     'create.itype': 'instance type i.e. t1.micro',
