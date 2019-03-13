@@ -17,7 +17,9 @@ import shutil
 import unittest
 from mock import MagicMock, patch
 
+from ebcli.controllers import tags
 from ebcli.objects.exceptions import NoEnvironmentForBranchError, InvalidOptionsError
+from ebcli.operations import commonops
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
 
@@ -52,6 +54,128 @@ class TestTags(unittest.TestCase):
         with self.assertRaises(NoEnvironmentForBranchError):
             app.run()
 
+    @patch('ebcli.controllers.tags.elasticbeanstalk.get_environment_arn')
+    @patch('ebcli.controllers.tags.TagOps')
+    def test_tags__environment_passed_as_positional__default_env_exists_in_config_yml__the_environments_are_different(
+            self,
+            TagOps_mock,
+            get_environment_arn_mock
+    ):
+        tagops_mock = MagicMock()
+        TagOps_mock.return_value = tagops_mock
+        commonops.set_environment_for_current_branch('some_env')
+
+        app = EB(argv=['tags', '--update', 'key1=value1', 'env_name'])
+        app.setup()
+        app.run()
+
+        get_environment_arn_mock.assert_called_once_with('env_name')
+        tagops_mock.update_tags.assert_called_once_with(tags.Environment)
+
+    @patch('ebcli.controllers.tags.elasticbeanstalk.get_environment_arn')
+    @patch('ebcli.controllers.tags.TagOps')
+    def test_tags__environment_passed_as_positional__default_env_absent_in_config_yml(
+            self,
+            TagOps_mock,
+            get_environment_arn_mock
+    ):
+        tagops_mock = MagicMock()
+        TagOps_mock.return_value = tagops_mock
+        commonops.set_environment_for_current_branch(None)
+
+        app = EB(argv=['tags', '--update', 'key1=value1', 'env_name'])
+        app.setup()
+        app.run()
+
+        get_environment_arn_mock.assert_called_once_with('env_name')
+        tagops_mock.update_tags.assert_called_once_with(tags.Environment)
+
+    @patch('ebcli.controllers.tags.TagOps')
+    def test_tags__environment_passed_as_resource_argument__default_env_present_in_config_yml(
+            self,
+            TagOps_mock,
+    ):
+        tagops_mock = MagicMock()
+        TagOps_mock.return_value = tagops_mock
+        commonops.set_environment_for_current_branch('default-env')
+
+        app = EB(
+            argv=[
+                'tags',
+                '--update', 'key1=value1',
+                '--resource',
+                    'arn:aws:elasticbeanstalk:us-west-2:123123123123:'
+                    'environment/my-application/environment-1'
+            ])
+        app.setup()
+        app.run()
+
+        tagops_mock.update_tags.assert_called_once_with(tags.Environment)
+
+    @patch('ebcli.controllers.tags.TagOps')
+    def test_tags__environment_passed_as_resource_argument__default_env_absent_in_config_yml(
+            self,
+            TagOps_mock,
+    ):
+        tagops_mock = MagicMock()
+        TagOps_mock.return_value = tagops_mock
+        commonops.set_environment_for_current_branch(None)
+
+        app = EB(
+            argv=[
+                'tags',
+                '--update', 'key1=value1',
+                '--resource',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123123:'
+                'environment/my-application/environment-1'
+            ])
+        app.setup()
+        app.run()
+
+        tagops_mock.update_tags.assert_called_once_with(tags.Environment)
+
+    @patch('ebcli.controllers.tags.TagOps')
+    def test_tags__other_resource_passed_as_resource_argument__default_env_present_in_config_yml(
+            self,
+            TagOps_mock,
+    ):
+        tagops_mock = MagicMock()
+        TagOps_mock.return_value = tagops_mock
+        commonops.set_environment_for_current_branch('default-env')
+
+        app = EB(
+            argv=[
+                'tags',
+                '--update', 'key1=value1',
+                '--resource',
+                'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.0'
+            ])
+        app.setup()
+        app.run()
+
+        tagops_mock.update_tags.assert_called_once_with(None)
+
+    @patch('ebcli.controllers.tags.TagOps')
+    def test_tags__other_resource_passed_as_resource_argument__default_env_absent_in_config_yml(
+            self,
+            TagOps_mock,
+    ):
+        tagops_mock = MagicMock()
+        TagOps_mock.return_value = tagops_mock
+        commonops.set_environment_for_current_branch(None)
+
+        app = EB(
+            argv=[
+                'tags',
+                '--update', 'key1=value1',
+                '--resource',
+                    'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.0'
+            ])
+        app.setup()
+        app.run()
+
+        tagops_mock.update_tags.assert_called_once_with(None)
+
     @patch('ebcli.controllers.tags.TagsController.get_env_name')
     @patch('ebcli.operations.tagops.tagops.TagOps.update_tags')
     @patch('ebcli.operations.tagops.tagops.TagOps.handle_update_string')
@@ -77,7 +201,7 @@ class TestTags(unittest.TestCase):
         handle_delete_mock.assert_not_called()
         handle_update_mock.assert_called_once_with('key1=value1')
 
-        update_tags_mock.assert_called_once_with()
+        update_tags_mock.assert_called_once_with(tags.Environment)
 
     @patch('ebcli.controllers.tags.TagsController.get_env_name')
     @patch('ebcli.operations.tagops.tagops.TagOps.update_tags')
@@ -104,7 +228,7 @@ class TestTags(unittest.TestCase):
         handle_delete_mock.assert_called_once_with('key1')
         handle_update_mock.assert_not_called()
 
-        update_tags_mock.assert_called_once_with()
+        update_tags_mock.assert_called_once_with(tags.Environment)
 
     @patch('ebcli.controllers.tags.TagsController.get_env_name')
     @patch('ebcli.operations.tagops.tagops.TagOps.update_tags')
@@ -131,7 +255,7 @@ class TestTags(unittest.TestCase):
         handle_addition_mock.assert_called_once_with('key1=value1')
         handle_update_mock.assert_not_called()
 
-        update_tags_mock.assert_called_once_with()
+        update_tags_mock.assert_called_once_with(tags.Environment)
 
     @patch('ebcli.controllers.tags.TagsController.get_env_name')
     def test_tags_command_fails_when_list_appears_with_add_delete_or_update(
@@ -170,7 +294,7 @@ class TestTags(unittest.TestCase):
         handle_addition_mock.assert_called_once_with('key1=value1')
         handle_update_mock.assert_not_called()
 
-        update_tags_mock.assert_called_once_with()
+        update_tags_mock.assert_called_once_with(None)
 
     @patch('ebcli.controllers.tags.TagsController.get_env_name')
     def test_tags__resource_and_environment_name_specified__failure(

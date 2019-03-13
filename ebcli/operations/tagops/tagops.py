@@ -17,6 +17,7 @@ from ebcli.core import io
 from ebcli.lib import elasticbeanstalk
 from ebcli.resources.strings import strings
 from ebcli.objects.exceptions import EBCLIException
+from ebcli.objects.environment import Environment
 from ebcli.operations.commonops import wait_for_success_events
 from ebcli.operations.tagops.taglist import TagList, list_of_keys_of
 
@@ -140,14 +141,15 @@ class TagOps(object):
         if self.taglist.current_list:
             self.taglist.print_tags(self.resource_arn)
 
-    def update_tags(self):
+    def update_tags(self, resource_type=Environment):
         request_id = elasticbeanstalk.update_tags_for_resource(
             self.resource_arn,
             self.taglist.additions + self.taglist.updates,
             self.taglist.deletions
         )
 
-        wait_for_success_events(request_id)
+        if resource_type == Environment:
+            wait_for_success_events(request_id)
 
         if self.verbose:
             self.__communicate_changes_to_stdout()

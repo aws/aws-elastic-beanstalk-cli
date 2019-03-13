@@ -15,6 +15,7 @@ from ebcli.core import io
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.lib import elasticbeanstalk
 from ebcli.objects.exceptions import InvalidOptionsError, NoEnvironmentForBranchError
+from ebcli.objects.environment import Environment
 from ebcli.operations import commonops
 from ebcli.operations.tagops.tagops import TagOps
 from ebcli.resources.strings import strings, flag_text
@@ -41,10 +42,9 @@ class TagsController(AbstractBaseController):
         usage = 'eb tags [<environment_name>] option [options ...]'
 
     def do_command(self):
-        self.environment_passed = self.app.pargs.environment_name
-        self.environment_name = self.get_env_name()
+        self.environment_passed = not not self.app.pargs.environment_name
+        self.environment_name = self.app.pargs.environment_name
         self.resource = self.app.pargs.resource
-        self.environment_exists = not not self.environment_name
 
         self.list_argument = self.app.pargs.list
 
@@ -58,11 +58,17 @@ class TagsController(AbstractBaseController):
         self.__assert_resource_argument_conflict()
 
         if self.environment_passed:
-            self.resource_arn = elasticbeanstalk.get_environment_arn(self.environment_name)
-        if self.resource:
-            self.resource_arn = self.resource
+            self.resource = elasticbeanstalk.get_environment_arn(self.environment_name)
+            resource_type = Environment
+        elif self.resource and Environment.is_valid_arn(self.resource):
+            resource_type = Environment
+        elif self.resource:
+            resource_type = None
+        else:
+            self.resource = elasticbeanstalk.get_environment_arn(self.get_env_name())
+            resource_type = Environment
 
-        tagops = TagOps(self.resource_arn, self.verbose)
+        tagops = TagOps(self.resource, self.verbose)
 
         if self.list_argument:
             tagops.list_tags()
@@ -73,7 +79,7 @@ class TagsController(AbstractBaseController):
         tagops.handle_deletion_string(self.delete_arguments) if self.delete_arguments else None
         tagops.handle_update_string(self.update_arguments) if self.update_arguments else None
 
-        tagops.update_tags()
+        tagops.update_tags(resource_type)
 
     def __assert_list_argument_xor_modifier_arguments_specified(self):
         if self.list_argument:
