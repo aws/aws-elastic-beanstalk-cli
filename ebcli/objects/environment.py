@@ -20,6 +20,9 @@ from ebcli.objects.exceptions import WorkerQueueNotFound
 
 
 class Environment(object):
+    ARN_PATTERN = re.compile(
+        r'^arn:aws(?:-cn)*:elasticbeanstalk:[\w\-]+:\d+:environment/[^/]+/.*$'
+    )
     def __init__(self, version_label=None, status=None, app_name=None,
                  health=None, id=None, date_updated=None,
                  platform=None, description=None,
@@ -46,6 +49,10 @@ class Environment(object):
 
     def __str__(self):
         return self.name
+
+    @classmethod
+    def is_valid_arn(cls, candidate):
+        return not not re.search(cls.ARN_PATTERN, candidate)
 
     @classmethod
     def json_to_environment_object(
