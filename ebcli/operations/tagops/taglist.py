@@ -78,7 +78,7 @@ class ArgumentSyntaxValidator(object):
 
         cls.validate_key(key)
 
-        if len(value) > 256:
+        if len(value) > 255:
             raise cls.InvalidTagValueError(
                 (linesep * 2).join(
                     [
@@ -100,7 +100,7 @@ class ArgumentSyntaxValidator(object):
         Method that validates keys represented as strings are legal
         :param key: a string representation of a key
         """
-        if len(key) > 128:
+        if len(key) > 127:
             raise cls.InvalidTagKeyError(
                 (linesep * 2).join(
                     [

@@ -526,9 +526,9 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'tags.tag_keys_dont_exist_for_update': "Tags with the following keys can't be updated "
                                            "because they don't exist:",
     'tags.tag_key_max_length_exceeded': "Tag with the following key exceed length limit. Tag "
-                                        "keys can be up to 128 characters in length.",
+                                        "keys can be up to 127 characters in length.",
     'tags.tag_value_max_length_exceeded': "Tag with the following value exceed length limit. "
-                                          "Tag values can be up to 256 characters in length.",
+                                          "Tag values can be up to 255 characters in length.",
     'cloudformation.cannot_find_app_source_for_environment': 'Cannot find app source for environment'
 }
 prompts = {

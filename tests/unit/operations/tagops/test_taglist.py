@@ -94,8 +94,8 @@ class ArgumentSyntaxValidatorTest(unittest.TestCase):
                 context_manager.exception.message
             )
 
-    def test_validate_key_value_pair__key_is_129_characters_long__invalid_input(self):
-        one_twenty_nine_ones = '1' * 129
+    def test_validate_key_value_pair__key_is_128_characters_long__invalid_input(self):
+        one_twenty_nine_ones = '1' * 128
         argument_syntax_validator = ArgumentSyntaxValidator()
 
         with self.assertRaises(ArgumentSyntaxValidator.InvalidTagKeyError) as context_manager:
@@ -104,15 +104,15 @@ class ArgumentSyntaxValidatorTest(unittest.TestCase):
         self.assertEqual(
             (linesep * 2).join(
                 [
-                    "Tag with the following key exceed length limit. Tag keys can be up to 128 characters in length.",
+                    "Tag with the following key exceed length limit. Tag keys can be up to 127 characters in length.",
                     one_twenty_nine_ones
                 ]
             ),
             context_manager.exception.message
         )
 
-    def test_validate_key_value_pair__value_is_257_characters_long__invalid_input(self):
-        two_hundred_and_fifty_seven_ones = '1' * 257
+    def test_validate_key_value_pair__value_is_256_characters_long__invalid_input(self):
+        two_hundred_and_fifty_seven_ones = '1' * 256
         argument_syntax_validator = ArgumentSyntaxValidator()
 
         with self.assertRaises(ArgumentSyntaxValidator.InvalidTagValueError) as context_manager:
@@ -121,7 +121,7 @@ class ArgumentSyntaxValidatorTest(unittest.TestCase):
             self.assertEqual(
                 (linesep * 2).join(
                     [
-                        "Tag with the following value exceed length limit. Tag values can be up to 128 characters in length.",
+                        "Tag with the following value exceed length limit. Tag values can be up to 127 characters in length.",
                         two_hundred_and_fifty_seven_ones
                     ]
                 ),
@@ -157,14 +157,14 @@ class ArgumentSyntaxValidatorTest(unittest.TestCase):
     """
     Positive test cases
     """
-    def test_validate_key_value_pair__key_is_128_characters_long__invalid_input(self):
-        one_twenty_eight_ones = '1' * 128
+    def test_validate_key_value_pair__key_is_127_characters_long__invalid_input(self):
+        one_twenty_eight_ones = '1' * 127
         self.__validate_key_value_pair__without_error(
             tag='{0}=value1'.format(one_twenty_eight_ones)
         )
 
-    def test_validate_key_value_pair__value_is_256_characters_long(self):
-        two_hundred_and_fifty_six_ones = '1' * 256
+    def test_validate_key_value_pair__value_is_255_characters_long(self):
+        two_hundred_and_fifty_six_ones = '1' * 255
         self.__validate_key_value_pair__without_error(
             tag='key1={0}'.format(two_hundred_and_fifty_six_ones)
         )
