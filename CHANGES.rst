@@ -2,6 +2,14 @@
 Changelog
 =========
 --------------------
+3.15.0 (2019-04-04)
+--------------------
+- Added ability to tag applications through `eb init`
+- Added ability to tag configuration templates through `eb config save`
+- Added ability to tag custom platforms through `eb platform create`
+- Added support to tag resources with ARNs through the `--resource` argument of `eb tags`
+
+--------------------
 3.14.13 (2019-02-22)
 --------------------
 - Fix Python 2.7 EBCLI breakage
