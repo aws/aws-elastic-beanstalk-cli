@@ -233,16 +233,9 @@ class TestEBPlatformList(ListTest):
             None
         )
 
-        with self.assertRaises(NotInitializedError) as context_manager:
-            app = EB(argv=['platform', 'list', '-a', '-s', 'READY'])
-            app.setup()
-            app.run()
-
-        self.assertEqual(
-            'This directory has not been set up with the EB CLI\n'
-            'You must first run "eb init".',
-            str(context_manager.exception)
-        )
+        app = EB(argv=['platform', 'list', '-a', '-s', 'READY'])
+        app.setup()
+        app.run()
 
 
 class TestEBPList(ListTest):
@@ -412,13 +405,6 @@ class TestEBPList(ListTest):
             None
         )
 
-        with self.assertRaises(NotInitializedError) as context_manager:
-            app = EBP(argv=['list'])
-            app.setup()
-            app.run()
-
-        self.assertEqual(
-            'This directory has not been set up with the EB CLI\n'
-            'You must first run "eb init".',
-            str(context_manager.exception)
-        )
+        app = EBP(argv=['list'])
+        app.setup()
+        app.run()

@@ -69,6 +69,8 @@ class AbstractBaseController(controller.CementBaseController):
             pass
         elif '--help' in sys.argv:
             pass
+        elif cls.__name__ == 'PlatformListController' or cls.__name__ == 'EBPListController':
+            pass
         elif requires_directory_initialization and not workspace_type:
             raise NotInitializedError(strings['exit.notsetup'])
         elif is_platform_workspace_only_command:
