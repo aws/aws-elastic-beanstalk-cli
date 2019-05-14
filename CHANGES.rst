@@ -2,6 +2,11 @@
 Changelog
 =========
 --------------------
+3.15.1 (2019-05-15)
+--------------------
+- Fixed bug that rejected the `platform list --region ...` command in an un-initialized directory
+
+--------------------
 3.15.0 (2019-04-04)
 --------------------
 - Added ability to tag applications through `eb init`
