@@ -1,10 +1,15 @@
 =========
 Changelog
 =========
+-------------------
+3.15.2 (2019-05-22)
+-------------------
+- Added ap-east-1 China (Hong Kong) region
+
 --------------------
 3.15.1 (2019-05-15)
 --------------------
-- Fixed bug that rejected the `platform list --region ...` command in an un-initialized directory
+- Fixed bug that rejected the `eb platform list --region ...` command in an un-initialized directory
 
 --------------------
 3.15.0 (2019-04-04)
