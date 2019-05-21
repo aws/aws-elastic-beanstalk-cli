@@ -24,7 +24,6 @@ def get_all_regions():
         Region('ap-southeast-2', 'Asia Pacific (Sydney)'),
         Region('ap-northeast-1', 'Asia Pacific (Tokyo)'),
         Region('ap-northeast-2', 'Asia Pacific (Seoul)'),
-        Region('ap-east-1', 'Asia Pacific (Hong Kong)'),
         Region('sa-east-1', 'South America (Sao Paulo)'),
         Region('cn-north-1', 'China (Beijing)'),
         Region('cn-northwest-1', 'China (Ningxia)'),
@@ -33,6 +32,7 @@ def get_all_regions():
         Region('eu-west-2', 'EU (London)'),
         Region('eu-west-3', 'EU (Paris)'),
         Region('eu-north-1', 'EU (Stockholm)'),
+        Region('ap-east-1', 'Asia Pacific (Hong Kong)'),
     ]
 
 
