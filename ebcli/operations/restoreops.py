@@ -47,7 +47,7 @@ def validate_restore(env_id):
         )
 
 
-def restore(env_id):
+def restore(env_id, timeout=None):
     validate_restore(env_id)
     try:
         request_id = elasticbeanstalk.rebuild_environment(env_id=env_id)
@@ -55,7 +55,7 @@ def restore(env_id):
         message = e.message.replace('rebuild', 'restore')
         raise InvalidParameterValueError(message)
 
-    commonops.wait_for_success_events(request_id, timeout_in_minutes=None, can_abort=True)
+    commonops.wait_for_success_events(request_id, timeout_in_minutes=timeout, can_abort=True)
 
 
 def get_restorable_envs(app_name):

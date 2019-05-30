@@ -29,6 +29,7 @@ class RestoreController(AbstractBaseController):
                     help=flag_text['restore.env']
                 )
             ),
+            (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
         ]
         usage = AbstractBaseController.Meta.usage.replace(
             '{cmd}',
@@ -40,9 +41,10 @@ class RestoreController(AbstractBaseController):
 
     def do_command(self):
         self.env_id = self.app.pargs.environment_id
+        self.timeout = self.app.pargs.timeout
 
         if self.env_id:
-            restoreops.restore(self.env_id)
+            restoreops.restore(self.env_id, self.timeout)
         else:
             self.interactive_restore_environment()
 

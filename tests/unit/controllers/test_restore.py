@@ -38,7 +38,7 @@ class TestRestore(unittest.TestCase):
         self.app.run()
         self.app.close()
 
-        self.mock_restore_ops.restore.assert_called_with(env_id)
+        self.mock_restore_ops.restore.assert_called_with(env_id, None)
 
     def test_restore_interactive(self):
         env1 = {'EnvironmnetId': "e-1234567890", 'EnvironmentName': "env1", 'VersionLabel': "v1",
