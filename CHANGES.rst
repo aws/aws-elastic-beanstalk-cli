@@ -2,6 +2,12 @@
 Changelog
 =========
 -------------------
+3.15.3 (2019-07-18)
+-------------------
+- Added me-south-1 Middle East (Bahrain) region
+- Added `--timeout` argument to the `eb restore` command
+
+-------------------
 3.15.2 (2019-05-22)
 -------------------
 - Added ap-east-1 China (Hong Kong) region
