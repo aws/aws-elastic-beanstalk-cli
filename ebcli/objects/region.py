@@ -33,6 +33,7 @@ def get_all_regions():
         Region('eu-west-3', 'EU (Paris)'),
         Region('eu-north-1', 'EU (Stockholm)'),
         Region('ap-east-1', 'Asia Pacific (Hong Kong)'),
+        Region('me-south-1', 'Middle East (Bahrain)'),
     ]
 
 
