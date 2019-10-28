@@ -253,8 +253,10 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_interactive_standard(
             self,
+            get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
@@ -270,6 +272,7 @@ class TestCreate(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
+        get_spot_request_from_customer_mock.return_value = False
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -307,8 +310,10 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_interactive_standard__webserver_single_instance(
             self,
+            get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
@@ -324,6 +329,7 @@ class TestCreate(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
+        get_spot_request_from_customer_mock.return_value = False
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -358,8 +364,10 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_interactive_standard__worker_tier(
             self,
+            get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
@@ -373,6 +381,7 @@ class TestCreate(TestCreateBase):
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
+        get_spot_request_from_customer_mock.return_value = False
 
         env_name = 'my-awesome-env'
 
@@ -404,8 +413,10 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_interactive_standard__worker_single_instance(
             self,
+            get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
@@ -419,6 +430,7 @@ class TestCreate(TestCreateBase):
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
+        get_spot_request_from_customer_mock.return_value = False
 
         env_name = 'my-awesome-env'
 
@@ -452,8 +464,10 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.create.get_unique_cname')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_interactive__simulate_hitting_enter_on_all_input_prompts_to_show_defaults_will_be_picked(
             self,
+            get_spot_request_from_customer_mock,
             get_unique_cname_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
@@ -470,6 +484,7 @@ class TestCreate(TestCreateBase):
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = self.app_name + '-dev'
         get_input_mock.return_value = None
+        get_spot_request_from_customer_mock.return_value = False
 
         self.app = EB(argv=['create', '--elb-type', 'classic'])
         self.app.setup()
@@ -491,8 +506,10 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_non_interactive_mode(
             self,
+            get_spot_request_from_customer_mock,
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
@@ -505,6 +522,7 @@ class TestCreate(TestCreateBase):
         env_name = 'my-awesome-env'
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
+        get_spot_request_from_customer_mock.return_value = False
 
         self.app = EB(argv=['create', env_name, '--elb-type', 'classic'])
         self.app.setup()
@@ -530,8 +548,10 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_non_interactive_mode__all_options(
             self,
+            get_spot_request_from_customer_mock,
             is_cname_available_mock,
             get_default_keyname_mock,
             find_solution_stack_from_string_mock,
@@ -552,6 +572,7 @@ class TestCreate(TestCreateBase):
         find_solution_stack_from_string_mock.return_value = self.solution
         get_default_keyname_mock.return_value = True
         is_cname_available_mock.return_value = True
+        get_spot_request_from_customer_mock.return_value = False
 
         get_and_validate_tags_mock.return_value = [
             {'Key': 'a', 'Value': '1'},
@@ -622,8 +643,10 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_non_interactively__with_process_flag(
             self,
+            get_spot_request_from_customer_mock,
             is_cname_available_mock,
             get_default_keyname_mock,
             find_solution_stack_from_string_mock,
@@ -634,6 +657,7 @@ class TestCreate(TestCreateBase):
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        get_spot_request_from_customer_mock.return_value = False
 
         self.app = EB(argv=['create', '--process', self.env_name])
         self.app.setup()
@@ -657,13 +681,102 @@ class TestCreate(TestCreateBase):
             source=None
         )
 
+    @mock.patch('ebcli.operations.createops.make_new_env')
+    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    def test_create_non_interactive__spot_request(
+            self,
+            is_cname_available_mock,
+            get_default_keyname_mock,
+            find_solution_stack_from_string_mock,
+            get_solution_stack_from_customer_mock,
+            make_new_env_mock,
+    ):
+        get_solution_stack_from_customer_mock.return_value = self.solution
+        find_solution_stack_from_string_mock.return_value = self.solution
+        is_cname_available_mock.return_value = True
+        get_default_keyname_mock.return_value = None
+        env_name = 'my-awesome-env'
+        instance_types="'t2.micro, t3.micro'"
+
+        self.app = EB(argv=['create', env_name, '--enable-spot'])
+        self.app.setup()
+        self.app.run()
+
+        expected_environment_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            env_name=env_name,
+            platform=self.solution,
+            enable_spot=True,
+        )
+        call_args, kwargs = make_new_env_mock.call_args
+        actual_environment_request = call_args[0]
+        self.assertEqual(actual_environment_request, expected_environment_request)
+        make_new_env_mock.assert_called_with(
+            expected_environment_request,
+            branch_default=False,
+            process_app_version=False,
+            nohang=False,
+            interactive=False,
+            timeout=None,
+            source=None
+        )
+
+    @mock.patch('ebcli.operations.createops.make_new_env')
+    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    def test_create_non_interactive__instance_types_only(
+            self,
+            is_cname_available_mock,
+            get_default_keyname_mock,
+            find_solution_stack_from_string_mock,
+            get_solution_stack_from_customer_mock,
+            make_new_env_mock,
+    ):
+        get_solution_stack_from_customer_mock.return_value = self.solution
+        find_solution_stack_from_string_mock.return_value = self.solution
+        is_cname_available_mock.return_value = True
+        get_default_keyname_mock.return_value = None
+        env_name = 'my-awesome-env'
+        instance_types="t2.micro, t3.micro"
+
+        self.app = EB(argv=['create', env_name, '--instance-types', instance_types])
+        self.app.setup()
+        self.app.run()
+
+        expected_environment_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            env_name=env_name,
+            platform=self.solution,
+            enable_spot=False,
+            instance_types=instance_types
+        )
+        call_args, kwargs = make_new_env_mock.call_args
+        actual_environment_request = call_args[0]
+        self.assertEqual(actual_environment_request, expected_environment_request)
+        make_new_env_mock.assert_called_with(
+            expected_environment_request,
+            branch_default=False,
+            process_app_version=False,
+            nohang=False,
+            interactive=False,
+            timeout=None,
+            source=None
+        )
+
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create__env_yaml_present__environment_name_present_in_yaml_file__group_name_is_passed(
             self,
+            get_spot_request_from_customer_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
@@ -679,6 +792,7 @@ EnvironmentName: front+""")
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
+        get_spot_request_from_customer_mock.return_value = False
 
         self.app = EB(argv=['create', '--elb-type', 'network', '--cname', 'available-cname', '--env-group-suffix', 'dev'])
         self.app.setup()
@@ -703,8 +817,10 @@ EnvironmentName: front+""")
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create__env_yaml_present__environment_name_present_in_yaml_file__group_name_is_passed__worker_tier(
             self,
+            get_spot_request_from_customer_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
@@ -720,6 +836,7 @@ EnvironmentName: front+""")
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
+        get_spot_request_from_customer_mock.return_value = False
 
         self.app = EB(argv=['create', '--tier', 'worker', '--env-group-suffix', 'dev'])
         self.app.setup()
@@ -775,8 +892,10 @@ EnvironmentName: front+""")
     @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create__env_yaml_present__environment_name_absent_in_yaml_file__customer_is_prompted_for_input__group_suffix_discarded(
             self,
+            get_spot_request_from_customer_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
@@ -793,6 +912,7 @@ CName: front-A08G28LG+""")
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
+        get_spot_request_from_customer_mock.return_value = False
 
         get_input_mock.side_effect = [
             'my-environment-name'
@@ -872,8 +992,10 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_interactively_with_database__db_argument_triggers_interactive_database_options(
             self,
+            get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
@@ -890,6 +1012,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
+        get_spot_request_from_customer_mock.return_value = False
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -943,8 +1066,10 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_interactively_with_database__db_username_passed_in_password_requested(
             self,
+            get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
@@ -961,6 +1086,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_cname_mock.return_value = 'my-awesome-env'
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
+        get_spot_request_from_customer_mock.return_value = False
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -1011,8 +1137,10 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_interactively_with_database__db_username_password_and_other_arguments_passed(
             self,
+            get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
@@ -1028,6 +1156,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_cname_mock.return_value = 'my-awesome-env'
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
+        get_spot_request_from_customer_mock.return_value = False
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -1129,8 +1258,10 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_interactively_with_custom_vpc__vpc_argument_triggers_interactive_vpc_options(
             self,
+            get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
@@ -1147,6 +1278,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
+        get_spot_request_from_customer_mock.return_value = False
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -1207,8 +1339,10 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_interactively_with_custom_vpc__vpc_argument_triggers_interactive_vpc_options__tier_type_worker(
             self,
+            get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
@@ -1222,6 +1356,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
+        get_spot_request_from_customer_mock.return_value = False
 
         env_name = 'my-awesome-env'
         vpc_id = 'my-vpc-id'
@@ -1270,8 +1405,10 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_interactively_with_custom_vpc__vpc_argument_triggers_interactive_vpc_options__single_instance_webserver(
             self,
+            get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
@@ -1288,6 +1425,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
+        get_spot_request_from_customer_mock.return_value = False
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -1400,8 +1538,10 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_interactively_with_database_and_vpc_arguments(
             self,
+            get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
             find_solution_stack_from_string_mock,
@@ -1418,6 +1558,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
+        get_spot_request_from_customer_mock.return_value = False
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name

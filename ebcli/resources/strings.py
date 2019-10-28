@@ -184,6 +184,8 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                            'list of key=value pairs.',
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" options together.',
     'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
+    'create.itype_and_instances' : 'You cannot use the --instance-type and --instance-types together.',
+    'create.spot_and_single' : 'You cannot use the --enable-spot and --single together.',
     'create.single_and_elb_type': 'You cannot use the "--single" and "--elb-type" options together.',
     'create.single_and_elbpublic_or_elb_subnet': 'You can\'t use the "--single" argument with the '
                                                  '"--vpc.elbsubnets" or "--vpc.elbpublic" arguments.',
@@ -196,6 +198,8 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'create.missing_plus_sign_in_group_name': 'The environment name specified in env.yaml does not end '
                                               'with a \'+\', but a group suffix was provided. Please '
                                               'add a trailing \'+\' to the environment name',
+    'create.valid_spot_instances' : 'For Spot Instance types, specify a list of two or more valid EC2 instance types separated by commas.',
+    'create.missing_enable_spot' : 'Specify the "--enable-spot" argument with the "%s" argument[s].',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',
     'terminate.noenv': 'To delete the application and all application versions, type "eb terminate '
                        '--all".',
@@ -731,6 +735,11 @@ flag_text = {
     'create.elb_type': 'load balancer type',
     'create.source': 'source of code to create from directly; example source_location/repo/branch',
     'create.process': 'enable preprocessing of the application version',
+    'create.enable_spot' : 'enable spot requests for this environment',
+    'create.maxprice' : 'maximum price for Spot requests',
+    'create.ondemand_base' : 'minimum number of On-Demand Instances in a mixed On-Demand / Spot fleet',
+    'create.ondemand_above' : 'percentage of additional On-Demand Instances in a mixed On-Demand / Spot fleet',
+    'create.instance_types' : 'comma-separated list of EC2 instance types to be used in the new environment',
 
     'deploy.env': 'environment name',
     'deploy.modules': 'modules to deploy',

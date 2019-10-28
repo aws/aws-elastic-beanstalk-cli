@@ -22,6 +22,41 @@ def are_instance_types_valid(instance_types):
     else:
         return True
 
+def get_spot_instance_types_from_customer(interactive, enable_spot):
+    """
+    Prompt customer to specify their desired instances types if they
+    selected enabled spot requests from the interactive flow.
+
+    :return: list of comma separated instance types
+    """
+    if not interactive:
+        return False
+    io.echo('Please enter your desired instance types for your spot request in a comma separated list.')
+    instance_types = prompt_for_instance_types()
+
+    return instance_types
+
+def get_spot_request_from_customer(interactive):
+    """
+    Prompt customer to select if they would like to enable spot requests if
+    operating in the interactive mode.
+
+    Selection defaults to 'No' when provided with blank input.
+    :param interactive: True/False depending on whether operating in the interactive mode or not
+    :param single: False/True depending on whether environment is load balanced or not
+    :return: selected value for if to enable spot requests or not: True/False
+    """
+    if not interactive:
+        return
+    io.echo()
+    io.echo('Would you like to enable Spot requests for this environment?')
+    user_input = prompt_for_enable_spot_request()
+    while user_input not in ['y', 'n', 'Y', 'N']:
+        io.echo(strings['create.download_sample_app_choice_error'].format(choice=user_input))
+        user_input = prompt_for_enable_spot_request()
+
+    return True if user_input in ['y', 'Y'] else False
+
 def prompt_for_enable_spot_request():
     """
     Method accepts the user's choice of whether spot requests should be enabled.
@@ -45,52 +80,3 @@ def prompt_for_instance_types():
         else:
             io.echo('Spot instance types must contain at least two valid instance types')
             io.echo('')
-
-def get_enable_spot_option(interactive, spot_instance_types):
-    """
-
-    :param interactive: True/False depending on whether operating in the interactive mode or not
-    :param single: False/True depending on whether the user enabled spot requests
-    :param spot_instance_types: Array of instance types for spot request
-    :return: list of comma separated instance types
-    """
-    if not interactive and spot_instance_types:
-        return True
-    if interactive and not spot_instance_types:
-        return get_spot_request_from_customer(interactive)
-
-
-def get_spot_instance_types_from_customer(interactive, enable_spot):
-    """
-    Prompt customer to specify their desired instances types if they
-    selected enabled spot requests from the interactive flow.
-
-    :return: list of comma separated instance types
-    """
-    if not enable_spot or not interactive:
-        return None
-    io.echo('Please enter your desired instance types for your spot request in a comma separated list.')
-    instance_types = prompt_for_instance_types()
-
-    return instance_types
-
-def get_spot_request_from_customer(interactive):
-    """
-    Prompt customer to select if they would like to enable spot requests if
-    operating in the interactive mode.
-
-    Selection defaults to 'No' when provided with blank input.
-    :param interactive: True/False depending on whether operating in the interactive mode or not
-    :param single: False/True depending on whether environment is load balanced or not
-    :return: selected value for if to enable spot requests or not: True/False
-    """
-    if not interactive:
-        return
-    io.echo()
-    io.echo('Do you want to enable spot requests for this environment?')
-    user_input = prompt_for_enable_spot_request()
-    while user_input not in ['y', 'n', 'Y', 'N']:
-        io.echo(strings['create.download_sample_app_choice_error'].format(choice=user_input))
-        user_input = prompt_for_enable_spot_request()
-
-    return True if user_input in ['y', 'Y'] else False

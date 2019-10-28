@@ -57,7 +57,9 @@ class CreateEnvironmentRequest(object):
                  single_instance=False, key_name=None,
                  sample_application=False, tags=None, scale=None,
                  database=None, vpc=None, template_name=None, group_name=None,
-                 elb_type=None):
+                 elb_type=None, enable_spot=None, instance_types=None,
+                 spot_max_price=None,on_demand_base_capacity=None,
+                 on_demand_above_base_capacity=None):
         self.app_name = app_name
         self.cname = cname
         self.env_name = env_name
@@ -90,6 +92,14 @@ class CreateEnvironmentRequest(object):
         self.option_settings = []
         self.compiled = False
         self.description = strings['env.description']
+        if enable_spot is None:
+            self.enable_spot = False
+        else:
+            self.enable_spot = enable_spot
+        self.instance_types = instance_types
+        self.spot_max_price = spot_max_price
+        self.on_demand_base_capacity = on_demand_base_capacity
+        self.on_demand_above_base_capacity = on_demand_above_base_capacity
 
         if not self.app_name:
             raise TypeError(self.__class__.__name__ + ' requires key-word argument app_name')
@@ -136,6 +146,7 @@ class CreateEnvironmentRequest(object):
             self.add_client_defaults()
             self.compile_database_options()
             self.compile_vpc_options()
+            self.compile_spot_options()
             self.compile_common_options()
             self.compiled = True
 
@@ -192,6 +203,11 @@ class CreateEnvironmentRequest(object):
                 namespaces.LAUNCH_CONFIGURATION,
                 option_names.INSTANCE_TYPE,
                 self.instance_type)
+        if self.instance_types:
+            self.add_option_setting(
+                namespaces.SPOT,
+                option_names.INSTANCE_TYPES,
+                self.instance_types)
         if self.single_instance:
             self.add_option_setting(
                 namespaces.ENVIRONMENT,
@@ -307,6 +323,29 @@ class CreateEnvironmentRequest(object):
         if self.vpc['dbsubnets']:
             self.add_option_setting(namespace, option_names.DB_SUBNETS,
                                     self.vpc['dbsubnets'])
+
+    def compile_spot_options(self):
+        if not self.enable_spot:
+            return
+
+        namespace = namespaces.SPOT
+        if self.enable_spot:
+            self.add_option_setting(namespace, option_names.ENABLE_SPOT, 'true')
+        else:
+            self.add_option_setting(namespace, option_names.ENABLE_SPOT, 'false')
+
+        if self.spot_max_price:
+            self.add_option_setting(namespace, option_names.SPOT_MAX_PRICE, self.spot_max_price)
+
+        if self.on_demand_base_capacity:
+            self.add_option_setting(namespace, option_names.ON_DEMAND_BASE_CAPACITY, self.on_demand_base_capacity)
+
+        if self.on_demand_above_base_capacity:
+            self.add_option_setting(
+                namespace,
+                option_names.ON_DEMAND_PERCENTAGE_ABOVE_BASE_CAPACITY,
+                self.on_demand_above_base_capacity)
+
 
 
 class CloneEnvironmentRequest(CreateEnvironmentRequest):

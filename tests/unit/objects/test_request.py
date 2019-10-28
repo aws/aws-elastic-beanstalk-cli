@@ -258,6 +258,46 @@ class TestRequests(unittest.TestCase):
             request.option_settings
         )
 
+    def test_compile_spot_options(self):
+        request_args = {
+            'app_name': 'ebcli-intTest-app',
+            'env_name': 'my-awesome-env',
+            'enable_spot': 'true',
+            'instance_types': 't2.micro, t2.large',
+            'spot_max_price': '.5',
+            'on_demand_base_capacity': '2',
+            'on_demand_above_base_capacity': '50',
+        }
+        request = requests.CreateEnvironmentRequest(**request_args)
+        self.assertEqual([], request.option_settings)
+
+        request.compile_spot_options()
+        self.assertEqual(
+            [
+                {
+                    'Namespace': 'aws:autoscaling:spot',
+                    'OptionName': 'Enable',
+                    'Value': 'true'
+                },
+                {
+                    'Namespace': 'aws:autoscaling:spot',
+                    'OptionName': 'SpotMaxPrice',
+                    'Value': '.5'
+                },
+                {
+                    'Namespace': 'aws:autoscaling:spot',
+                    'OptionName': 'OnDemandBaseCapacity',
+                    'Value': '2'
+                },
+                {
+                    'Namespace': 'aws:autoscaling:spot',
+                    'OptionName': 'OnDemandAboveBasePercent',
+                    'Value': '50'
+                }
+            ],
+            request.option_settings
+        )
+
     def test_common_options(self):
         request_args = {
             'app_name': 'ebcli-intTest-app',

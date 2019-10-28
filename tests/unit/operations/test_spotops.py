@@ -45,13 +45,6 @@ class TestSpotOps(unittest.TestCase):
         instance_types=''
         self.assertEqual(False, spotops.are_instance_types_valid(instance_types))
 
-    def test_get_enable_spot_option__enabled(
-            self
-    ):
-        spot_instance_types='t2.micro, t3.micro'
-        interactive=False
-        self.assertEqual(True, spotops.get_enable_spot_option(interactive, spot_instance_types))
-
     @mock.patch('ebcli.operations.spotops.prompt_for_instance_types')
     def test_get_spot_instance_types_from_customer__success(
             self,
