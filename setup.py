@@ -19,12 +19,12 @@ import ebcli
 
 
 requires = [
-    'botocore>=1.12.29,<1.13',
+    'botocore>1.13.0,<1.14',
     'cement==2.8.2',
     'colorama>=0.3.9,<0.4.0',  # use the same range that 'docker-compose' uses
     'future>=0.16.0,<0.17.0',
     'pathspec==0.5.9',
-    'python-dateutil>=2.1,<3.0.0',  # use the same range that 'botocore' uses
+    'python-dateutil>=2.1,<2.8.1',  # use the same range that 'botocore' uses
     'PyYAML>=3.10,<=3.13',  # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
     'requests>=2.20.1,<2.21',
     'setuptools >= 20.0',

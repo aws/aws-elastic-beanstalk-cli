@@ -699,7 +699,6 @@ class TestCreate(TestCreateBase):
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         env_name = 'my-awesome-env'
-        instance_types="'t2.micro, t3.micro'"
 
         self.app = EB(argv=['create', env_name, '--enable-spot'])
         self.app.setup()
@@ -754,6 +753,56 @@ class TestCreate(TestCreateBase):
             platform=self.solution,
             enable_spot=False,
             instance_types=instance_types
+        )
+        call_args, kwargs = make_new_env_mock.call_args
+        actual_environment_request = call_args[0]
+        self.assertEqual(actual_environment_request, expected_environment_request)
+        make_new_env_mock.assert_called_with(
+            expected_environment_request,
+            branch_default=False,
+            process_app_version=False,
+            nohang=False,
+            interactive=False,
+            timeout=None,
+            source=None
+        )
+
+    @mock.patch('ebcli.operations.createops.make_new_env')
+    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    def test_create_non_interactive__all_spot_options__shorthand(
+            self,
+            is_cname_available_mock,
+            get_default_keyname_mock,
+            find_solution_stack_from_string_mock,
+            get_solution_stack_from_customer_mock,
+            make_new_env_mock,
+    ):
+        get_solution_stack_from_customer_mock.return_value = self.solution
+        find_solution_stack_from_string_mock.return_value = self.solution
+        is_cname_available_mock.return_value = True
+        get_default_keyname_mock.return_value = None
+        env_name = 'my-awesome-env'
+        instance_types="t2.micro, t3.micro"
+        spot_max_price = ".05"
+        spot_fleet_on_demand_base = "1"
+        spot_fleet_on_demand_above_base_percentage = "50"
+
+        self.app = EB(argv=['create', env_name, '-es', '-it', instance_types, '-sm', spot_max_price, '-sb', spot_fleet_on_demand_base, '-sp', spot_fleet_on_demand_above_base_percentage])
+        self.app.setup()
+        self.app.run()
+
+        expected_environment_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            env_name=env_name,
+            platform=self.solution,
+            enable_spot=True,
+            instance_types=instance_types,
+            spot_max_price=spot_max_price,
+            on_demand_base_capacity=spot_fleet_on_demand_base,
+            on_demand_above_base_capacity=spot_fleet_on_demand_above_base_percentage,
         )
         call_args, kwargs = make_new_env_mock.call_args
         actual_environment_request = call_args[0]
