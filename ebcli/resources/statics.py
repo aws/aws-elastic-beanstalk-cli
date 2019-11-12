@@ -56,7 +56,7 @@ class namespaces(object):
     ELB_POLICIES = 'aws:elb:policies'
     ROLLING_UPDATES = 'aws:autoscaling:updatepolicy:rollingupdate'
     VPC = 'aws:ec2:vpc'
-    SPOT = 'aws:autoscaling:spot'
+    SPOT = 'aws:ec2:instances'
     CLOUDWATCH_LOGS = 'aws:elasticbeanstalk:cloudwatch:logs'
     CLOUDWATCH_ENVIRONMENT_HEALTH_LOGS = 'aws:elasticbeanstalk:cloudwatch:logs:health'
 
@@ -99,9 +99,9 @@ class option_names(object):
     CLOUDWATCH_ENVIRONMENT_HEALTH_LOGS_ENABLED = 'HealthStreamingEnabled'
     DELETE_ON_TERMINATE = 'DeleteOnTerminate'
     RETENTION_DAYS = 'RetentionInDays'
-    ENABLE_SPOT = 'Enable'
-    ON_DEMAND_BASE_CAPACITY = 'OnDemandBaseCapacity'
-    ON_DEMAND_PERCENTAGE_ABOVE_BASE_CAPACITY = 'OnDemandAboveBasePercent'
+    ENABLE_SPOT = 'EnableSpot'
+    ON_DEMAND_BASE_CAPACITY = 'SpotFleetOnDemandBase'
+    ON_DEMAND_PERCENTAGE_ABOVE_BASE_CAPACITY = 'SpotFleetOnDemandAboveBasePercentage'
     SPOT_MAX_PRICE = 'SpotMaxPrice'
     INSTANCE_TYPES = 'InstanceTypes'
 

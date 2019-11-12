@@ -58,7 +58,7 @@ class CreateEnvironmentRequest(object):
                  sample_application=False, tags=None, scale=None,
                  database=None, vpc=None, template_name=None, group_name=None,
                  elb_type=None, enable_spot=None, instance_types=None,
-                 spot_max_price=None,on_demand_base_capacity=None,
+                 spot_max_price=None, on_demand_base_capacity=None,
                  on_demand_above_base_capacity=None):
         self.app_name = app_name
         self.cname = cname
@@ -92,10 +92,7 @@ class CreateEnvironmentRequest(object):
         self.option_settings = []
         self.compiled = False
         self.description = strings['env.description']
-        if enable_spot is None:
-            self.enable_spot = False
-        else:
-            self.enable_spot = enable_spot
+        self.enable_spot = enable_spot
         self.instance_types = instance_types
         self.spot_max_price = spot_max_price
         self.on_demand_base_capacity = on_demand_base_capacity
@@ -203,11 +200,6 @@ class CreateEnvironmentRequest(object):
                 namespaces.LAUNCH_CONFIGURATION,
                 option_names.INSTANCE_TYPE,
                 self.instance_type)
-        if self.instance_types:
-            self.add_option_setting(
-                namespaces.SPOT,
-                option_names.INSTANCE_TYPES,
-                self.instance_types)
         if self.single_instance:
             self.add_option_setting(
                 namespaces.ENVIRONMENT,
@@ -329,10 +321,13 @@ class CreateEnvironmentRequest(object):
             return
 
         namespace = namespaces.SPOT
-        if self.enable_spot:
-            self.add_option_setting(namespace, option_names.ENABLE_SPOT, 'true')
-        else:
-            self.add_option_setting(namespace, option_names.ENABLE_SPOT, 'false')
+        self.add_option_setting(namespace, option_names.ENABLE_SPOT, 'true')
+
+        if self.instance_types:
+            self.add_option_setting(
+                namespaces.SPOT,
+                option_names.INSTANCE_TYPES,
+                self.instance_types)
 
         if self.spot_max_price:
             self.add_option_setting(namespace, option_names.SPOT_MAX_PRICE, self.spot_max_price)
@@ -345,7 +340,6 @@ class CreateEnvironmentRequest(object):
                 namespace,
                 option_names.ON_DEMAND_PERCENTAGE_ABOVE_BASE_CAPACITY,
                 self.on_demand_above_base_capacity)
-
 
 
 class CloneEnvironmentRequest(CreateEnvironmentRequest):

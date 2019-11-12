@@ -148,7 +148,7 @@ def should_download_sample_app():
         user_input = download_sample_app_user_choice()
 
         while user_input not in ['y', 'n', 'Y', 'N']:
-            io.echo(strings['create.download_sample_app_choice_error'].format(choice=user_input))
+            io.echo(strings['create.user_choice_error'].format(user_choice=user_input))
             user_input = download_sample_app_user_choice()
 
     return True if user_input in ['y', 'Y'] else False

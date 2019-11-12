@@ -54,7 +54,7 @@ To get started, enter "eb platform init". Then enter "eb platform create".""",
     'create.downloading_sample_application': 'Downloading sample application to the '
                                              'current directory.',
     'create.sample_application_download_complete': 'Download complete.',
-    'create.download_sample_app_choice_error': "'{choice}' is not a valid choice.",
+    'create.user_choice_error': "'{user_choice}' is not a valid choice.",
     'events.info': 'Gets recent events.',
     'open.info': 'Opens the application URL in a browser.',
     'console.info': 'Opens the environment in the AWS Elastic Beanstalk Management Console.',
@@ -184,8 +184,8 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                            'list of key=value pairs.',
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" options together.',
     'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
-    'create.itype_and_instances' : 'You cannot use the --instance-type and --instance-types together.',
-    'create.spot_and_single' : 'You cannot use the --enable-spot and --single together.',
+    'create.itype_and_instances' : 'You cannot use the "--instance-type" and "--instance-types" together.',
+    'create.spot_and_single' : 'You cannot use the "--enable-spot" and "--single" together.',
     'create.single_and_elb_type': 'You cannot use the "--single" and "--elb-type" options together.',
     'create.single_and_elbpublic_or_elb_subnet': 'You can\'t use the "--single" argument with the '
                                                  '"--vpc.elbsubnets" or "--vpc.elbpublic" arguments.',
@@ -198,8 +198,8 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'create.missing_plus_sign_in_group_name': 'The environment name specified in env.yaml does not end '
                                               'with a \'+\', but a group suffix was provided. Please '
                                               'add a trailing \'+\' to the environment name',
-    'create.valid_spot_instances' : 'For Spot Instance types, specify a list of two or more valid EC2 instance types separated by commas.',
-    'create.missing_enable_spot' : 'Specify the "--enable-spot" argument with the "%s" argument[s].',
+    'create.valid_spot_instances' : 'For Spot Instance types, specify a comma-separated list of two or more valid EC2 instance',
+    'create.missing_enable_spot' : 'Specify the "--enable-spot" argument with the "--spot-max-price" argument.',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',
     'terminate.noenv': 'To delete the application and all application versions, type "eb terminate '
                        '--all".',
@@ -533,7 +533,10 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                                         "keys can be up to 127 characters in length.",
     'tags.tag_value_max_length_exceeded': "Tag with the following value exceed length limit. "
                                           "Tag values can be up to 255 characters in length.",
-    'cloudformation.cannot_find_app_source_for_environment': 'Cannot find app source for environment'
+    'cloudformation.cannot_find_app_source_for_environment': 'Cannot find app source for environment',
+    'spot.instance_types_example': 'For example: t3.micro, t3.large',
+    'spot.instance_types_validation': 'Enter a list of one or more valid EC2 instance types separated'
+                                       'by commas (at least two instance types are recommended.'
 }
 prompts = {
     'events.hanging': 'Streaming new events. Use CTRL+C to exit.',
@@ -680,6 +683,10 @@ prompts = {
                              'platform: {platform}',
     'platforminit.ssh': 'Would you like to be able to log into your platform '
                         'packer environment?',
+    'spot.instance_types_prompt':'Please enter your desired instance types for '
+                                 'your spot request in a comma separated list.',
+    'spot.enable_spot_prompt': 'Would you like to enable Spot Fleet requests '
+                               'for this environment?'
 }
 
 alerts = {
@@ -735,8 +742,8 @@ flag_text = {
     'create.elb_type': 'load balancer type',
     'create.source': 'source of code to create from directly; example source_location/repo/branch',
     'create.process': 'enable preprocessing of the application version',
-    'create.enable_spot' : 'enable spot requests for this environment',
-    'create.maxprice' : 'maximum price for Spot requests',
+    'create.enable_spot' : 'enable Spot Fleet requests for this environment',
+    'create.maxprice' : 'maximum price for Spot Fleet requests',
     'create.ondemand_base' : 'minimum number of On-Demand Instances in a mixed On-Demand / Spot fleet',
     'create.ondemand_above' : 'percentage of additional On-Demand Instances in a mixed On-Demand / Spot fleet',
     'create.instance_types' : 'comma-separated list of EC2 instance types to be used in the new environment',

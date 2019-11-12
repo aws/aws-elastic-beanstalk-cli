@@ -149,6 +149,54 @@ class TestCreate(TestCreateBase):
             str(context_manager.exception)
         )
 
+    def test_create__spot_max_price_without_enabled(self):
+        self.app = EB(argv=['create', '--spot-max-price', '0.5'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'Specify the "--enable-spot" argument with the "--spot-max-price" argument.',
+            str(context_manager.exception)
+        )
+
+    def test_create__itype_and_itypes(self):
+        self.app = EB(argv=['create', '--instance_type', 't2.micro', '--instance-types', 't2.micro,t3.small'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'You cannot use the "--instance-type" and "--instance-types" together.',
+            str(context_manager.exception)
+        )
+
+    def test_create__invalid_instance_types__only_one_instance(self):
+        self.app = EB(argv=['create', '--enable-spot', '--instance-types', 't2.micro'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'For Spot Instance types, specify a comma-separated list of two or more valid EC2 instance',
+            str(context_manager.exception)
+        )
+
+    def test_create__invalid_instance_types__no_comma(self):
+        self.app = EB(argv=['create', '--enable-spot', '--instance-types', 't2.micro t3.micro'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'For Spot Instance types, specify a comma-separated list of two or more valid EC2 instance',
+            str(context_manager.exception)
+        )
+
     def test_create__single_and_elb_type_together_provided_cause_an_exception(self):
         self.app = EB(argv=['create', '--single', '--elb-type', 'application'])
         self.app.setup()
@@ -272,7 +320,7 @@ class TestCreate(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -329,7 +377,7 @@ class TestCreate(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -381,7 +429,7 @@ class TestCreate(TestCreateBase):
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         env_name = 'my-awesome-env'
 
@@ -430,7 +478,7 @@ class TestCreate(TestCreateBase):
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         env_name = 'my-awesome-env'
 
@@ -484,7 +532,7 @@ class TestCreate(TestCreateBase):
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = self.app_name + '-dev'
         get_input_mock.return_value = None
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         self.app = EB(argv=['create', '--elb-type', 'classic'])
         self.app.setup()
@@ -522,7 +570,7 @@ class TestCreate(TestCreateBase):
         env_name = 'my-awesome-env'
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         self.app = EB(argv=['create', env_name, '--elb-type', 'classic'])
         self.app.setup()
@@ -572,7 +620,7 @@ class TestCreate(TestCreateBase):
         find_solution_stack_from_string_mock.return_value = self.solution
         get_default_keyname_mock.return_value = True
         is_cname_available_mock.return_value = True
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         get_and_validate_tags_mock.return_value = [
             {'Key': 'a', 'Value': '1'},
@@ -657,7 +705,7 @@ class TestCreate(TestCreateBase):
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         self.app = EB(argv=['create', '--process', self.env_name])
         self.app.setup()
@@ -699,8 +747,9 @@ class TestCreate(TestCreateBase):
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         env_name = 'my-awesome-env'
+        instance_types='t2.micro, t3.micro'
 
-        self.app = EB(argv=['create', env_name, '--enable-spot'])
+        self.app = EB(argv=['create', env_name, '--enable-spot', '--instance-types', instance_types])
         self.app.setup()
         self.app.run()
 
@@ -709,6 +758,7 @@ class TestCreate(TestCreateBase):
             env_name=env_name,
             platform=self.solution,
             enable_spot=True,
+            instance_types=instance_types
         )
         call_args, kwargs = make_new_env_mock.call_args
         actual_environment_request = call_args[0]
@@ -751,7 +801,7 @@ class TestCreate(TestCreateBase):
             app_name=self.app_name,
             env_name=env_name,
             platform=self.solution,
-            enable_spot=False,
+            enable_spot=None,
             instance_types=instance_types
         )
         call_args, kwargs = make_new_env_mock.call_args
@@ -787,10 +837,8 @@ class TestCreate(TestCreateBase):
         env_name = 'my-awesome-env'
         instance_types="t2.micro, t3.micro"
         spot_max_price = ".05"
-        spot_fleet_on_demand_base = "1"
-        spot_fleet_on_demand_above_base_percentage = "50"
 
-        self.app = EB(argv=['create', env_name, '-es', '-it', instance_types, '-sm', spot_max_price, '-sb', spot_fleet_on_demand_base, '-sp', spot_fleet_on_demand_above_base_percentage])
+        self.app = EB(argv=['create', env_name, '-es', '-it', instance_types, '-sm', spot_max_price])
         self.app.setup()
         self.app.run()
 
@@ -801,8 +849,6 @@ class TestCreate(TestCreateBase):
             enable_spot=True,
             instance_types=instance_types,
             spot_max_price=spot_max_price,
-            on_demand_base_capacity=spot_fleet_on_demand_base,
-            on_demand_above_base_capacity=spot_fleet_on_demand_above_base_percentage,
         )
         call_args, kwargs = make_new_env_mock.call_args
         actual_environment_request = call_args[0]
@@ -841,7 +887,7 @@ EnvironmentName: front+""")
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         self.app = EB(argv=['create', '--elb-type', 'network', '--cname', 'available-cname', '--env-group-suffix', 'dev'])
         self.app.setup()
@@ -885,7 +931,7 @@ EnvironmentName: front+""")
         get_solution_stack_from_customer_mock.return_value = self.solution
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         self.app = EB(argv=['create', '--tier', 'worker', '--env-group-suffix', 'dev'])
         self.app.setup()
@@ -961,7 +1007,7 @@ CName: front-A08G28LG+""")
         find_solution_stack_from_string_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         get_input_mock.side_effect = [
             'my-environment-name'
@@ -1061,7 +1107,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -1135,7 +1181,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_cname_mock.return_value = 'my-awesome-env'
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -1205,7 +1251,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_cname_mock.return_value = 'my-awesome-env'
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -1327,7 +1373,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -1405,7 +1451,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         env_name = 'my-awesome-env'
         vpc_id = 'my-vpc-id'
@@ -1474,7 +1520,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
@@ -1607,7 +1653,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
-        get_spot_request_from_customer_mock.return_value = False
+        get_spot_request_from_customer_mock.return_value = None
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name

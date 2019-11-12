@@ -265,8 +265,6 @@ class TestRequests(unittest.TestCase):
             'enable_spot': 'true',
             'instance_types': 't2.micro, t2.large',
             'spot_max_price': '.5',
-            'on_demand_base_capacity': '2',
-            'on_demand_above_base_capacity': '50',
         }
         request = requests.CreateEnvironmentRequest(**request_args)
         self.assertEqual([], request.option_settings)
@@ -275,25 +273,20 @@ class TestRequests(unittest.TestCase):
         self.assertEqual(
             [
                 {
-                    'Namespace': 'aws:autoscaling:spot',
-                    'OptionName': 'Enable',
+                    'Namespace': 'aws:ec2:instances',
+                    'OptionName': 'EnableSpot',
                     'Value': 'true'
                 },
                 {
-                    'Namespace': 'aws:autoscaling:spot',
+                    'Namespace': 'aws:ec2:instances',
+                    'OptionName': 'InstanceTypes',
+                    'Value': 't2.micro, t2.large'
+                },
+                {
+                    'Namespace': 'aws:ec2:instances',
                     'OptionName': 'SpotMaxPrice',
                     'Value': '.5'
                 },
-                {
-                    'Namespace': 'aws:autoscaling:spot',
-                    'OptionName': 'OnDemandBaseCapacity',
-                    'Value': '2'
-                },
-                {
-                    'Namespace': 'aws:autoscaling:spot',
-                    'OptionName': 'OnDemandAboveBasePercent',
-                    'Value': '50'
-                }
             ],
             request.option_settings
         )
