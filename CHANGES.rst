@@ -2,6 +2,13 @@
 Changelog
 =========
 -------------------
+3.16.0 (2019-11-22)
+-------------------
+- Added support for spot fleet requests during environment creation
+- Updated `botocore` requirement to `>1.13.0,<1.14`
+- Updated `python-dateutil` requirement to `>=2.1,<2.8.1`
+
+-------------------
 3.15.3 (2019-07-18)
 -------------------
 - Added me-south-1 Middle East (Bahrain) region
