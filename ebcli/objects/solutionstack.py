@@ -36,9 +36,9 @@ SOLUTION_STACK_ORDER_INDEX = {
     'GlassFish': 9,
     'Go': 10,
     'Java': 11,
-    'Packer': 12,
+    'Corretto (BETA)': 12,
+    'Packer': 13,
 }
-
 
 class SolutionStack(object):
     def __init__(self, ss_string):
@@ -152,7 +152,12 @@ class SolutionStack(object):
         if 'Multi-container Docker' in self.name:
             return 'Multi-container Docker'
 
-        return self.platform_shorthand.strip().split(' ')[0]
+        shorthand = self.platform_shorthand.split(' ')[0]
+
+        if '(BETA)' in self.name:
+            shorthand = shorthand + ' (BETA)'
+
+        return shorthand
 
     @property
     def language_version(self):
@@ -212,8 +217,11 @@ class SolutionStack(object):
 
         """
         match = re.search(PLATFORM_CLASS_REGEX, self.name)
+        shorthand = match.groups(0)[0] if match else self.name
+        if not '(BETA)' in shorthand and '(BETA)' in self.name:
+            shorthand = shorthand + ' (BETA)'
 
-        return match.groups(0)[0] if match else self.name
+        return shorthand
 
     @property
     def platform_version(self):

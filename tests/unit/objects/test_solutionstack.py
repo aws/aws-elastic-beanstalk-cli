@@ -46,7 +46,9 @@ class TestSolutionStack(unittest.TestCase):
             '64bit Debian jessie v2.8.0 running Python 3.4 (Preconfigured - Docker)': 'Python 3.4 (Preconfigured - Docker)',
             '64bit Amazon Linux 2017.09 v2.6.0 running Java 8': 'Java 8',
             '64bit Amazon Linux 2017.09 v2.7.1 running Go 1.9': 'Go 1.9',
-            '64bit Amazon Linux 2017.09 v2.4.0 running Packer 1.0.3': 'Packer 1.0.3'
+            '64bit Amazon Linux 2017.09 v2.4.0 running Packer 1.0.3': 'Packer 1.0.3',
+            '64bit Amazon Linux 2 v0.0.7 running Corretto 8 (BETA)': 'Corretto 8 (BETA)',
+            '64bit Amazon Linux 2 v0.0.7 running Foobar 1.0.22 (BETA)': 'Foobar 1.0.22 (BETA)'
         }
 
         for solution_stack_name, expected_platform_shorthand in solution_stack_platform_shorthand_mappings.items():
@@ -80,7 +82,9 @@ class TestSolutionStack(unittest.TestCase):
             '64bit Debian jessie v2.8.0 running Python 3.4 (Preconfigured - Docker)': 'Python',
             '64bit Amazon Linux 2017.09 v2.6.0 running Java 8': 'Java',
             '64bit Amazon Linux 2017.09 v2.7.1 running Go 1.9': 'Go',
-            '64bit Amazon Linux 2017.09 v2.4.0 running Packer 1.0.3': 'Packer'
+            '64bit Amazon Linux 2017.09 v2.4.0 running Packer 1.0.3': 'Packer',
+            '64bit Amazon Linux 2 v0.0.7 running Corretto 8 (BETA)': 'Corretto (BETA)',
+            '64bit Amazon Linux 2 v0.0.7 running Foobar 1.0.22 (BETA)': 'Foobar (BETA)'
         }
 
         for solution_stack_name, expected_language_name in solution_stack_language_name_mappings.items():
@@ -114,7 +118,9 @@ class TestSolutionStack(unittest.TestCase):
             '64bit Debian jessie v2.8.0 running Python 3.4 (Preconfigured - Docker)': '3.4',
             '64bit Amazon Linux 2017.09 v2.6.0 running Java 8': '8',
             '64bit Amazon Linux 2017.09 v2.7.1 running Go 1.9': '1.9',
-            '64bit Amazon Linux 2017.09 v2.4.0 running Packer 1.0.3': '1.0.3'
+            '64bit Amazon Linux 2017.09 v2.4.0 running Packer 1.0.3': '1.0.3',
+            '64bit Amazon Linux 2 v0.0.7 running Corretto 8 (BETA)': '8',
+            '64bit Amazon Linux 2 v0.0.7 running Foobar 1.0.22 (BETA)': '1.0.22'
         }
 
         for solution_stack_name, expected_language_version in solution_stack_language_version_mappings.items():
@@ -234,7 +240,9 @@ class TestSolutionStack(unittest.TestCase):
             '64bit Debian jessie v2.8.0 running Python 3.4 (Preconfigured - Docker)': '2.8.0',
             '64bit Amazon Linux 2017.09 v2.6.0 running Java 8': '2.6.0',
             '64bit Amazon Linux 2017.09 v2.7.1 running Go 1.9': '2.7.1',
-            '64bit Amazon Linux 2017.09 v2.4.0 running Packer 1.0.3': '2.4.0'
+            '64bit Amazon Linux 2017.09 v2.4.0 running Packer 1.0.3': '2.4.0',
+            '64bit Amazon Linux 2 v0.0.7 running Corretto 8 (BETA)': '0.0.7',
+            '64bit Amazon Linux 2 v2.1.7 running Foobar 1.0.22 (BETA)': '2.1.7'
         }
 
         for solution_stack_name, expected_platform_version in solution_stack_platform_version_mappings.items():
@@ -250,6 +258,8 @@ class TestSolutionStack(unittest.TestCase):
             '64bit Amazon Linux running PHP 5.3': 'PHP 5.3',
             '32bit Amazon Linux 2014.03 v1.1.0 running Python 2.7': 'Python 2.7',
             '64bit Amazon Linux running Python': 'Python',
+            '64bit Amazon Linux 2 v0.0.7 running Corretto 8 (BETA)': 'Corretto 8 (BETA)',
+            '64bit Amazon Linux 2 v0.0.7 running Foobar 1.0.22 (BETA)': 'Foobar 1.0.22 (BETA)'
         }
 
         self.assertEqual(
@@ -296,7 +306,9 @@ class TestSolutionStack(unittest.TestCase):
             '64bit Amazon Linux 2017.09 v2.7.1 running Go 1.9',
             '64bit Amazon Linux 2017.03 v2.7.0 running Go 1.9',
             '64bit Amazon Linux 2017.09 v2.4.0 running Packer 1.0.3',
-            '64bit Amazon Linux 2017.03 v2.3.1 running Packer 1.0.3'
+            '64bit Amazon Linux 2017.03 v2.3.1 running Packer 1.0.3',
+            '64bit Amazon Linux 2 v0.0.7 running Corretto 8 (BETA)',
+            '64bit Amazon Linux 2 v0.0.7 running Foobar 1.0.22 (BETA)'
         ]
 
         expected_platform_shorthand_solution_stack_name_mappings = [
@@ -387,7 +399,15 @@ class TestSolutionStack(unittest.TestCase):
             {
                 'PlatformShorthand': 'Packer 1.0.3',
                 'SolutionStack': '64bit Amazon Linux 2017.09 v2.4.0 running Packer 1.0.3'
-            }
+            },
+            {
+                'PlatformShorthand': 'Corretto 8 (BETA)',
+                'SolutionStack': '64bit Amazon Linux 2 v0.0.7 running Corretto 8 (BETA)'
+            },
+            {
+                'PlatformShorthand': 'Foobar 1.0.22 (BETA)',
+                'SolutionStack': '64bit Amazon Linux 2 v0.0.7 running Foobar 1.0.22 (BETA)'
+            },
         ]
 
         solution_stacks = [SolutionStack(s) for s in solution_stacks]
@@ -442,7 +462,8 @@ class TestSolutionStack(unittest.TestCase):
             '64bit Amazon Linux 2017.09 v2.7.1 running Go 1.9',
             '64bit Amazon Linux 2017.03 v2.7.0 running Go 1.9',
             '64bit Amazon Linux 2017.09 v2.4.0 running Packer 1.0.3',
-            '64bit Amazon Linux 2017.03 v2.3.1 running Packer 1.0.3'
+            '64bit Amazon Linux 2017.03 v2.3.1 running Packer 1.0.3',
+            '64bit Amazon Linux 2 v0.0.7 running Corretto 8 (BETA)'
         ]
 
         expected_language_name_solution_stack_name_mappings = [
@@ -489,7 +510,12 @@ class TestSolutionStack(unittest.TestCase):
             {
                 'LanguageName': 'Packer',
                 'SolutionStack': '64bit Amazon Linux 2017.09 v2.4.0 running Packer 1.0.3'
-            }
+            },
+            {
+                'LanguageName': 'Corretto (BETA)',
+                'SolutionStack': '64bit Amazon Linux 2 v0.0.7 running Corretto 8 (BETA)'
+            },
+
         ]
 
         solution_stacks = [SolutionStack(solution_stack) for solution_stack in solution_stacks]
