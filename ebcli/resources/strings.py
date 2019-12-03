@@ -184,6 +184,8 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                            'list of key=value pairs.',
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" options together.',
     'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
+    'create.scaleandminmax': 'You cannot use the "--min-instances" or "--max-instances" and "--scale" options together.',
+    'create.singleandminmax': 'You cannot use the "--min-instances" or "--max-instances" and "--single" options together.',
     'create.itype_and_instances' : 'You cannot use the "--instance-type" and "--instance-types" together.',
     'create.spot_and_single' : 'You cannot use the "--enable-spot" and "--single" together.',
     'create.single_and_elb_type': 'You cannot use the "--single" and "--elb-type" options together.',
@@ -199,7 +201,7 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                                               'with a \'+\', but a group suffix was provided. Please '
                                               'add a trailing \'+\' to the environment name',
     'create.valid_spot_instances' : 'For Spot Instance types, specify a comma-separated list of two or more valid EC2 instance',
-    'create.missing_enable_spot' : 'Specify the "--enable-spot" argument with the "--spot-max-price" argument.',
+    'create.missing_enable_spot' : 'Specify the "--enable-spot" argument with any spot-related arguments.',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',
     'terminate.noenv': 'To delete the application and all application versions, type "eb terminate '
                        '--all".',
@@ -534,9 +536,9 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'tags.tag_value_max_length_exceeded': "Tag with the following value exceed length limit. "
                                           "Tag values can be up to 255 characters in length.",
     'cloudformation.cannot_find_app_source_for_environment': 'Cannot find app source for environment',
-    'spot.instance_types_example': 'For example: t3.micro, t3.large',
+    'spot.instance_type_defaults_notice': 'Defaults provided on Enter',
     'spot.instance_types_validation': 'Enter a list of one or more valid EC2 instance types separated'
-                                       'by commas (at least two instance types are recommended.'
+                                       ' by commas (at least two instance types are recommended.)'
 }
 prompts = {
     'events.hanging': 'Streaming new events. Use CTRL+C to exit.',
@@ -683,8 +685,9 @@ prompts = {
                              'platform: {platform}',
     'platforminit.ssh': 'Would you like to be able to log into your platform '
                         'packer environment?',
-    'spot.instance_types_prompt':'Please enter your desired instance types for '
-                                 'your spot request in a comma separated list.',
+    'spot.instance_types_prompt':'Enter a list of one or more valid EC2 instance '
+                                 'types separated by commas (at least two instance '
+                                 'types are recommended).',
     'spot.enable_spot_prompt': 'Would you like to enable Spot Fleet requests '
                                'for this environment?'
 }
@@ -742,11 +745,14 @@ flag_text = {
     'create.elb_type': 'load balancer type',
     'create.source': 'source of code to create from directly; example source_location/repo/branch',
     'create.process': 'enable preprocessing of the application version',
-    'create.enable_spot' : 'enable Spot Fleet requests for this environment',
-    'create.maxprice' : 'maximum price for Spot Fleet requests',
-    'create.ondemand_base' : 'minimum number of On-Demand Instances in a mixed On-Demand / Spot fleet',
-    'create.ondemand_above' : 'percentage of additional On-Demand Instances in a mixed On-Demand / Spot fleet',
+    'create.enable_spot' : 'enable Spot Instances in the new environment',
+    'create.maxprice' : 'maximum price for Spot Instances',
     'create.instance_types' : 'comma-separated list of EC2 instance types to be used in the new environment',
+    'create.on_demand_capacity' : 'minimum number of On-Demand Instances in a mixed On-Demand / Spot environment',
+    'create.on_demand_above_base_percent' : 'percentage of additional On-Demand Instances in a mixed On-Demand / Spot environment',
+    'create.min_instances' : 'minimum number of instances in the new environment',
+    'create.max_instances' : 'maximum number of instances in the new environment',
+
 
     'deploy.env': 'environment name',
     'deploy.modules': 'modules to deploy',

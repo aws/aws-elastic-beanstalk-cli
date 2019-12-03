@@ -14,15 +14,6 @@
 from ebcli.core import io
 from ebcli.resources.strings import prompts, strings
 
-def are_instance_types_valid(instance_types):
-    instance_types = instance_types or ''
-    instance_types_list = [
-        instance_type.strip()
-        for instance_type in instance_types.split(',')
-        if instance_type.strip()
-    ]
-    return len(instance_types_list) >= 2
-
 
 def get_spot_instance_types_from_customer(interactive, enable_spot):
     """
@@ -76,9 +67,6 @@ def prompt_for_instance_types():
 
     :return: user's choice of whether the spot request should be enabled
     """
-    while True:
-        io.echo(strings['spot.instance_types_validation'])
-        instance_types = io.prompt(strings['spot.instance_types_example'])
-        io.echo('')
-        if are_instance_types_valid(instance_types):
-            return instance_types
+    instance_types = io.prompt(strings['spot.instance_type_defaults_notice'])
+    io.echo('')
+    return instance_types

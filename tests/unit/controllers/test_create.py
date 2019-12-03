@@ -157,7 +157,19 @@ class TestCreate(TestCreateBase):
             self.app.run()
 
         self.assertEqual(
-            'Specify the "--enable-spot" argument with the "--spot-max-price" argument.',
+            'Specify the "--enable-spot" argument with any spot-related arguments.',
+            str(context_manager.exception)
+        )
+
+    def test_create__empty_instance_types(self):
+        self.app = EB(argv=['create', '--enable-spot', '--instance-types', ''])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'Enter a list of one or more valid EC2 instance types separated by commas (at least two instance types are recommended.)',
             str(context_manager.exception)
         )
 
@@ -170,30 +182,6 @@ class TestCreate(TestCreateBase):
 
         self.assertEqual(
             'You cannot use the "--instance-type" and "--instance-types" together.',
-            str(context_manager.exception)
-        )
-
-    def test_create__invalid_instance_types__only_one_instance(self):
-        self.app = EB(argv=['create', '--enable-spot', '--instance-types', 't2.micro'])
-        self.app.setup()
-
-        with self.assertRaises(InvalidOptionsError) as context_manager:
-            self.app.run()
-
-        self.assertEqual(
-            'For Spot Instance types, specify a comma-separated list of two or more valid EC2 instance',
-            str(context_manager.exception)
-        )
-
-    def test_create__invalid_instance_types__no_comma(self):
-        self.app = EB(argv=['create', '--enable-spot', '--instance-types', 't2.micro t3.micro'])
-        self.app.setup()
-
-        with self.assertRaises(InvalidOptionsError) as context_manager:
-            self.app.run()
-
-        self.assertEqual(
-            'For Spot Instance types, specify a comma-separated list of two or more valid EC2 instance',
             str(context_manager.exception)
         )
 
@@ -837,8 +825,16 @@ class TestCreate(TestCreateBase):
         env_name = 'my-awesome-env'
         instance_types="t2.micro, t3.micro"
         spot_max_price = ".05"
+        spot_on_demand_base = "2"
+        spot_on_demand_above_base = "50"
 
-        self.app = EB(argv=['create', env_name, '-es', '-it', instance_types, '-sm', spot_max_price])
+        self.app = EB(argv=[
+            'create', env_name,
+            '-es',
+            '-it', instance_types,
+            '-sm', spot_max_price,
+            '-sb', spot_on_demand_base,
+            '-sp', spot_on_demand_above_base])
         self.app.setup()
         self.app.run()
 
@@ -849,6 +845,8 @@ class TestCreate(TestCreateBase):
             enable_spot=True,
             instance_types=instance_types,
             spot_max_price=spot_max_price,
+            on_demand_base_capacity=spot_on_demand_base,
+            on_demand_above_base_capacity=spot_on_demand_above_base
         )
         call_args, kwargs = make_new_env_mock.call_args
         actual_environment_request = call_args[0]

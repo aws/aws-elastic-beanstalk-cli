@@ -22,30 +22,6 @@ from ebcli.operations import spotops
 
 class TestSpotOps(unittest.TestCase):
 
-    def test_are_instance_types_valid__success(
-            self
-    ):
-        instance_types='t2.micro, t3.micro'
-        self.assertTrue(spotops.are_instance_types_valid(instance_types))
-
-    def test_are_instance_types_valid__error_extra_comma(
-            self
-    ):
-        instance_types='t2.micro,'
-        self.assertFalse(spotops.are_instance_types_valid(instance_types))
-
-    def test_are_instance_types_valid__error_too_few_instance_types(
-            self
-    ):
-        instance_types='t2.micro'
-        self.assertFalse(spotops.are_instance_types_valid(instance_types))
-
-    def test_are_instance_types_valid__error_empty_string(
-            self
-    ):
-        instance_types=''
-        self.assertFalse(spotops.are_instance_types_valid(instance_types))
-
     @mock.patch('ebcli.operations.spotops.prompt_for_instance_types')
     def test_get_spot_instance_types_from_customer__success(
             self,

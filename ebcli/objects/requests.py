@@ -329,6 +329,12 @@ class CreateEnvironmentRequest(object):
                 option_names.INSTANCE_TYPES,
                 self.instance_types)
 
+        if self.on_demand_base_capacity:
+            self.add_option_setting(namespace, option_names.ON_DEMAND_BASE_CAPACITY, self.on_demand_base_capacity)
+
+        if self.on_demand_above_base_capacity:
+            self.add_option_setting(namespace, option_names.ON_DEMAND_PERCENTAGE_ABOVE_BASE_CAPACITY, self.on_demand_above_base_capacity)
+
         if self.spot_max_price:
             self.add_option_setting(namespace, option_names.SPOT_MAX_PRICE, self.spot_max_price)
 
