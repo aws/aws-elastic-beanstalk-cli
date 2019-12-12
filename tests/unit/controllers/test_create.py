@@ -281,6 +281,26 @@ class TestCreate(TestCreateBase):
             str(context_manager.exception)
         )
 
+    def test_create_non_interactive__min_max_instances__invalid(self):
+        env_name = 'my-awesome-env'
+        min_instances = '5'
+        max_instances = '15'
+        scale = '3'
+        self.app = EB(argv=[
+            'create', env_name,
+            '--min-instances', min_instances,
+            '--max-instances', max_instances,
+            '--scale', scale])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'You cannot use the "--min-instances" or "--max-instances" and "--scale" options together.',
+            str(context_manager.exception)
+        )
+
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.controllers.create.get_unique_cname')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
@@ -711,6 +731,104 @@ class TestCreate(TestCreateBase):
             expected_environment_request,
             branch_default=False,
             process_app_version=True,
+            nohang=False,
+            interactive=False,
+            timeout=None,
+            source=None
+        )
+
+    @mock.patch('ebcli.operations.createops.make_new_env')
+    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    def test_create_non_interactive__min_max_instances__valid(
+            self,
+            is_cname_available_mock,
+            get_default_keyname_mock,
+            find_solution_stack_from_string_mock,
+            get_solution_stack_from_customer_mock,
+            make_new_env_mock,
+    ):
+        get_solution_stack_from_customer_mock.return_value = self.solution
+        find_solution_stack_from_string_mock.return_value = self.solution
+        is_cname_available_mock.return_value = True
+        get_default_keyname_mock.return_value = None
+        env_name = 'my-awesome-env'
+        min_instances = '5'
+        max_instances = '15'
+
+        self.app = EB(argv=['create', env_name, '--min-instances', min_instances, '--max-instances', max_instances])
+        self.app.setup()
+        self.app.run()
+
+        expected_environment_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            env_name=env_name,
+            platform=self.solution,
+            max_instances=max_instances,
+            min_instances=min_instances
+        )
+        call_args, kwargs = make_new_env_mock.call_args
+        actual_environment_request = call_args[0]
+        self.assertEqual(actual_environment_request, expected_environment_request)
+        make_new_env_mock.assert_called_with(
+            expected_environment_request,
+            branch_default=False,
+            process_app_version=False,
+            nohang=False,
+            interactive=False,
+            timeout=None,
+            source=None
+        )
+
+    @mock.patch('ebcli.operations.createops.make_new_env')
+    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    def test_create_non_interactive__min_max_instances_with_spot(
+            self,
+            is_cname_available_mock,
+            get_default_keyname_mock,
+            find_solution_stack_from_string_mock,
+            get_solution_stack_from_customer_mock,
+            make_new_env_mock,
+    ):
+        get_solution_stack_from_customer_mock.return_value = self.solution
+        find_solution_stack_from_string_mock.return_value = self.solution
+        is_cname_available_mock.return_value = True
+        get_default_keyname_mock.return_value = None
+        env_name = 'my-awesome-env'
+        min_instances = '15'
+        max_instances = '5'
+        on_demand_base_capacity = '7'
+
+        self.app = EB(argv=[
+            'create', env_name,
+            '--enable-spot',
+            '--min-instances', min_instances,
+            '--max-instances', max_instances,
+            '--on-demand-base-capacity', on_demand_base_capacity])
+        self.app.setup()
+        self.app.run()
+
+        expected_environment_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            env_name=env_name,
+            platform=self.solution,
+            enable_spot=True,
+            on_demand_base_capacity=on_demand_base_capacity,
+            max_instances=max_instances,
+            min_instances=min_instances
+        )
+        call_args, kwargs = make_new_env_mock.call_args
+        actual_environment_request = call_args[0]
+        self.assertEqual(actual_environment_request, expected_environment_request)
+        make_new_env_mock.assert_called_with(
+            expected_environment_request,
+            branch_default=False,
+            process_app_version=False,
             nohang=False,
             interactive=False,
             timeout=None,

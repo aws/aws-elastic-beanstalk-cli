@@ -59,7 +59,8 @@ class CreateEnvironmentRequest(object):
                  database=None, vpc=None, template_name=None, group_name=None,
                  elb_type=None, enable_spot=None, instance_types=None,
                  spot_max_price=None, on_demand_base_capacity=None,
-                 on_demand_above_base_capacity=None):
+                 on_demand_above_base_capacity=None, min_instances=None,
+                 max_instances=None):
         self.app_name = app_name
         self.cname = cname
         self.env_name = env_name
@@ -97,6 +98,8 @@ class CreateEnvironmentRequest(object):
         self.spot_max_price = spot_max_price
         self.on_demand_base_capacity = on_demand_base_capacity
         self.on_demand_above_base_capacity = on_demand_above_base_capacity
+        self.min_instances = min_instances
+        self.max_instances = max_instances
 
         if not self.app_name:
             raise TypeError(self.__class__.__name__ + ' requires key-word argument app_name')
@@ -219,6 +222,16 @@ class CreateEnvironmentRequest(object):
                 namespaces.AUTOSCALING,
                 option_names.MIN_SIZE,
                 self.scale)
+        if self.min_instances:
+            self.add_option_setting(
+                namespaces.AUTOSCALING,
+                option_names.MIN_SIZE,
+                self.min_instances)
+        if self.max_instances:
+            self.add_option_setting(
+                namespaces.AUTOSCALING,
+                option_names.MAX_SIZE,
+                self.max_instances)
         if self.elb_type:
             self.add_option_setting(
                 namespaces.ENVIRONMENT,

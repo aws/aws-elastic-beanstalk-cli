@@ -81,6 +81,8 @@ class CreateController(AbstractBaseController):
             (['-it', '--instance-types'], dict(help=flag_text['create.instance_types'])),
             (['-sb', '--on-demand-base-capacity'], dict(help=flag_text['create.on_demand_capacity'])),
             (['-sp', '--on-demand-above-base-capacity'], dict(help=flag_text['create.on_demand_above_base_percent'])),
+            (['-im', '--min-instances'], dict(help=flag_text['create.min_instances'])),
+            (['-ix', '--max-instances'], dict(help=flag_text['create.max_instances'])),
             (['-db', '--database'], dict(
                 action="store_true", help=flag_text['create.database'])),
 
@@ -155,6 +157,8 @@ class CreateController(AbstractBaseController):
         instance_types = self.app.pargs.instance_types
         on_demand_base_capacity = self.app.pargs.on_demand_base_capacity
         on_demand_above_base_capacity = self.app.pargs.on_demand_above_base_capacity
+        max_instances = self.app.pargs.max_instances
+        min_instances = self.app.pargs.min_instances
 
         interactive = False if env_name else True
 
@@ -165,6 +169,12 @@ class CreateController(AbstractBaseController):
 
         if single and scale:
             raise InvalidOptionsError(strings['create.singleandsize'])
+
+        if (max_instances or min_instances) and scale:
+            raise InvalidOptionsError(strings['create.scaleandminmax'])
+
+        if (max_instances or min_instances) and single:
+            raise InvalidOptionsError(strings['create.singleandminmax'])
 
         if single and elb_type:
             raise InvalidOptionsError(strings['create.single_and_elb_type'])
@@ -237,7 +247,9 @@ class CreateController(AbstractBaseController):
             instance_types=instance_types,
             spot_max_price=spot_max_price,
             on_demand_base_capacity=on_demand_base_capacity,
-            on_demand_above_base_capacity=on_demand_above_base_capacity)
+            on_demand_above_base_capacity=on_demand_above_base_capacity,
+            min_instances=min_instances,
+            max_instances=max_instances)
 
         env_request.option_settings += envvars
 
