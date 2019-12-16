@@ -2,6 +2,13 @@
 Changelog
 =========
 -------------------
+3.17.0 (2019-12-20)
+-------------------
+- Added `--on-demand-base-capacity` and `--on-demand-above-base-capacity` arguments to the `eb create` command
+- Added `--min-instances` and `--max-instances` arguments to the `eb create` command
+- Added ability to create a single instance spot environment
+
+-------------------
 3.16.0 (2019-11-22)
 -------------------
 - Added support for spot fleet requests during environment creation
