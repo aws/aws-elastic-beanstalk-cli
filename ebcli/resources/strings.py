@@ -25,6 +25,9 @@ strings = {
     'base.update_available': 'An update to the EB CLI is available. '
                              'Run "pip install --upgrade awsebcli" to '
                              'get the latest version.',
+    'base.update_available_script_install': 'An update to the EB CLI is available. '
+                                            'See https://github.com/aws/aws-elastic-beanstalk-cli-setup '
+                                            'to install the latest version.',
     'base.info': 'Welcome to the Elastic Beanstalk Command Line Interface (EB CLI). \n'
                  'For more information on a specific command, type "eb {cmd} --help".',
     'base.epilog': 'To get started type "eb init". Then type "eb create" and "eb open"',

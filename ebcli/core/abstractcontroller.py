@@ -15,6 +15,7 @@ import textwrap
 import json
 
 import sys
+import os
 from cement.core import controller
 
 from ebcli import __version__
@@ -107,7 +108,10 @@ class AbstractBaseController(controller.CementBaseController):
         label = self.Meta.label
         if label in ('create', 'deploy', 'status', 'clone', 'config'):
             if cli_update_exists(version):
-                io.log_alert(strings['base.update_available'])
+                if self.check_install_script_used():
+                    io.log_alert(strings['base.update_available_script_install'])
+                else:
+                    io.log_alert(strings['base.update_available'])
 
     def get_app_name(self):
         app_name = fileoperations.get_application_name()
@@ -138,6 +142,9 @@ class AbstractBaseController(controller.CementBaseController):
             raise NoEnvironmentForBranchError()
 
         return env_name
+
+    def check_install_script_used(self):
+        return '.ebcli-virtual-env' in os.path.abspath(__file__)
 
     @classmethod
     def _add_to_handler(cls, handler):
