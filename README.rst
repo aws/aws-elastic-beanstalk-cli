@@ -43,7 +43,10 @@ Install the EB CLI from this repository
 
 To install the EB CLI, you need administrator/sudo privileges unless you install into a virtual environment.
 
-TBD - include instructions how to clone the repo and run the EB CLI from the cloned repo.
+Once you have downloaded the source code perform the following steps:
+
+1) Navigate to the the root of the ebcli source code
+2) Perform the following command : `pip install .`
 
 Getting Started
 ===============
