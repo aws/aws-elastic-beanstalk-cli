@@ -41,12 +41,17 @@ If you already have Python, but need to install Pip, go `here <http://pip.readth
 Install the EB CLI from this repository
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To install the EB CLI, you need administrator/sudo privileges unless you install into a virtual environment.
+You need administrator/sudo privileges unless you install into a virtual environment.
 
-Once you have downloaded the source code perform the following steps:
+To install the EB CLI
 
-1) Navigate to the the root of the ebcli source code
-2) Perform the following command : `pip install .`:code:
+1. Clone or downloaded this repository to your local environment.
+
+2. Navigate to the the root of the repository.
+
+3. Run the following command.
+   
+   `pip install .`:code:
 
 Getting Started
 ===============
