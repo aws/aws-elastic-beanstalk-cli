@@ -46,7 +46,7 @@ To install the EB CLI, you need administrator/sudo privileges unless you install
 Once you have downloaded the source code perform the following steps:
 
 1) Navigate to the the root of the ebcli source code
-2) Perform the following command : `pip install .`
+2) Perform the following command : :`pip install .`:code::
 
 Getting Started
 ===============
