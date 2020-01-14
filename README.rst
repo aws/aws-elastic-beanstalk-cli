@@ -9,7 +9,7 @@ The AWS Elastic Beanstalk Command Line Interface (EB CLI) is a tool that helps y
 your Elastic Beanstalk applications and environments. It also
 provides integration with Git.
 
-For detailed information about the EB CLI, see `Using the Elastic Beanstalk Command Line Interface (EB CLI) <http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb-cli3.html>`__
+For detailed information about the EB CLI, see `Using the Elastic Beanstalk Command Line Interface (EB CLI) <https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb-cli3.html>`__
 in the *AWS Elastic Beanstalk Developer Guide*.
 
 The EB CLI is now an open source project, hosted in this repository.
@@ -36,7 +36,7 @@ Install Python and Pip. The most recent version of Python now includes pip.
 
 To install Python, go `here <https://www.python.org/downloads/>`__.
 
-If you already have Python, but need to install Pip, go `here <http://pip.readthedocs.org/en/latest/installing.html>`__.
+If you already have Python, but need to install Pip, go `here <https://pip.readthedocs.org/en/latest/installing.html>`__.
 
 Install the EB CLI from this repository
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -57,7 +57,7 @@ Getting Started
 ===============
 
 The EB CLI requires you to have AWS security credentials.
-To learn how to get security credentials, see `Managing Access Keys for Your AWS Account Root User <http://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html>`__
+To learn how to get security credentials, see `Managing Access Keys for Your AWS Account Root User <https://docs.aws.amazon.com/general/latest/gr/managing-aws-access-keys.html>`__
 in the *AWS General Reference*.
 
 To view a list of EB CLI commands, type:
@@ -68,5 +68,5 @@ For more information about a specific command, type:
 
     eb {cmd} --help
 
-For a detailed command reference for all EB CLI commands, see `EB CLI Command Reference <http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-cmd-commands.html>`__
+For a detailed command reference for all EB CLI commands, see `EB CLI Command Reference <https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-cmd-commands.html>`__
 in the *AWS Elastic Beanstalk Developer Guide*.
