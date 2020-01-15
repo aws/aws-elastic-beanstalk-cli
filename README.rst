@@ -45,7 +45,7 @@ You need administrator/sudo privileges unless you install into a virtual environ
 
 To install the EB CLI
 
-1. Clone or downloaded this repository to your local environment.
+1. Clone or download this repository to your local environment.
 
 2. Navigate to the the root of the repository.
 
