@@ -25,7 +25,7 @@ requires = [
     'future>=0.16.0,<0.17.0',
     'pathspec==0.5.9',
     'python-dateutil>=2.1,<2.8.1',  # use the same range that 'botocore' uses
-    'PyYAML>=5.3, <5.4',  # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
+    'PyYAML>=5.2, <5.3',  # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
     'requests>=2.20.1,<2.21',
     'setuptools >= 20.0',
     'semantic_version == 2.5.0',
