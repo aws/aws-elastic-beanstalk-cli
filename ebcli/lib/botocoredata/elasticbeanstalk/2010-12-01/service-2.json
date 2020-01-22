@@ -1045,6 +1045,18 @@
         }
       ]
     },
+    "ListPlatformBranches":{
+      "name":"ListPlatformBranches",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListPlatformBranchesRequest"},
+      "output":{
+        "shape":"ListPlatformBranchesResult",
+        "resultWrapper":"ListPlatformBranchesResult"
+      }
+    },
     "ListPlatformVersions":{
       "name":"ListPlatformVersions",
       "http":{
@@ -1684,6 +1696,7 @@
     },
     "BoxedBoolean":{"type":"boolean"},
     "BoxedInt":{"type":"integer"},
+    "BranchName":{"type":"string"},
     "BuildConfiguration":{
       "type":"structure",
       "required":[
@@ -2619,11 +2632,27 @@
       "member":{"shape":"LaunchConfiguration"}
     },
     "LaunchedAt":{"type":"timestamp"},
+    "LifecycleState":{"type":"string"},
     "ListAvailableSolutionStacksResultMessage":{
       "type":"structure",
       "members":{
         "SolutionStacks":{"shape":"AvailableSolutionStackNamesList"},
         "SolutionStackDetails":{"shape":"AvailableSolutionStackDetailsList"}
+      }
+    },
+    "ListPlatformBranchesRequest":{
+      "type":"structure",
+      "members":{
+        "Filters":{"shape":"SearchFilters"},
+        "MaxRecords":{"shape":"PlatformBranchMaxRecords"},
+        "NextToken":{"shape":"Token"}
+      }
+    },
+    "ListPlatformBranchesResult":{
+      "type":"structure",
+      "members":{
+        "PlatformBranchSummaryList":{"shape":"PlatformBranchSummaryList"},
+        "NextToken":{"shape":"Token"}
       }
     },
     "ListPlatformVersionsRequest":{
@@ -2813,6 +2842,22 @@
       "member":{"shape":"OptionSpecification"}
     },
     "PlatformArn":{"type":"string"},
+    "PlatformBranchMaxRecords":{
+      "type":"integer",
+      "min":1
+    },
+    "PlatformBranchSummary":{
+      "type":"structure",
+      "members":{
+        "PlatformName":{"shape":"PlatformName"},
+        "BranchName":{"shape":"BranchName"},
+        "LifecycleState":{"shape":"LifecycleState"}
+      }
+    },
+    "PlatformBranchSummaryList":{
+      "type":"list",
+      "member":{"shape":"PlatformBranchSummary"}
+    },
     "PlatformCategory":{"type":"string"},
     "PlatformDescription":{
       "type":"structure",
@@ -3056,6 +3101,25 @@
       "exception":true
     },
     "SampleTimestamp":{"type":"timestamp"},
+    "SearchFilter":{
+      "type":"structure",
+      "members":{
+        "Attribute":{"shape":"SearchFilterAttribute"},
+        "Operator":{"shape":"SearchFilterOperator"},
+        "Values":{"shape":"SearchFilterValues"}
+      }
+    },
+    "SearchFilterAttribute":{"type":"string"},
+    "SearchFilterOperator":{"type":"string"},
+    "SearchFilterValue":{"type":"string"},
+    "SearchFilterValues":{
+      "type":"list",
+      "member":{"shape":"SearchFilterValue"}
+    },
+    "SearchFilters":{
+      "type":"list",
+      "member":{"shape":"SearchFilter"}
+    },
     "SingleInstanceHealth":{
       "type":"structure",
       "members":{
