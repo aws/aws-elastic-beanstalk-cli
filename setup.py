@@ -25,7 +25,7 @@ requires = [
     'future>=0.16.0,<0.17.0',
     'pathspec==0.5.9',
     'python-dateutil>=2.1,<2.8.1',  # use the same range that 'botocore' uses
-    'PyYAML>=3.10,<=3.13',  # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
+    'PyYAML>=5.3, <5.4',  # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
     'requests>=2.20.1,<2.21',
     'setuptools >= 20.0',
     'semantic_version == 2.5.0',
@@ -49,7 +49,7 @@ extras_require = {
 
 }
 if not sys.platform.startswith('win'):
-    requires.append('docker-compose >= 1.23.2, < 1.24.0')
+    requires.append('docker-compose >= 1.25.2, < 1.26.0')
     requires.append('blessed>=1.9.5')
 
 
