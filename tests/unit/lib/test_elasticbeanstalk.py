@@ -25,7 +25,7 @@ from ebcli.objects.buildconfiguration import BuildConfiguration
 from .. import mock_responses
 
 
-class TestCloudWatch(unittest.TestCase):
+class TestElasticbeanstalk(unittest.TestCase):
     @mock.patch('ebcli.lib.elasticbeanstalk.aws.make_api_call')
     def test_create_application_version(
             self,
@@ -1649,3 +1649,87 @@ class TestCloudWatch(unittest.TestCase):
                 )
             ]
         )
+
+    @mock.patch('ebcli.lib.elasticbeanstalk._make_api_call')
+    def test_list_platform_branches__no_filters(
+        self,
+        _make_api_call_mock
+    ):
+        api_response = {
+            'PlatformBranchSummaryList': [
+                {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Supported'}
+            ],
+        }
+        _make_api_call_mock.return_value = api_response
+        expected_result = api_response['PlatformBranchSummaryList']
+
+        result = elasticbeanstalk.list_platform_branches()
+
+        _make_api_call_mock.assert_called_once_with('list_platform_branches')
+        self.assertEqual(result, expected_result)
+
+    @mock.patch('ebcli.lib.elasticbeanstalk._make_api_call')
+    def test_list_platform_branches__with_filters(
+        self,
+        _make_api_call_mock
+    ):
+        api_response = {
+            'PlatformBranchSummaryList': [
+                {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Supported'}
+            ],
+        }
+        filters = [
+            {'Attribute': 'PlatformName', 'Operator': '=', 'Values': ['Python']}
+        ]
+        _make_api_call_mock.return_value = api_response
+        expected_result = api_response['PlatformBranchSummaryList']
+
+        result = elasticbeanstalk.list_platform_branches(filters=filters)
+
+        _make_api_call_mock.assert_called_once_with('list_platform_branches', Filters=filters)
+        self.assertEqual(result, expected_result)
+
+    @mock.patch('ebcli.lib.elasticbeanstalk._make_api_call')
+    def test_list_platform_branches__pagination(
+        self,
+        _make_api_call_mock
+    ):
+        api_responses = [
+            {
+                'PlatformBranchSummaryList': [
+                    {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Supported'},
+                    {'PlatformName': 'Python', 'BranchName': 'Python 3.4 running on 64bit Amazon Linux', 'LifecycleState': 'Deprecated'}
+                ],
+                'NextToken': 's91T7CbPGkFOIOXjkrEMYzEjMSNxNDY5aTY='
+            },
+            {
+                'PlatformBranchSummaryList': [
+                    {'PlatformName': 'Python', 'BranchName': 'Python 2.7 running on 64bit Amazon Linux', 'LifecycleState': 'Deprecated'},
+                    {'PlatformName': 'Python', 'BranchName': 'Python 2.7 running on 32bit Amazon Linux', 'LifecycleState': 'Retired'}
+                ],
+                'NextToken': 'TL+36+iG/RNeofj8Jle/szIjMSNxNDY5anY='
+            },
+            {
+                'PlatformBranchSummaryList': [
+                    {'PlatformName': 'Python', 'BranchName': 'Python 2.6 running on 32bit Amazon Linux', 'LifecycleState': 'Retired'},
+                    {'PlatformName': 'Python', 'BranchName': 'Python 2.6 running on 64bit Amazon Linux', 'LifecycleState': 'Deprecated'}
+                ],
+            }
+        ]
+        expected_result = api_responses[0]['PlatformBranchSummaryList']\
+                        + api_responses[1]['PlatformBranchSummaryList']\
+                        + api_responses[2]['PlatformBranchSummaryList']
+
+        _make_api_call_mock.side_effect = api_responses
+
+        result = elasticbeanstalk.list_platform_branches()
+
+        _make_api_call_mock.assert_has_calls(
+            [
+                mock.call('list_platform_branches'),
+                mock.call('list_platform_branches', NextToken=api_responses[0]['NextToken']),
+                mock.call('list_platform_branches', NextToken=api_responses[1]['NextToken']),
+            ],
+            any_order=False
+        )
+        self.assertEqual(result, expected_result)

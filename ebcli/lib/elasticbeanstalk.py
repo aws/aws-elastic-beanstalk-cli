@@ -46,6 +46,28 @@ def delete_platform(arn):
                           DeleteResources=True)
 
 
+def list_platform_branches(filters=None):
+    LOG.debug('Inside list_platform_branches api wrapper')
+    kwargs = dict()
+
+    if filters:
+        kwargs['Filters'] = filters
+
+    next_token = None
+    platform_branches = []
+
+    while True:
+        next_platform_branches, next_token = _list_platform_branches(**kwargs)
+        platform_branches += next_platform_branches
+
+        if next_token is None:
+            break
+        else:
+            kwargs['NextToken'] = next_token
+
+    return platform_branches
+
+
 def list_platform_versions(filters=None):
     kwargs = dict()
 
@@ -67,6 +89,18 @@ def describe_platform_version(arn):
     LOG.debug('Inside describe_platform_version api wrapper')
     return _make_api_call('describe_platform_version',
                           PlatformArn=arn)['PlatformDescription']
+
+
+def _list_platform_branches(**kwargs):
+    response = _make_api_call(
+        'list_platform_branches',
+        **kwargs
+    )
+
+    platform_branches = response.get('PlatformBranchSummaryList', [])
+    next_token = response.get('NextToken')
+
+    return platform_branches, next_token
 
 
 def _list_platform_versions(kwargs, nextToken=None):
