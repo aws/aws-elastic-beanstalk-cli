@@ -6,7 +6,7 @@ Changelog
 -------------------
 - Updated botocore requirement to `>=1.14.0,<1.15`
 - Updated PyYAML requirement to `>=5.2, <5.3`
-- Updated docker-compose requirement to `>=1.15.2,<1.26.0`
+- Updated docker-compose requirement to `>=1.25.2,<1.26.0`
 
 -------------------
 3.17.0 (2019-12-20)
