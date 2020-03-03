@@ -425,8 +425,8 @@ def zip_up_project(location, ignore_list=None):
 
 def _zipdir(path, zipf, ignore_list=None):
     if ignore_list is None:
-        ignore_list = ['.gitignore']
-    ignore_list = ['./' + i for i in ignore_list]
+        ignore_list = {'.gitignore'}
+    ignore_list = {'./' + i for i in ignore_list}
     zipped_roots = []
     for root, dirs, files in os.walk(path):
         if '.elasticbeanstalk' in root:
@@ -796,8 +796,8 @@ def get_ebignore_list():
     with codecs.open(location, 'r', encoding='utf-8') as f:
         spec = PathSpec.from_lines('gitwildmatch', f)
 
-    ignore_list = [f for f in spec.match_tree(get_project_root())]
-    ignore_list.append('.ebignore')
+    ignore_list = {f for f in spec.match_tree(get_project_root())}
+    ignore_list.add('.ebignore')
 
     return ignore_list
 
