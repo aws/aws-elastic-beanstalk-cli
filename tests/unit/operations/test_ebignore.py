@@ -71,7 +71,7 @@ directory_1/.dotted_file
                 'directory_1{}.dotted_file'.format(os.path.sep),
                 '.ebignore'
             },
-            set(paths_to_ignore)
+            paths_to_ignore
         )
 
     @patch('ebcli.core.fileoperations.get_project_root')
@@ -105,7 +105,7 @@ directory_1/file_2
 
         self.assertEqual(
             {'file_1', 'directory_1{}file_2'.format(os.path.sep), '.ebignore'},
-            set(paths_to_ignore)
+            paths_to_ignore
         )
 
     @patch('ebcli.core.fileoperations.get_project_root')
@@ -143,7 +143,7 @@ directory_2/
                 'directory_2{}.gitkeep'.format(os.path.sep),
                 '.ebignore'
             },
-            set(paths_to_ignore)
+            paths_to_ignore
         )
 
     @patch('ebcli.core.fileoperations.get_project_root')
@@ -190,7 +190,7 @@ directory_1/directory_2/*
                 'directory_1{0}directory_2{0}file_1'.format(os.path.sep),
                 '.ebignore'
             },
-            set(paths_to_ignore)
+            paths_to_ignore
         )
 
     @patch('ebcli.core.fileoperations.get_project_root')
@@ -217,7 +217,7 @@ file\ 1
 
         self.assertEqual(
             {'file 1', '.ebignore'},
-            set(paths_to_ignore)
+            paths_to_ignore
         )
 
     @patch('ebcli.core.fileoperations.get_project_root')
@@ -245,7 +245,7 @@ file\ 1
 
         self.assertEqual(
             {'!file_1', '.ebignore'},
-            set(paths_to_ignore)
+            paths_to_ignore
         )
 
     @unittest.skipIf(sys.version_info < (3, 0), reason='Python 2.7.x does not support non-ASCII characters')
@@ -278,5 +278,5 @@ file\ 1
 
         self.assertEqual(
             {'哈哈', '昨夜のコンサートは最高でした。', 'ändrar något i databasen', '.ebignore'},
-            set(paths_to_ignore)
+            paths_to_ignore
         )

@@ -1757,7 +1757,7 @@ class TestCommonOperations(unittest.TestCase):
         get_zip_location_mock.return_value = 'file_path'
         file_exists_mock.return_value = False
         source_control_mock = mock.MagicMock()
-        get_ebignore_list_mock.return_value = ['index.html']
+        get_ebignore_list_mock.return_value = {'index.html'}
 
         self.assertEqual(
             ('version-label.zip', 'file_path'),
@@ -1767,7 +1767,7 @@ class TestCommonOperations(unittest.TestCase):
             )
         )
 
-        zip_up_project_mock.assert_called_once_with('file_path', ignore_list=['index.html'])
+        zip_up_project_mock.assert_called_once_with('file_path', ignore_list={'index.html'})
 
     @mock.patch('ebcli.operations.commonops.elasticbeanstalk.update_environment')
     @mock.patch('ebcli.operations.commonops.wait_for_success_events')
