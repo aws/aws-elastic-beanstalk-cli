@@ -37,7 +37,7 @@ def status(app_name, env_name, verbose):
 def _alert_if_platform_is_older_than_the_latest(env):
     latest = solution_stack_ops.find_solution_stack_from_string(env.platform.name, find_newer=True)
     if env.platform != latest:
-        io.log_alert(alerts['platform.old'])
+        io.log_alert(alerts['env.platform.old'])
 
 
 def _print_codecommit_repositories():

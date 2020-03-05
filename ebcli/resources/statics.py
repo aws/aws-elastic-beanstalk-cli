@@ -122,3 +122,14 @@ class elb_names(object):
 
 class ec2_instance_statuses(object):
     IN_SERVICE = 'InService'
+
+
+class platform_branch_lifecycle_states(object):
+    BETA = 'Beta'
+    SUPPORTED = 'Supported'
+    DEPRECATED = 'Deprecated'
+    RETIRED = 'Retired'
+
+
+class platform_version_lifecycle_states(object):
+    RECOMMENDED = 'Recommended'

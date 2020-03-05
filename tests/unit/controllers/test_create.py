@@ -21,6 +21,7 @@ from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
 from ebcli.objects.exceptions import AlreadyExistsError, InvalidOptionsError, NotFoundError
 from ebcli.objects.requests import CreateEnvironmentRequest
+from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.tier import Tier
 
@@ -79,25 +80,253 @@ class TestCreateBase(unittest.TestCase):
         self.assertEqual(expected_request, actual_request, error_message)
 
 
-class TestCreate(TestCreateBase):
-    @mock.patch('ebcli.controllers.create.solution_stack_ops.find_solution_stack_from_string')
+class TestCreate(unittest.TestCase):
+
+    @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.create.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.create.io.log_warning')
+    def test__determine_platform__no_args_with_default_platform(
+        self,
+        log_warnign_mock,
+        describe_platform_version_mock,
+        get_platform_version_for_platform_string_mock,
+        get_solution_stack_from_customer_mock,
+        get_configured_default_platform_mock,
+    ):
+        platform_version = PlatformVersion(
+            platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0',
+            platform_name='PHP 7.3 running on 64bit Amazon Linux',
+            platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
+        get_configured_default_platform_mock.return_value = 'PHP 7.3 running on 64bit Amazon Linux'
+        get_platform_version_for_platform_string_mock.return_value = platform_version
+        describe_platform_version_mock.return_value = dict()
+
+        result = create._determine_platform()
+
+        get_configured_default_platform_mock.assert_called_once_with()
+        get_solution_stack_from_customer_mock.assert_not_called()
+        get_platform_version_for_platform_string_mock.assert_called_once_with(
+            'PHP 7.3 running on 64bit Amazon Linux')
+        describe_platform_version_mock.assert_called_once_with(
+            'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0')
+        log_warnign_mock.assert_not_called()
+        self.assertEqual(platform_version, result)
+
+    @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.create.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.create.io.log_warning')
+    def test__determine_platform__no_args_sans_default_platform(
+        self,
+        log_warnign_mock,
+        describe_platform_version_mock,
+        get_platform_version_for_platform_string_mock,
+        get_solution_stack_from_customer_mock,
+        get_configured_default_platform_mock,
+    ):
+        solution_stack = SolutionStack('PHP 7.3')
+        get_configured_default_platform_mock.return_value = None
+        get_solution_stack_from_customer_mock.return_value = solution_stack
+
+        result = create._determine_platform()
+
+        get_configured_default_platform_mock.assert_called_once_with()
+        get_solution_stack_from_customer_mock.assert_called_once_with()
+        get_platform_version_for_platform_string_mock.assert_not_called()
+        describe_platform_version_mock.assert_not_called()
+        log_warnign_mock.assert_not_called()
+        self.assertEqual(solution_stack, result)
+
+    @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.create.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.create.io.log_warning')
+    def test__determine_platform__with_platform_string(
+        self,
+        log_warning_mock,
+        describe_platform_version_mock,
+        get_platform_version_for_platform_string_mock,
+        get_solution_stack_from_customer_mock,
+        get_configured_default_platform_mock,
+    ):
+        platform_version = PlatformVersion(
+            platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0',
+            platform_name='PHP 7.3 running on 64bit Amazon Linux',
+            platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
+        get_platform_version_for_platform_string_mock.return_value = platform_version
+        describe_platform_version_mock.return_value = dict()
+
+        result = create._determine_platform('PHP 7.3 running on 64bit Amazon Linux')
+
+        get_configured_default_platform_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_not_called()
+        get_platform_version_for_platform_string_mock.assert_called_once_with(
+            'PHP 7.3 running on 64bit Amazon Linux')
+        describe_platform_version_mock.assert_called_once_with(
+            'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0')
+        log_warning_mock.assert_not_called()
+        self.assertEqual(platform_version, result)
+
+    @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.create.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.create.io.log_warning')
+    def test__determine_platform__multi_container_docker_platform_version_with_iprofile(
+        self,
+        log_warnign_mock,
+        describe_platform_version_mock,
+        get_platform_version_for_platform_string_mock,
+        get_solution_stack_from_customer_mock,
+        get_configured_default_platform_mock,
+    ):
+        platform_version = PlatformVersion(
+            platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/Multi-container Docker running on 64bit Amazon Linux/0.0.0',
+            platform_name='Multi-container Docker running on 64bit Amazon Linux',
+            platform_branch_name='Multi-container Docker running on 64bit Amazon Linux')
+        get_platform_version_for_platform_string_mock.return_value = platform_version
+        describe_platform_version_mock.return_value = dict()
+
+        result = create._determine_platform(
+            'Multi-container Docker running on 64bit Amazon Linux',
+            iprofile='iprofile')
+
+        get_configured_default_platform_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_not_called()
+        get_platform_version_for_platform_string_mock.assert_called_once_with(
+            'Multi-container Docker running on 64bit Amazon Linux')
+        describe_platform_version_mock.assert_called_once_with(
+            'arn:aws:elasticbeanstalk:us-east-1::platform/Multi-container Docker running on 64bit Amazon Linux/0.0.0')
+        log_warnign_mock.assert_not_called()
+        self.assertEqual(platform_version, result)
+
+    @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.create.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.create.io.log_warning')
+    def test__determine_platform__multi_container_docker_platform_version_sans_iprofile(
+        self,
+        log_warnign_mock,
+        describe_platform_version_mock,
+        get_platform_version_for_platform_string_mock,
+        get_solution_stack_from_customer_mock,
+        get_configured_default_platform_mock,
+    ):
+        platform_version = PlatformVersion(
+            platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/Multi-container Docker running on 64bit Amazon Linux/0.0.0',
+            platform_name='Multi-container Docker running on 64bit Amazon Linux',
+            platform_branch_name='Multi-container Docker running on 64bit Amazon Linux')
+        get_platform_version_for_platform_string_mock.return_value = platform_version
+        describe_platform_version_mock.return_value = dict()
+
+        result = create._determine_platform(
+            'Multi-container Docker running on 64bit Amazon Linux')
+
+        get_configured_default_platform_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_not_called()
+        get_platform_version_for_platform_string_mock.assert_called_once_with(
+            'Multi-container Docker running on 64bit Amazon Linux')
+        describe_platform_version_mock.assert_called_once_with(
+            'arn:aws:elasticbeanstalk:us-east-1::platform/Multi-container Docker running on 64bit Amazon Linux/0.0.0')
+        log_warnign_mock.assert_called_once_with(
+            'The Multi-container Docker platform requires additional ECS permissions. '
+            'Add the permissions to the aws-elasticbeanstalk-ec2-role or use your own '
+            'instance profile by typing "-ip {profile-name}".\n'
+            'For more information see: '
+            'https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/'
+            'create_deploy_docker_ecs.html#create_deploy_docker_ecs_role')
+        self.assertEqual(platform_version, result)
+
+    @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.create.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.create.io.log_warning')
+    def test__determine_platform__multi_container_docker_solution_stack_with_iprofile(
+        self,
+        log_warnign_mock,
+        describe_platform_version_mock,
+        get_platform_version_for_platform_string_mock,
+        get_solution_stack_from_customer_mock,
+        get_configured_default_platform_mock,
+    ):
+        solution_stack = SolutionStack('Multi-container Docker')
+        get_platform_version_for_platform_string_mock.return_value = solution_stack
+
+        result = create._determine_platform(
+            'Multi-container Docker',
+            iprofile='iprofile')
+
+        get_configured_default_platform_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_not_called()
+        get_platform_version_for_platform_string_mock.assert_called_once_with(
+            'Multi-container Docker')
+        describe_platform_version_mock.assert_not_called()
+        log_warnign_mock.assert_not_called()
+        self.assertEqual(solution_stack, result)
+
+    @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.create.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.create.io.log_warning')
+    def test__determine_platform__multi_container_docker_solution_stack_sans_iprofile(
+        self,
+        log_warnign_mock,
+        describe_platform_version_mock,
+        get_platform_version_for_platform_string_mock,
+        get_solution_stack_from_customer_mock,
+        get_configured_default_platform_mock,
+    ):
+        solution_stack = SolutionStack('Multi-container Docker')
+        get_platform_version_for_platform_string_mock.return_value = solution_stack
+
+        result = create._determine_platform(
+            'Multi-container Docker')
+
+        get_configured_default_platform_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_not_called()
+        get_platform_version_for_platform_string_mock.assert_called_once_with(
+            'Multi-container Docker')
+        describe_platform_version_mock.assert_not_called()
+        log_warnign_mock.assert_called_once_with(
+            'The Multi-container Docker platform requires additional ECS permissions. '
+            'Add the permissions to the aws-elasticbeanstalk-ec2-role or use your own '
+            'instance profile by typing "-ip {profile-name}".\n'
+            'For more information see: '
+            'https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/'
+            'create_deploy_docker_ecs.html#create_deploy_docker_ecs_role')
+        self.assertEqual(solution_stack, result)
+
+
+class TestCreateE2E(TestCreateBase):
+    @mock.patch('ebcli.controllers.create._determine_platform')
     def test_create__invalid_platform(
             self,
-            find_solution_stack_from_string_mock
+            _determine_platform_mock,
     ):
         self.app = EB(argv=['create', '--platform', 'invalid_platform'])
         self.app.setup()
 
-        find_solution_stack_from_string_mock.side_effect = NotFoundError
+        _determine_platform_mock.side_effect = NotFoundError
 
         with self.assertRaises(NotFoundError):
             self.app.run()
 
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
-    def test_create__cname_is_not_unique__raises_exception(self, is_cname_available_mock, find_solution_stack_from_string_mock):
+    def test_create__cname_is_not_unique__raises_exception(
+        self,
+        is_cname_available_mock,
+        _determine_platform_mock,
+    ):
         is_cname_available_mock.return_value = False
-        find_solution_stack_from_string_mock.return_value = 'PHP 7.1'
+        _determine_platform_mock.return_value = 'PHP 7.1'
 
         self.app = EB(argv=['create', '--cname', 'already-take-cname-prefix'])
         self.app.setup()
@@ -110,9 +339,12 @@ class TestCreate(TestCreateBase):
             str(context_manager.exception)
         )
 
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
-    def test_create__tier_name_is_invalid__raises_exception(self, find_solution_stack_from_string_mock):
-        find_solution_stack_from_string_mock.return_value = 'PHP 7.1'
+    @mock.patch('ebcli.controllers.create._determine_platform')
+    def test_create__tier_name_is_invalid__raises_exception(
+        self,
+        _determine_platform_mock
+    ):
+        _determine_platform_mock.return_value = 'PHP 7.1'
 
         self.app = EB(argv=['create', '--tier', 'invalid_tier'])
         self.app.setup()
@@ -305,7 +537,7 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_cname')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
@@ -315,15 +547,15 @@ class TestCreate(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
+            _determine_platform_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
             get_unique_cname_mock,
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
@@ -362,8 +594,8 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_cname')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -372,7 +604,7 @@ class TestCreate(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
@@ -380,7 +612,7 @@ class TestCreate(TestCreateBase):
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
@@ -416,8 +648,8 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -426,14 +658,14 @@ class TestCreate(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
@@ -465,8 +697,8 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -475,14 +707,14 @@ class TestCreate(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
@@ -515,8 +747,8 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.create.get_unique_cname')
@@ -527,14 +759,14 @@ class TestCreate(TestCreateBase):
             get_unique_cname_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.find_solution_stack_from_string.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
@@ -560,13 +792,13 @@ class TestCreate(TestCreateBase):
 
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create_non_interactive_mode(
             self,
             get_spot_request_from_customer_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_input_mock
@@ -577,7 +809,7 @@ class TestCreate(TestCreateBase):
         """
         env_name = 'my-awesome-env'
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         get_spot_request_from_customer_mock.return_value = None
 
         self.app = EB(argv=['create', env_name, '--elb-type', 'classic'])
@@ -600,8 +832,8 @@ class TestCreate(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.operations.tagops.tagops.get_and_validate_tags')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -610,7 +842,7 @@ class TestCreate(TestCreateBase):
             get_spot_request_from_customer_mock,
             is_cname_available_mock,
             get_default_keyname_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             get_and_validate_tags_mock,
             make_new_env_mock,
@@ -625,7 +857,7 @@ class TestCreate(TestCreateBase):
         itype = 'c3.large'
         keyname ='mykey'
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         get_default_keyname_mock.return_value = True
         is_cname_available_mock.return_value = True
         get_spot_request_from_customer_mock.return_value = None
@@ -695,8 +927,8 @@ class TestCreate(TestCreateBase):
         self.assertEqual(kwargs['branch_default'], True)
 
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -705,12 +937,12 @@ class TestCreate(TestCreateBase):
             get_spot_request_from_customer_mock,
             is_cname_available_mock,
             get_default_keyname_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_spot_request_from_customer_mock.return_value = None
@@ -738,20 +970,20 @@ class TestCreate(TestCreateBase):
         )
 
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_create_non_interactive__min_max_instances__valid(
             self,
             is_cname_available_mock,
             get_default_keyname_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         env_name = 'my-awesome-env'
@@ -783,20 +1015,20 @@ class TestCreate(TestCreateBase):
         )
 
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_create_non_interactive__min_max_instances_with_spot(
             self,
             is_cname_available_mock,
             get_default_keyname_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         env_name = 'my-awesome-env'
@@ -836,20 +1068,20 @@ class TestCreate(TestCreateBase):
         )
 
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_create_non_interactive__spot_request(
             self,
             is_cname_available_mock,
             get_default_keyname_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         env_name = 'my-awesome-env'
@@ -880,20 +1112,20 @@ class TestCreate(TestCreateBase):
         )
 
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_create_non_interactive__instance_types_only(
             self,
             is_cname_available_mock,
             get_default_keyname_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         env_name = 'my-awesome-env'
@@ -924,20 +1156,20 @@ class TestCreate(TestCreateBase):
         )
 
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_create_non_interactive__all_spot_options__shorthand(
             self,
             is_cname_available_mock,
             get_default_keyname_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         env_name = 'my-awesome-env'
@@ -981,15 +1213,15 @@ class TestCreate(TestCreateBase):
 
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create__env_yaml_present__environment_name_present_in_yaml_file__group_name_is_passed(
             self,
             get_spot_request_from_customer_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_input_mock
@@ -1001,7 +1233,7 @@ CName: front-A08G28LG+
 EnvironmentName: front+""")
 
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_spot_request_from_customer_mock.return_value = None
 
@@ -1025,15 +1257,15 @@ EnvironmentName: front+""")
 
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
     def test_create__env_yaml_present__environment_name_present_in_yaml_file__group_name_is_passed__worker_tier(
             self,
             get_spot_request_from_customer_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_input_mock
@@ -1045,7 +1277,7 @@ CName: front-A08G28LG+
 EnvironmentName: front+""")
 
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_spot_request_from_customer_mock.return_value = None
 
@@ -1066,13 +1298,13 @@ EnvironmentName: front+""")
         self.assertEqual(0, get_input_mock.call_count)
 
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_create__env_yaml_present__environment_name_present_in_yaml_file__group_name_not_specified(
             self,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
     ):
@@ -1083,7 +1315,7 @@ CName: front-A08G28LG+
 EnvironmentName: front+""")
 
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
 
         with self.assertRaises(InvalidOptionsError) as context_manager:
@@ -1100,7 +1332,7 @@ EnvironmentName: front+""")
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -1108,8 +1340,8 @@ EnvironmentName: front+""")
             self,
             get_spot_request_from_customer_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
             get_solution_stack_from_customer_mock,
+            _determine_platform_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
             get_input_mock
@@ -1120,7 +1352,7 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
 CName: front-A08G28LG+""")
 
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_spot_request_from_customer_mock.return_value = None
@@ -1147,20 +1379,20 @@ CName: front-A08G28LG+""")
         self.assertEqual(1, get_input_mock.call_count)
 
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     def test_create_non_interactively__with_forward_slash_in_branch(
             self,
             is_cname_available_mock,
             get_default_keyname_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
 
@@ -1193,14 +1425,14 @@ CName: front-A08G28LG+""")
         )
 
 
-class TestCreateWithDatabaseAndVPC(TestCreateBase):
+class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.controllers.create.get_unique_cname')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.core.io.get_pass')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -1209,7 +1441,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_pass_mock,
@@ -1218,7 +1450,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
@@ -1273,8 +1505,8 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_cname')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -1283,7 +1515,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
@@ -1292,7 +1524,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_cname_mock.return_value = 'my-awesome-env'
@@ -1344,8 +1576,8 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_cname')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -1354,7 +1586,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
@@ -1362,7 +1594,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_cname_mock.return_value = 'my-awesome-env'
@@ -1406,20 +1638,20 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         self.assertEqual(3, get_input_mock.call_count)
 
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_non_interactively_with_database__db_username_password_and_other_arguments_passed(
             self,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
 
@@ -1465,8 +1697,8 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.core.io.get_boolean_response')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -1475,7 +1707,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_boolean_response_mock,
@@ -1484,7 +1716,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
@@ -1546,8 +1778,8 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -1556,14 +1788,14 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
@@ -1612,8 +1844,8 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.core.io.get_boolean_response')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -1622,7 +1854,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_boolean_response_mock,
@@ -1631,7 +1863,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_input_mock
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
@@ -1686,20 +1918,20 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         self.assertEqual(1, get_boolean_response_mock.call_count)
 
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_interactively_with_custom_vpc__vpc_argument_triggers_interactive_vpc_prompts__some_vpc_arguments_already_passed_in(
             self,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
 
@@ -1745,8 +1977,8 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_cname')
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -1755,7 +1987,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
@@ -1765,7 +1997,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
             get_input_mock,
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
@@ -1847,20 +2079,20 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         self.assertEnvironmentRequestsEqual(expected_environment_request, actual_environment_request)
 
     @mock.patch('ebcli.operations.createops.make_new_env')
-    @mock.patch('ebcli.operations.solution_stack_ops.find_solution_stack_from_string')
     @mock.patch('ebcli.operations.solution_stack_ops.get_solution_stack_from_customer')
+    @mock.patch('ebcli.controllers.create._determine_platform')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     def test_create_non_interactively_with_database_and_vpc_arguments(
             self,
             get_default_keyname_mock,
             is_cname_available_mock,
-            find_solution_stack_from_string_mock,
+            _determine_platform_mock,
             get_solution_stack_from_customer_mock,
             make_new_env_mock,
     ):
         get_solution_stack_from_customer_mock.return_value = self.solution
-        find_solution_stack_from_string_mock.return_value = self.solution
+        _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
 
@@ -1921,7 +2153,7 @@ class TestCreateWithDatabaseAndVPC(TestCreateBase):
         self.assertEnvironmentRequestsEqual(expected_environment_request, actual_environment_request)
 
 
-class TestCreateModule(unittest.TestCase):
+class TestCreateModuleE2E(unittest.TestCase):
     def setUp(self):
         if not os.path.exists('testDir'):
             os.makedirs('testDir')

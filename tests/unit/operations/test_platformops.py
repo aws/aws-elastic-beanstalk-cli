@@ -22,9 +22,10 @@ import unittest
 
 from ebcli.core import fileoperations
 from ebcli.operations import platformops
-from ebcli.objects.exceptions import ValidationError
+from ebcli.objects.exceptions import ValidationError, NotFoundError
 from ebcli.objects.environment import Environment
 from ebcli.objects.platform import PlatformVersion
+from ebcli.objects.solutionstack import SolutionStack
 
 
 class TestPlatformOperations(unittest.TestCase):
@@ -1568,6 +1569,444 @@ class TestPlatformOperations(unittest.TestCase):
             streamer=streamer_mock,
             timeout_in_minutes=60
         )
+
+    @mock.patch('ebcli.operations.platformops.commonops.get_config_setting_from_branch_or_default')
+    def test_get_configured_default_platform(
+        self,
+        get_config_setting_from_branch_or_default_mock,
+    ):
+        get_config_setting_from_branch_or_default_mock.return_value = 'PHP 7.3'
+
+        result = platformops.get_configured_default_platform()
+
+        get_config_setting_from_branch_or_default_mock.assert_called_once_with('default_platform')
+        self.assertEqual('PHP 7.3', result)
+
+    @mock.patch('ebcli.operations.platformops.PlatformVersion.is_valid_arn')
+    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.operations.platformops.is_platform_branch_name')
+    @mock.patch('ebcli.operations.platformops.get_preferred_platform_version_for_branch')
+    @mock.patch('ebcli.operations.platformops.solution_stack_ops.find_solution_stack_from_string')
+    def test_get_platform_version_for_platform_string__given_arn(
+        self,
+        find_solution_stack_from_string_mock,
+        get_preferred_platform_version_for_branch_mock,
+        is_platform_branch_name_mock,
+        describe_platform_version_mock,
+        is_valid_arn_mock,
+    ):
+        platform_string = 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/2.9.2'
+        is_valid_arn_mock.return_value = True
+        describe_platform_version_mock.return_value = { 'PlatformBranchLifecycleState': 'Supported' }
+
+        result = platformops.get_platform_version_for_platform_string(platform_string)
+
+        is_valid_arn_mock.assert_called_once_with(platform_string)
+        describe_platform_version_mock.assert_called_once_with(platform_string)
+        is_platform_branch_name_mock.assert_not_called()
+        get_preferred_platform_version_for_branch_mock.assert_not_called()
+        find_solution_stack_from_string_mock.assert_not_called()
+        self.assertIsInstance(result, PlatformVersion)
+        self.assertEqual(platform_string, result.platform_arn)
+        self.assertEqual('Supported', result.platform_branch_lifecycle_state)
+
+    @mock.patch('ebcli.operations.platformops.PlatformVersion.is_valid_arn')
+    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.operations.platformops.is_platform_branch_name')
+    @mock.patch('ebcli.operations.platformops.get_preferred_platform_version_for_branch')
+    @mock.patch('ebcli.operations.platformops.solution_stack_ops.find_solution_stack_from_string')
+    def test_get_platform_version_for_platform_string__given_branch_name(
+        self,
+        find_solution_stack_from_string_mock,
+        get_preferred_platform_version_for_branch_mock,
+        is_platform_branch_name_mock,
+        describe_platform_version_mock,
+        is_valid_arn_mock,
+    ):
+        platform_string = 'PHP 7.1 running on 64bit Amazon Linux'
+        platform_version = PlatformVersion(
+            'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/2.9.2')
+        is_valid_arn_mock.return_value = False
+        is_platform_branch_name_mock.return_value = True
+        get_preferred_platform_version_for_branch_mock.return_value = platform_version
+
+        result = platformops.get_platform_version_for_platform_string(platform_string)
+
+        is_valid_arn_mock.assert_called_once_with(platform_string)
+        describe_platform_version_mock.assert_not_called()
+        is_platform_branch_name_mock.assert_called_once_with(platform_string)
+        get_preferred_platform_version_for_branch_mock.assert_called_with(platform_string)
+        find_solution_stack_from_string_mock.assert_not_called()
+        self.assertIsInstance(result, PlatformVersion)
+        self.assertIs(platform_version, result)
+
+    @mock.patch('ebcli.operations.platformops.PlatformVersion.is_valid_arn')
+    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.operations.platformops.is_platform_branch_name')
+    @mock.patch('ebcli.operations.platformops.get_preferred_platform_version_for_branch')
+    @mock.patch('ebcli.operations.platformops.solution_stack_ops.find_solution_stack_from_string')
+    def test_get_platform_version_for_platform_string__given_solution_stack_string(
+        self,
+        find_solution_stack_from_string_mock,
+        get_preferred_platform_version_for_branch_mock,
+        is_platform_branch_name_mock,
+        describe_platform_version_mock,
+        is_valid_arn_mock,
+    ):
+        platform_string = 'PHP 7.1'
+        solution_stack = SolutionStack(platform_string)
+        is_valid_arn_mock.return_value = False
+        is_platform_branch_name_mock.return_value = False
+        find_solution_stack_from_string_mock.return_value = solution_stack
+
+        result = platformops.get_platform_version_for_platform_string(platform_string)
+
+        is_valid_arn_mock.assert_called_once_with(platform_string)
+        describe_platform_version_mock.assert_not_called()
+        is_platform_branch_name_mock.assert_called_once_with(platform_string)
+        get_preferred_platform_version_for_branch_mock.assert_not_called()
+        find_solution_stack_from_string_mock.assert_called_once_with(platform_string)
+        self.assertIsInstance(result, SolutionStack)
+        self.assertIs(solution_stack, result)
+
+    @mock.patch('ebcli.operations.platformops.get_platform_versions_for_branch')
+    def test_preferred_platform_version_for_branch(
+        self,
+        get_platform_versions_for_branch_mock,
+    ):
+        branch_name = 'PHP 7.1 running on 64bit Amazon Linux'
+        platform_versions = [
+            PlatformVersion(
+                platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.3.1',
+            ),
+            PlatformVersion(
+                platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.2.1',
+                platform_lifecycle_state='Recommended'
+            ),
+            PlatformVersion(
+                platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.1.1',
+            ),
+            PlatformVersion(
+                platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.0.3',
+            ),
+        ]
+        get_platform_versions_for_branch_mock.return_value = platform_versions
+
+        result = platformops.get_preferred_platform_version_for_branch(branch_name)
+
+        get_platform_versions_for_branch_mock.assert_called_once_with(branch_name)
+        self.assertEqual('0.2.1', result.platform_version)
+        self.assertIs(platform_versions[1], result)
+
+    @mock.patch('ebcli.operations.platformops.get_platform_versions_for_branch')
+    def test_preferred_platform_version_for_branch__no_recommended(
+        self,
+        get_platform_versions_for_branch_mock,
+    ):
+        branch_name = 'PHP 7.1 running on 64bit Amazon Linux'
+        platform_versions = [
+            PlatformVersion(
+                platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.0.1',
+            ),
+            PlatformVersion(
+                platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.2.1',
+            ),
+            PlatformVersion(
+                platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.1.1',
+            ),
+            PlatformVersion(
+                platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.0.3',
+            ),
+        ]
+        get_platform_versions_for_branch_mock.return_value = platform_versions
+
+        result = platformops.get_preferred_platform_version_for_branch(branch_name)
+
+        get_platform_versions_for_branch_mock.assert_called_once_with(branch_name)
+        self.assertEqual('0.2.1', result.platform_version)
+        self.assertIs(platform_versions[1], result)
+
+    @mock.patch('ebcli.operations.platformops.get_platform_versions_for_branch')
+    def test_preferred_platform_version_for_branch__multiple_recommended(
+        self,
+        get_platform_versions_for_branch_mock,
+    ):
+        branch_name = 'PHP 7.1 running on 64bit Amazon Linux'
+        platform_versions = [
+            PlatformVersion(
+                platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.3.1',
+            ),
+            PlatformVersion(
+                platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.2.1',
+                platform_lifecycle_state='Recommended',
+            ),
+            PlatformVersion(
+                platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.1.1',
+                platform_lifecycle_state='Recommended',
+            ),
+            PlatformVersion(
+                platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.0.3',
+            ),
+        ]
+        get_platform_versions_for_branch_mock.return_value = platform_versions
+
+        result = platformops.get_preferred_platform_version_for_branch(branch_name)
+
+        get_platform_versions_for_branch_mock.assert_called_once_with(branch_name)
+        self.assertEqual('0.2.1', result.platform_version)
+        self.assertIs(platform_versions[1], result)
+
+    @mock.patch('ebcli.operations.platformops.get_platform_versions_for_branch')
+    def test_preferred_platform_version_for_branch__none_found(
+        self,
+        get_platform_versions_for_branch_mock,
+    ):
+        branch_name = 'PHP 7.1 running on 64bit Amazon Linux'
+        platform_versions = []
+        get_platform_versions_for_branch_mock.return_value = platform_versions
+
+        self.assertRaises(
+            NotFoundError,
+            platformops.get_preferred_platform_version_for_branch,
+            branch_name,
+        )
+
+    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.list_platform_versions')
+    def test_get_platform_versions_for_branch(
+        self,
+        list_platform_versions_mock
+    ):
+        branch_name = 'PHP 7.1 running on 64bit Amazon Linux'
+        list_results = [
+            { 'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.0.1' },
+            { 'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.2.1' },
+            { 'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.0.4' },
+        ]
+        list_platform_versions_mock.return_value = list_results
+        expected_filters = [
+            {
+                'Type': 'PlatformBranchName',
+                'Operator': '=',
+                'Values': [branch_name],
+            }
+        ]
+
+        result = platformops.get_platform_versions_for_branch(branch_name)
+
+        list_platform_versions_mock.assert_called_once_with(filters=expected_filters)
+        self.assertEqual(
+            PlatformVersion.from_platform_version_summary(list_results[0]),
+            result[0],
+        )
+        self.assertEqual(
+            PlatformVersion.from_platform_version_summary(list_results[1]),
+            result[1],
+        )
+        self.assertEqual(
+            PlatformVersion.from_platform_version_summary(list_results[2]),
+            result[2],
+        )
+
+    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.list_platform_versions')
+    def test_get_platform_versions_for_branch__recommended_only(
+        self,
+        list_platform_versions_mock
+    ):
+        branch_name = 'PHP 7.1 running on 64bit Amazon Linux'
+        list_results = [
+            { 'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.0.1' },
+            { 'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.2.1' },
+            { 'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.0.4' },
+        ]
+        list_platform_versions_mock.return_value = list_results
+        expected_filters = [
+            {
+                'Type': 'PlatformBranchName',
+                'Operator': '=',
+                'Values': [branch_name],
+            },
+            {
+                'Type': 'PlatformLifecycleState',
+                'Operator': '=',
+                'Values': ['Recommended'],
+            }
+        ]
+
+        result = platformops.get_platform_versions_for_branch(branch_name, recommended_only=True)
+
+        list_platform_versions_mock.assert_called_once_with(filters=expected_filters)
+        self.assertEqual(
+            PlatformVersion.from_platform_version_summary(list_results[0]),
+            result[0],
+        )
+        self.assertEqual(
+            PlatformVersion.from_platform_version_summary(list_results[1]),
+            result[1],
+        )
+        self.assertEqual(
+            PlatformVersion.from_platform_version_summary(list_results[2]),
+            result[2],
+        )
+
+    @mock.patch('ebcli.operations.platformops.PlatformVersion.is_valid_arn')
+    @mock.patch('ebcli.operations.platformops.get_platform_branch_by_name')
+    def test_is_platform_branch_name__with_branch_name(
+        self,
+        get_platform_branch_by_name_mock,
+        is_valid_arn_mock,
+    ):
+        branch_name = 'PHP 7.1 running on 64bit Amazon Linux'
+        is_valid_arn_mock.return_value = False
+        get_platform_branch_by_name_mock.return_value = {
+            'BranchName': branch_name
+        }
+
+        result = platformops.is_platform_branch_name(branch_name)
+
+        is_valid_arn_mock.assert_called_once_with(branch_name)
+        get_platform_branch_by_name_mock.assert_called_once_with(branch_name)
+        self.assertTrue(result)
+
+    @mock.patch('ebcli.operations.platformops.PlatformVersion.is_valid_arn')
+    @mock.patch('ebcli.operations.platformops.get_platform_branch_by_name')
+    def test_is_platform_branch_name__with_arn(
+        self,
+        get_platform_branch_by_name_mock,
+        is_valid_arn_mock,
+    ):
+        branch_name = 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.0.1'
+        is_valid_arn_mock.return_value = True
+
+        result = platformops.is_platform_branch_name(branch_name)
+
+        is_valid_arn_mock.assert_called_once_with(branch_name)
+        get_platform_branch_by_name_mock.assert_not_called()
+        self.assertFalse(result)
+
+    @mock.patch('ebcli.operations.platformops.PlatformVersion.is_valid_arn')
+    @mock.patch('ebcli.operations.platformops.get_platform_branch_by_name')
+    def test_is_platform_branch_name__with_non_branch_name(
+        self,
+        get_platform_branch_by_name_mock,
+        is_valid_arn_mock,
+    ):
+        branch_name = 'PHP 7.1'
+        is_valid_arn_mock.return_value = False
+        get_platform_branch_by_name_mock.return_value = None
+
+        result = platformops.is_platform_branch_name(branch_name)
+
+        is_valid_arn_mock.assert_called_once_with(branch_name)
+        get_platform_branch_by_name_mock.assert_called_once_with(branch_name)
+        self.assertFalse(result)
+
+    @mock.patch('ebcli.operations.platformops._resolve_conflicting_platform_branches')
+    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.list_platform_branches')
+    def test_get_platform_branch_by_name(
+        self,
+        list_platform_branches_mock,
+        _resolve_conflicting_platform_branches_mock,
+    ):
+        branch_name = 'PHP 7.1 running on 64bit Amazon Linux'
+        list_results = [
+            { 'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.0.1' },
+            # { 'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.2.1' },
+            # { 'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.0.4' },
+        ]
+
+        list_platform_branches_mock.return_value = list_results
+
+        expected_filters = [
+            {
+                'Attribute': 'BranchName',
+                'Operator': '=',
+                'Values': [branch_name],
+            }
+        ]
+
+        result = platformops.get_platform_branch_by_name(branch_name)
+
+        list_platform_branches_mock.assert_called_once_with(filters=expected_filters)
+        _resolve_conflicting_platform_branches_mock.assert_not_called()
+        self.assertEqual(list_results[0], result)
+
+    @mock.patch('ebcli.operations.platformops._resolve_conflicting_platform_branches')
+    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.list_platform_branches')
+    def test_get_platform_branch_by_name__multiple_results(
+        self,
+        list_platform_branches_mock,
+        _resolve_conflicting_platform_branches_mock,
+    ):
+        branch_name = 'PHP 7.1 running on 64bit Amazon Linux'
+        list_results = [
+            { 'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.0.1' },
+            { 'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.2.1' },
+            { 'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/0.0.4' },
+        ]
+
+        list_platform_branches_mock.return_value = list_results
+        _resolve_conflicting_platform_branches_mock.return_value = list_results[1]
+
+        expected_filters = [
+            {
+                'Attribute': 'BranchName',
+                'Operator': '=',
+                'Values': [branch_name],
+            }
+        ]
+
+        result = platformops.get_platform_branch_by_name(branch_name)
+
+        list_platform_branches_mock.assert_called_once_with(filters=expected_filters)
+        _resolve_conflicting_platform_branches_mock.assert_called_once_with(list_results)
+        self.assertEqual(list_results[1], result)
+
+    @mock.patch('ebcli.operations.platformops._resolve_conflicting_platform_branches')
+    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.list_platform_branches')
+    def test_get_platform_branch_by_name__no_results(
+        self,
+        list_platform_branches_mock,
+        _resolve_conflicting_platform_branches_mock,
+    ):
+        branch_name = 'PHP 7.1 running on 64bit Amazon Linux'
+        list_results = []
+
+        list_platform_branches_mock.return_value = list_results
+
+        expected_filters = [
+            {
+                'Attribute': 'BranchName',
+                'Operator': '=',
+                'Values': [branch_name],
+            }
+        ]
+
+        result = platformops.get_platform_branch_by_name(branch_name)
+
+        list_platform_branches_mock.assert_called_once_with(filters=expected_filters)
+        _resolve_conflicting_platform_branches_mock.assert_not_called()
+        self.assertEqual(None, result)
+
+    def test__resolve_conflicting_platform_branches(self):
+        branches = [
+            {
+                'BranchName': 'PHP 7.1',
+                'LifecycleState': 'Deprecated',
+            },
+            {
+                'BranchName': 'PHP 7.3',
+                'LifecycleState': 'Supported',
+            },
+            {
+                'BranchName': 'PHP 7.2',
+                'LifecycleState': 'Deprecated',
+            },
+        ]
+        expected = branches[1]
+
+        result = platformops._resolve_conflicting_platform_branches(branches)
+
+        self.assertEqual(expected, result)
 
 
 class TestPackerStreamMessage(unittest.TestCase):

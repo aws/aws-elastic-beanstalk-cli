@@ -23,7 +23,7 @@ from semantic_version import Version
 from termcolor import colored
 
 from ebcli.core.ebglobals import Constants
-from ebcli.operations import logsops
+from ebcli.operations import logsops, solution_stack_ops
 from ebcli.core import io, fileoperations
 from ebcli.lib import elasticbeanstalk, heuristics, s3, utils
 from ebcli.objects import api_filters
@@ -33,14 +33,14 @@ from ebcli.objects.exceptions import (
     PlatformWorkspaceEmptyError,
     ValidationError
 )
-from ebcli.objects.platform import PlatformVersion
+from ebcli.objects.platform import PlatformVersion, PlatformBranch
 from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.operations import commonops
 from ebcli.operations.commonops import _zip_up_project, get_app_version_s3_location
 from ebcli.operations.eventsops import print_events
 from ebcli.operations.tagops import tagops
 from ebcli.resources.statics import namespaces, option_names
-from ebcli.resources.strings import strings, prompts
+from ebcli.resources.strings import strings, prompts, alerts
 
 
 VALID_PLATFORM_VERSION_FORMAT = re.compile(r'^\d+\.\d+\.\d+$')
@@ -412,6 +412,68 @@ def generate_version_to_arn_mappings(custom_platforms, specified_platform_name):
     return version_to_arn_mappings
 
 
+def get_configured_default_platform():
+    return commonops.get_config_setting_from_branch_or_default('default_platform')
+
+
+def get_platform_version_for_platform_string(platform_string):
+    if PlatformVersion.is_valid_arn(platform_string):
+        return PlatformVersion(platform_string).hydrate(
+            elasticbeanstalk.describe_platform_version)
+
+    if is_platform_branch_name(platform_string):
+        return get_preferred_platform_version_for_branch(platform_string)
+
+    return solution_stack_ops.find_solution_stack_from_string(platform_string)
+
+
+def get_preferred_platform_version_for_branch(branch_name):
+    """
+    Gets the latest recommended platform version for a platform branch. If no
+    platform versions are recommended it retreives the latest.
+    """
+    matched_versions = get_platform_versions_for_branch(branch_name)
+    matched_versions = list(sorted(
+        matched_versions,
+        key=lambda x: x.sortable_version,
+        reverse=True))
+    recommended_versions = list(filter(
+        lambda x: x.is_recommended,
+        matched_versions))
+
+    if len(recommended_versions) > 0:
+        return recommended_versions[0]
+    elif len(matched_versions) > 0:
+        return matched_versions[0]
+    else:
+        raise NotFoundError(alerts['platform.invalidstring'].format(
+            branch_name))
+
+
+def get_platform_versions_for_branch(branch_name, recommended_only=False):
+    filters = [
+        {
+            'Type': 'PlatformBranchName',
+            'Operator': '=',
+            'Values': [branch_name],
+        }
+    ]
+
+    if recommended_only:
+        filters.append({
+            'Type': 'PlatformLifecycleState',
+            'Operator': '=',
+            'Values': ['Recommended'],
+        })
+
+    platform_version_summaries = elasticbeanstalk.list_platform_versions(
+        filters=filters)
+    return list(map(
+        lambda x: PlatformVersion.from_platform_version_summary(x),
+        platform_version_summaries
+    ))
+
+
 def group_custom_platforms_by_platform_name(custom_platforms):
     return sorted(
         set(
@@ -420,6 +482,15 @@ def group_custom_platforms_by_platform_name(custom_platforms):
                 for custom_platform in custom_platforms
             ]
         )
+    )
+
+
+def is_platform_branch_name(platform_string):
+    return bool(
+        # a platform branch name cannot be an arn
+        not PlatformVersion.is_valid_arn(platform_string)
+        # request the platform branch from the api to determine if it exists
+        and get_platform_branch_by_name(platform_string)
     )
 
 
@@ -443,6 +514,24 @@ def list_eb_managed_platform_versions(
     filters = [api_filters.PlatformOwnerFilter(values=['AWSElasticBeanstalk']).json()]
 
     return list_platform_versions(filters, platform_name, platform_version, show_status, status)
+
+
+def get_platform_branch_by_name(branch_name):
+    branch_name_filter = {
+        'Attribute': 'BranchName',
+        'Operator': '=',
+        'Values': [branch_name],
+    }
+
+    results = elasticbeanstalk.list_platform_branches(
+        filters=[branch_name_filter])
+
+    if len(results) == 0:
+        return None
+    elif len(results) > 1:
+        return _resolve_conflicting_platform_branches(results)
+
+    return results[0]
 
 
 def list_platform_versions(
@@ -723,6 +812,27 @@ def _raise_if_platform_definition_file_is_missing():
 def _raise_if_version_format_is_invalid(version):
     if not VALID_PLATFORM_VERSION_FORMAT.match(version):
         raise InvalidPlatformVersionError(strings['exit.invalidversion'])
+
+
+def _resolve_conflicting_platform_branches(branches):
+    """
+    Accepts a list of PlatformBranchSummary objects and
+    and returns one PlatformBranchSummary object based on
+    LifecycleState precedence.
+    Supported < Beta < Deprecated < Retired
+    """
+    if not branches:
+        return None
+
+    branches = list(sorted(
+        branches,
+        key=lambda x: PlatformBranch.LIFECYCLE_SORT_VALUES.get(
+            x['LifecycleState'],
+            PlatformBranch.LIFECYCLE_SORT_VALUES['DEFAULT'],
+        )
+    ))
+
+    return branches[0]
 
 
 def _resolve_version_label(source_control, staged):

@@ -29,6 +29,285 @@ from .. import mock_responses
 
 
 class TestInit(unittest.TestCase):
+
+    def test__customer_is_avoiding_interactive_flow__with_platform(self):
+        command_args = mock.Mock(platform='PHP 7.3')
+        result = initialize._customer_is_avoiding_interactive_flow(command_args)
+        self.assertTrue(result)
+
+    def test__customer_is_avoiding_interactive_flow__without_platform(self):
+        command_args = mock.Mock(platform=None)
+        result = initialize._customer_is_avoiding_interactive_flow(command_args)
+        self.assertFalse(result)
+
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test__determine_platform__no_args(
+        self,
+        get_solution_stack_from_customer_mock,
+        echo_mock,
+        extract_solution_stack_from_env_yaml_mock,
+        env_yaml_exists_mock,
+        describe_platform_version_mock,
+        get_configured_default_platform_mock,
+        get_platform_version_for_platform_string_mock,
+    ):
+        solution_stack = SolutionStack('PHP 7.3')
+
+        get_configured_default_platform_mock.return_value = None
+        env_yaml_exists_mock.return_value = False
+        get_solution_stack_from_customer_mock.return_value = solution_stack
+
+        result = initialize._determine_platform()
+
+        get_platform_version_for_platform_string_mock.assert_not_called()
+        get_configured_default_platform_mock.assert_called_once_with()
+        env_yaml_exists_mock.assert_called_once_with()
+        extract_solution_stack_from_env_yaml_mock.assert_not_called()
+        echo_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_called_once_with()
+        self.assertEqual(solution_stack.platform_shorthand, result)
+
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test__determine_platform__no_args_with_default_platform(
+        self,
+        get_solution_stack_from_customer_mock,
+        echo_mock,
+        extract_solution_stack_from_env_yaml_mock,
+        env_yaml_exists_mock,
+        describe_platform_version_mock,
+        get_configured_default_platform_mock,
+        get_platform_version_for_platform_string_mock,
+    ):
+        get_configured_default_platform_mock.return_value = 'PHP 7.3'
+
+        result = initialize._determine_platform()
+
+        get_platform_version_for_platform_string_mock.assert_not_called()
+        get_configured_default_platform_mock.assert_called_once_with()
+        env_yaml_exists_mock.assert_not_called()
+        extract_solution_stack_from_env_yaml_mock.assert_not_called()
+        echo_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_not_called()
+        self.assertEqual('PHP 7.3', result)
+
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test__determine_platform__no_args_with_env_yaml_platform(
+        self,
+        get_solution_stack_from_customer_mock,
+        echo_mock,
+        extract_solution_stack_from_env_yaml_mock,
+        env_yaml_exists_mock,
+        describe_platform_version_mock,
+        get_configured_default_platform_mock,
+        get_platform_version_for_platform_string_mock,
+    ):
+        get_configured_default_platform_mock.return_value = None
+        extract_solution_stack_from_env_yaml_mock.return_value = 'PHP 7.3'
+
+        result = initialize._determine_platform()
+
+        get_platform_version_for_platform_string_mock.assert_not_called()
+        get_configured_default_platform_mock.assert_called_once_with()
+        env_yaml_exists_mock.assert_called_once_with()
+        extract_solution_stack_from_env_yaml_mock.assert_called_once_with()
+        echo_mock.assert_called_once_with('Using platform specified in env.yaml: PHP 7.3')
+        get_solution_stack_from_customer_mock.assert_not_called()
+        self.assertEqual('PHP 7.3', result)
+
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test__determine_platform__no_args_with_env_yaml_sans_platform(
+        self,
+        get_solution_stack_from_customer_mock,
+        echo_mock,
+        extract_solution_stack_from_env_yaml_mock,
+        env_yaml_exists_mock,
+        describe_platform_version_mock,
+        get_configured_default_platform_mock,
+        get_platform_version_for_platform_string_mock,
+    ):
+        solution_stack = SolutionStack('PHP 7.3')
+
+        get_configured_default_platform_mock.return_value = None
+        extract_solution_stack_from_env_yaml_mock.return_value = None
+        get_solution_stack_from_customer_mock.return_value = solution_stack
+
+        result = initialize._determine_platform()
+
+        get_platform_version_for_platform_string_mock.assert_not_called()
+        get_configured_default_platform_mock.assert_called_once_with()
+        env_yaml_exists_mock.assert_called_once_with()
+        extract_solution_stack_from_env_yaml_mock.assert_called_once_with()
+        echo_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_called_once_with()
+        self.assertEqual(solution_stack.platform_shorthand, result)
+
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test__determine_platform__force_interactive(
+        self,
+        get_solution_stack_from_customer_mock,
+        echo_mock,
+        extract_solution_stack_from_env_yaml_mock,
+        env_yaml_exists_mock,
+        describe_platform_version_mock,
+        get_configured_default_platform_mock,
+        get_platform_version_for_platform_string_mock,
+    ):
+        solution_stack = SolutionStack('PHP 7.3')
+
+        get_solution_stack_from_customer_mock.return_value = solution_stack
+
+        result = initialize._determine_platform(force_interactive=True)
+
+        get_platform_version_for_platform_string_mock.assert_not_called()
+        get_configured_default_platform_mock.assert_not_called()
+        env_yaml_exists_mock.assert_not_called()
+        extract_solution_stack_from_env_yaml_mock.assert_not_called()
+        echo_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_called_once_with()
+        self.assertEqual(solution_stack.platform_shorthand, result)
+
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test__determine_platform__customer_provided_platform(
+        self,
+        get_solution_stack_from_customer_mock,
+        echo_mock,
+        extract_solution_stack_from_env_yaml_mock,
+        env_yaml_exists_mock,
+        describe_platform_version_mock,
+        get_configured_default_platform_mock,
+        get_platform_version_for_platform_string_mock,
+    ):
+        customer_provided_platform = 'PHP 7.3'
+        platform_version = PlatformVersion(
+            platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0',
+            platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
+
+        get_platform_version_for_platform_string_mock.return_value = platform_version
+
+        result = initialize._determine_platform(
+            customer_provided_platform=customer_provided_platform)
+
+        get_platform_version_for_platform_string_mock.assert_called_once_with(
+            customer_provided_platform)
+        env_yaml_exists_mock.assert_not_called()
+        extract_solution_stack_from_env_yaml_mock.assert_not_called()
+        echo_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_not_called()
+        self.assertEqual('PHP 7.3 running on 64bit Amazon Linux', result)
+
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test__determine_platform__customer_provided_platform_and_existing_app_platform(
+        self,
+        get_solution_stack_from_customer_mock,
+        echo_mock,
+        extract_solution_stack_from_env_yaml_mock,
+        env_yaml_exists_mock,
+        describe_platform_version_mock,
+        get_configured_default_platform_mock,
+        get_platform_version_for_platform_string_mock,
+    ):
+        customer_provided_platform = 'PHP 7.3'
+        existing_app_platform='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0'
+        platform_version = PlatformVersion(
+            platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0',
+            platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
+
+        get_platform_version_for_platform_string_mock.return_value = platform_version
+
+        result = initialize._determine_platform(
+            customer_provided_platform=customer_provided_platform,
+            existing_app_platform=existing_app_platform)
+
+        get_platform_version_for_platform_string_mock.assert_called_once_with(
+            customer_provided_platform)
+        env_yaml_exists_mock.assert_not_called()
+        extract_solution_stack_from_env_yaml_mock.assert_not_called()
+        echo_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_not_called()
+        self.assertEqual('PHP 7.3 running on 64bit Amazon Linux', result)
+
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
+    @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.initialize.extract_solution_stack_from_env_yaml')
+    @mock.patch('ebcli.controllers.initialize.io.echo')
+    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
+    def test__determine_platform__existing_app_platform(
+        self,
+        get_solution_stack_from_customer_mock,
+        echo_mock,
+        extract_solution_stack_from_env_yaml_mock,
+        env_yaml_exists_mock,
+        describe_platform_version_mock,
+        get_configured_default_platform_mock,
+        get_platform_version_for_platform_string_mock,
+    ):
+        existing_app_platform = 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0'
+
+        get_configured_default_platform_mock.return_value = None
+        describe_platform_version_mock.return_value = {
+            'PlatformArn': existing_app_platform,
+            'PlatformBranchName': 'PHP 7.3 running on 64bit Amazon Linux',
+        }
+
+        result = initialize._determine_platform(
+            existing_app_platform=existing_app_platform)
+
+        get_platform_version_for_platform_string_mock.assert_not_called()
+        get_configured_default_platform_mock.assert_called_once_with()
+        describe_platform_version_mock.assert_called_once_with(
+            existing_app_platform)
+        env_yaml_exists_mock.assert_not_called()
+        extract_solution_stack_from_env_yaml_mock.assert_not_called()
+        echo_mock.assert_not_called()
+        get_solution_stack_from_customer_mock.assert_not_called()
+        self.assertEqual('PHP 7.3 running on 64bit Amazon Linux', result)
+
+
+class TestInitE2E(unittest.TestCase):
     solution = SolutionStack('64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5')
     app_name = 'ebcli-intTest-app'
 
@@ -61,7 +340,7 @@ class TestInit(unittest.TestCase):
             str(context_manager.exception)
         )
 
-    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
+    @mock.patch('ebcli.controllers.initialize._determine_platform')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -78,7 +357,7 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            get_solution_stack_mock
+            _determine_platform_mock
     ):
         get_app_name_mock.return_value = 'my-application'
         commonops_mock.credentials_are_valid.return_value = True
@@ -90,7 +369,7 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_region.return_value = ''
         commonops_mock.check_credentials.return_value = (None, 'us-west-2')
         commonops_mock.set_region_for_application.return_value = 'us-west-2'
-        get_solution_stack_mock.return_value = 'PHP 5.5'
+        _determine_platform_mock.return_value = 'PHP 7.2 running on 64bit Amazon Linux'
 
         app = EB(argv=['init'])
         app.setup()
@@ -99,15 +378,18 @@ class TestInit(unittest.TestCase):
         initops_mock.setup.assert_called_with(
             'my-application',
             'us-west-2',
-            'PHP 5.5',
+            'PHP 7.2 running on 64bit Amazon Linux',
             branch=None,
             dir_path=None,
             repository=None
         )
         get_app_name_mock.assert_called_once_with([], False, False)
-        get_solution_stack_mock.assert_called_once_with(None, None, False)
+        _determine_platform_mock.assert_called_once_with(
+            customer_provided_platform=None,
+            existing_app_platform=None,
+            force_interactive=False)
 
-    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
+    @mock.patch('ebcli.controllers.initialize._determine_platform')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -126,7 +408,7 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            get_solution_stack_mock
+            _determine_platform_mock
     ):
         get_app_name_mock.return_value = 'my-application'
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
@@ -138,7 +420,7 @@ class TestInit(unittest.TestCase):
         commonops_mock.check_credentials.return_value = (None, 'us-west-2')
         commonops_mock.set_region_for_application.return_value = 'us-west-2'
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
-        get_solution_stack_mock.return_value = 'PHP 5.5'
+        _determine_platform_mock.return_value = 'PHP 7.2 running on 64bit Amazon Linux'
 
         get_input_mock.side_effect = [
             '3',  # region number
@@ -153,15 +435,18 @@ class TestInit(unittest.TestCase):
         initops_mock.setup.assert_called_with(
             'my-application',
             'us-west-2',
-            'PHP 5.5',
+            'PHP 7.2 running on 64bit Amazon Linux',
             branch=None,
             dir_path=None,
             repository=None
         )
         get_app_name_mock.assert_called_once_with([], True, False)
-        get_solution_stack_mock.assert_called_once_with(None, None, True)
+        _determine_platform_mock.assert_called_once_with(
+            customer_provided_platform=None,
+            existing_app_platform=None,
+            force_interactive=True)
 
-    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
+    @mock.patch('ebcli.controllers.initialize._determine_platform')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -178,7 +463,7 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            get_solution_stack_mock
+            _determine_platform_mock
     ):
         get_app_name_mock.return_value = self.app_name
         commonops_mock.credentials_are_valid.return_value = False
@@ -191,7 +476,7 @@ class TestInit(unittest.TestCase):
         commonops_mock.get_default_region.return_value = ''
         commonops_mock.check_credentials.return_value = (None, 'us-west-2')
         commonops_mock.set_region_for_application.return_value = 'us-west-2'
-        get_solution_stack_mock.return_value = 'PHP 5.5'
+        _determine_platform_mock.return_value = 'PHP 7.2 running on 64bit Amazon Linux'
 
         EB.Meta.exit_on_close = False
         app = EB(
@@ -207,14 +492,17 @@ class TestInit(unittest.TestCase):
         initops_mock.setup.assert_called_with(
             self.app_name,
             'us-west-2',
-            'PHP 5.5',
+            'PHP 7.2 running on 64bit Amazon Linux',
             branch=None,
             dir_path=None,
             repository=None
         )
-        get_solution_stack_mock.assert_called_once_with(None, None, False)
+        _determine_platform_mock.assert_called_once_with(
+            customer_provided_platform=None,
+            existing_app_platform=None,
+            force_interactive=False)
 
-    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
+    @mock.patch('ebcli.controllers.initialize._determine_platform')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -231,18 +519,18 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            get_solution_stack_mock
+            _determine_platform_mock
     ):
         get_app_name_mock.return_value = self.app_name
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = True
-        create_app_or_use_existing_one_mock.return_value = 'ss-stack', 'key'
+        create_app_or_use_existing_one_mock.return_value = 'platform-arn', 'key'
         commonops_mock.get_default_keyname.return_value = ''
         commonops_mock.get_region.return_value = 'us-west-2'
         commonops_mock.check_credentials.return_value = (None, 'us-west-2')
         commonops_mock.set_region_for_application.return_value = 'us-west-2'
-        get_solution_stack_mock.return_value = 'php'
+        _determine_platform_mock.return_value = 'php'
 
         EB.Meta.exit_on_close = False
         app = EB(argv=['init', '-p', 'php', '--tags', 'testkey1=testvalue1, testkey2=testvalue2'])
@@ -257,9 +545,12 @@ class TestInit(unittest.TestCase):
             dir_path=None,
             repository=None
         )
-        get_solution_stack_mock.assert_called_once_with('php', 'ss-stack', False)
+        _determine_platform_mock.assert_called_once_with(
+            customer_provided_platform='php',
+            existing_app_platform='platform-arn',
+            force_interactive=False)
 
-    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
+    @mock.patch('ebcli.controllers.initialize._determine_platform')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -280,7 +571,7 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            get_solution_stack_mock,
+            _determine_platform_mock,
     ):
         get_app_name_mock.return_value = self.app_name
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
@@ -294,7 +585,7 @@ class TestInit(unittest.TestCase):
         commonops_mock.set_region_for_application.return_value = 'us-east-1'
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('my-repo', 'prod/mybranch')
-        get_solution_stack_mock.return_value = 'ruby'
+        _determine_platform_mock.return_value = 'ruby'
 
         app = EB(
             argv=[
@@ -316,9 +607,12 @@ class TestInit(unittest.TestCase):
             branch='prod/mybranch'
         )
         configure_codecommit_mock.assert_called_once_with('codecommit/my-repo/prod/mybranch')
-        get_solution_stack_mock.assert_called_once_with('ruby', None, False)
+        _determine_platform_mock.assert_called_once_with(
+            customer_provided_platform='ruby',
+            existing_app_platform=None,
+            force_interactive=False)
 
-    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
+    @mock.patch('ebcli.controllers.initialize._determine_platform')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
@@ -335,7 +629,7 @@ class TestInit(unittest.TestCase):
             commonops_mock,
             initops_mock,
             sshops_mock,
-            get_solution_stack_mock
+            _determine_platform_mock
     ):
         get_app_name_mock.return_value = 'my-app'
         fileoperations.create_config_file('app1', 'us-west-1', 'random')
@@ -348,7 +642,7 @@ class TestInit(unittest.TestCase):
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = True
         configure_codecommit_mock.return_value = ('new-repo', 'devo')
         sshops_mock.prompt_for_ec2_keyname.return_value = 'test'
-        get_solution_stack_mock.return_value = 'PHP 5.5'
+        _determine_platform_mock.return_value = 'PHP 7.2 running on 64bit Amazon Linux'
 
         app = EB(
             argv=['init', '--region', 'us-east-1', 'my-app'])
@@ -358,17 +652,20 @@ class TestInit(unittest.TestCase):
         initops_mock.setup.assert_called_with(
             'my-app',
             'us-east-1',
-            'PHP 5.5',
+            'PHP 7.2 running on 64bit Amazon Linux',
             dir_path=None,
             repository='new-repo',
             branch='devo'
         )
 
         configure_codecommit_mock.assert_called_once_with(None)
-        get_solution_stack_mock.assert_called_once_with(None, None, False)
+        _determine_platform_mock.assert_called_once_with(
+            customer_provided_platform=None,
+            existing_app_platform=None,
+            force_interactive=False)
 
     @mock.patch('ebcli.controllers.initialize.fileoperations')
-    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
+    @mock.patch('ebcli.controllers.initialize._determine_platform')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
@@ -385,7 +682,7 @@ class TestInit(unittest.TestCase):
             create_app_or_use_existing_one_mock,
             commonops_mock,
             initops_mock,
-            get_solution_stack_mock,
+            _determine_platform_mock,
             fileoperations_mock,
     ):
         should_prompt_customer_to_opt_into_codecommit_mock.return_value = False
@@ -394,7 +691,7 @@ class TestInit(unittest.TestCase):
         initops_mock.credentials_are_valid.return_value = True
         fileoperations_mock.env_yaml_exists.return_value = None
         get_keyname_mock.return_value = 'test'
-        get_solution_stack_mock.return_value = 'PHP 5.5'
+        _determine_platform_mock.return_value = 'PHP 7.2 running on 64bit Amazon Linux'
         commonops_mock.check_credentials.return_value = ('eb-cli', 'us-west-2')
         commonops_mock.set_region_for_application.return_value = 'us-west-2'
 
@@ -407,25 +704,28 @@ class TestInit(unittest.TestCase):
         initops_mock.setup.assert_called_with(
             self.app_name,
             'us-west-2',
-            'PHP 5.5',
+            'PHP 7.2 running on 64bit Amazon Linux',
             branch=None,
             dir_path=None,
             repository=None
         )
-        handle_buildspec_image_mock.assert_called_once_with('PHP 5.5', False)
+        handle_buildspec_image_mock.assert_called_once_with('PHP 7.2 running on 64bit Amazon Linux', False)
 
         write_config_calls = [
             mock.call('global', 'default_ec2_keyname', 'test'),
             mock.call('global', 'include_git_submodules', True)
         ]
         fileoperations_mock.write_config_setting.assert_has_calls(write_config_calls)
-        get_solution_stack_mock.assert_called_once_with(None, None, True)
+        _determine_platform_mock.assert_called_once_with(
+            customer_provided_platform=None,
+            existing_app_platform=None,
+            force_interactive=True)
 
-    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
     @mock.patch('ebcli.controllers.initialize.sshops')
     @mock.patch('ebcli.controllers.initialize.initializeops')
     @mock.patch('ebcli.controllers.initialize.commonops')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk')
+    @mock.patch('ebcli.controllers.initialize._determine_platform')
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_platform_from_env_yaml')
     @mock.patch('ebcli.controllers.initialize.set_default_env')
     @mock.patch('ebcli.controllers.initialize.create_app_or_use_existing_one')
@@ -444,16 +744,16 @@ class TestInit(unittest.TestCase):
             create_app_or_use_existing_one_mock,
             set_default_env_mock,
             get_platform_from_env_yaml_mock,
+            _determine_platform_mock,
             elasticbeanstalk_mock,
             commonops_mock,
             initops_mock,
             sshops_mock,
-            get_solution_stack_mock
     ):
         get_app_name_mock.return_value = 'testDir'
         get_platform_from_env_yaml_mock.return_value = 'PHP 5.5'
         get_keyname_mock.return_value = 'keyname'
-        get_solution_stack_mock.return_value = '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5'
+        _determine_platform_mock.return_value = 'PHP 7.2 running on 64bit Amazon Linux'
         sshops_mock.prompt_for_ec2_keyname.return_value = Exception
         set_default_env_mock.return_value = None
         elasticbeanstalk_mock.application_exist.return_value = False
@@ -472,17 +772,20 @@ class TestInit(unittest.TestCase):
         initops_mock.setup.assert_called_with(
             'testDir',
             'us-east-1',
-            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5',
+            'PHP 7.2 running on 64bit Amazon Linux',
             branch='prod',
             dir_path=None,
             repository='my-repo'
         )
         handle_buildspec_image_mock.assert_called_once_with(
-            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 5.5',
+            'PHP 7.2 running on 64bit Amazon Linux',
             False
         )
         configure_codecommit_mock.assert_called_once_with('codecommit/my-repo/prod')
-        get_solution_stack_mock.assert_called_once_with(None, None, False)
+        _determine_platform_mock.assert_called_once_with(
+            customer_provided_platform=None,
+            existing_app_platform=None,
+            force_interactive=False)
 
 
 class TestInitModule(unittest.TestCase):
@@ -2017,12 +2320,6 @@ class TestInitModule(unittest.TestCase):
         echo_mock.assert_not_called()
         directory_is_already_associated_with_a_branch_mock.assert_called_once_with()
 
-    def test_customer_is_avoiding_non_interactive_flow(self):
-        self.assertTrue(initialize.customer_is_avoiding_non_interactive_flow('php-7.2'))
-
-    def test_customer_is_avoiding_non_interactive_flow__false(self):
-        self.assertFalse(initialize.customer_is_avoiding_non_interactive_flow(None))
-
     @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
     @mock.patch('ebcli.controllers.initialize.codecommit.list_repositories')
@@ -2118,7 +2415,7 @@ class TestInitModule(unittest.TestCase):
         create_codecommit_repository_mock.assert_called_once_with('new-repository-name')
 
 
-class TestInitMultipleModules(unittest.TestCase):
+class TestInitMultipleModulesE2E(unittest.TestCase):
     platform = PlatformVersion(
         'arn:aws:elasticbeanstalk:us-west-2::platform/PHP 7.1 running on 64bit Amazon Linux/2.6.5'
     )
@@ -2144,72 +2441,8 @@ class TestInitMultipleModules(unittest.TestCase):
         app.setup()
         app.run()
 
-    @mock.patch('ebcli.controllers.initialize.commonops.get_region')
-    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
-    @mock.patch('ebcli.controllers.initialize.get_app_name')
-    @mock.patch('ebcli.controllers.initialize.configure_keyname')
-    @mock.patch('ebcli.controllers.initialize.commonops.set_up_credentials')
-    @mock.patch('ebcli.controllers.initialize.commonops.create_app')
-    @mock.patch('ebcli.controllers.initialize.commonops.pull_down_app_info')
     @mock.patch('ebcli.controllers.initialize.aws.set_region')
-    @mock.patch('ebcli.controllers.initialize.initializeops.setup')
-    @mock.patch('ebcli.controllers.initialize.solution_stack_ops.get_solution_stack_from_customer')
-    def test_multiple_modules__interactive_mode__solution_stack_in_env_yaml_is_used_when_available(
-            self,
-            get_solution_stack_from_customer_mock,
-            setup_mock,
-            set_region_mock,
-            pull_down_app_info_mock,
-            create_app_mock,
-            set_up_credentials_mock,
-            configure_keyname_mock,
-            get_app_name_mock,
-            get_solution_stack_mock,
-            get_region_mock
-    ):
-        os.mkdir('module-1')
-        os.mkdir('module-2')
-        with open(os.path.join('module-1', 'env.yaml'), 'w') as file:
-            file.write("""AWSConfigurationTemplateVersion: 1.1.0.0
-SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)
-        """)
-
-        get_app_name_mock.return_value = 'my-application'
-        get_region_mock.return_value = 'us-east-1'
-        get_solution_stack_mock.return_value = None
-        create_app_mock.return_value = [
-            '64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)',
-            'my-ec2-key-name'
-        ]
-        pull_down_app_info_mock.return_value = [
-            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1',
-            'my-ec2-key-name'
-        ]
-        get_solution_stack_from_customer_mock.return_value = '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1'
-
-        app = EB(
-            argv=[
-                'init',
-                '--modules', 'module-1', 'module-2',
-                '--interactive'
-            ]
-        )
-        app.setup()
-        app.run()
-
-        setup_mock.assert_has_calls(
-            [
-                mock.call('my-application', 'us-east-1', '64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)'),
-                mock.call('my-application', 'us-east-1', '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1')
-            ]
-        )
-        create_app_mock.assert_called_once_with('my-application', default_env=None)
-        pull_down_app_info_mock.assert_called_once_with('my-application', default_env=None)
-        self.assertEqual(2, set_region_mock.call_count)
-        self.assertEqual(2, configure_keyname_mock.call_count)
-
-    @mock.patch('ebcli.controllers.initialize.aws.set_region')
-    @mock.patch('ebcli.controllers.initialize.get_solution_stack')
+    @mock.patch('ebcli.controllers.initialize._determine_platform')
     @mock.patch('ebcli.controllers.initialize.get_app_name')
     @mock.patch('ebcli.controllers.initialize.configure_keyname')
     @mock.patch('ebcli.controllers.initialize.commonops.set_up_credentials')
@@ -2226,7 +2459,7 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
             set_up_credentials_mock,
             configure_keyname_mock,
             get_app_name_mock,
-            get_solution_stack_mock,
+            _determine_platform_mock,
             set_region_mock
     ):
         os.mkdir('module-1')
@@ -2238,13 +2471,13 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
 
         get_app_name_mock.return_value = 'my-application'
         get_region_from_inputs_mock.return_value = 'us-east-1'
-        get_solution_stack_mock.return_value = '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1'
+        _determine_platform_mock.return_value = 'PHP 7.2 running on 64bit Amazon Linux'
         create_app_mock.return_value = [
             '64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 1.7.1 (Generic)',
             'my-ec2-key-name'
         ]
         pull_down_app_info_mock.return_value = [
-            '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1',
+            'PHP 7.2 running on 64bit Amazon Linux',
             'my-ec2-key-name'
         ]
 
@@ -2252,7 +2485,7 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
             argv=[
                 'init',
                 '--modules', 'module-1', 'module-2',
-                '--platform', '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1'
+                '--platform', 'PHP 7.2 running on 64bit Amazon Linux'
             ]
         )
         app.setup()
@@ -2260,8 +2493,8 @@ SolutionStack: 64bit Amazon Linux 2015.09 v2.0.6 running Multi-container Docker 
 
         setup_mock.assert_has_calls(
             [
-                mock.call('my-application', 'us-east-1', '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1'),
-                mock.call('my-application', 'us-east-1', '64bit Amazon Linux 2014.03 v1.0.6 running PHP 7.1')
+                mock.call('my-application', 'us-east-1', 'PHP 7.2 running on 64bit Amazon Linux'),
+                mock.call('my-application', 'us-east-1', 'PHP 7.2 running on 64bit Amazon Linux')
             ]
         )
         create_app_mock.assert_called_once_with('my-application', default_env='/ni')

@@ -245,3 +245,65 @@ class TestUtils(TestCase):
         self.assertTrue(
             a_little_later - now < very_small_difference
         )
+
+    def test_camel_to_snake__basic(self):
+        input_str = 'fooBar'
+        expected = 'foo_bar'
+
+        result = utils.camel_to_snake(input_str)
+
+        self.assertEqual(expected, result)
+
+    def test_camel_to_snake__pascal(self):
+        input_str = 'FooBar'
+        expected = 'foo_bar'
+
+        result = utils.camel_to_snake(input_str)
+
+        self.assertEqual(expected, result)
+
+    def test_camel_to_snake__complex(self):
+        input_str = 'foo1Bar2__abcDef'
+        expected = 'foo1_bar2__abc_def'
+
+        result = utils.camel_to_snake(input_str)
+
+        self.assertEqual(expected, result)
+
+    def test_convert_dict_from_camel_to_snake__basic(self):
+        input_dict = {
+            'fooBar': 'fooBar',
+            'FooBaz': 'FooBaz',
+        }
+        expected = {
+            'foo_bar': 'fooBar',
+            'foo_baz': 'FooBaz',
+        }
+
+        result = utils.convert_dict_from_camel_to_snake(input_dict)
+
+        self.assertEqual(expected, result)
+
+    def test_convert_dict_from_camel_to_snake__recursive(self):
+        input_dict = {
+            'fooBar': 'fooBar',
+            'FooBaz': 'FooBaz',
+            'nestedDict': {
+                'abCd': 'abCd',
+                'efGh': 'efGh',
+            }
+        }
+        expected = {
+            'foo_bar': 'fooBar',
+            'foo_baz': 'FooBaz',
+            'nested_dict': {
+                'ab_cd': 'abCd',
+                'ef_gh': 'efGh',
+            }
+        }
+
+        result = utils.convert_dict_from_camel_to_snake(
+            input_dict,
+            recursive=True)
+
+        self.assertEqual(expected, result)

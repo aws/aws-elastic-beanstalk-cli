@@ -19,8 +19,11 @@ from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.lib import elasticbeanstalk, utils
 from ebcli.objects.exceptions import (
     AlreadyExistsError,
-    InvalidOptionsError
+    InvalidOptionsError,
+    RetiredPlatformBranchError,
+    NotFoundError,
 )
+from ebcli.objects.platform import PlatformVersion, PlatformBranch
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.requests import CreateEnvironmentRequest
 from ebcli.objects.tier import Tier
@@ -29,12 +32,13 @@ from ebcli.operations import (
     composeops,
     createops,
     envvarops,
+    platformops,
     saved_configs,
     solution_stack_ops,
-    spotops
+    spotops,
 )
 from ebcli.operations.tagops import tagops
-from ebcli.resources.strings import strings, prompts, flag_text
+from ebcli.resources.strings import strings, prompts, flag_text, alerts
 from ebcli.resources.statics import elb_names
 
 
@@ -135,7 +139,7 @@ class CreateController(AbstractBaseController):
         cname = self.app.pargs.cname
         tier = self.app.pargs.tier
         itype = self.app.pargs.instance_type
-        solution_string = self.app.pargs.platform or solution_stack_ops.get_default_solution_stack()
+        platform = self.app.pargs.platform
         single = self.app.pargs.single
         iprofile = self.app.pargs.instance_profile
         service_role = self.app.pargs.service_role
@@ -204,11 +208,17 @@ class CreateController(AbstractBaseController):
         if itype and instance_types:
             raise InvalidOptionsError(strings['create.itype_and_instances'])
 
+        platform = _determine_platform(platform, iprofile)
+
+        if isinstance(platform, PlatformVersion) and platform.platform_branch_lifecycle_state:
+            branch = PlatformBranch(platform.platform_branch_name)
+            if branch.is_retired:
+                raise RetiredPlatformBranchError(alerts['env.platformbranch.retired'])
+
         app_name = self.get_app_name()
         tags = tagops.get_and_validate_tags(tags)
         envvars = get_and_validate_envars(envvars)
         process_app_version = fileoperations.env_yaml_exists() or process
-        platform = get_platform(solution_string, iprofile)
         template_name = get_template_name(app_name, cfg)
         tier = get_environment_tier(tier)
         env_name = provided_env_name or get_environment_name(app_name, group)
@@ -585,6 +595,29 @@ def get_template_name(app_name, cfg):
             cfg = 'default'
 
     return saved_configs.resolve_config_name(app_name, cfg)
+
+
+def _determine_platform(platform_string=None, iprofile=None):
+    platform = None
+
+    if not platform_string:
+        platform_string = platformops.get_configured_default_platform()
+
+    if platform_string:
+        platform = platformops.get_platform_version_for_platform_string(
+            platform_string)
+    else:
+        platform = solution_stack_ops.get_solution_stack_from_customer()
+
+    if isinstance(platform, SolutionStack):
+        if platform.language_name == 'Multi-container Docker' and not iprofile:
+            io.log_warning(prompts['ecs.permissions'])
+    if isinstance(platform, PlatformVersion):
+        platform.hydrate(elasticbeanstalk.describe_platform_version)
+        if 'Multi-container Docker' in platform.platform_name and not iprofile:
+            io.log_warning(prompts['ecs.permissions'])
+
+    return platform
 
 
 def _sleep(seconds):

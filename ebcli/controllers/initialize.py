@@ -19,9 +19,11 @@ from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.core.ebglobals import Constants
 from ebcli.lib import utils, elasticbeanstalk, codecommit, aws
 from ebcli.objects.sourcecontrol import SourceControl
+from ebcli.objects.platform import PlatformBranch, PlatformVersion
+from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects import solutionstack
 
-from ebcli.objects.exceptions import(
+from ebcli.objects.exceptions import (
     InvalidProfileError,
     NoRegionError,
     NotInitializedError,
@@ -37,9 +39,10 @@ from ebcli.operations import (
     sshops,
 )
 from ebcli.operations.tagops import tagops
-from ebcli.resources.strings import strings, flag_text, prompts
+from ebcli.resources.strings import strings, flag_text, prompts, alerts
 
 LOG = minimal_logger(__name__)
+
 
 class InitController(AbstractBaseController):
     class Meta:
@@ -71,7 +74,8 @@ class InitController(AbstractBaseController):
         source = self.app.pargs.source
         app_name = self.app.pargs.application_name
         modules = self.app.pargs.modules
-        force_non_interactive = customer_is_avoiding_non_interactive_flow(platform)
+        force_non_interactive = _customer_is_avoiding_interactive_flow(
+            self.app.pargs)
         tags = self.app.pargs.tags
 
         # The user specifies directories to initialize
@@ -94,8 +98,12 @@ class InitController(AbstractBaseController):
         app_name = get_app_name(app_name, interactive, force_non_interactive)
         default_env = set_default_env(interactive, force_non_interactive)
         tags = tagops.get_and_validate_tags(tags)
-        sstack, keyname_of_existing_application = create_app_or_use_existing_one(app_name, default_env, tags)
-        platform = get_solution_stack(platform, sstack, interactive)
+
+        platform_arn, keyname_of_existing_application = create_app_or_use_existing_one(app_name, default_env, tags)
+        platform = _determine_platform(
+            customer_provided_platform=platform,
+            existing_app_platform=platform_arn,
+            force_interactive=interactive and not force_non_interactive)
 
         handle_buildspec_image(platform, force_non_interactive)
 
@@ -150,28 +158,24 @@ class InitController(AbstractBaseController):
                 default_env = '/ni' if force_non_interactive else None
 
                 if not application_created:
-                    sstack, keyname_of_existing_application = commonops.create_app(
+                    platform_arn, keyname_of_existing_application = commonops.create_app(
                         app_name,
                         default_env=default_env
                     )
                     application_created = True
                 else:
-                    sstack, keyname_of_existing_application = commonops.pull_down_app_info(
+                    platform_arn, keyname_of_existing_application = commonops.pull_down_app_info(
                         app_name,
                         default_env=default_env
                     )
-                solution = get_solution_stack(platform, sstack, interactive)
+                platform = _determine_platform(
+                    customer_provided_platform=platform,
+                    existing_app_platform=platform_arn,
+                    interactive=interactive)
                 io.echo('\n--- Configuring module: {0} ---'.format(module))
 
-                solution = solution or sstack
-
-                if not solution and fileoperations.env_yaml_exists():
-                    solution = extract_solution_stack_from_env_yaml()
-                    if solution:
-                        io.echo(strings['init.usingenvyamlplatform'].replace('{platform}', solution))
-                solution = solution or solution_stack_ops.get_solution_stack_from_customer()
-                initializeops.setup(app_name, region, solution)
-                configure_keyname(solution, keyname, keyname_of_existing_application, interactive, force_non_interactive)
+                initializeops.setup(app_name, region, platform)
+                configure_keyname(platform, keyname, keyname_of_existing_application, interactive, force_non_interactive)
                 os.chdir(cwd)
 
 
@@ -366,10 +370,6 @@ def create_app_or_use_existing_one(app_name, default_env, tags):
         return commonops.create_app(app_name, default_env=default_env, tags=tags)
 
 
-def customer_is_avoiding_non_interactive_flow(platform):
-    return not not platform
-
-
 def directory_is_already_associated_with_a_branch():
     return gitops.git_management_enabled()
 
@@ -534,3 +534,50 @@ def should_prompt_customer_to_opt_into_codecommit(
         return False
 
     return True
+
+
+def _customer_is_avoiding_interactive_flow(command_args):
+    return not not command_args.platform
+
+
+def _determine_platform(
+    customer_provided_platform=None,
+    existing_app_platform=None,
+    force_interactive=False,
+):
+    platform = None
+
+    if not force_interactive:
+        if customer_provided_platform:
+            platform = platformops.get_platform_version_for_platform_string(
+                customer_provided_platform)
+
+        if not platform:
+            try:
+                platform = platformops.get_configured_default_platform()
+            except NotInitializedError:
+                # If the directory is not initialized we can safely continue
+                # to get the platform from other sources
+                pass
+
+        if existing_app_platform and not platform:
+            platform = PlatformVersion(existing_app_platform).hydrate(
+                elasticbeanstalk.describe_platform_version)
+
+        if not platform and fileoperations.env_yaml_exists():
+            platform = extract_solution_stack_from_env_yaml()
+            if platform:
+                io.echo(strings['init.usingenvyamlplatform'].replace('{platform}', platform))
+
+    if not platform:
+        platform = solution_stack_ops.get_solution_stack_from_customer()
+
+    if isinstance(platform, PlatformVersion):
+        if not platform.platform_branch_name:
+            return platform.platform_name
+        platform = platform.platform_branch_name
+    if isinstance(platform, PlatformBranch):
+        return platform.branch_name
+    if isinstance(platform, SolutionStack):
+        return platform.platform_shorthand
+    return platform

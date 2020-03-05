@@ -34,6 +34,36 @@ from ebcli.core import io
 urllib = six.moves.urllib
 LOG = minimal_logger(__name__)
 
+camel_to_snake_pattern = re.compile(r'(?<!^)(?=[A-Z])')
+
+
+def camel_to_snake(string):
+    return camel_to_snake_pattern.sub('_', string).lower()
+
+
+def convert_dict_from_camel_to_snake(dictionary, recursive=True):
+    converted_dict = dict()
+    for orig_key in dictionary:
+        new_key = camel_to_snake(orig_key)
+        orig_value = dictionary[orig_key]
+        new_value = (
+            convert_dict_from_camel_to_snake(orig_value)
+            if recursive and isinstance(orig_value, dict)
+            else orig_value)
+        converted_dict[new_key] = new_value
+
+    return converted_dict
+
+
+def pick(dictionary, keys):
+    result = dict()
+
+    for key in keys:
+        if key in dictionary:
+            result[key] = dictionary[key]
+
+    return result
+
 
 def prompt_for_item_in_list(lst, default=1):
     ind = prompt_for_index_in_list(lst, default)

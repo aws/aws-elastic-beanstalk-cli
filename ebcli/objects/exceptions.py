@@ -199,6 +199,10 @@ class DockerVersionError(Exception):
     pass
 
 
+class RetiredPlatformBranchError(EBCLIException):
+    pass
+
+
 class EndOfTestError(EOFError):
     """
     Class defines exception to raise in tests to allow exiting from the infinite `while` loop.

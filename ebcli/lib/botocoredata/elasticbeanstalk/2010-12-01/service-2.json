@@ -2842,6 +2842,7 @@
       "member":{"shape":"OptionSpecification"}
     },
     "PlatformArn":{"type":"string"},
+    "PlatformBranchLifecycleState":{"type":"string"},
     "PlatformBranchMaxRecords":{
       "type":"integer",
       "min":1
@@ -2851,7 +2852,8 @@
       "members":{
         "PlatformName":{"shape":"PlatformName"},
         "BranchName":{"shape":"BranchName"},
-        "LifecycleState":{"shape":"LifecycleState"}
+        "LifecycleState":{"shape":"LifecycleState"},
+        "SupportedTierList":{"shape":"SupportedTierList"}
       }
     },
     "PlatformBranchSummaryList":{
@@ -2879,7 +2881,10 @@
         "Frameworks":{"shape":"PlatformFrameworks"},
         "CustomAmiList":{"shape":"CustomAmiList"},
         "SupportedTierList":{"shape":"SupportedTierList"},
-        "SupportedAddonList":{"shape":"SupportedAddonList"}
+        "SupportedAddonList":{"shape":"SupportedAddonList"},
+        "PlatformLifecycleState":{"shape":"PlatformLifecycleState"},
+        "PlatformBranchName":{"shape":"BranchName"},
+        "PlatformBranchLifecycleState":{"shape":"PlatformBranchLifecycleState"}
       }
     },
     "PlatformFilter":{
@@ -2912,6 +2917,7 @@
       "type":"list",
       "member":{"shape":"PlatformFramework"}
     },
+    "PlatformLifecycleState":{"type":"string"},
     "PlatformMaxRecords":{
       "type":"integer",
       "min":1
@@ -2950,7 +2956,11 @@
         "OperatingSystemName":{"shape":"OperatingSystemName"},
         "OperatingSystemVersion":{"shape":"OperatingSystemVersion"},
         "SupportedTierList":{"shape":"SupportedTierList"},
-        "SupportedAddonList":{"shape":"SupportedAddonList"}
+        "SupportedAddonList":{"shape":"SupportedAddonList"},
+        "PlatformLifecycleState":{"shape":"PlatformLifecycleState"},
+        "PlatformVersion":{"shape":"PlatformVersion"},
+        "PlatformBranchName":{"shape":"BranchName"},
+        "PlatformBranchLifecycleState":{"shape":"PlatformBranchLifecycleState"}
       }
     },
     "PlatformSummaryList":{

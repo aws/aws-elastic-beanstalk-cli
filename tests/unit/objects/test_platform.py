@@ -11,11 +11,62 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import unittest
+import mock
+import pkg_resources
+from datetime import datetime
 
-from ebcli.objects.platform import PlatformVersion
+from ebcli.objects.platform import PlatformVersion, PlatformBranch
 
 
-class TestPlatform(unittest.TestCase):
+class TestPlatformVersion(unittest.TestCase):
+
+    platform_version_description = {
+        "CustomAmiList": [
+            {"ImageId": "", "VirtualizationType": "pv"},
+            {"ImageId": "ami-090bd2f2f88b0a815", "VirtualizationType": "hvm"}
+        ],
+        "DateCreated": datetime.fromtimestamp(1579488501.114),
+        "DateUpdated": datetime.fromtimestamp(1579488501.114),
+        "Description": "64bit Amazon Linux running PHP",
+        "Frameworks": [],
+        "Maintainer": "aws-elasticbeanstalk-platforms@amazon.com",
+        "OperatingSystemName": "Amazon Linux",
+        "OperatingSystemVersion": "2018.03",
+        "PlatformArn": "arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/2.9.2",
+        "PlatformBranchLifecycleState": "Deprecated",
+        "PlatformBranchName": "PHP 7.1 running on 64bit Amazon Linux",
+        "PlatformCategory": "PHP",
+        "PlatformLifecycleState": "Recommended",
+        "PlatformName": "PHP 7.1 running on 64bit Amazon Linux",
+        "PlatformOwner": "AWSElasticBeanstalk",
+        "PlatformStatus": "Ready",
+        "PlatformVersion": "2.9.2",
+        "ProgrammingLanguages": [
+            {"Name": "PHP", "Version": "7.1.33"}
+        ],
+        "SolutionStackName": "64bit Amazon Linux 2018.03 v2.9.2 running PHP 7.1",
+        "SupportedAddonList": [
+            "Log/S3",
+            "Monitoring/Healthd", "WorkerDaemon/SQSD"
+        ],
+        "SupportedTierList": ["WebServer/Standard", "Worker/SQS/HTTP"],
+    }
+
+    platform_version_summary = {
+        "OperatingSystemName": "Amazon Linux",
+        "OperatingSystemVersion": "2018.03",
+        "PlatformArn": "arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.1 running on 64bit Amazon Linux/2.9.2",
+        "PlatformBranchLifecycleState": "Deprecated",
+        "PlatformBranchName": "PHP 7.1 running on 64bit Amazon Linux",
+        "PlatformCategory": "PHP",
+        "PlatformLifecycleState": "Recommended",
+        "PlatformOwner": "AWSElasticBeanstalk",
+        "PlatformStatus": "Ready",
+        "PlatformVersion": "2.9.2",
+        "SupportedAddonList": ["Log/S3", "Monitoring/Healthd", "WorkerDaemon/SQSD"],
+        "SupportedTierList": ["WebServer/Standard", "Worker/SQS/HTTP"],
+    }
+
     def test_arn_to_platform__managed_platform_arn(self):
         arn = 'arn:aws:elasticbeanstalk:us-east-1::platform/Name/1.0.0'
         self.assertEqual(
@@ -150,3 +201,196 @@ class TestPlatform(unittest.TestCase):
         self.assertTrue(PlatformVersion(platform_arn_1).has_healthd_support)
         self.assertFalse(PlatformVersion(platform_arn_2).has_healthd_support)
         self.assertFalse(PlatformVersion(platform_arn_3).has_healthd_support)
+
+    def test_from_platform_version_description(self):
+        platform_version_description = self.platform_version_description
+
+        result = PlatformVersion.from_platform_version_description(
+            platform_version_description)
+
+        self.assertEqual(platform_version_description['CustomAmiList'], result.custom_ami_list)
+        self.assertEqual(platform_version_description['DateCreated'], result.date_created)
+        self.assertEqual(platform_version_description['DateUpdated'], result.date_updated)
+        self.assertEqual(platform_version_description['Maintainer'], result.maintainer)
+        self.assertEqual(platform_version_description['OperatingSystemName'], result.operating_system_name)
+        self.assertEqual(
+            platform_version_description['OperatingSystemVersion'], result.operating_system_version)
+        self.assertEqual(platform_version_description['PlatformArn'], result.platform_arn)
+        self.assertEqual(
+            platform_version_description['PlatformBranchLifecycleState'], result.platform_branch_lifecycle_state)
+        self.assertEqual(platform_version_description['PlatformBranchName'], result.platform_branch_name)
+        self.assertEqual(platform_version_description['PlatformCategory'], result.platform_category)
+        self.assertEqual(
+            platform_version_description['PlatformLifecycleState'], result.platform_lifecycle_state)
+        self.assertEqual(platform_version_description['PlatformName'], result.platform_name)
+        self.assertEqual(platform_version_description['PlatformOwner'], result.platform_owner)
+        self.assertEqual(platform_version_description['PlatformStatus'], result.platform_status)
+        self.assertEqual(platform_version_description['PlatformVersion'], result.platform_version)
+        self.assertEqual(platform_version_description['SolutionStackName'], result.solution_stack_name)
+        self.assertEqual(platform_version_description['SupportedAddonList'], result.supported_addon_list)
+        self.assertEqual(platform_version_description['SupportedTierList'], result.supported_tier_list)
+
+    def test_from_platform_version_summary(self):
+        platform_version_summary = self.platform_version_summary
+
+        result = PlatformVersion.from_platform_version_summary(
+            platform_version_summary)
+
+        self.assertEqual(platform_version_summary['OperatingSystemName'], result.operating_system_name)
+        self.assertEqual(
+            platform_version_summary['OperatingSystemVersion'], result.operating_system_version)
+        self.assertEqual(platform_version_summary['PlatformArn'], result.platform_arn)
+        self.assertEqual(
+            platform_version_summary['PlatformBranchLifecycleState'], result.platform_branch_lifecycle_state)
+        self.assertEqual(platform_version_summary['PlatformBranchName'], result.platform_branch_name)
+        self.assertEqual(platform_version_summary['PlatformCategory'], result.platform_category)
+        self.assertEqual(
+            platform_version_summary['PlatformLifecycleState'], result.platform_lifecycle_state)
+        self.assertEqual(platform_version_summary['PlatformOwner'], result.platform_owner)
+        self.assertEqual(platform_version_summary['PlatformStatus'], result.platform_status)
+        self.assertEqual(platform_version_summary['PlatformVersion'], result.platform_version)
+        self.assertEqual(platform_version_summary['SupportedAddonList'], result.supported_addon_list)
+        self.assertEqual(platform_version_summary['SupportedTierList'], result.supported_tier_list)
+
+    def test_hydrate(self):
+        platform_version_description = self.platform_version_description
+        platform_arn = platform_version_description['PlatformArn']
+        describe_platform_version = mock.Mock(
+            return_value=platform_version_description)
+
+        platform_version = PlatformVersion(platform_arn)
+        platform_version.hydrate(describe_platform_version)
+
+        self.assertEqual(platform_version_description['CustomAmiList'], platform_version.custom_ami_list)
+        self.assertEqual(platform_version_description['DateCreated'], platform_version.date_created)
+        self.assertEqual(platform_version_description['DateUpdated'], platform_version.date_updated)
+        self.assertEqual(platform_version_description['Maintainer'], platform_version.maintainer)
+        self.assertEqual(
+            platform_version_description['OperatingSystemName'], platform_version.operating_system_name)
+        self.assertEqual(
+            platform_version_description['OperatingSystemVersion'], platform_version.operating_system_version)
+        self.assertEqual(platform_version_description['PlatformArn'], platform_version.platform_arn)
+        self.assertEqual(
+            platform_version_description['PlatformBranchLifecycleState'], platform_version.platform_branch_lifecycle_state)
+        self.assertEqual(
+            platform_version_description['PlatformBranchName'], platform_version.platform_branch_name)
+        self.assertEqual(platform_version_description['PlatformCategory'], platform_version.platform_category)
+        self.assertEqual(
+            platform_version_description['PlatformLifecycleState'], platform_version.platform_lifecycle_state)
+        self.assertEqual(platform_version_description['PlatformName'], platform_version.platform_name)
+        self.assertEqual(platform_version_description['PlatformOwner'], platform_version.platform_owner)
+        self.assertEqual(platform_version_description['PlatformStatus'], platform_version.platform_status)
+        self.assertEqual(platform_version_description['PlatformVersion'], platform_version.platform_version)
+        self.assertEqual(
+            platform_version_description['SolutionStackName'], platform_version.solution_stack_name)
+        self.assertEqual(
+            platform_version_description['SupportedAddonList'], platform_version.supported_addon_list)
+        self.assertEqual(
+            platform_version_description['SupportedTierList'], platform_version.supported_tier_list)
+
+    def test_is_recommended(self):
+        platform_arn = self.platform_version_description['PlatformArn']
+        platform_version = PlatformVersion(
+            platform_arn,
+            platform_lifecycle_state='Recommended')
+
+        self.assertTrue(platform_version.is_recommended)
+
+        platform_version = PlatformVersion(
+            platform_arn)
+        self.assertFalse(platform_version.is_recommended)
+
+    @mock.patch('ebcli.objects.platform.utils.parse_version')
+    def test_sortable_version(self, parse_version_mock):
+        version = pkg_resources.parse_version(self.platform_version_description['PlatformVersion'])
+        parse_version_mock.return_value = version
+
+        platform_version = PlatformVersion.from_platform_version_description(self.platform_version_description)
+        result = platform_version.sortable_version
+
+        parse_version_mock.assert_called_once_with(self.platform_version_description['PlatformVersion'])
+        self.assertIs(version, result)
+
+
+class TestPlatformBranch(unittest.TestCase):
+    platform_branch_summary = {
+        "BranchName": "PHP 7.1 running on 64bit Amazon Linux",
+        "LifecycleState": "Deprecated",
+        "PlatformName": "PHP",
+        "SupportedTierList": ["WebServer/Standard", "Worker/SQS/HTTP"]
+    }
+
+    def test_from_platform_branch_summary(self):
+        platform_branch_summary = self.platform_branch_summary
+
+        result = PlatformBranch.from_platform_branch_summary(
+            platform_branch_summary)
+
+        self.assertEqual(platform_branch_summary['BranchName'], result.branch_name)
+        self.assertEqual(platform_branch_summary['LifecycleState'], result.lifecycle_state)
+        self.assertEqual(platform_branch_summary['PlatformName'], result.platform_name)
+        self.assertEqual(platform_branch_summary['SupportedTierList'], result.supported_tier_list)
+
+    def test_is_beta(self):
+        platform_branch = PlatformBranch(
+            branch_name=self.platform_branch_summary['BranchName'],
+            lifecycle_state='Beta')
+
+        self.assertTrue(platform_branch.is_beta)
+
+        platform_branch = PlatformBranch(
+            branch_name=self.platform_branch_summary['BranchName'],
+            lifecycle_state='Supported')
+
+        self.assertFalse(platform_branch.is_beta)
+
+    def test_is_deprecated(self):
+        platform_branch = PlatformBranch(
+            branch_name=self.platform_branch_summary['BranchName'],
+            lifecycle_state='Deprecated')
+
+        self.assertTrue(platform_branch.is_deprecated)
+
+        platform_branch = PlatformBranch(
+            branch_name=self.platform_branch_summary['BranchName'],
+            lifecycle_state='Supported')
+
+        self.assertFalse(platform_branch.is_deprecated)
+
+    def test_is_retired(self):
+        platform_branch = PlatformBranch(
+            branch_name=self.platform_branch_summary['BranchName'],
+            lifecycle_state='Retired')
+
+        self.assertTrue(platform_branch.is_retired)
+
+        platform_branch = PlatformBranch(
+            branch_name=self.platform_branch_summary['BranchName'],
+            lifecycle_state='Supported')
+
+        self.assertFalse(platform_branch.is_retired)
+
+    def test_is_supported(self):
+        platform_branch = PlatformBranch(
+            branch_name=self.platform_branch_summary['BranchName'],
+            lifecycle_state='Supported')
+
+        self.assertTrue(platform_branch.is_supported)
+
+        platform_branch = PlatformBranch(
+            branch_name=self.platform_branch_summary['BranchName'],
+            lifecycle_state='Beta')
+
+        self.assertFalse(platform_branch.is_supported)
+
+    def test_hydrate(self):
+        platform_branch_summary = self.platform_branch_summary
+        get_platform_branch_by_name = mock.Mock(return_value=platform_branch_summary)
+
+        platform_branch = PlatformBranch(platform_branch_summary['BranchName'])
+        result = platform_branch.hydrate(get_platform_branch_by_name)
+
+        self.assertEqual(platform_branch_summary['BranchName'], platform_branch.branch_name)
+        self.assertEqual(platform_branch_summary['LifecycleState'], platform_branch.lifecycle_state)
+        self.assertEqual(platform_branch_summary['PlatformName'], platform_branch.platform_name)
+        self.assertEqual(platform_branch_summary['SupportedTierList'], platform_branch.supported_tier_list)

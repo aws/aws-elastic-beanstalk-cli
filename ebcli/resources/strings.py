@@ -696,9 +696,23 @@ prompts = {
 }
 
 alerts = {
-    'platform.old': 'There is a newer version of the platform used by your '
+    'env.platform.notrecommended': 'There is a platform version available that is '
+                              'recommended over your current platform version.',
+    'env.platform.old': 'There is a newer version of the platform used by your '
                     'environment. You can upgrade your environment to the '
-                    'most recent platform version by typing "eb upgrade".'
+                    'most recent platform version by typing "eb upgrade".',
+    'env.platformbranch.deprecated': 'The platform you chose is '
+                    'deprecated and may not be supported in the future.',
+    'env.platformbranch.retired': 'The platform you chose is '
+                    'retired and is no longer supported.',
+    'platform.norecommended': 'There is a platform version available that is '
+                              'recommended over your current platform version.',
+    'platform.old': 'There is a newer version of the platform you chose.',
+    'platformbranch.deprecated': 'The platform you chose is '
+                    'deprecated and may not be supported in the future.',
+    'platformbranch.retired': 'The platform you chose is '
+                    'retired and is no longer supported.',
+    'platform.invalidstring': 'Platform "{}" does not appear to be valid',
 }
 
 flag_text = {
