@@ -14,8 +14,12 @@
 
 from ebcli.core import fileoperations
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.operations import solution_stack_ops
-from ebcli.operations.platformops import set_platform, get_platform_name_and_version_interactive
+from ebcli.objects.platform import PlatformBranch, PlatformVersion
+from ebcli.operations.platformops import (
+    get_platform_name_and_version_interactive,
+    prompt_for_platform,
+    set_platform,
+)
 from ebcli.resources.strings import strings, flag_text
 
 
@@ -33,7 +37,16 @@ class PlatformSelectController(AbstractBaseController):
         epilog = strings['platformselect.epilog']
 
     def do_command(self):
-        platform = solution_stack_ops.get_solution_stack_from_customer().name
+        platform = prompt_for_platform()
+
+        if isinstance(platform, PlatformVersion):
+            if platform.platform_branch_name:
+                platform = platform.platform_branch_name
+            else:
+                platform = platform.platform_name
+        elif isinstance(platform, PlatformBranch):
+            platform = platform.branch_name
+
         fileoperations.write_config_setting('global', 'default_platform', platform)
 
 

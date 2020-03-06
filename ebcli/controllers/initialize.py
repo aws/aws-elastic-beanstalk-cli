@@ -168,11 +168,11 @@ class InitController(AbstractBaseController):
                         app_name,
                         default_env=default_env
                     )
+                io.echo('\n--- Configuring module: {0} ---'.format(module))
                 platform = _determine_platform(
                     customer_provided_platform=platform,
                     existing_app_platform=platform_arn,
-                    interactive=interactive)
-                io.echo('\n--- Configuring module: {0} ---'.format(module))
+                    force_interactive=interactive)
 
                 initializeops.setup(app_name, region, platform)
                 configure_keyname(platform, keyname, keyname_of_existing_application, interactive, force_non_interactive)
@@ -420,29 +420,6 @@ def get_keyname(keyname, keyname_of_existing_app, interactive, force_non_interac
     return keyname
 
 
-def get_solution_stack(platform, sstack, interactive):
-    customer_provided_platform = not not platform
-    if not platform:
-        try:
-            platform = solution_stack_ops.get_default_solution_stack()
-        except NotInitializedError:
-            platform = None
-
-    # Validate that the platform exists
-    if platform:
-        solution_stack_ops.find_solution_stack_from_string(platform)
-
-    platform = platform or sstack
-
-    if fileoperations.env_yaml_exists():
-        platform = platform or extract_solution_stack_from_env_yaml()
-
-    if not platform or (interactive and not customer_provided_platform):
-        platform = solution_stack_ops.get_solution_stack_from_customer().platform_shorthand
-
-    return platform
-
-
 def handle_buildspec_image(solution, force_non_interactive):
     if not fileoperations.build_spec_exists():
         return
@@ -570,12 +547,12 @@ def _determine_platform(
                 io.echo(strings['init.usingenvyamlplatform'].replace('{platform}', platform))
 
     if not platform:
-        platform = solution_stack_ops.get_solution_stack_from_customer()
+        platform = platformops.prompt_for_platform()
 
     if isinstance(platform, PlatformVersion):
-        if not platform.platform_branch_name:
-            return platform.platform_name
-        platform = platform.platform_branch_name
+        if customer_provided_platform == platform.platform_arn:
+            return platform.platform_arn
+        return platform.platform_branch_name or platform.platform_name
     if isinstance(platform, PlatformBranch):
         return platform.branch_name
     if isinstance(platform, SolutionStack):

@@ -14,6 +14,7 @@ import unittest
 import mock
 import pkg_resources
 from datetime import datetime
+from dateutil import tz
 
 from ebcli.objects.platform import PlatformVersion, PlatformBranch
 
@@ -25,8 +26,8 @@ class TestPlatformVersion(unittest.TestCase):
             {"ImageId": "", "VirtualizationType": "pv"},
             {"ImageId": "ami-090bd2f2f88b0a815", "VirtualizationType": "hvm"}
         ],
-        "DateCreated": datetime.fromtimestamp(1579488501.114),
-        "DateUpdated": datetime.fromtimestamp(1579488501.114),
+        "DateCreated": datetime(2018, 7, 19, 21, 50, 21, 623000, tzinfo=tz.tzutc()),
+        "DateUpdated": datetime(2018, 7, 19, 21, 50, 21, 623000, tzinfo=tz.tzutc()),
         "Description": "64bit Amazon Linux running PHP",
         "Frameworks": [],
         "Maintainer": "aws-elasticbeanstalk-platforms@amazon.com",

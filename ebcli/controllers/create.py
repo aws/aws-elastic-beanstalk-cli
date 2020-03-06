@@ -211,7 +211,8 @@ class CreateController(AbstractBaseController):
         platform = _determine_platform(platform, iprofile)
 
         if isinstance(platform, PlatformVersion) and platform.platform_branch_lifecycle_state:
-            branch = PlatformBranch(platform.platform_branch_name)
+            branch_summary = platformops.get_platform_branch_by_name(platform.platform_branch_name)
+            branch = PlatformBranch.from_platform_branch_summary(branch_summary)
             if branch.is_retired:
                 raise RetiredPlatformBranchError(alerts['env.platformbranch.retired'])
 
@@ -451,24 +452,6 @@ def get_environment_name(app_name, group):
     return env_name or io.prompt_for_environment_name(get_unique_environment_name(app_name))
 
 
-def get_platform(solution_string, iprofile=None):
-    """
-    Set a PlatformVersion or a SolutionStack based on the `solution_string`.
-    :param solution_string: The value of the `--platform` argument input by the customer
-    :param iprofile: The instance profile, if any, the customer passed as argument
-    :return: a PlatformVersion or a SolutionStack object depending on whether the match was
-        against an ARN of a Solution Stack name.
-    """
-    solution = solution_stack_ops.find_solution_stack_from_string(solution_string)
-    solution = solution or solution_stack_ops.get_solution_stack_from_customer()
-
-    if isinstance(solution, SolutionStack):
-        if solution.language_name == 'Multi-container Docker' and not iprofile:
-            io.log_warning(prompts['ecs.permissions'])
-
-    return solution
-
-
 def get_environment_tier(tier):
     """
     Set the 'tier' for the environment from the raw value received for the `--tier`
@@ -607,13 +590,12 @@ def _determine_platform(platform_string=None, iprofile=None):
         platform = platformops.get_platform_version_for_platform_string(
             platform_string)
     else:
-        platform = solution_stack_ops.get_solution_stack_from_customer()
+        platform = platformops.prompt_for_platform()
 
     if isinstance(platform, SolutionStack):
         if platform.language_name == 'Multi-container Docker' and not iprofile:
             io.log_warning(prompts['ecs.permissions'])
     if isinstance(platform, PlatformVersion):
-        platform.hydrate(elasticbeanstalk.describe_platform_version)
         if 'Multi-container Docker' in platform.platform_name and not iprofile:
             io.log_warning(prompts['ecs.permissions'])
 

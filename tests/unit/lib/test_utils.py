@@ -13,6 +13,7 @@
 import datetime
 import sys
 
+import mock
 import unittest
 from unittest import TestCase
 
@@ -307,3 +308,202 @@ class TestUtils(TestCase):
             recursive=True)
 
         self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.lib.utils.prompt_for_index_in_list')
+    def test_prompt_for_item_in_list(
+        self,
+        prompt_for_index_in_list_mock,
+    ):
+        lst = ['a', 'b', 'c']
+        prompt_for_index_in_list_mock.return_value = 2
+
+        result = utils.prompt_for_item_in_list(lst)
+
+        prompt_for_index_in_list_mock.assert_called_once_with(lst, 1)
+        self.assertEqual('c', result)
+
+    @mock.patch('ebcli.lib.utils.prompt_for_index_in_list')
+    def test_prompt_for_item_in_list__with_default(
+        self,
+        prompt_for_index_in_list_mock,
+    ):
+        lst = ['a', 'b', 'c']
+        prompt_for_index_in_list_mock.return_value = 2
+
+        result = utils.prompt_for_item_in_list(lst, default=2)
+
+        prompt_for_index_in_list_mock.assert_called_once_with(lst, 2)
+        self.assertEqual('c', result)
+
+    @mock.patch('ebcli.lib.utils.io.prompt')
+    @mock.patch('ebcli.lib.utils.io.echo')
+    def test_prompt_for_index_in_list(
+        self,
+        echo_mock,
+        prompt_mock,
+    ):
+        call_tracker = mock.Mock()
+        call_tracker.attach_mock(echo_mock, 'echo_mock')
+        call_tracker.attach_mock(prompt_mock, 'prompt_mock')
+
+        lst = ['a', 'b', 'c']
+        prompt_mock.return_value = 1
+
+        result = utils.prompt_for_index_in_list(lst)
+
+        call_tracker.assert_has_calls(
+            [
+                mock.call.echo_mock('1)', 'a'),
+                mock.call.echo_mock('2)', 'b'),
+                mock.call.echo_mock('3)', 'c'),
+                mock.call.prompt_mock('default is 1', default=1),
+                mock.call.echo_mock(),
+            ],
+            any_order=False
+        )
+        self.assertEqual(0, result)
+
+    @mock.patch('ebcli.lib.utils.io.prompt')
+    @mock.patch('ebcli.lib.utils.io.echo')
+    def test_prompt_for_index_in_list__explicit_default(
+        self,
+        echo_mock,
+        prompt_mock,
+    ):
+        call_tracker = mock.Mock()
+        call_tracker.attach_mock(echo_mock, 'echo_mock')
+        call_tracker.attach_mock(prompt_mock, 'prompt_mock')
+
+        lst = ['a', 'b', 'c']
+        prompt_mock.return_value = 1
+
+        result = utils.prompt_for_index_in_list(lst, 2)
+
+        call_tracker.assert_has_calls(
+            [
+                mock.call.echo_mock('1)', 'a'),
+                mock.call.echo_mock('2)', 'b'),
+                mock.call.echo_mock('3)', 'c'),
+                mock.call.prompt_mock('default is 2', default=2),
+                mock.call.echo_mock(),
+            ],
+            any_order=False
+        )
+        self.assertEqual(0, result)
+
+    @mock.patch('ebcli.lib.utils.io.prompt')
+    @mock.patch('ebcli.lib.utils.io.echo')
+    def test_prompt_for_index_in_list__explicit_none_default(
+        self,
+        echo_mock,
+        prompt_mock,
+    ):
+        call_tracker = mock.Mock()
+        call_tracker.attach_mock(echo_mock, 'echo_mock')
+        call_tracker.attach_mock(prompt_mock, 'prompt_mock')
+
+        lst = ['a', 'b', 'c']
+        prompt_mock.return_value = 1
+
+        result = utils.prompt_for_index_in_list(lst, None)
+
+        call_tracker.assert_has_calls(
+            [
+                mock.call.echo_mock('1)', 'a'),
+                mock.call.echo_mock('2)', 'b'),
+                mock.call.echo_mock('3)', 'c'),
+                mock.call.prompt_mock('make a selection', default=0),
+                mock.call.echo_mock(),
+            ],
+            any_order=False
+        )
+        self.assertEqual(0, result)
+
+    @mock.patch('ebcli.lib.utils.io.prompt')
+    @mock.patch('ebcli.lib.utils.io.echo')
+    def test_prompt_for_index_in_list__explicit_none_default_no_selection_made(
+        self,
+        echo_mock,
+        prompt_mock,
+    ):
+        call_tracker = mock.Mock()
+        call_tracker.attach_mock(echo_mock, 'echo_mock')
+        call_tracker.attach_mock(prompt_mock, 'prompt_mock')
+
+        lst = ['a', 'b', 'c']
+        prompt_mock.side_effect = [0, 1]
+
+        result = utils.prompt_for_index_in_list(lst, None)
+
+        call_tracker.assert_has_calls(
+            [
+                mock.call.echo_mock('1)', 'a'),
+                mock.call.echo_mock('2)', 'b'),
+                mock.call.echo_mock('3)', 'c'),
+                mock.call.prompt_mock('make a selection', default=0),
+                mock.call.echo_mock('Sorry, that is not a valid choice. Please choose a number between 1 and 3.'),
+                mock.call.prompt_mock('make a selection', default=0),
+                mock.call.echo_mock(),
+            ],
+            any_order=False
+        )
+        self.assertEqual(0, result)
+
+    def test_index_of__list(self):
+        iterable = ['a', 'b', 'c']
+
+        result = utils.index_of(iterable, 'b')
+
+        self.assertEqual(1, result)
+
+    def test_index_of__string(self):
+        iterable = 'abc'
+
+        result = utils.index_of(iterable, 'b')
+
+        self.assertEqual(1, result)
+
+    def test_index_of__tuple(self):
+        iterable = ('a', 'b', 'c')
+
+        result = utils.index_of(iterable, 'b')
+
+        self.assertEqual(1, result)
+
+    def test_index_of__value_not_present(self):
+        iterable = ['a', 'b', 'c']
+
+        result = utils.index_of(iterable, 'd')
+
+        self.assertEqual(-1, result)
+
+    def test_index_of__key_function(self):
+        iterable = [
+            {'id': 'a'},
+            {'id': 'b'},
+            {'id': 'c'},
+        ]
+
+        result = utils.index_of(iterable, 'C', key=lambda x: str.upper(x['id']))
+
+        self.assertEqual(2, result)
+
+    def test_index_of__key_function_not_found(self):
+        iterable = [
+            {'id': 'a'},
+            {'id': 'b'},
+            {'id': 'c'},
+        ]
+
+        result = utils.index_of(iterable, 'D', key=lambda x: str.upper(x['id']))
+
+        self.assertEqual(-1, result)
+
+    def test_index_of__key_not_callable(self):
+        iterable = [
+            {'id': 'a'},
+            {'id': 'b'},
+            {'id': 'c'},
+        ]
+
+        self.assertRaises(TypeError, utils.index_of, iterable, 'a', key='id')

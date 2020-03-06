@@ -23,7 +23,6 @@ from semantic_version import Version
 from termcolor import colored
 
 from ebcli.core.ebglobals import Constants
-from ebcli.operations import logsops, solution_stack_ops
 from ebcli.core import io, fileoperations
 from ebcli.lib import elasticbeanstalk, heuristics, s3, utils
 from ebcli.objects import api_filters
@@ -35,12 +34,16 @@ from ebcli.objects.exceptions import (
 )
 from ebcli.objects.platform import PlatformVersion, PlatformBranch
 from ebcli.objects.sourcecontrol import SourceControl
-from ebcli.operations import commonops
+from ebcli.operations import logsops, commonops, solution_stack_ops
 from ebcli.operations.commonops import _zip_up_project, get_app_version_s3_location
 from ebcli.operations.eventsops import print_events
 from ebcli.operations.tagops import tagops
-from ebcli.resources.statics import namespaces, option_names
-from ebcli.resources.strings import strings, prompts, alerts
+from ebcli.resources.statics import (
+    namespaces,
+    option_names,
+    platform_branch_lifecycle_states,
+)
+from ebcli.resources.strings import strings, alerts, prompts
 
 
 VALID_PLATFORM_VERSION_FORMAT = re.compile(r'^\d+\.\d+\.\d+$')
@@ -57,6 +60,8 @@ OTHER_FORMAT_REGEX = re.compile(r'[^:]+: (.+)')
 PLATFORM_ARN = re.compile(
     r'^arn:aws(?:-[a-z\-0-9]+)?:elasticbeanstalk:(?:[a-z\-0-9]*):\d+:platform/([^/]+)/(\d+\.\d+\.\d+)$'
 )
+
+_non_retired_platform_branches_cache = None
 
 
 class PackerStreamMessage(object):
@@ -141,6 +146,10 @@ class PackerStreamFormatter(object):
         return formatted_message
 
 
+def collect_families_from_branches(branches):
+    return list(set([branch['PlatformName'] for branch in branches]))
+
+
 def create_platform_version(
         version,
         major_increment,
@@ -151,7 +160,7 @@ def create_platform_version(
         staged=False,
         timeout=None,
         tags=None,
-        ):
+):
 
     _raise_if_directory_is_empty()
     _raise_if_platform_definition_file_is_missing()
@@ -231,6 +240,19 @@ def describe_custom_platform_version(
         platform_arn = platforms[0]
 
     return elasticbeanstalk.describe_platform_version(platform_arn)
+
+
+def detect_platform_family(families_set):
+    detected_platform_family = heuristics.find_platform_family()
+
+    if detected_platform_family and detected_platform_family in families_set:
+        io.echo()
+        io.echo(prompts['platform.validate'].format(
+            platform=detected_platform_family))
+        correct = io.get_boolean_response()
+
+        if correct:
+            return detected_platform_family
 
 
 def find_custom_platform_from_string(solution_string):
@@ -437,9 +459,8 @@ def get_preferred_platform_version_for_branch(branch_name):
         matched_versions,
         key=lambda x: x.sortable_version,
         reverse=True))
-    recommended_versions = list(filter(
-        lambda x: x.is_recommended,
-        matched_versions))
+    recommended_versions = [
+        version for version in matched_versions if version.is_recommended]
 
     if len(recommended_versions) > 0:
         return recommended_versions[0]
@@ -468,10 +489,10 @@ def get_platform_versions_for_branch(branch_name, recommended_only=False):
 
     platform_version_summaries = elasticbeanstalk.list_platform_versions(
         filters=filters)
-    return list(map(
-        lambda x: PlatformVersion.from_platform_version_summary(x),
-        platform_version_summaries
-    ))
+
+    return [
+        PlatformVersion.from_platform_version_summary(summary)
+        for summary in platform_version_summaries]
 
 
 def group_custom_platforms_by_platform_name(custom_platforms):
@@ -514,6 +535,37 @@ def list_eb_managed_platform_versions(
     filters = [api_filters.PlatformOwnerFilter(values=['AWSElasticBeanstalk']).json()]
 
     return list_platform_versions(filters, platform_name, platform_version, show_status, status)
+
+
+def list_nonretired_platform_families():
+    """
+    Provides a list of all platform branches that contain
+    branches that are not retired.
+    """
+    branches = list_nonretired_platform_branches()
+    families = collect_families_from_branches(branches)
+
+    return families
+
+
+def list_nonretired_platform_branches():
+    """
+    Provides a list of all platform branches that are not retired.
+    This includes deprecated and beta platform branches.
+    Return value is cached preventing redundant http requests on
+    subsequent calls.
+    """
+    global _non_retired_platform_branches_cache
+    if not _non_retired_platform_branches_cache:
+        noretired_filter = {
+            'Attribute': 'LifecycleState',
+            'Operator': '!=',
+            'Values': ['Retired']
+        }
+        _non_retired_platform_branches_cache = elasticbeanstalk.list_platform_branches(
+            filters=[noretired_filter])
+
+    return _non_retired_platform_branches_cache
 
 
 def get_platform_branch_by_name(branch_name):
@@ -574,6 +626,58 @@ def prompt_customer_for_custom_platform_version(version_to_arn_mappings):
     chosen_custom_platform_version = utils.prompt_for_item_in_list(custom_platform_versions_to_display)
 
     return version_to_arn_mappings[chosen_custom_platform_version]
+
+
+def prompt_for_platform_family(include_custom=False):
+    families = list_nonretired_platform_families()
+    families.sort()
+
+    detected_platform_family = detect_platform_family(families)
+
+    if detected_platform_family:
+        return detected_platform_family
+
+    if include_custom:
+        families.append(prompts['platformfamily.prompt.customplatform'])
+
+    io.echo(prompts['platformfamily.prompt'])
+    return utils.prompt_for_item_in_list(families, default=None)
+
+
+def prompt_for_platform_branch(family):
+    branches = list_nonretired_platform_branches()
+    branches = [branch for branch in branches if branch['PlatformName'] == family]
+    branches = _sort_platform_branches_for_prompt(branches)
+
+    if len(branches) == 1:
+        return PlatformBranch.from_platform_branch_summary(branches[0])
+
+    branch_display_names = [_generate_platform_branch_prompt_text(branch) for branch in branches]
+    default = utils.index_of(
+        branches,
+        value=platform_branch_lifecycle_states.SUPPORTED,
+        key=lambda b: b['LifecycleState'])
+
+    if default == -1:
+        default = None
+    else:
+        default += 1
+
+    io.echo(prompts['platformbranch.prompt'])
+    index = utils.prompt_for_index_in_list(branch_display_names, default=default)
+    return PlatformBranch.from_platform_branch_summary(branches[index])
+
+
+def prompt_for_platform():
+    custom_platform_versions = list_custom_platform_versions()
+    enable_custom_platform_prompt = not not custom_platform_versions
+
+    platform_family = prompt_for_platform_family(include_custom=enable_custom_platform_prompt)
+
+    if platform_family == prompts['platformfamily.prompt.customplatform']:
+        return get_custom_platform_from_customer(custom_platform_versions)
+
+    return prompt_for_platform_branch(platform_family)
 
 
 def resolve_custom_platform_version(
@@ -740,6 +844,16 @@ def _enable_healthd():
         stream.write(yaml.dump(platform_yaml, default_flow_style=False))
 
 
+def _generate_platform_branch_prompt_text(branch):
+    name = branch['BranchName']
+    lifecycle_state = branch['LifecycleState']
+
+    if lifecycle_state == platform_branch_lifecycle_states.SUPPORTED:
+        return name
+
+    return '{} ({})'.format(branch['BranchName'], branch['LifecycleState'])
+
+
 def _generate_platform_yaml_copy():
     file_descriptor, original_platform_yaml = tempfile.mkstemp()
     os.close(file_descriptor)
@@ -895,6 +1009,20 @@ def _resolve_s3_bucket_and_key(
         move(platform_yaml_copy, 'platform.yaml')
 
     return s3_bucket, s3_key, file_path
+
+
+def _sort_platform_branches_for_prompt(branches):
+    lifecycle_sort_values = {
+        platform_branch_lifecycle_states.SUPPORTED: 1,
+        platform_branch_lifecycle_states.BETA: 2,
+        platform_branch_lifecycle_states.DEPRECATED: 3,
+    }
+
+    return sorted(
+        branches,
+        key=lambda b: lifecycle_sort_values.get(b['LifecycleState'], 4),
+        reverse=False,
+    )
 
 
 def _upload_platform_version_to_s3_if_necessary(bucket, key, file_path):

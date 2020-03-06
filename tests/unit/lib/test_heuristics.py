@@ -36,31 +36,331 @@ class TestHeuristics(unittest.TestCase):
         open(file, 'w').close()
 
     def detect_language(self, language):
-        self.assertEqual(language, heuristics.find_language_type())
+        self.assertEqual(language, heuristics.find_platform_family())
 
-    def test_find_language_type__multi_container_docker_detected(self):
-        with open('Dockerrun.aws.json', 'w') as dockerrun_file:
-            dockerrun_contents = {
-                "AWSEBDockerrunVersion": 2
-            }
+    @mock.patch('ebcli.lib.heuristics.smells_of_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_multi_container_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_python')
+    @mock.patch('ebcli.lib.heuristics.smells_of_ruby')
+    @mock.patch('ebcli.lib.heuristics.smells_of_php')
+    @mock.patch('ebcli.lib.heuristics.smells_of_node_js')
+    @mock.patch('ebcli.lib.heuristics.smells_of_iis')
+    @mock.patch('ebcli.lib.heuristics.smells_of_tomcat')
+    @mock.patch('ebcli.lib.heuristics.has_index_html')
+    def test_find_platform_family__docker(
+        self,
+        has_index_html_mock,
+        smells_of_tomcat_mock,
+        smells_of_iis_mock,
+        smells_of_node_js_mock,
+        smells_of_php_mock,
+        smells_of_ruby_mock,
+        smells_of_python_mock,
+        smells_of_multi_container_docker_mock,
+        smells_of_docker_mock,
+    ):
+        smells_of_docker_mock.return_value = True
+        smells_of_multi_container_docker_mock.return_value = False
+        smells_of_python_mock.return_value = False
+        smells_of_ruby_mock.return_value = False
+        smells_of_php_mock.return_value = False
+        smells_of_node_js_mock.return_value = False
+        smells_of_iis_mock.return_value = False
+        smells_of_tomcat_mock.return_value = False
+        has_index_html_mock.return_value = False
 
-            json.dump(dockerrun_contents, dockerrun_file)
+        expected = 'Docker'
+        result = heuristics.find_platform_family()
 
-            dockerrun_file.close()
+        self.assertEqual(expected, result)
 
-        self.detect_language('Multi-container Docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_multi_container_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_python')
+    @mock.patch('ebcli.lib.heuristics.smells_of_ruby')
+    @mock.patch('ebcli.lib.heuristics.smells_of_php')
+    @mock.patch('ebcli.lib.heuristics.smells_of_node_js')
+    @mock.patch('ebcli.lib.heuristics.smells_of_iis')
+    @mock.patch('ebcli.lib.heuristics.smells_of_tomcat')
+    @mock.patch('ebcli.lib.heuristics.has_index_html')
+    def test_find_platform_family__multi_container_docker(
+        self,
+        has_index_html_mock,
+        smells_of_tomcat_mock,
+        smells_of_iis_mock,
+        smells_of_node_js_mock,
+        smells_of_php_mock,
+        smells_of_ruby_mock,
+        smells_of_python_mock,
+        smells_of_multi_container_docker_mock,
+        smells_of_docker_mock,
+    ):
+        smells_of_docker_mock.return_value = False
+        smells_of_multi_container_docker_mock.return_value = True
+        smells_of_python_mock.return_value = False
+        smells_of_ruby_mock.return_value = False
+        smells_of_php_mock.return_value = False
+        smells_of_node_js_mock.return_value = False
+        smells_of_iis_mock.return_value = False
+        smells_of_tomcat_mock.return_value = False
+        has_index_html_mock.return_value = False
 
-    def test_find_language_type__docker_detected_through_Dockerrun(self):
-        with open('Dockerrun.aws.json', 'w') as dockerrun_file:
-            dockerrun_contents = {
-                "AWSEBDockerrunVersion": 1
-            }
+        expected = 'Docker'
+        result = heuristics.find_platform_family()
 
-            json.dump(dockerrun_contents, dockerrun_file)
+        self.assertEqual(expected, result)
 
-            dockerrun_file.close()
+    @mock.patch('ebcli.lib.heuristics.smells_of_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_multi_container_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_python')
+    @mock.patch('ebcli.lib.heuristics.smells_of_ruby')
+    @mock.patch('ebcli.lib.heuristics.smells_of_php')
+    @mock.patch('ebcli.lib.heuristics.smells_of_node_js')
+    @mock.patch('ebcli.lib.heuristics.smells_of_iis')
+    @mock.patch('ebcli.lib.heuristics.smells_of_tomcat')
+    @mock.patch('ebcli.lib.heuristics.has_index_html')
+    def test_find_platform_family__python(
+        self,
+        has_index_html_mock,
+        smells_of_tomcat_mock,
+        smells_of_iis_mock,
+        smells_of_node_js_mock,
+        smells_of_php_mock,
+        smells_of_ruby_mock,
+        smells_of_python_mock,
+        smells_of_multi_container_docker_mock,
+        smells_of_docker_mock,
+    ):
+        smells_of_docker_mock.return_value = False
+        smells_of_multi_container_docker_mock.return_value = False
+        smells_of_python_mock.return_value = True
+        smells_of_ruby_mock.return_value = False
+        smells_of_php_mock.return_value = False
+        smells_of_node_js_mock.return_value = False
+        smells_of_iis_mock.return_value = False
+        smells_of_tomcat_mock.return_value = False
+        has_index_html_mock.return_value = False
 
-        self.detect_language('Docker')
+        expected = 'Python'
+        result = heuristics.find_platform_family()
+
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.lib.heuristics.smells_of_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_multi_container_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_python')
+    @mock.patch('ebcli.lib.heuristics.smells_of_ruby')
+    @mock.patch('ebcli.lib.heuristics.smells_of_php')
+    @mock.patch('ebcli.lib.heuristics.smells_of_node_js')
+    @mock.patch('ebcli.lib.heuristics.smells_of_iis')
+    @mock.patch('ebcli.lib.heuristics.smells_of_tomcat')
+    @mock.patch('ebcli.lib.heuristics.has_index_html')
+    def test_find_platform_family__ruby(
+        self,
+        has_index_html_mock,
+        smells_of_tomcat_mock,
+        smells_of_iis_mock,
+        smells_of_node_js_mock,
+        smells_of_php_mock,
+        smells_of_ruby_mock,
+        smells_of_python_mock,
+        smells_of_multi_container_docker_mock,
+        smells_of_docker_mock,
+    ):
+        smells_of_docker_mock.return_value = False
+        smells_of_multi_container_docker_mock.return_value = False
+        smells_of_python_mock.return_value = False
+        smells_of_ruby_mock.return_value = True
+        smells_of_php_mock.return_value = False
+        smells_of_node_js_mock.return_value = False
+        smells_of_iis_mock.return_value = False
+        smells_of_tomcat_mock.return_value = False
+        has_index_html_mock.return_value = False
+
+        expected = 'Ruby'
+        result = heuristics.find_platform_family()
+
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.lib.heuristics.smells_of_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_multi_container_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_python')
+    @mock.patch('ebcli.lib.heuristics.smells_of_ruby')
+    @mock.patch('ebcli.lib.heuristics.smells_of_php')
+    @mock.patch('ebcli.lib.heuristics.smells_of_node_js')
+    @mock.patch('ebcli.lib.heuristics.smells_of_iis')
+    @mock.patch('ebcli.lib.heuristics.smells_of_tomcat')
+    @mock.patch('ebcli.lib.heuristics.has_index_html')
+    def test_find_platform_family__php(
+        self,
+        has_index_html_mock,
+        smells_of_tomcat_mock,
+        smells_of_iis_mock,
+        smells_of_node_js_mock,
+        smells_of_php_mock,
+        smells_of_ruby_mock,
+        smells_of_python_mock,
+        smells_of_multi_container_docker_mock,
+        smells_of_docker_mock,
+    ):
+        smells_of_docker_mock.return_value = False
+        smells_of_multi_container_docker_mock.return_value = False
+        smells_of_python_mock.return_value = False
+        smells_of_ruby_mock.return_value = False
+        smells_of_php_mock.return_value = True
+        smells_of_node_js_mock.return_value = False
+        smells_of_iis_mock.return_value = False
+        smells_of_tomcat_mock.return_value = False
+        has_index_html_mock.return_value = False
+
+        expected = 'PHP'
+        result = heuristics.find_platform_family()
+
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.lib.heuristics.smells_of_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_multi_container_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_python')
+    @mock.patch('ebcli.lib.heuristics.smells_of_ruby')
+    @mock.patch('ebcli.lib.heuristics.smells_of_php')
+    @mock.patch('ebcli.lib.heuristics.smells_of_node_js')
+    @mock.patch('ebcli.lib.heuristics.smells_of_iis')
+    @mock.patch('ebcli.lib.heuristics.smells_of_tomcat')
+    @mock.patch('ebcli.lib.heuristics.has_index_html')
+    def test_find_platform_family__nodejs(
+        self,
+        has_index_html_mock,
+        smells_of_tomcat_mock,
+        smells_of_iis_mock,
+        smells_of_node_js_mock,
+        smells_of_php_mock,
+        smells_of_ruby_mock,
+        smells_of_python_mock,
+        smells_of_multi_container_docker_mock,
+        smells_of_docker_mock,
+    ):
+        smells_of_docker_mock.return_value = False
+        smells_of_multi_container_docker_mock.return_value = False
+        smells_of_python_mock.return_value = False
+        smells_of_ruby_mock.return_value = False
+        smells_of_php_mock.return_value = False
+        smells_of_node_js_mock.return_value = True
+        smells_of_iis_mock.return_value = False
+        smells_of_tomcat_mock.return_value = False
+        has_index_html_mock.return_value = False
+
+        expected = 'Node.js'
+        result = heuristics.find_platform_family()
+
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.lib.heuristics.smells_of_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_multi_container_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_python')
+    @mock.patch('ebcli.lib.heuristics.smells_of_ruby')
+    @mock.patch('ebcli.lib.heuristics.smells_of_php')
+    @mock.patch('ebcli.lib.heuristics.smells_of_node_js')
+    @mock.patch('ebcli.lib.heuristics.smells_of_iis')
+    @mock.patch('ebcli.lib.heuristics.smells_of_tomcat')
+    @mock.patch('ebcli.lib.heuristics.has_index_html')
+    def test_find_platform_family__iis(
+        self,
+        has_index_html_mock,
+        smells_of_tomcat_mock,
+        smells_of_iis_mock,
+        smells_of_node_js_mock,
+        smells_of_php_mock,
+        smells_of_ruby_mock,
+        smells_of_python_mock,
+        smells_of_multi_container_docker_mock,
+        smells_of_docker_mock,
+    ):
+        smells_of_docker_mock.return_value = False
+        smells_of_multi_container_docker_mock.return_value = False
+        smells_of_python_mock.return_value = False
+        smells_of_ruby_mock.return_value = False
+        smells_of_php_mock.return_value = False
+        smells_of_node_js_mock.return_value = False
+        smells_of_iis_mock.return_value = True
+        smells_of_tomcat_mock.return_value = False
+        has_index_html_mock.return_value = False
+
+        expected = '.NET on Windows Server'
+        result = heuristics.find_platform_family()
+
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.lib.heuristics.smells_of_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_multi_container_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_python')
+    @mock.patch('ebcli.lib.heuristics.smells_of_ruby')
+    @mock.patch('ebcli.lib.heuristics.smells_of_php')
+    @mock.patch('ebcli.lib.heuristics.smells_of_node_js')
+    @mock.patch('ebcli.lib.heuristics.smells_of_iis')
+    @mock.patch('ebcli.lib.heuristics.smells_of_tomcat')
+    @mock.patch('ebcli.lib.heuristics.has_index_html')
+    def test_find_platform_family__tomcat(
+        self,
+        has_index_html_mock,
+        smells_of_tomcat_mock,
+        smells_of_iis_mock,
+        smells_of_node_js_mock,
+        smells_of_php_mock,
+        smells_of_ruby_mock,
+        smells_of_python_mock,
+        smells_of_multi_container_docker_mock,
+        smells_of_docker_mock,
+    ):
+        smells_of_docker_mock.return_value = False
+        smells_of_multi_container_docker_mock.return_value = False
+        smells_of_python_mock.return_value = False
+        smells_of_ruby_mock.return_value = False
+        smells_of_php_mock.return_value = False
+        smells_of_node_js_mock.return_value = False
+        smells_of_iis_mock.return_value = False
+        smells_of_tomcat_mock.return_value = True
+        has_index_html_mock.return_value = False
+
+        expected = 'Tomcat'
+        result = heuristics.find_platform_family()
+
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.lib.heuristics.smells_of_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_multi_container_docker')
+    @mock.patch('ebcli.lib.heuristics.smells_of_python')
+    @mock.patch('ebcli.lib.heuristics.smells_of_ruby')
+    @mock.patch('ebcli.lib.heuristics.smells_of_php')
+    @mock.patch('ebcli.lib.heuristics.smells_of_node_js')
+    @mock.patch('ebcli.lib.heuristics.smells_of_iis')
+    @mock.patch('ebcli.lib.heuristics.smells_of_tomcat')
+    @mock.patch('ebcli.lib.heuristics.has_index_html')
+    def test_find_platform_family__index_html(
+        self,
+        has_index_html_mock,
+        smells_of_tomcat_mock,
+        smells_of_iis_mock,
+        smells_of_node_js_mock,
+        smells_of_php_mock,
+        smells_of_ruby_mock,
+        smells_of_python_mock,
+        smells_of_multi_container_docker_mock,
+        smells_of_docker_mock,
+    ):
+        smells_of_docker_mock.return_value = False
+        smells_of_multi_container_docker_mock.return_value = False
+        smells_of_python_mock.return_value = False
+        smells_of_ruby_mock.return_value = False
+        smells_of_php_mock.return_value = False
+        smells_of_node_js_mock.return_value = False
+        smells_of_iis_mock.return_value = False
+        smells_of_tomcat_mock.return_value = False
+        has_index_html_mock.return_value = True
+
+        expected = 'PHP'
+        result = heuristics.find_platform_family()
+
+        self.assertEqual(expected, result)
 
     def test_find_language_type__docker_detected_through_Dockerfile(self):
         self.create_file('Dockerfile')
@@ -90,9 +390,9 @@ class TestHeuristics(unittest.TestCase):
         self.create_file('package.json')
         self.detect_language('Node.js')
 
-    def test_find_language_type__iis_detected_through_systemInfo_xml(self):
+    def test_find_language_type__dotnet_detected_through_systemInfo_xml(self):
         self.create_file('systemInfo.xml')
-        self.detect_language('IIS')
+        self.detect_language('.NET on Windows Server')
 
     def test_find_language_type__tomcat_detected_through_dot_war_in_build_dir(self):
         os.mkdir('build')

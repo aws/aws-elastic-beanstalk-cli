@@ -16,10 +16,8 @@ import glob
 import os
 
 
-def find_language_type():
-    if smells_of_multi_container_docker():
-        return 'Multi-container Docker'
-    if smells_of_docker():
+def find_platform_family():
+    if smells_of_docker() or smells_of_multi_container_docker():
         return 'Docker'
     if smells_of_python():
         return 'Python'
@@ -30,7 +28,7 @@ def find_language_type():
     if smells_of_node_js():
         return 'Node.js'
     if smells_of_iis():
-        return 'IIS'
+        return '.NET on Windows Server'
     if smells_of_tomcat():
         return 'Tomcat'
 

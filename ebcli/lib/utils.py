@@ -28,6 +28,7 @@ from cement.ext.ext_logging import LoggingLogHandler
 from cement.utils.misc import minimal_logger
 from subprocess import Popen, PIPE, STDOUT
 
+from ebcli.resources.strings import prompts
 from ebcli.objects.exceptions import CommandError, InvalidOptionsError
 from ebcli.core import io
 
@@ -72,13 +73,20 @@ def prompt_for_item_in_list(lst, default=1):
 
 def prompt_for_index_in_list(lst, default=1):
     lst = list(lst)
+
+    if default is None:
+        input_text = prompts['common.inputtext']
+    else:
+        input_text = prompts['common.inputtext.default'].format(default)
+
     for x in range(0, len(lst)):
         io.echo(str(x + 1) + ')', lst[x])
 
     while True:
         try:
-            choice = int(io.prompt('default is ' + str(default),
-                                   default=default))
+            default = default or 0
+            choice = int(io.prompt(
+                input_text, default=default))
             if not (0 < choice <= len(lst)):
                 raise ValueError
             else:
@@ -87,6 +95,8 @@ def prompt_for_index_in_list(lst, default=1):
             io.echo('Sorry, that is not a valid choice. '
                     'Please choose a number between 1 and ' +
                     str(len(lst)) + '.')
+
+    io.echo()
     return choice - 1
 
 
@@ -573,3 +583,21 @@ def datetime_utcnow():
 
 def prevent_throttling():
     time.sleep(0.5)
+
+
+def index_of(iterable, value, key=None):
+    """
+    Function returns the index of an iterable within a list.
+    :param iterable: The iterable to look within
+    :param value: The value to find
+    :param key: A Function that is used to extract a comparison key from each list element
+    """
+
+    if key is None:
+        generator = (i for i, x in enumerate(iterable) if x == value)
+    elif not callable(key):
+        raise TypeError("'{}' object is not callable".format(type(key).__name__))
+    else:
+        generator = (i for i, x in enumerate(iterable) if key(x) == value)
+
+    return next(generator, -1)

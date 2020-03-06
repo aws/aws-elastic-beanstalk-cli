@@ -24,7 +24,7 @@ from ebcli.core import fileoperations
 from ebcli.operations import platformops
 from ebcli.objects.exceptions import ValidationError, NotFoundError
 from ebcli.objects.environment import Environment
-from ebcli.objects.platform import PlatformVersion
+from ebcli.objects.platform import PlatformBranch, PlatformVersion
 from ebcli.objects.solutionstack import SolutionStack
 
 
@@ -289,7 +289,7 @@ class TestPlatformOperations(unittest.TestCase):
         _version_to_arn_mock.return_value = self.platform_arn
         elasticbeanstalk_mock.get_environments.return_value = []
         elasticbeanstalk_mock.delete_platform.return_value = { 'ResponseMetadata': { 'RequestId': 'request-id' } }
-        
+
         platformops.delete_platform_version(self.platform_arn, False)
 
         elasticbeanstalk_mock.get_environments.assert_called_with()
@@ -307,7 +307,7 @@ class TestPlatformOperations(unittest.TestCase):
             io_mock
     ):
         _version_to_arn_mock.return_value = self.platform_arn
-        environments = [ 
+        environments = [
                 Environment(name='env1', platform=PlatformVersion(self.platform_arn)),
                 Environment(name='no match', platform=PlatformVersion('arn:aws:elasticbeanstalk:us-east-1:123123123123:platform/foo/2.0.0')),
                 Environment(name='env2', platform=PlatformVersion(self.platform_arn))
@@ -315,7 +315,7 @@ class TestPlatformOperations(unittest.TestCase):
 
         elasticbeanstalk_mock.get_environments.return_value = environments
         elasticbeanstalk_mock.delete_platform.return_value = { 'ResponseMetadata': { 'RequestId': 'request-id' } }
-        
+
         self.assertRaises(ValidationError, platformops.delete_platform_version, self.platform_arn, False)
 
         elasticbeanstalk_mock.get_environments.assert_called_with()
@@ -966,7 +966,6 @@ class TestPlatformOperations(unittest.TestCase):
             platform_version='latest'
         )
 
-
     @mock.patch('ebcli.operations.platformops.get_platforms')
     def test_get_latest_version__version_not_found(self, get_platforms_mock):
         get_platforms_mock.return_value = {}
@@ -1374,8 +1373,7 @@ class TestPlatformOperations(unittest.TestCase):
 
         self.assertEqual(
             ('s3_bucket', 's3_key', 'file_path'),
-            platformops._resolve_s3_bucket_and_key('my-custom-platform', 'my-version-label', source_control_mock, False)
-        )
+            platformops._resolve_s3_bucket_and_key('my-custom-platform', 'my-version-label', source_control_mock, False))
 
         _create_app_version_zip_if_not_present_on_s3_mock.assert_called_once_with(
             'my-custom-platform',
@@ -2007,6 +2005,657 @@ class TestPlatformOperations(unittest.TestCase):
         result = platformops._resolve_conflicting_platform_branches(branches)
 
         self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.operations.platformops._non_retired_platform_branches_cache', None)
+    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.list_platform_branches')
+    def test_list_nonretired_platform_branches(
+        self,
+        list_platform_branches_mock,
+    ):
+        expected_filters = [{
+            'Attribute': 'LifecycleState',
+            'Operator': '!=',
+            'Values': ['Retired']
+        }]
+        platform_branches = [
+            {'PlatformName': 'Corretto',
+                'BranchName': '(BETA) Corretto 11 running on 64bit Amazon Linux 2', 'LifecycleState': 'Beta'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Supported'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.4 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+        ]
+        list_platform_branches_mock.return_value = platform_branches
+
+        result = platformops.list_nonretired_platform_branches()
+
+        list_platform_branches_mock.assert_called_once_with(filters=expected_filters)
+        self.assertEqual(platform_branches, result)
+
+    @mock.patch('ebcli.operations.platformops._non_retired_platform_branches_cache', None)
+    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.list_platform_branches')
+    def test_list_nonretired_platform_branches__multiple_calls(
+        self,
+        list_platform_branches_mock,
+    ):
+        expected_filters = [{
+            'Attribute': 'LifecycleState',
+            'Operator': '!=',
+            'Values': ['Retired']
+        }]
+        platform_branches = [
+            {'PlatformName': 'Corretto',
+                'BranchName': '(BETA) Corretto 11 running on 64bit Amazon Linux 2', 'LifecycleState': 'Beta'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Supported'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.4 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+        ]
+        list_platform_branches_mock.return_value = platform_branches
+
+        results = [
+            platformops.list_nonretired_platform_branches(),
+            platformops.list_nonretired_platform_branches(),
+        ]
+
+        list_platform_branches_mock.assert_called_once_with(filters=expected_filters)
+        self.assertEqual(platform_branches, results[0])
+        self.assertEqual(platform_branches, results[1])
+
+    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.list_platform_branches')
+    def test_get_platform_branch_by_name__platform_branch_found(
+        self,
+        list_platform_branches_mock,
+    ):
+        branch_name = 'Python 3.6 running on 64bit Amazon Linux'
+        expected_filters = [{
+            'Attribute': 'BranchName',
+            'Operator': '=',
+            'Values': [branch_name]
+        }]
+        platform_branches = [
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Supported'}
+        ]
+        list_platform_branches_mock.return_value = platform_branches
+
+        result = platformops.get_platform_branch_by_name(branch_name)
+
+        list_platform_branches_mock.assert_called_once_with(filters=expected_filters)
+        self.assertEqual(platform_branches[0], result)
+
+    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.list_platform_branches')
+    def test_get_platform_branch_by_name__no_platform_branch_found(
+        self,
+        list_platform_branches_mock,
+    ):
+        branch_name = 'Python 3.6 running on 64bit Amazon Linux'
+        expected_filters = [{
+            'Attribute': 'BranchName',
+            'Operator': '=',
+            'Values': [branch_name]
+        }]
+        platform_branches = []
+        list_platform_branches_mock.return_value = platform_branches
+
+        result = platformops.get_platform_branch_by_name(branch_name)
+
+        list_platform_branches_mock.assert_called_once_with(filters=expected_filters)
+        self.assertIsNone(result)
+
+    def test__resolve_conflicting_platform_branches__single_supported(self):
+        branches = [
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Retired'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Beta'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Supported'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+        ]
+        expected = branches[3]
+
+        result = platformops._resolve_conflicting_platform_branches(branches)
+
+        self.assertEqual(result, expected)
+
+    def test__resolve_conflicting_platform_branches__multi_supported(self):
+        branches = [
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Retired'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Beta'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Supported'},
+            {'PlatformName': 'OtherFamily', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Supported'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+        ]
+        expected = branches[3]
+
+        result = platformops._resolve_conflicting_platform_branches(branches)
+
+        self.assertEqual(result, expected)
+
+    def test__resolve_conflicting_platform_branches__single_beta(self):
+        branches = [
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Retired'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Beta'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+        ]
+        expected = branches[1]
+
+        result = platformops._resolve_conflicting_platform_branches(branches)
+
+        self.assertEqual(result, expected)
+
+    def test__resolve_conflicting_platform_branches__multi_beta(self):
+        branches = [
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Retired'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Beta'},
+            {'PlatformName': 'OtherFamily', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Beta'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+        ]
+        expected = branches[1]
+
+        result = platformops._resolve_conflicting_platform_branches(branches)
+
+        self.assertEqual(result, expected)
+
+    def test__resolve_conflicting_platform_branches__single_deprecated(self):
+        branches = [
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Retired'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+        ]
+        expected = branches[1]
+
+        result = platformops._resolve_conflicting_platform_branches(branches)
+
+        self.assertEqual(result, expected)
+
+    def test__resolve_conflicting_platform_branches__multi_deprecated(self):
+        branches = [
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Retired'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+            {'PlatformName': 'OtherFamily', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+        ]
+        expected = branches[1]
+
+        result = platformops._resolve_conflicting_platform_branches(branches)
+
+        self.assertEqual(result, expected)
+
+    def test__resolve_conflicting_platform_branches__only_retired(self):
+        branches = [
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Retired'},
+        ]
+        expected = branches[0]
+
+        result = platformops._resolve_conflicting_platform_branches(branches)
+
+        self.assertEqual(result, expected)
+
+    def test__generate_platform_branch_prompt_text__supported(self):
+        branch = {
+            'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+            'LifecycleState': 'Supported',
+        }
+        expected = 'Python 3.6 running on 64bit Amazon Linux'
+
+        result = platformops._generate_platform_branch_prompt_text(branch)
+
+        self.assertEqual(expected, result)
+
+    def test__generate_platform_branch_prompt_text__beta(self):
+        branch = {
+            'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+            'LifecycleState': 'Beta',
+        }
+        expected = 'Python 3.6 running on 64bit Amazon Linux (Beta)'
+
+        result = platformops._generate_platform_branch_prompt_text(branch)
+
+        self.assertEqual(expected, result)
+
+    def test__generate_platform_branch_prompt_text__deprecated(self):
+        branch = {
+            'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+            'LifecycleState': 'Deprecated',
+        }
+        expected = 'Python 3.6 running on 64bit Amazon Linux (Deprecated)'
+
+        result = platformops._generate_platform_branch_prompt_text(branch)
+
+        self.assertEqual(expected, result)
+
+    def test__generate_platform_branch_prompt_text__retired(self):
+        branch = {
+            'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+            'LifecycleState': 'Retired',
+        }
+        expected = 'Python 3.6 running on 64bit Amazon Linux (Retired)'
+
+        result = platformops._generate_platform_branch_prompt_text(branch)
+
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.operations.platformops._resolve_conflicting_platform_branches')
+    @mock.patch('ebcli.operations.platformops.elasticbeanstalk.list_platform_branches')
+    def test_get_platform_branch_by_name__multiple_platform_branches_found(
+        self,
+        list_platform_branches_mock,
+        _resolve_conflicting_platform_branches_mock
+    ):
+        branch_name = 'Python 3.6 running on 64bit Amazon Linux'
+        expected_filters = [{
+            'Attribute': 'BranchName',
+            'Operator': '=',
+            'Values': [branch_name]
+        }]
+        platform_branches = [
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Retired'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux', 'LifecycleState': 'Beta'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Supported'},
+            {'PlatformName': 'Python', 'BranchName': 'Python 3.6 running on 64bit Amazon Linux',
+                'LifecycleState': 'Deprecated'},
+        ]
+        expected = platform_branches[3]
+        list_platform_branches_mock.return_value = platform_branches
+        _resolve_conflicting_platform_branches_mock.return_value = expected
+
+        result = platformops.get_platform_branch_by_name(branch_name)
+
+        list_platform_branches_mock.assert_called_once_with(filters=expected_filters)
+        _resolve_conflicting_platform_branches_mock.assert_called_with(platform_branches)
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.operations.platformops.commonops.get_config_setting_from_branch_or_default')
+    def test_get_configured_platform_string(
+        self,
+        get_config_setting_from_branch_or_default_mock,
+    ):
+        configured_platform_string = 'Python 3.6 running on 64bit Amazon Linux'
+        get_config_setting_from_branch_or_default_mock.return_value = configured_platform_string
+
+        result = platformops.get_configured_default_platform()
+
+        get_config_setting_from_branch_or_default_mock.assert_called_once_with('default_platform')
+        self.assertEqual(configured_platform_string, result)
+
+    def test_collect_families_from_branches(
+        self,
+    ):
+        branches = [
+            {"BranchName": "Docker running on 64bit Amazon Linux",
+                "LifecycleState": "Supported", "PlatformName": "Docker"},
+            {"BranchName": "Go 1 running on 64bit Amazon Linux",
+                "LifecycleState": "Supported", "PlatformName": "Golang"},
+            {"BranchName": "Multi-container Docker running on 64bit Amazon Linux",
+                "LifecycleState": "Supported", "PlatformName": "Docker"},
+            {"BranchName": "Python 3.6 running on 64bit Amazon Linux",
+                "LifecycleState": "Supported", "PlatformName": "Python"},
+        ]
+        expected = ['Docker', 'Golang', 'Python']
+
+        result = platformops.collect_families_from_branches(branches)
+
+        self.assertEqual(expected.sort(), result.sort())
+
+    @mock.patch('ebcli.operations.platformops.collect_families_from_branches')
+    @mock.patch('ebcli.operations.platformops.list_nonretired_platform_branches')
+    def test_list_nonretired_platform_families(
+        self,
+        list_nonretired_platform_branches_mock,
+        collect_families_from_branches_mock,
+    ):
+        branches = [
+            {"BranchName": "Docker running on 64bit Amazon Linux",
+                "LifecycleState": "Supported", "PlatformName": "Docker"},
+            {"BranchName": "Go 1 running on 64bit Amazon Linux",
+                "LifecycleState": "Supported", "PlatformName": "Golang"},
+            {"BranchName": "Multi-container Docker running on 64bit Amazon Linux",
+                "LifecycleState": "Supported", "PlatformName": "Docker"},
+            {"BranchName": "Python 3.6 running on 64bit Amazon Linux",
+                "LifecycleState": "Supported", "PlatformName": "Python"},
+        ]
+        expected = ['Docker', 'Golang', 'Python']
+
+        list_nonretired_platform_branches_mock.return_value = branches
+        collect_families_from_branches_mock.return_value = expected
+
+        result = platformops.list_nonretired_platform_families()
+
+        list_nonretired_platform_branches_mock.assert_called_once_with()
+        collect_families_from_branches_mock.assert_called_once_with(branches)
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.operations.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.operations.platformops.prompt_for_platform_family')
+    @mock.patch('ebcli.operations.platformops.get_custom_platform_from_customer')
+    @mock.patch('ebcli.operations.platformops.prompt_for_platform_branch')
+    def test_prompt_for_platform(
+        self,
+        prompt_for_platform_branch_mock,
+        get_custom_platform_from_customer_mock,
+        prompt_for_platform_family_mock,
+        list_custom_platform_versions_mock,
+    ):
+        platform_branch = PlatformBranch('Python 3.6 running on 64bit Amazon Linux')
+        list_custom_platform_versions_mock.return_value = []
+        prompt_for_platform_family_mock.return_value = 'Python'
+        prompt_for_platform_branch_mock.return_value = platform_branch
+        expected = plastform_branch
+
+        result = platformops.prompt_for_platform()
+
+        list_custom_platform_versions_mock.assert_called_once_with()
+        prompt_for_platform_family_mock.assert_called_once_with(include_custom=False)
+        get_custom_platform_from_customer_mock.assert_not_called()
+        prompt_for_platform_branch_mock.assert_called_once_with('Python')
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.operations.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.operations.platformops.prompt_for_platform_family')
+    @mock.patch('ebcli.operations.platformops.get_custom_platform_from_customer')
+    @mock.patch('ebcli.operations.platformops.prompt_for_platform_branch')
+    def test_prompt_for_platform__with_custom_platforms(
+        self,
+        prompt_for_platform_branch_mock,
+        get_custom_platform_from_customer_mock,
+        prompt_for_platform_family_mock,
+        list_custom_platform_versions_mock,
+    ):
+        platform_branch = PlatformBranch('Python 3.6 running on 64bit Amazon Linux')
+        list_custom_platform_versions_mock.return_value = [{}, {}, {}]
+        prompt_for_platform_family_mock.return_value = 'Python'
+        prompt_for_platform_branch_mock.return_value = platform_branch
+        expected = platform_branch
+
+        result = platformops.prompt_for_platform()
+
+        list_custom_platform_versions_mock.assert_called_once_with()
+        prompt_for_platform_family_mock.assert_called_once_with(include_custom=True)
+        get_custom_platform_from_customer_mock.assert_not_called()
+        prompt_for_platform_branch_mock.assert_called_once_with('Python')
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.operations.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.operations.platformops.prompt_for_platform_family')
+    @mock.patch('ebcli.operations.platformops.get_custom_platform_from_customer')
+    @mock.patch('ebcli.operations.platformops.prompt_for_platform_branch')
+    def test_prompt_for_platform__with_custom_platforms_selected(
+        self,
+        prompt_for_platform_branch_mock,
+        get_custom_platform_from_customer_mock,
+        prompt_for_platform_family_mock,
+        list_custom_platform_versions_mock,
+    ):
+        custom_platform_version = PlatformVersion(
+            'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.0')
+        list_custom_platform_versions_mock.return_value = TestPlatformOperations.custom_platforms_list
+        prompt_for_platform_family_mock.return_value = 'Custom Platform'
+        get_custom_platform_from_customer_mock.return_value = custom_platform_version
+        expected = custom_platform_version
+
+        result = platformops.prompt_for_platform()
+
+        list_custom_platform_versions_mock.assert_called_once_with()
+        prompt_for_platform_family_mock.assert_called_once_with(include_custom=True)
+        get_custom_platform_from_customer_mock.assert_called_once_with(TestPlatformOperations.custom_platforms_list)
+        prompt_for_platform_branch_mock.assert_not_called()
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.operations.platformops.io.echo')
+    @mock.patch('ebcli.operations.platformops.utils.prompt_for_item_in_list')
+    @mock.patch('ebcli.operations.platformops.list_nonretired_platform_families')
+    @mock.patch('ebcli.operations.platformops.detect_platform_family')
+    def test_prompt_for_platform_family(
+        self,
+        detect_platform_family_mock,
+        list_nonretired_platform_families_mock,
+        prompt_for_item_in_list_mock,
+        echo_mock,
+    ):
+        families_unsorted = ['Python', 'Docker', 'Node.js', 'Golang']
+        families_sorted = ['Docker', 'Golang', 'Node.js', 'Python']
+
+        detect_platform_family_mock.return_value = None
+        list_nonretired_platform_families_mock.return_value = families_unsorted
+        prompt_for_item_in_list_mock.return_value = families_sorted[0]
+        call_tracker = mock.Mock()
+        call_tracker.attach_mock(prompt_for_item_in_list_mock, 'prompt_for_item_in_list_mock')
+        call_tracker.attach_mock(echo_mock, 'echo_mock')
+        expected = families_sorted[0]
+
+        result = platformops.prompt_for_platform_family()
+
+        detect_platform_family_mock.assert_called_once_with(families_sorted)
+        list_nonretired_platform_families_mock.assert_called_once_with()
+        call_tracker.assert_has_calls(
+            [
+                mock.call.echo_mock('Select a platform.'),
+                mock.call.prompt_for_item_in_list_mock(families_sorted, default=None),
+            ],
+            any_order=False
+        )
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.operations.platformops.io.echo')
+    @mock.patch('ebcli.operations.platformops.utils.prompt_for_item_in_list')
+    @mock.patch('ebcli.operations.platformops.list_nonretired_platform_families')
+    @mock.patch('ebcli.operations.platformops.detect_platform_family')
+    def test_prompt_for_platform_family__with_custom_platform(
+        self,
+        detect_platform_family_mock,
+        list_nonretired_platform_families_mock,
+        prompt_for_item_in_list_mock,
+        echo_mock,
+    ):
+        families_unsorted = ['Python', 'Docker', 'Node.js', 'Golang']
+        families_sorted = ['Docker', 'Golang', 'Node.js', 'Python']
+
+        detect_platform_family_mock.return_value = None
+        list_nonretired_platform_families_mock.return_value = families_unsorted
+        prompt_for_item_in_list_mock.return_value = families_sorted[0]
+        call_tracker = mock.Mock()
+        call_tracker.attach_mock(prompt_for_item_in_list_mock, 'prompt_for_item_in_list_mock')
+        call_tracker.attach_mock(echo_mock, 'echo_mock')
+        expected = families_sorted[0]
+
+        result = platformops.prompt_for_platform_family(include_custom=True)
+
+        detect_platform_family_mock.assert_called_once_with(families_sorted + ['Custom Platform'])
+        list_nonretired_platform_families_mock.assert_called_once_with()
+        call_tracker.assert_has_calls(
+            [
+                mock.call.echo_mock('Select a platform.'),
+                mock.call.prompt_for_item_in_list_mock(families_sorted + ['Custom Platform'], default=None),
+            ],
+            any_order=False
+        )
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.operations.platformops.io.echo')
+    @mock.patch('ebcli.operations.platformops.utils.prompt_for_item_in_list')
+    @mock.patch('ebcli.operations.platformops.list_nonretired_platform_families')
+    @mock.patch('ebcli.operations.platformops.detect_platform_family')
+    def test_prompt_for_platform_family__with_detected_platform_family(
+        self,
+        detect_platform_family_mock,
+        list_nonretired_platform_families_mock,
+        prompt_for_item_in_list_mock,
+        echo_mock,
+    ):
+        families_unsorted = ['Python', 'Docker', 'Node.js', 'Golang']
+        families_sorted = ['Docker', 'Golang', 'Node.js', 'Python']
+
+        detect_platform_family_mock.return_value = 'Python'
+        list_nonretired_platform_families_mock.return_value = families_unsorted
+        expected = 'Python'
+
+        result = platformops.prompt_for_platform_family()
+
+        list_nonretired_platform_families_mock.assert_called_once_with()
+        detect_platform_family_mock.assert_called_once_with(families_sorted)
+        prompt_for_item_in_list_mock.assert_not_called()
+        echo_mock.assert_not_called()
+        self.assertEqual(expected, result)
+
+    def test__sort_platform_branches_for_prompt(self):
+        branches = [
+            {"BranchName": "Python 2.7 running on 64bit Amazon Linux",
+                "LifecycleState": "Deprecated", "PlatformName": "Python"},
+            {"BranchName": "Python 3.7 running on 64bit Amazon Linux 2",
+                "LifecycleState": "Beta", "PlatformName": "Python"},
+            {"BranchName": "Python 2.7 running on 32bit Amazon Linux",
+                "LifecycleState": "Retired", "PlatformName": "Python"},
+            {"BranchName": "Python 3.6 running on 64bit Amazon Linux",
+                "LifecycleState": "Supported", "PlatformName": "Python"},
+            {"BranchName": "Python 3.4 running on 64bit Amazon Linux",
+                "LifecycleState": "Deprecated", "PlatformName": "Python"},
+        ]
+        expected = [
+            branches[3],
+            branches[1],
+            branches[0],
+            branches[4],
+            branches[2],
+        ]
+
+        result = platformops._sort_platform_branches_for_prompt(branches)
+
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.operations.platformops.io.echo')
+    @mock.patch('ebcli.operations.platformops.utils.prompt_for_index_in_list')
+    @mock.patch('ebcli.operations.platformops._sort_platform_branches_for_prompt')
+    @mock.patch('ebcli.operations.platformops.list_nonretired_platform_branches')
+    def test_prompt_for_platform_branch(
+        self,
+        list_nonretired_platform_branches_mock,
+        _sort_platform_branches_for_prompt_mock,
+        prompt_for_index_in_list_mock,
+        echo_mock,
+    ):
+        family = 'Python'
+        branches = [
+            {"BranchName": "Python 3.7 running on 64bit Amazon Linux 2",
+             "LifecycleState": "Beta", "PlatformName": "Python"},
+            {"BranchName": "Python 2.7 running on 64bit Amazon Linux",
+                "LifecycleState": "Deprecated", "PlatformName": "Python"},
+            {"BranchName": "Multi-container Docker running on 64bit Amazon Linux",
+                "LifecycleState": "Supported", "PlatformName": "Docker"},
+            {"BranchName": "Python 3.4 running on 64bit Amazon Linux",
+                "LifecycleState": "Deprecated", "PlatformName": "Python"},
+            {"BranchName": "Python 3.6 running on 64bit Amazon Linux",
+                "LifecycleState": "Supported", "PlatformName": "Python"},
+            {"BranchName": "Go 1 running on 64bit Amazon Linux",
+                "LifecycleState": "Supported", "PlatformName": "Golang"},
+        ]
+        branch_display_text = [
+            'Python 3.6 running on 64bit Amazon Linux',
+            'Python 3.7 running on 64bit Amazon Linux 2 (Beta)',
+            'Python 3.4 running on 64bit Amazon Linux (Deprecated)',
+            'Python 2.7 running on 64bit Amazon Linux (Deprecated)'
+        ]
+
+        list_nonretired_platform_branches_mock.return_value = branches
+        _sort_platform_branches_for_prompt_mock.return_value = [
+            branches[4],
+            branches[0],
+            branches[3],
+            branches[1],
+        ]
+        prompt_for_index_in_list_mock.return_value = 0
+        call_tracker = mock.Mock()
+        call_tracker.attach_mock(prompt_for_index_in_list_mock, 'prompt_for_index_in_list_mock')
+        call_tracker.attach_mock(echo_mock, 'echo_mock')
+        expected = PlatformBranch.from_platform_branch_summary(branches[4])
+
+        result = platformops.prompt_for_platform_branch(family)
+
+        list_nonretired_platform_branches_mock.assert_called_with()
+        _sort_platform_branches_for_prompt_mock.assert_called_with([
+            branches[0],
+            branches[1],
+            branches[3],
+            branches[4],
+        ])
+        call_tracker.assert_has_calls(
+            [
+                mock.call.echo_mock('Select a platform branch.'),
+                mock.call.prompt_for_index_in_list_mock(branch_display_text, default=1),
+            ],
+            any_order=False
+        )
+        self.assertEqual(expected, result)
+
+    @mock.patch('ebcli.operations.platformops.get_custom_platform_from_customer')
+    @mock.patch('ebcli.operations.platformops.prompt_for_platform_branch')
+    @mock.patch('ebcli.operations.platformops.prompt_for_platform_family')
+    @mock.patch('ebcli.operations.platformops.list_custom_platform_versions')
+    def test_prompt_for_platform(
+        self,
+        list_custom_platform_versions_mock,
+        prompt_for_platform_family_mock,
+        prompt_for_platform_branch_mock,
+        get_custom_platform_from_customer_mock
+    ):
+        custom_platform_versions = []
+        list_custom_platform_versions_mock.return_value = custom_platform_versions
+        prompt_for_platform_family_mock.return_value = 'Python'
+        prompt_for_platform_branch_mock.return_value = 'Python 3.6 running on 64bit Amazon Linux'
+
+        result = platformops.prompt_for_platform()
+
+        list_custom_platform_versions_mock.assert_called_once_with()
+        prompt_for_platform_family_mock.assert_called_once_with(include_custom=False)
+        prompt_for_platform_branch_mock.assert_called_once_with('Python')
+        get_custom_platform_from_customer_mock.assert_not_called()
+        self.assertEqual('Python 3.6 running on 64bit Amazon Linux', result)
+
+    @mock.patch('ebcli.operations.platformops.get_custom_platform_from_customer')
+    @mock.patch('ebcli.operations.platformops.prompt_for_platform_branch')
+    @mock.patch('ebcli.operations.platformops.prompt_for_platform_family')
+    @mock.patch('ebcli.operations.platformops.list_custom_platform_versions')
+    def test_prompt_for_platform__with_custom_platform_versions(
+        self,
+        list_custom_platform_versions_mock,
+        prompt_for_platform_family_mock,
+        prompt_for_platform_branch_mock,
+        get_custom_platform_from_customer_mock
+    ):
+        custom_platform_versions = [
+            {
+                'PlatformOwner': 'self',
+                'PlatformStatus': 'Ready',
+            }
+        ]
+        list_custom_platform_versions_mock.return_value = custom_platform_versions
+        prompt_for_platform_family_mock.return_value = 'Custom Platform'
+        get_custom_platform_from_customer_mock.return_value = 'Custom Platform v1'
+
+        result = platformops.prompt_for_platform()
+
+        list_custom_platform_versions_mock.assert_called_once_with()
+        prompt_for_platform_family_mock.assert_called_once_with(include_custom=True)
+        prompt_for_platform_branch_mock.assert_not_called()
+        get_custom_platform_from_customer_mock.assert_called_once_with(custom_platform_versions)
+        self.assertEqual('Custom Platform v1', result)
 
 
 class TestPackerStreamMessage(unittest.TestCase):
