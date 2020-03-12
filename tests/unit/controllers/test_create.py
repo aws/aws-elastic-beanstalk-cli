@@ -19,7 +19,12 @@ import unittest
 from ebcli.controllers import create
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
-from ebcli.objects.exceptions import AlreadyExistsError, InvalidOptionsError, NotFoundError
+from ebcli.objects.exceptions import (
+    AlreadyExistsError,
+    InvalidOptionsError,
+    NotFoundError,
+    RetiredPlatformBranchError,
+)
 from ebcli.objects.requests import CreateEnvironmentRequest
 from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.solutionstack import SolutionStack
@@ -84,12 +89,16 @@ class TestCreate(unittest.TestCase):
 
     @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.create.platformops.prompt_for_platform')
-    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.create.io.log_warning')
+    @mock.patch('ebcli.controllers.create.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
     def test__determine_platform__no_args_with_default_platform(
         self,
+        describe_platform_version_mock,
+        alert_platform_status_mock,
         log_warnign_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
         prompt_for_platform_mock,
         get_configured_default_platform_mock,
     ):
@@ -98,25 +107,32 @@ class TestCreate(unittest.TestCase):
             platform_name='PHP 7.3 running on 64bit Amazon Linux',
             platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
         get_configured_default_platform_mock.return_value = 'PHP 7.3 running on 64bit Amazon Linux'
-        get_platform_version_for_platform_string_mock.return_value = platform_version
+        get_platform_for_platform_string_mock.return_value = platform_version
+        describe_platform_version_mock.return_value = dict()
 
         result = create._determine_platform()
 
         get_configured_default_platform_mock.assert_called_once_with()
         prompt_for_platform_mock.assert_not_called()
-        get_platform_version_for_platform_string_mock.assert_called_once_with(
+        get_platform_for_platform_string_mock.assert_called_once_with(
             'PHP 7.3 running on 64bit Amazon Linux')
         log_warnign_mock.assert_not_called()
+        describe_platform_version_mock.assert_called_once_with(platform_version.platform_arn)
+        alert_platform_status_mock.assert_called_once_with(platform_version)
         self.assertEqual(platform_version, result)
 
     @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.create.platformops.prompt_for_platform')
-    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.create.io.log_warning')
+    @mock.patch('ebcli.controllers.create.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
     def test__determine_platform__no_args_sans_default_platform(
         self,
+        describe_platform_version_mock,
+        alert_platform_status_mock,
         log_warnign_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
         prompt_for_platform_mock,
         get_configured_default_platform_mock,
     ):
@@ -126,23 +142,30 @@ class TestCreate(unittest.TestCase):
             platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
         get_configured_default_platform_mock.return_value = None
         prompt_for_platform_mock.return_value = platform_version
+        describe_platform_version_mock.return_value = dict()
 
         result = create._determine_platform()
 
         get_configured_default_platform_mock.assert_called_once_with()
         prompt_for_platform_mock.assert_called_once_with()
-        get_platform_version_for_platform_string_mock.assert_not_called()
+        get_platform_for_platform_string_mock.assert_not_called()
         log_warnign_mock.assert_not_called()
+        describe_platform_version_mock.assert_called_once_with(platform_version.platform_arn)
+        alert_platform_status_mock.assert_called_once_with(platform_version)
         self.assertEqual(platform_version, result)
 
     @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.create.platformops.prompt_for_platform')
-    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.create.io.log_warning')
+    @mock.patch('ebcli.controllers.create.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
     def test__determine_platform__with_platform_string(
         self,
+        describe_platform_version_mock,
+        alert_platform_status_mock,
         log_warning_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
         prompt_for_platform_mock,
         get_configured_default_platform_mock,
     ):
@@ -150,25 +173,69 @@ class TestCreate(unittest.TestCase):
             platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0',
             platform_name='PHP 7.3 running on 64bit Amazon Linux',
             platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
-        get_platform_version_for_platform_string_mock.return_value = platform_version
+        get_platform_for_platform_string_mock.return_value = platform_version
+        describe_platform_version_mock.return_value = dict()
 
         result = create._determine_platform('PHP 7.3 running on 64bit Amazon Linux')
 
         get_configured_default_platform_mock.assert_not_called()
         prompt_for_platform_mock.assert_not_called()
-        get_platform_version_for_platform_string_mock.assert_called_once_with(
+        get_platform_for_platform_string_mock.assert_called_once_with(
             'PHP 7.3 running on 64bit Amazon Linux')
         log_warning_mock.assert_not_called()
+        describe_platform_version_mock.assert_called_once_with(platform_version.platform_arn)
+        alert_platform_status_mock.assert_called_once_with(platform_version)
         self.assertEqual(platform_version, result)
 
     @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.create.platformops.prompt_for_platform')
-    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.create.io.log_warning')
+    @mock.patch('ebcli.controllers.create.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
+    def test__determine_platform__with_retired_platform_branch(
+        self,
+        describe_platform_version_mock,
+        alert_platform_status_mock,
+        log_warning_mock,
+        get_platform_for_platform_string_mock,
+        prompt_for_platform_mock,
+        get_configured_default_platform_mock,
+    ):
+        platform_version = PlatformVersion(
+            platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 5.3 running on 64bit Amazon Linux/0.0.0',
+            platform_name='PHP 5.3 running on 64bit Amazon Linux',
+            platform_branch_name='PHP 5.3 running on 64bit Amazon Linux')
+        get_platform_for_platform_string_mock.return_value = platform_version
+        describe_platform_version_mock.return_value = {
+            'PlatformBranchLifecycleState': 'Retired'
+        }
+
+        self.assertRaises(
+            RetiredPlatformBranchError,
+            create._determine_platform,
+            'PHP 5.3 running on 64bit Amazon Linux')
+
+        get_configured_default_platform_mock.assert_not_called()
+        prompt_for_platform_mock.assert_not_called()
+        get_platform_for_platform_string_mock.assert_called_once_with(
+            'PHP 5.3 running on 64bit Amazon Linux')
+        describe_platform_version_mock.assert_called_once_with(platform_version.platform_arn)
+        log_warning_mock.assert_not_called()
+        alert_platform_status_mock.assert_not_called()
+
+    @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
+    @mock.patch('ebcli.controllers.create.platformops.prompt_for_platform')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_for_platform_string')
+    @mock.patch('ebcli.controllers.create.io.log_warning')
+    @mock.patch('ebcli.controllers.create.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
     def test__determine_platform__with_platform_arn(
         self,
+        describe_platform_version_mock,
+        alert_platform_status_mock,
         log_warning_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
         prompt_for_platform_mock,
         get_configured_default_platform_mock,
     ):
@@ -176,25 +243,32 @@ class TestCreate(unittest.TestCase):
             platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0',
             platform_name='PHP 7.3 running on 64bit Amazon Linux',
             platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
-        get_platform_version_for_platform_string_mock.return_value = platform_version
+        get_platform_for_platform_string_mock.return_value = platform_version
+        describe_platform_version_mock.return_value = dict()
 
         result = create._determine_platform('arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0')
 
         get_configured_default_platform_mock.assert_not_called()
         prompt_for_platform_mock.assert_not_called()
-        get_platform_version_for_platform_string_mock.assert_called_once_with(
+        get_platform_for_platform_string_mock.assert_called_once_with(
             'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0')
         log_warning_mock.assert_not_called()
+        describe_platform_version_mock.assert_called_once_with(platform_version.platform_arn)
+        alert_platform_status_mock.assert_called_once_with(platform_version)
         self.assertEqual(platform_version, result)
 
     @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.create.platformops.prompt_for_platform')
-    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.create.io.log_warning')
+    @mock.patch('ebcli.controllers.create.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
     def test__determine_platform__multi_container_docker_platform_version_with_iprofile(
         self,
+        describe_platform_version_mock,
+        alert_platform_status_mock,
         log_warnign_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
         prompt_for_platform_mock,
         get_configured_default_platform_mock,
     ):
@@ -202,7 +276,8 @@ class TestCreate(unittest.TestCase):
             platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/Multi-container Docker running on 64bit Amazon Linux/0.0.0',
             platform_name='Multi-container Docker running on 64bit Amazon Linux',
             platform_branch_name='Multi-container Docker running on 64bit Amazon Linux')
-        get_platform_version_for_platform_string_mock.return_value = platform_version
+        get_platform_for_platform_string_mock.return_value = platform_version
+        describe_platform_version_mock.return_value = dict()
 
         result = create._determine_platform(
             'Multi-container Docker running on 64bit Amazon Linux',
@@ -210,19 +285,25 @@ class TestCreate(unittest.TestCase):
 
         get_configured_default_platform_mock.assert_not_called()
         prompt_for_platform_mock.assert_not_called()
-        get_platform_version_for_platform_string_mock.assert_called_once_with(
+        get_platform_for_platform_string_mock.assert_called_once_with(
             'Multi-container Docker running on 64bit Amazon Linux')
         log_warnign_mock.assert_not_called()
+        describe_platform_version_mock.assert_called_once_with(platform_version.platform_arn)
+        alert_platform_status_mock.assert_called_once_with(platform_version)
         self.assertEqual(platform_version, result)
 
     @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.create.platformops.prompt_for_platform')
-    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.create.io.log_warning')
+    @mock.patch('ebcli.controllers.create.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
     def test__determine_platform__multi_container_docker_platform_version_sans_iprofile(
         self,
+        describe_platform_version_mock,
+        alert_platform_status_mock,
         log_warnign_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
         prompt_for_platform_mock,
         get_configured_default_platform_mock,
     ):
@@ -230,14 +311,15 @@ class TestCreate(unittest.TestCase):
             platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/Multi-container Docker running on 64bit Amazon Linux/0.0.0',
             platform_name='Multi-container Docker running on 64bit Amazon Linux',
             platform_branch_name='Multi-container Docker running on 64bit Amazon Linux')
-        get_platform_version_for_platform_string_mock.return_value = platform_version
+        get_platform_for_platform_string_mock.return_value = platform_version
+        describe_platform_version_mock.return_value = dict()
 
         result = create._determine_platform(
             'Multi-container Docker running on 64bit Amazon Linux')
 
         get_configured_default_platform_mock.assert_not_called()
         prompt_for_platform_mock.assert_not_called()
-        get_platform_version_for_platform_string_mock.assert_called_once_with(
+        get_platform_for_platform_string_mock.assert_called_once_with(
             'Multi-container Docker running on 64bit Amazon Linux')
         log_warnign_mock.assert_called_once_with(
             'The Multi-container Docker platform requires additional ECS permissions. '
@@ -246,21 +328,27 @@ class TestCreate(unittest.TestCase):
             'For more information see: '
             'https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/'
             'create_deploy_docker_ecs.html#create_deploy_docker_ecs_role')
+        describe_platform_version_mock.assert_called_once_with(platform_version.platform_arn)
+        alert_platform_status_mock.assert_called_once_with(platform_version)
         self.assertEqual(platform_version, result)
 
     @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.create.platformops.prompt_for_platform')
-    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.create.io.log_warning')
+    @mock.patch('ebcli.controllers.create.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
     def test__determine_platform__multi_container_docker_solution_stack_with_iprofile(
         self,
+        describe_platform_version_mock,
+        alert_platform_status_mock,
         log_warnign_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
         prompt_for_platform_mock,
         get_configured_default_platform_mock,
     ):
         solution_stack = SolutionStack('Multi-container Docker')
-        get_platform_version_for_platform_string_mock.return_value = solution_stack
+        get_platform_for_platform_string_mock.return_value = solution_stack
 
         result = create._determine_platform(
             'Multi-container Docker',
@@ -268,31 +356,37 @@ class TestCreate(unittest.TestCase):
 
         get_configured_default_platform_mock.assert_not_called()
         prompt_for_platform_mock.assert_not_called()
-        get_platform_version_for_platform_string_mock.assert_called_once_with(
+        get_platform_for_platform_string_mock.assert_called_once_with(
             'Multi-container Docker')
         log_warnign_mock.assert_not_called()
+        describe_platform_version_mock.assert_not_called()
+        alert_platform_status_mock.assert_not_called()
         self.assertEqual(solution_stack, result)
 
     @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.create.platformops.prompt_for_platform')
-    @mock.patch('ebcli.controllers.create.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.create.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.create.io.log_warning')
+    @mock.patch('ebcli.controllers.create.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.describe_platform_version')
     def test__determine_platform__multi_container_docker_solution_stack_sans_iprofile(
         self,
+        describe_platform_version_mock,
+        alert_platform_status_mock,
         log_warnign_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
         prompt_for_platform_mock,
         get_configured_default_platform_mock,
     ):
         solution_stack = SolutionStack('Multi-container Docker')
-        get_platform_version_for_platform_string_mock.return_value = solution_stack
+        get_platform_for_platform_string_mock.return_value = solution_stack
 
         result = create._determine_platform(
             'Multi-container Docker')
 
         get_configured_default_platform_mock.assert_not_called()
         prompt_for_platform_mock.assert_not_called()
-        get_platform_version_for_platform_string_mock.assert_called_once_with(
+        get_platform_for_platform_string_mock.assert_called_once_with(
             'Multi-container Docker')
         log_warnign_mock.assert_called_once_with(
             'The Multi-container Docker platform requires additional ECS permissions. '
@@ -301,6 +395,8 @@ class TestCreate(unittest.TestCase):
             'For more information see: '
             'https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/'
             'create_deploy_docker_ecs.html#create_deploy_docker_ecs_role')
+        describe_platform_version_mock.assert_not_called()
+        alert_platform_status_mock.assert_not_called()
         self.assertEqual(solution_stack, result)
 
 

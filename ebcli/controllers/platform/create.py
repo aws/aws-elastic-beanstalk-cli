@@ -14,7 +14,7 @@ from ebcli.core import fileoperations
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.core.fileoperations import write_config_setting
 from ebcli.objects.exceptions import NotInitializedError
-from ebcli.operations.platformops import create_platform_version
+from ebcli.operations.platform_version_ops import create_platform_version
 from ebcli.operations.tagops import tagops
 from ebcli.resources.strings import strings, flag_text
 from ebcli.resources.statics import iam_attributes

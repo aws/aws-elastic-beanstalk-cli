@@ -25,7 +25,7 @@ from ebcli.operations.platformops import PlatformVersion
 class TestSolutionstackOps(unittest.TestCase):
 
     @mock.patch('ebcli.lib.elasticbeanstalk.get_available_solution_stacks')
-    @mock.patch('ebcli.operations.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.operations.platform_version_ops.list_custom_platform_versions')
     def test_find_solution_stack_from_string(
             self,
             custom_platforms_lister_mock,
@@ -373,7 +373,7 @@ class TestSolutionstackOps(unittest.TestCase):
             solution_stack_ops.find_solution_stack_from_string(solution_string)
 
     @mock.patch('ebcli.lib.elasticbeanstalk.get_available_solution_stacks')
-    @mock.patch('ebcli.operations.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.operations.platform_version_ops.list_custom_platform_versions')
     def test_find_solution_stack_from_string__custom_platform(
             self,
             custom_platforms_lister_mock,
@@ -450,15 +450,15 @@ class TestSolutionstackOps(unittest.TestCase):
         )
 
     @mock.patch('ebcli.lib.elasticbeanstalk.get_available_solution_stacks')
-    @mock.patch('ebcli.operations.platformops.get_latest_custom_platform')
+    @mock.patch('ebcli.operations.platform_version_ops.get_latest_custom_platform_version')
     def test_find_solution_stack_from_string__return_latest_custom_platform(
             self,
-            latest_custom_platform_retriever_mock,
+            get_latest_custom_platform_version_mock,
             available_solution_stacks_mock
     ):
         available_solution_stacks_mock.return_value = []
         latest_custom_platform_arn = 'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-2/1.0.3'
-        latest_custom_platform_retriever_mock.return_value = PlatformVersion(latest_custom_platform_arn)
+        get_latest_custom_platform_version_mock.return_value = PlatformVersion(latest_custom_platform_arn)
 
         self.assertEqual(
             PlatformVersion(latest_custom_platform_arn),

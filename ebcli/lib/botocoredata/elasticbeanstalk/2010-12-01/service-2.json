@@ -1697,6 +1697,7 @@
     "BoxedBoolean":{"type":"boolean"},
     "BoxedInt":{"type":"integer"},
     "BranchName":{"type":"string"},
+    "BranchOrder":{"type":"string"},
     "BuildConfiguration":{
       "type":"structure",
       "required":[
@@ -2852,6 +2853,7 @@
       "members":{
         "PlatformName":{"shape":"PlatformName"},
         "BranchName":{"shape":"BranchName"},
+        "BranchOrder":{"shape":"BranchOrder"},
         "LifecycleState":{"shape":"LifecycleState"},
         "SupportedTierList":{"shape":"SupportedTierList"}
       }

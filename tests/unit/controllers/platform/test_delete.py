@@ -47,7 +47,7 @@ class TestDelete(unittest.TestCase):
 
 
 class TestEBPlatform(TestDelete):
-    @mock.patch('ebcli.controllers.platform.delete.platformops.delete_platform_version')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.delete_platform_version')
     def test_delete__single_platform_version(
             self,
             delete_platform_version_mock
@@ -61,7 +61,7 @@ class TestEBPlatform(TestDelete):
             True
         )
 
-    @mock.patch('ebcli.controllers.platform.delete.platformops.delete_platform_version')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.delete_platform_version')
     def test_delete__version_not_specified(
             self,
             delete_platform_version_mock
@@ -72,8 +72,8 @@ class TestEBPlatform(TestDelete):
 
         delete_platform_version_mock.assert_not_called()
 
-    @mock.patch('ebcli.controllers.platform.delete.platformops.list_custom_platform_versions')
-    @mock.patch('ebcli.controllers.platform.delete.platformops.delete_platform_version')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.delete_platform_version')
     @mock.patch('ebcli.controllers.platform.delete.io.validate_action')
     def test_delete__all_failed_versions(
             self,
@@ -106,8 +106,8 @@ class TestEBPlatform(TestDelete):
             ]
         )
 
-    @mock.patch('ebcli.controllers.platform.delete.platformops.list_custom_platform_versions')
-    @mock.patch('ebcli.controllers.platform.delete.platformops.delete_platform_version')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.delete_platform_version')
     @mock.patch('ebcli.controllers.platform.delete.io.validate_action')
     def test_delete__all_failed_versions__force(
             self,
@@ -142,7 +142,7 @@ class TestEBPlatform(TestDelete):
 
 
 class TestEBP(TestDelete):
-    @mock.patch('ebcli.controllers.platform.delete.platformops.delete_platform_version')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.delete_platform_version')
     def test_delete__single_platform_version(
             self,
             delete_platform_version_mock
@@ -156,7 +156,7 @@ class TestEBP(TestDelete):
             True
         )
 
-    @mock.patch('ebcli.controllers.platform.delete.platformops.delete_platform_version')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.delete_platform_version')
     def test_delete__version_not_specified(
             self,
             delete_platform_version_mock
@@ -167,8 +167,8 @@ class TestEBP(TestDelete):
 
         delete_platform_version_mock.assert_not_called()
 
-    @mock.patch('ebcli.controllers.platform.delete.platformops.list_custom_platform_versions')
-    @mock.patch('ebcli.controllers.platform.delete.platformops.delete_platform_version')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.delete_platform_version')
     @mock.patch('ebcli.controllers.platform.delete.io.validate_action')
     def test_delete__all_failed_versions(
             self,
@@ -189,8 +189,8 @@ class TestEBP(TestDelete):
         self.assertEqual(2, delete_platform_version_mock.call_count)
         self.assertEqual(1, validate_action_mock.call_count)
 
-    @mock.patch('ebcli.controllers.platform.delete.platformops.list_custom_platform_versions')
-    @mock.patch('ebcli.controllers.platform.delete.platformops.delete_platform_version')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.delete_platform_version')
     @mock.patch('ebcli.controllers.platform.delete.io.validate_action')
     def test_delete__all_failed_versions__force(
             self,
@@ -223,8 +223,8 @@ class TestEBP(TestDelete):
             ]
         )
 
-    @mock.patch('ebcli.controllers.platform.delete.platformops.list_custom_platform_versions')
-    @mock.patch('ebcli.controllers.platform.delete.platformops.delete_platform_version')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.delete.platform_version_ops.delete_platform_version')
     @mock.patch('ebcli.controllers.platform.delete.io.validate_action')
     def test_delete__all_failed_versions__force(
             self,

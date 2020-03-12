@@ -67,18 +67,18 @@ class ListTest(unittest.TestCase):
 
 
 class TestEBPlatformList(ListTest):
-    @mock.patch('ebcli.controllers.platform.list.platformops.get_all_platforms')
-    @mock.patch('ebcli.controllers.platform.list.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.list.solution_stack_ops.get_all_solution_stacks')
+    @mock.patch('ebcli.controllers.platform.list.platform_version_ops.list_custom_platform_versions')
     @mock.patch('ebcli.controllers.platform.list.io.echo')
     def test_list__application_workspace__non_verbose_mode(
             self,
             echo_mock,
             list_custom_platform_versions_mock,
-            get_all_platforms_mock
+            get_all_solution_stacks_mock
     ):
         self.setup_application_workspace()
 
-        get_all_platforms_mock.return_value = [
+        get_all_solution_stacks_mock.return_value = [
             SolutionStack('64bit Amazon Linux 2017.09 v4.4.0 running Node.js'),
             SolutionStack('64bit Amazon Linux 2017.09 v2.6.0 running PHP 5.4')
 
@@ -96,18 +96,18 @@ class TestEBPlatformList(ListTest):
             'node.js', 'php-5.4', 'custom-platform-4', 'custom-platform-5', sep='{linesep}'.format(linesep=os.linesep)
         )
 
-    @mock.patch('ebcli.controllers.platform.list.platformops.get_all_platforms')
-    @mock.patch('ebcli.controllers.platform.list.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.list.solution_stack_ops.get_all_solution_stacks')
+    @mock.patch('ebcli.controllers.platform.list.platform_version_ops.list_custom_platform_versions')
     @mock.patch('ebcli.controllers.platform.list.io.echo')
     def test_list__application_workspace__verbose_mode(
             self,
             echo_mock,
             list_custom_platform_versions_mock,
-            get_all_platforms_mock
+            get_all_solution_stacks_mock
     ):
         self.setup_application_workspace()
 
-        get_all_platforms_mock.return_value = [
+        get_all_solution_stacks_mock.return_value = [
             SolutionStack('64bit Amazon Linux 2017.09 v4.4.0 running Node.js'),
             SolutionStack('64bit Amazon Linux 2017.09 v2.6.0 running PHP 5.4')
 
@@ -130,7 +130,7 @@ class TestEBPlatformList(ListTest):
         )
 
     @mock.patch('ebcli.controllers.platform.list.fileoperations.get_platform_name')
-    @mock.patch('ebcli.controllers.platform.list.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.list.platform_version_ops.list_custom_platform_versions')
     @mock.patch('ebcli.controllers.platform.list.io.echo')
     def test_list__platform_workspace__all_versions_of_this_platform(
             self,
@@ -162,7 +162,7 @@ class TestEBPlatformList(ListTest):
         )
 
     @mock.patch('ebcli.controllers.platform.list.fileoperations.get_platform_name')
-    @mock.patch('ebcli.controllers.platform.list.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.list.platform_version_ops.list_custom_platform_versions')
     @mock.patch('ebcli.controllers.platform.list.io.echo')
     def test_list__platform_workspace__all_versions_of_all_platforms(
             self,
@@ -194,7 +194,7 @@ class TestEBPlatformList(ListTest):
         )
 
     @mock.patch('ebcli.controllers.platform.list.fileoperations.get_platform_name')
-    @mock.patch('ebcli.controllers.platform.list.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.list.platform_version_ops.list_custom_platform_versions')
     @mock.patch('ebcli.controllers.platform.list.io.echo')
     def test_list__platform_workspace__filter_by_status(
             self,
@@ -239,18 +239,18 @@ class TestEBPlatformList(ListTest):
 
 
 class TestEBPList(ListTest):
-    @mock.patch('ebcli.controllers.platform.list.platformops.get_all_platforms')
-    @mock.patch('ebcli.controllers.platform.list.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.list.solution_stack_ops.get_all_solution_stacks')
+    @mock.patch('ebcli.controllers.platform.list.platform_version_ops.list_custom_platform_versions')
     @mock.patch('ebcli.controllers.platform.list.io.echo')
     def test_list__application_workspace__non_verbose_mode(
             self,
             echo_mock,
             list_custom_platform_versions_mock,
-            get_all_platforms_mock
+            get_all_solution_stacks_mock
     ):
         self.setup_application_workspace()
 
-        get_all_platforms_mock.return_value = [
+        get_all_solution_stacks_mock.return_value = [
             SolutionStack('64bit Amazon Linux 2017.09 v4.4.0 running Node.js'),
             SolutionStack('64bit Amazon Linux 2017.09 v2.6.0 running PHP 5.4')
 
@@ -268,18 +268,18 @@ class TestEBPList(ListTest):
             'node.js', 'php-5.4', 'custom-platform-4', 'custom-platform-5', sep='{linesep}'.format(linesep=os.linesep)
         )
 
-    @mock.patch('ebcli.controllers.platform.list.platformops.get_all_platforms')
-    @mock.patch('ebcli.controllers.platform.list.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.list.solution_stack_ops.get_all_solution_stacks')
+    @mock.patch('ebcli.controllers.platform.list.platform_version_ops.list_custom_platform_versions')
     @mock.patch('ebcli.controllers.platform.list.io.echo')
     def test_list__application_workspace__verbose_mode(
             self,
             echo_mock,
             list_custom_platform_versions_mock,
-            get_all_platforms_mock
+            get_all_solution_stacks_mock
     ):
         self.setup_application_workspace()
 
-        get_all_platforms_mock.return_value = [
+        get_all_solution_stacks_mock.return_value = [
             SolutionStack('64bit Amazon Linux 2017.09 v4.4.0 running Node.js'),
             SolutionStack('64bit Amazon Linux 2017.09 v2.6.0 running PHP 5.4')
 
@@ -302,7 +302,7 @@ class TestEBPList(ListTest):
         )
 
     @mock.patch('ebcli.controllers.platform.list.fileoperations.get_platform_name')
-    @mock.patch('ebcli.controllers.platform.list.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.list.platform_version_ops.list_custom_platform_versions')
     @mock.patch('ebcli.controllers.platform.list.io.echo')
     def test_list__platform_workspace__all_versions_of_this_platform(
             self,
@@ -334,7 +334,7 @@ class TestEBPList(ListTest):
         )
 
     @mock.patch('ebcli.controllers.platform.list.fileoperations.get_platform_name')
-    @mock.patch('ebcli.controllers.platform.list.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.list.platform_version_ops.list_custom_platform_versions')
     @mock.patch('ebcli.controllers.platform.list.io.echo')
     def test_list__platform_workspace__all_versions_of_all_platforms(
             self,
@@ -366,7 +366,7 @@ class TestEBPList(ListTest):
         )
 
     @mock.patch('ebcli.controllers.platform.list.fileoperations.get_platform_name')
-    @mock.patch('ebcli.controllers.platform.list.platformops.list_custom_platform_versions')
+    @mock.patch('ebcli.controllers.platform.list.platform_version_ops.list_custom_platform_versions')
     @mock.patch('ebcli.controllers.platform.list.io.echo')
     def test_list__platform_workspace__filter_by_status(
             self,

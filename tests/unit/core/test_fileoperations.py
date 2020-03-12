@@ -740,7 +740,9 @@ ccc""",
             os.path.exists(os.path.join('.elasticbeanstalk', 'app_versions'))
         )
 
-    def test_program_is_installed(self):
+    @patch('ebcli.core.fileoperations.os_which')
+    def test_program_is_installed(self, os_which_mock):
+        os_which_mock.return_value = '/Users/name/ebcli-virtaulenv/bin/eb'
         self.assertTrue(fileoperations.program_is_installed('eb'))
 
     def test_get_logs_location(self):

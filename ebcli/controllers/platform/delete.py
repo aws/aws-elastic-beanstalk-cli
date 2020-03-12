@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 from ebcli.core import fileoperations, io
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.operations import platformops
+from ebcli.operations import platformops, platform_version_ops
 from ebcli.resources.strings import strings, flag_text, prompts
 
 
@@ -68,7 +68,7 @@ class GenericPlatformDeleteController(AbstractBaseController):
             self.cleanup_platforms()
         else:
             if version:
-                platformops.delete_platform_version(version, force)
+                platform_version_ops.delete_platform_version(version, force)
             else:
                 self.app.args.print_help()
 
@@ -82,7 +82,7 @@ class GenericPlatformDeleteController(AbstractBaseController):
             platform_name = fileoperations.get_platform_name()
 
         failed_versions = sorted(
-            platformops.list_custom_platform_versions(
+            platform_version_ops.list_custom_platform_versions(
                 platform_name=platform_name,
                 status='Failed',
             )
@@ -102,7 +102,7 @@ class GenericPlatformDeleteController(AbstractBaseController):
                     io.validate_action(prompts['cleanupplatform.validate'], platform_name)
 
             for failed_version in failed_versions:
-                platformops.delete_platform_version(failed_version, force=True)
+                platform_version_ops.delete_platform_version(failed_version, force=True)
 
 
 class PlatformDeleteController(GenericPlatformDeleteController):

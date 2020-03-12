@@ -214,7 +214,7 @@ class TestEBPlatformLogs(LogsTest):
     @mock.patch('ebcli.controllers.platform.logs.fileoperations.get_platform_version')
     @mock.patch('ebcli.controllers.platform.logs.logsops.stream_platform_logs')
     @mock.patch('ebcli.controllers.platform.logs.paginate_cloudwatch_logs')
-    @mock.patch('ebcli.controllers.platform.logs.platformops.PackerStreamFormatter')
+    @mock.patch('ebcli.controllers.platform.logs.platform_version_ops.PackerStreamFormatter')
     def test_logs__platform_workspace__stream_logs(
             self,
             PackerStreamFormatter_mock,
@@ -246,7 +246,7 @@ class TestEBPlatformLogs(LogsTest):
     @mock.patch('ebcli.controllers.platform.logs.fileoperations.get_platform_version')
     @mock.patch('ebcli.controllers.platform.logs.logsops.stream_platform_logs')
     @mock.patch('ebcli.controllers.platform.logs.paginate_cloudwatch_logs')
-    @mock.patch('ebcli.controllers.platform.logs.platformops.PackerStreamFormatter')
+    @mock.patch('ebcli.controllers.platform.logs.platform_version_ops.PackerStreamFormatter')
     def test_logs__platform_workspace__stream_logs__unable_to_find_cloudwatch_logs(
             self,
             PackerStreamFormatter_mock,
@@ -433,7 +433,7 @@ class TestEBPLogs(LogsTest):
     @mock.patch('ebcli.controllers.platform.logs.fileoperations.get_platform_version')
     @mock.patch('ebcli.controllers.platform.logs.logsops.stream_platform_logs')
     @mock.patch('ebcli.controllers.platform.logs.paginate_cloudwatch_logs')
-    @mock.patch('ebcli.controllers.platform.logs.platformops.PackerStreamFormatter')
+    @mock.patch('ebcli.controllers.platform.logs.platform_version_ops.PackerStreamFormatter')
     def test_logs__platform_workspace__stream_logs(
             self,
             PackerStreamFormatter_mock,
@@ -465,7 +465,7 @@ class TestEBPLogs(LogsTest):
     @mock.patch('ebcli.controllers.platform.logs.fileoperations.get_platform_version')
     @mock.patch('ebcli.controllers.platform.logs.logsops.stream_platform_logs')
     @mock.patch('ebcli.controllers.platform.logs.paginate_cloudwatch_logs')
-    @mock.patch('ebcli.controllers.platform.logs.platformops.PackerStreamFormatter')
+    @mock.patch('ebcli.controllers.platform.logs.platform_version_ops.PackerStreamFormatter')
     def test_logs__platform_workspace__stream_logs__unable_to_find_cloudwatch_logs(
             self,
             PackerStreamFormatter_mock,

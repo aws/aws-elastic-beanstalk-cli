@@ -17,8 +17,8 @@ from ebcli.lib import elasticbeanstalk, heuristics, utils
 from ebcli.objects.exceptions import NotFoundError
 from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.solutionstack import SolutionStack
-from ebcli.operations import commonops, platformops
-from ebcli.resources.strings import prompts
+from ebcli.operations import commonops, platform_version_ops
+from ebcli.resources.strings import alerts, prompts
 
 CUSTOM_PLATFORM_OPTION = 'Custom Platform'
 
@@ -27,6 +27,10 @@ LOG = minimal_logger(__name__)
 
 def get_default_solution_stack():
     return commonops.get_config_setting_from_branch_or_default('default_platform')
+
+
+def get_all_solution_stacks():
+    return elasticbeanstalk.get_available_solution_stacks()
 
 
 def find_solution_stack_from_string(solution_string, find_newer=False):
@@ -60,14 +64,14 @@ def find_solution_stack_from_string(solution_string, find_newer=False):
     match = None
     if PlatformVersion.is_eb_managed_platform_arn(solution_string):
         if find_newer:
-            match = platformops.get_latest_eb_managed_platform(solution_string)
+            match = platform_version_ops.get_latest_eb_managed_platform(solution_string)
         else:
             match = platform_arn_to_solution_stack(solution_string)
     elif PlatformVersion.is_custom_platform_arn(solution_string):
         if find_newer:
-            match = platformops.get_latest_custom_platform(solution_string)
+            match = platform_version_ops.get_latest_custom_platform_version(solution_string)
         else:
-            match = platformops.find_custom_platform_from_string(solution_string)
+            match = platform_version_ops.find_custom_platform_version_from_string(solution_string)
 
     # Compare input with complete SolutionStack name and retrieve latest SolutionStack
     # in the series if `find_newer` is set to True
@@ -93,10 +97,10 @@ def find_solution_stack_from_string(solution_string, find_newer=False):
 
     # Compare input with custom platform names
     if not match:
-        match = platformops.find_custom_platform_from_string(solution_string)
+        match = platform_version_ops.find_custom_platform_version_from_string(solution_string)
 
     if not match:
-        raise NotFoundError('Platform "{}" does not appear to be valid'.format(solution_string))
+        raise NotFoundError(alerts['platform.invalidstring'].format(solution_string))
 
     return match
 

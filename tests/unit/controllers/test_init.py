@@ -22,7 +22,7 @@ from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
 from ebcli.objects.exceptions import InvalidProfileError
 from ebcli.objects.solutionstack import SolutionStack
-from ebcli.objects.platform import PlatformVersion
+from ebcli.objects.platform import PlatformBranch, PlatformVersion
 from ebcli.objects.buildconfiguration import BuildConfiguration
 
 from .. import mock_responses
@@ -40,7 +40,9 @@ class TestInit(unittest.TestCase):
         result = initialize._customer_is_avoiding_interactive_flow(command_args)
         self.assertFalse(result)
 
-    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_branch_status')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
     @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
@@ -55,27 +57,32 @@ class TestInit(unittest.TestCase):
         env_yaml_exists_mock,
         describe_platform_version_mock,
         get_configured_default_platform_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
+        alert_platform_branch_status_mock,
+        alert_platform_status_mock,
     ):
-        platform_version = PlatformVersion(
-            platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0',
-            platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
+        platform_branch = PlatformBranch(
+            branch_name='PHP 7.3 running on 64bit Amazon Linux')
 
         get_configured_default_platform_mock.return_value = None
         env_yaml_exists_mock.return_value = False
-        prompt_for_platform_mock.return_value = platform_version
+        prompt_for_platform_mock.return_value = platform_branch
 
         result = initialize._determine_platform()
 
-        get_platform_version_for_platform_string_mock.assert_not_called()
+        get_platform_for_platform_string_mock.assert_not_called()
         get_configured_default_platform_mock.assert_called_once_with()
         env_yaml_exists_mock.assert_called_once_with()
         extract_solution_stack_from_env_yaml_mock.assert_not_called()
         echo_mock.assert_not_called()
         prompt_for_platform_mock.assert_called_once_with()
-        self.assertEqual(platform_version.platform_branch_name, result)
+        alert_platform_branch_status_mock.assert_called_once_with(platform_branch)
+        alert_platform_status_mock.assert_not_called()
+        self.assertEqual(platform_branch.branch_name, result)
 
-    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_branch_status')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
     @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
@@ -90,21 +97,27 @@ class TestInit(unittest.TestCase):
         env_yaml_exists_mock,
         describe_platform_version_mock,
         get_configured_default_platform_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
+        alert_platform_branch_status_mock,
+        alert_platform_status_mock,
     ):
         get_configured_default_platform_mock.return_value = 'PHP 7.3'
 
         result = initialize._determine_platform()
 
-        get_platform_version_for_platform_string_mock.assert_not_called()
+        get_platform_for_platform_string_mock.assert_not_called()
         get_configured_default_platform_mock.assert_called_once_with()
         env_yaml_exists_mock.assert_not_called()
         extract_solution_stack_from_env_yaml_mock.assert_not_called()
         echo_mock.assert_not_called()
         prompt_for_platform_mock.assert_not_called()
+        alert_platform_branch_status_mock.assert_not_called()
+        alert_platform_status_mock.assert_not_called()
         self.assertEqual('PHP 7.3', result)
 
-    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_branch_status')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
     @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
@@ -119,22 +132,28 @@ class TestInit(unittest.TestCase):
         env_yaml_exists_mock,
         describe_platform_version_mock,
         get_configured_default_platform_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
+        alert_platform_branch_status_mock,
+        alert_platform_status_mock,
     ):
         get_configured_default_platform_mock.return_value = None
         extract_solution_stack_from_env_yaml_mock.return_value = 'PHP 7.3'
 
         result = initialize._determine_platform()
 
-        get_platform_version_for_platform_string_mock.assert_not_called()
+        get_platform_for_platform_string_mock.assert_not_called()
         get_configured_default_platform_mock.assert_called_once_with()
         env_yaml_exists_mock.assert_called_once_with()
         extract_solution_stack_from_env_yaml_mock.assert_called_once_with()
         echo_mock.assert_called_once_with('Using platform specified in env.yaml: PHP 7.3')
         prompt_for_platform_mock.assert_not_called()
+        alert_platform_branch_status_mock.assert_not_called()
+        alert_platform_status_mock.assert_not_called()
         self.assertEqual('PHP 7.3', result)
 
-    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_branch_status')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
     @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
@@ -149,27 +168,32 @@ class TestInit(unittest.TestCase):
         env_yaml_exists_mock,
         describe_platform_version_mock,
         get_configured_default_platform_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
+        alert_platform_branch_status_mock,
+        alert_platform_status_mock,
     ):
-        platform_version = PlatformVersion(
-            platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0',
-            platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
+        platform_branch = PlatformBranch(
+            branch_name='PHP 7.3 running on 64bit Amazon Linux')
 
         get_configured_default_platform_mock.return_value = None
         extract_solution_stack_from_env_yaml_mock.return_value = None
-        prompt_for_platform_mock.return_value = platform_version
+        prompt_for_platform_mock.return_value = platform_branch
 
         result = initialize._determine_platform()
 
-        get_platform_version_for_platform_string_mock.assert_not_called()
+        get_platform_for_platform_string_mock.assert_not_called()
         get_configured_default_platform_mock.assert_called_once_with()
         env_yaml_exists_mock.assert_called_once_with()
         extract_solution_stack_from_env_yaml_mock.assert_called_once_with()
         echo_mock.assert_not_called()
         prompt_for_platform_mock.assert_called_once_with()
-        self.assertEqual(platform_version.platform_shorthand, result)
+        alert_platform_branch_status_mock.assert_called_once_with(platform_branch)
+        alert_platform_status_mock.assert_not_called()
+        self.assertEqual(platform_branch.branch_name, result)
 
-    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_branch_status')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
     @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
@@ -184,25 +208,30 @@ class TestInit(unittest.TestCase):
         env_yaml_exists_mock,
         describe_platform_version_mock,
         get_configured_default_platform_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
+        alert_platform_branch_status_mock,
+        alert_platform_status_mock,
     ):
-        platform_version = PlatformVersion(
-            platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0',
-            platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
+        platform_branch = PlatformBranch(
+            branch_name='PHP 7.3 running on 64bit Amazon Linux')
 
-        prompt_for_platform_mock.return_value = platform_version
+        prompt_for_platform_mock.return_value = platform_branch
 
         result = initialize._determine_platform(force_interactive=True)
 
-        get_platform_version_for_platform_string_mock.assert_not_called()
+        get_platform_for_platform_string_mock.assert_not_called()
         get_configured_default_platform_mock.assert_not_called()
         env_yaml_exists_mock.assert_not_called()
         extract_solution_stack_from_env_yaml_mock.assert_not_called()
         echo_mock.assert_not_called()
         prompt_for_platform_mock.assert_called_once_with()
-        self.assertEqual(platform_version.platform_branch_name, result)
+        alert_platform_branch_status_mock.assert_called_once_with(platform_branch)
+        alert_platform_status_mock.assert_not_called()
+        self.assertEqual(platform_branch.branch_name, result)
 
-    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_branch_status')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
     @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
@@ -217,27 +246,33 @@ class TestInit(unittest.TestCase):
         env_yaml_exists_mock,
         describe_platform_version_mock,
         get_configured_default_platform_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
+        alert_platform_branch_status_mock,
+        alert_platform_status_mock,
     ):
         customer_provided_platform = 'PHP 7.3'
         platform_version = PlatformVersion(
             platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0',
             platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
 
-        get_platform_version_for_platform_string_mock.return_value = platform_version
+        get_platform_for_platform_string_mock.return_value = platform_version
 
         result = initialize._determine_platform(
             customer_provided_platform=customer_provided_platform)
 
-        get_platform_version_for_platform_string_mock.assert_called_once_with(
+        get_platform_for_platform_string_mock.assert_called_once_with(
             customer_provided_platform)
         env_yaml_exists_mock.assert_not_called()
         extract_solution_stack_from_env_yaml_mock.assert_not_called()
         echo_mock.assert_not_called()
         prompt_for_platform_mock.assert_not_called()
+        alert_platform_branch_status_mock.assert_not_called()
+        alert_platform_status_mock.assert_called_once_with(platform_version)
         self.assertEqual('PHP 7.3 running on 64bit Amazon Linux', result)
 
-    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_branch_status')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
     @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
@@ -252,19 +287,21 @@ class TestInit(unittest.TestCase):
         env_yaml_exists_mock,
         describe_platform_version_mock,
         get_configured_default_platform_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
+        alert_platform_branch_status_mock,
+        alert_platform_status_mock,
     ):
         customer_provided_platform = 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0'
         platform_version = PlatformVersion(
             platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0',
             platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
 
-        get_platform_version_for_platform_string_mock.return_value = platform_version
+        get_platform_for_platform_string_mock.return_value = platform_version
 
         result = initialize._determine_platform(
             customer_provided_platform=customer_provided_platform)
 
-        get_platform_version_for_platform_string_mock.assert_called_once_with(
+        get_platform_for_platform_string_mock.assert_called_once_with(
             customer_provided_platform)
         env_yaml_exists_mock.assert_not_called()
         extract_solution_stack_from_env_yaml_mock.assert_not_called()
@@ -272,7 +309,9 @@ class TestInit(unittest.TestCase):
         prompt_for_platform_mock.assert_not_called()
         self.assertEqual('arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0', result)
 
-    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_branch_status')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
     @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
@@ -287,7 +326,9 @@ class TestInit(unittest.TestCase):
         env_yaml_exists_mock,
         describe_platform_version_mock,
         get_configured_default_platform_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
+        alert_platform_branch_status_mock,
+        alert_platform_status_mock,
     ):
         customer_provided_platform = 'PHP 7.3'
         existing_app_platform='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0'
@@ -295,21 +336,25 @@ class TestInit(unittest.TestCase):
             platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0',
             platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
 
-        get_platform_version_for_platform_string_mock.return_value = platform_version
+        get_platform_for_platform_string_mock.return_value = platform_version
 
         result = initialize._determine_platform(
             customer_provided_platform=customer_provided_platform,
             existing_app_platform=existing_app_platform)
 
-        get_platform_version_for_platform_string_mock.assert_called_once_with(
+        get_platform_for_platform_string_mock.assert_called_once_with(
             customer_provided_platform)
         env_yaml_exists_mock.assert_not_called()
         extract_solution_stack_from_env_yaml_mock.assert_not_called()
         echo_mock.assert_not_called()
         prompt_for_platform_mock.assert_not_called()
+        alert_platform_branch_status_mock.assert_not_called()
+        alert_platform_status_mock.assert_called_once_with(platform_version)
         self.assertEqual('PHP 7.3 running on 64bit Amazon Linux', result)
 
-    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_version_for_platform_string')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_status')
+    @mock.patch('ebcli.controllers.initialize.statusops.alert_platform_branch_status')
+    @mock.patch('ebcli.controllers.initialize.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.initialize.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.initialize.elasticbeanstalk.describe_platform_version')
     @mock.patch('ebcli.controllers.initialize.fileoperations.env_yaml_exists')
@@ -324,20 +369,22 @@ class TestInit(unittest.TestCase):
         env_yaml_exists_mock,
         describe_platform_version_mock,
         get_configured_default_platform_mock,
-        get_platform_version_for_platform_string_mock,
+        get_platform_for_platform_string_mock,
+        alert_platform_branch_status_mock,
+        alert_platform_status_mock,
     ):
         existing_app_platform = 'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0'
-
-        get_configured_default_platform_mock.return_value = None
-        describe_platform_version_mock.return_value = {
+        platform_version_description = {
             'PlatformArn': existing_app_platform,
             'PlatformBranchName': 'PHP 7.3 running on 64bit Amazon Linux',
         }
+        get_configured_default_platform_mock.return_value = None
+        describe_platform_version_mock.return_value = platform_version_description
 
         result = initialize._determine_platform(
             existing_app_platform=existing_app_platform)
 
-        get_platform_version_for_platform_string_mock.assert_not_called()
+        get_platform_for_platform_string_mock.assert_not_called()
         get_configured_default_platform_mock.assert_called_once_with()
         describe_platform_version_mock.assert_called_once_with(
             existing_app_platform)
@@ -345,6 +392,9 @@ class TestInit(unittest.TestCase):
         extract_solution_stack_from_env_yaml_mock.assert_not_called()
         echo_mock.assert_not_called()
         prompt_for_platform_mock.assert_not_called()
+        alert_platform_branch_status_mock.assert_not_called()
+        alert_platform_status_mock.assert_called_once_with(
+            PlatformVersion.from_platform_version_description(platform_version_description))
         self.assertEqual('PHP 7.3 running on 64bit Amazon Linux', result)
 
 

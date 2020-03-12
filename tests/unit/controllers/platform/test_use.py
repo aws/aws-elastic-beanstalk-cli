@@ -18,34 +18,47 @@ from ebcli.objects.platform import PlatformBranch, PlatformVersion
 
 
 class TestPlatformSelectController(unittest.TestCase):
+
+    def setUp(self):
+        self.platform_select_controller = use.PlatformSelectController()
+
+    @mock.patch('ebcli.controllers.platform.use.alert_platform_status')
+    @mock.patch('ebcli.controllers.platform.use.alert_platform_branch_status')
     @mock.patch('ebcli.controllers.platform.use.prompt_for_platform')
     @mock.patch('ebcli.controllers.platform.use.fileoperations.write_config_setting')
     def test_do_command__platform_version(
         self,
         write_config_setting_mock,
         prompt_for_platform_mock,
+        alert_platform_branch_status_mock,
+        alert_platform_status_mock,
     ):
-        _self = mock.Mock()
         platform = PlatformVersion(
             'arn:aws:elasticbeanstalk:us-east-1::platform/PHP 7.3 running on 64bit Amazon Linux/0.0.0',
             platform_name='PHP 7.3 running on 64bit Amazon Linux (platform name)',
             platform_branch_name='PHP 7.3 running on 64bit Amazon Linux')
         prompt_for_platform_mock.return_value = platform
 
-        use.PlatformSelectController.do_command(_self)
+        self.platform_select_controller.do_command()
 
         prompt_for_platform_mock.assert_called_once_with()
+        alert_platform_status_mock.assert_called_once_with(platform)
+        alert_platform_branch_status_mock.assert_not_called()
         write_config_setting_mock.assert_called_once_with(
             'global',
             'default_platform',
             'PHP 7.3 running on 64bit Amazon Linux')
 
+    @mock.patch('ebcli.controllers.platform.use.alert_platform_status')
+    @mock.patch('ebcli.controllers.platform.use.alert_platform_branch_status')
     @mock.patch('ebcli.controllers.platform.use.prompt_for_platform')
     @mock.patch('ebcli.controllers.platform.use.fileoperations.write_config_setting')
     def test_do_command__platform_version_sans_branch_name(
         self,
         write_config_setting_mock,
         prompt_for_platform_mock,
+        alert_platform_branch_status_mock,
+        alert_platform_status_mock,
     ):
         _self = mock.Mock()
         platform = PlatformVersion(
@@ -53,28 +66,35 @@ class TestPlatformSelectController(unittest.TestCase):
             platform_name='PHP 7.3 running on 64bit Amazon Linux')
         prompt_for_platform_mock.return_value = platform
 
-        use.PlatformSelectController.do_command(_self)
+        self.platform_select_controller.do_command()
 
         prompt_for_platform_mock.assert_called_once_with()
+        alert_platform_status_mock.assert_called_once_with(platform)
+        alert_platform_branch_status_mock.assert_not_called()
         write_config_setting_mock.assert_called_once_with(
             'global',
             'default_platform',
             'PHP 7.3 running on 64bit Amazon Linux')
 
+    @mock.patch('ebcli.controllers.platform.use.alert_platform_status')
+    @mock.patch('ebcli.controllers.platform.use.alert_platform_branch_status')
     @mock.patch('ebcli.controllers.platform.use.prompt_for_platform')
     @mock.patch('ebcli.controllers.platform.use.fileoperations.write_config_setting')
     def test_do_command__platform_branch(
         self,
         write_config_setting_mock,
         prompt_for_platform_mock,
+        alert_platform_branch_status_mock,
+        alert_platform_status_mock,
     ):
-        _self = mock.Mock()
         platform = PlatformBranch('PHP 7.3 running on 64bit Amazon Linux')
         prompt_for_platform_mock.return_value = platform
 
-        use.PlatformSelectController.do_command(_self)
+        self.platform_select_controller.do_command()
 
         prompt_for_platform_mock.assert_called_once_with()
+        alert_platform_status_mock.assert_not_called()
+        alert_platform_branch_status_mock.assert_called_once_with(platform)
         write_config_setting_mock.assert_called_once_with(
             'global',
             'default_platform',

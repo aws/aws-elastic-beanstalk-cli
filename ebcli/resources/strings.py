@@ -701,23 +701,30 @@ prompts = {
 }
 
 alerts = {
-    'env.platform.notrecommended': 'There is a platform version available that is '
-                              'recommended over your current platform version.',
-    'env.platform.old': 'There is a newer version of the platform used by your '
-                    'environment. You can upgrade your environment to the '
-                    'most recent platform version by typing "eb upgrade".',
-    'env.platformbranch.deprecated': 'The platform you chose is '
-                    'deprecated and may not be supported in the future.',
-    'env.platformbranch.retired': 'The platform you chose is '
-                    'retired and is no longer supported.',
-    'platform.norecommended': 'There is a platform version available that is '
-                              'recommended over your current platform version.',
-    'platform.old': 'There is a newer version of the platform you chose.',
-    'platformbranch.deprecated': 'The platform you chose is '
-                    'deprecated and may not be supported in the future.',
-    'platformbranch.retired': 'The platform you chose is '
-                    'retired and is no longer supported.',
-    'platform.invalidstring': 'Platform "{}" does not appear to be valid',
+    'env.platform.notrecommended': "The platform version that your environment "
+                                   "is using isn't recommended. There's a "
+                                   "recommended version in the same platform "
+                                   "branch.",
+    'env.platform.old': 'The platform version that your environment is using '
+                        'isn\'t up to date. There\'s a newer version. Type '
+                        '"eb upgrade" to upgrade your environment to the '
+                        'latest platform version.',
+    'env.platformbranch.deprecated': 'Your environment is using a deprecated '
+                                     'platform branch. It might not be '
+                                     'supported in the future.',
+    'env.platformbranch.retired': "Your environment is using a retired "
+                                  "platform branch. It's no longer supported.",
+    'platform.notrecommended': "The platform version you chose isn't "
+                               "recommended. There's a recommended version in "
+                               "the same platform branch.",
+    'platform.old': "The platform version you chose isn't up to date. There's "
+                    "a newer version.",
+    'platformbranch.deprecated': 'You chose a deprecated platform branch. It '
+                                 'might not be supported in the future.',
+    'platformbranch.retired': "You chose a retired platform branch. It's no "
+                              "longer supported.",
+    'platform.invalidstring': 'Elastic Beanstalk can\'t find a platform '
+                              'version that matches "{}".',
 }
 
 flag_text = {

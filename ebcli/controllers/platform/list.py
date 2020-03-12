@@ -18,7 +18,7 @@ from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.core.ebglobals import Constants
 from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.exceptions import InvalidOptionsError
-from ebcli.operations import platformops
+from ebcli.operations import platform_version_ops, solution_stack_ops
 from ebcli.resources.strings import strings, flag_text
 
 
@@ -60,14 +60,14 @@ class GenericPlatformListController(AbstractBaseController):
             echo(self.all_platforms())
 
     def all_platforms(self):
-        solution_stacks = platformops.get_all_platforms()
+        solution_stacks = solution_stack_ops.get_all_solution_stacks()
 
         if self.app.pargs.verbose:
-            platform_arns = platformops.list_custom_platform_versions()
+            platform_arns = platform_version_ops.list_custom_platform_versions()
             versions = [s.name for s in solution_stacks]
             versions.extend(platform_arns)
         else:
-            platform_arns = platformops.list_custom_platform_versions(platform_version='latest')
+            platform_arns = platform_version_ops.list_custom_platform_versions(platform_version='latest')
             versions = sorted(set([s.pythonify() for s in solution_stacks]))
             versions.extend([PlatformVersion.get_platform_name(arn) for arn in platform_arns])
 
@@ -76,7 +76,7 @@ class GenericPlatformListController(AbstractBaseController):
     def custom_platforms(self):
         platform_name = None if self.app.pargs.all_platforms else fileoperations.get_platform_name()
 
-        return platformops.list_custom_platform_versions(
+        return platform_version_ops.list_custom_platform_versions(
             platform_name=platform_name,
             status=self.app.pargs.status,
             show_status=True

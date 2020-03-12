@@ -22,6 +22,7 @@ from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.objects.platform import PlatformBranch, PlatformVersion
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects import solutionstack
+from ebcli.operations import statusops
 
 from ebcli.objects.exceptions import (
     InvalidProfileError,
@@ -169,13 +170,13 @@ class InitController(AbstractBaseController):
                         default_env=default_env
                     )
                 io.echo('\n--- Configuring module: {0} ---'.format(module))
-                platform = _determine_platform(
+                module_platform = _determine_platform(
                     customer_provided_platform=platform,
                     existing_app_platform=platform_arn,
                     force_interactive=interactive)
 
-                initializeops.setup(app_name, region, platform)
-                configure_keyname(platform, keyname, keyname_of_existing_application, interactive, force_non_interactive)
+                initializeops.setup(app_name, region, module_platform)
+                configure_keyname(module_platform, keyname, keyname_of_existing_application, interactive, force_non_interactive)
                 os.chdir(cwd)
 
 
@@ -526,7 +527,7 @@ def _determine_platform(
 
     if not force_interactive:
         if customer_provided_platform:
-            platform = platformops.get_platform_version_for_platform_string(
+            platform = platformops.get_platform_for_platform_string(
                 customer_provided_platform)
 
         if not platform:
@@ -550,10 +551,12 @@ def _determine_platform(
         platform = platformops.prompt_for_platform()
 
     if isinstance(platform, PlatformVersion):
+        statusops.alert_platform_status(platform)
         if customer_provided_platform == platform.platform_arn:
             return platform.platform_arn
         return platform.platform_branch_name or platform.platform_name
     if isinstance(platform, PlatformBranch):
+        statusops.alert_platform_branch_status(platform)
         return platform.branch_name
     if isinstance(platform, SolutionStack):
         return platform.platform_shorthand

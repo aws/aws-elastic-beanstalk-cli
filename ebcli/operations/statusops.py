@@ -11,14 +11,112 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import six
+import sys
+import traceback
 
-from ebcli.lib import elasticbeanstalk, elb, elbv2
+from ebcli.lib import elasticbeanstalk, elb, elbv2, utils
 from ebcli.core import io
+from ebcli.objects.platform import PlatformVersion, PlatformBranch
 from ebcli.resources.strings import alerts
-from ebcli.operations import gitops, solution_stack_ops
+from ebcli.resources.statics import (
+    platform_branch_lifecycle_states,
+    platform_version_lifecycle_states,
+)
+from ebcli.operations import (
+    gitops,
+    platformops,
+    platform_branch_ops,
+    platform_version_ops,
+    solution_stack_ops,
+)
 
 
 SPACER = ' ' * 5
+
+
+def alert_environment_status(env):
+    alert_platform_status(
+        env.platform,
+        platform_old_alert=alerts['env.platform.old'],
+        platform_not_recommended_alert=alerts['env.platform.notrecommended'],
+        branch_deprecated_alert=alerts['env.platformbranch.deprecated'],
+        branch_retired_alert=alerts['env.platformbranch.retired'],
+    )
+
+
+def alert_platform_branch_status(
+    branch,
+    branch_deprecated_alert=None,
+    branch_retired_alert=None,
+):
+    if not isinstance(branch, PlatformBranch):
+        branch = PlatformBranch(branch_name=branch)
+
+    branch.hydrate(platform_branch_ops.get_platform_branch_by_name)
+
+    if branch.is_deprecated:
+        default_alert = alerts['platformbranch.deprecated']
+        alert_message = branch_deprecated_alert or default_alert
+        io.log_alert(alert_message + '\n')
+    elif branch.is_retired:
+        default_alert = alerts['platformbranch.retired']
+        alert_message = branch_retired_alert or default_alert
+        io.log_alert(alert_message + '\n')
+
+
+def alert_platform_version_status(
+    platform_version,
+    platform_old_alert=alerts['platform.old'],
+    platform_not_recommended_alert=alerts['platform.notrecommended'],
+):
+    if not isinstance(platform_version, PlatformVersion):
+        platform_version = PlatformVersion(platform_arn=platform_version)
+
+    platform_version.hydrate(elasticbeanstalk.describe_platform_version)
+
+    if platform_version.platform_branch_name:
+        _alert_eb_managed_platform_version_status(
+            platform_version,
+            platform_not_recommended_alert,
+            platform_old_alert,
+        )
+    elif PlatformVersion.is_custom_platform_arn(platform_version.platform_arn):
+        _alert_custom_platform_version_status(
+            platform_version,
+            platform_old_alert
+        )
+
+
+def alert_platform_status(
+    platform_version,
+    platform_old_alert=alerts['platform.old'],
+    platform_not_recommended_alert=alerts['platform.notrecommended'],
+    branch_deprecated_alert=alerts['platformbranch.deprecated'],
+    branch_retired_alert=alerts['platformbranch.retired']
+):
+    """
+    Logs an alert for a platform version status and it's platform branch's
+    status if either are out-of-date or reaching end-of-life.
+    """
+    if not isinstance(platform_version, PlatformVersion):
+        platform_version = PlatformVersion(platform_arn=platform_version)
+
+    platform_version.hydrate(elasticbeanstalk.describe_platform_version)
+
+    if platform_version.platform_branch_name:
+        branch = platform_version.platform_branch_name
+
+        alert_platform_branch_status(
+            branch,
+            branch_deprecated_alert=branch_deprecated_alert,
+            branch_retired_alert=branch_retired_alert,
+        )
+
+    alert_platform_version_status(
+        platform_version,
+        platform_old_alert=platform_old_alert,
+        platform_not_recommended_alert=platform_not_recommended_alert,
+    )
 
 
 def status(app_name, env_name, verbose):
@@ -30,14 +128,43 @@ def status(app_name, env_name, verbose):
         health=True
     )
     _print_information_about_elb_and_instances(env_name) if verbose else None
-    _alert_if_platform_is_older_than_the_latest(env)
+    alert_environment_status(env)
     _print_codecommit_repositories()
 
 
-def _alert_if_platform_is_older_than_the_latest(env):
-    latest = solution_stack_ops.find_solution_stack_from_string(env.platform.name, find_newer=True)
-    if env.platform != latest:
-        io.log_alert(alerts['env.platform.old'])
+def _alert_custom_platform_version_status(platform_version, alert_message):
+    filters = [{
+        'Operator': '=',
+        'Type': 'PlatformName',
+        'Values': [platform_version.platform_name]
+    }]
+    siblings = elasticbeanstalk.list_platform_versions(filters=filters)
+    comparable_version = utils.parse_version(platform_version.platform_version)
+    for sibling in siblings:
+        if utils.parse_version(sibling['PlatformVersion']) > comparable_version:
+            io.log_alert(alert_message + '\n')
+            break
+
+
+def _alert_eb_managed_platform_version_status(
+    platform_version,
+    not_recommended_alert,
+    old_alert,
+):
+    if platform_version.is_recommended:
+        return
+
+    platform_branch_name = platform_version.platform_branch_name
+    preferred_version = platform_version_ops.get_preferred_platform_version_for_branch(
+        platform_branch_name)
+
+    if preferred_version == platform_version:
+        return
+
+    if preferred_version.is_recommended:
+        io.log_alert(not_recommended_alert + '\n')
+    else:
+        io.log_alert(old_alert + '\n')
 
 
 def _print_codecommit_repositories():

@@ -19,8 +19,9 @@ from ebcli.core import io, hooks, fileoperations
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.lib import elasticbeanstalk, utils
 from ebcli.objects.exceptions import InvalidOptionsError
-from ebcli.operations import commonops, deployops, composeops
-from ebcli.resources.strings import strings, flag_text
+from ebcli.operations import commonops, deployops, composeops, statusops
+from ebcli.resources.strings import strings, flag_text, alerts
+from ebcli.resources.statics import platform_branch_lifecycle_states
 
 LOG = minimal_logger(__name__)
 
@@ -67,6 +68,8 @@ class DeployController(AbstractBaseController):
         self.label = self.app.pargs.label
         self.process = self.app.pargs.process
         group_name = self.app.pargs.env_group_suffix
+
+        _check_env_lifecycle_state(self.env_name)
 
         if self.version and (self.message or self.label):
             raise InvalidOptionsError(strings['deploy.invalidoptions'])
@@ -173,3 +176,8 @@ class DeployController(AbstractBaseController):
                 commonops.wait_for_compose_events(request_id, app_name, env_names, self.timeout)
         else:
             io.log_warning(strings['compose.novalidmodules'])
+
+
+def _check_env_lifecycle_state(env_name):
+    env = elasticbeanstalk.get_environment(env_name=env_name)
+    statusops.alert_environment_status(env)

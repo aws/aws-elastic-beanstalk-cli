@@ -15,7 +15,7 @@ from ebcli.core import io
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.objects.exceptions import InvalidPlatformVersionError
 from ebcli.objects.platform import PlatformVersion
-from ebcli.operations import platformops, solution_stack_ops
+from ebcli.operations import platformops, platform_version_ops, solution_stack_ops
 from ebcli.resources.strings import strings, flag_text
 
 
@@ -82,7 +82,7 @@ class PlatformShowController(AbstractBaseController):
         return full_platform.name, latest_platform.name
 
     def get_latest_custom_platform(self, platform_arn):
-        latest_platform = platformops.get_latest_custom_platform(platform_arn)
+        latest_platform = platform_version_ops.get_latest_custom_platform_version(platform_arn)
 
         return platform_arn, latest_platform.platform_shorthand
 

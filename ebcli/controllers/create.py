@@ -33,13 +33,15 @@ from ebcli.operations import (
     createops,
     envvarops,
     platformops,
+    platform_branch_ops,
     saved_configs,
     solution_stack_ops,
     spotops,
+    statusops,
 )
 from ebcli.operations.tagops import tagops
 from ebcli.resources.strings import strings, prompts, flag_text, alerts
-from ebcli.resources.statics import elb_names
+from ebcli.resources.statics import elb_names, platform_branch_lifecycle_states
 
 
 class CreateController(AbstractBaseController):
@@ -209,12 +211,6 @@ class CreateController(AbstractBaseController):
             raise InvalidOptionsError(strings['create.itype_and_instances'])
 
         platform = _determine_platform(platform, iprofile)
-
-        if isinstance(platform, PlatformVersion) and platform.platform_branch_lifecycle_state:
-            branch_summary = platformops.get_platform_branch_by_name(platform.platform_branch_name)
-            branch = PlatformBranch.from_platform_branch_summary(branch_summary)
-            if branch.is_retired:
-                raise RetiredPlatformBranchError(alerts['env.platformbranch.retired'])
 
         app_name = self.get_app_name()
         tags = tagops.get_and_validate_tags(tags)
@@ -587,7 +583,7 @@ def _determine_platform(platform_string=None, iprofile=None):
         platform_string = platformops.get_configured_default_platform()
 
     if platform_string:
-        platform = platformops.get_platform_version_for_platform_string(
+        platform = platformops.get_platform_for_platform_string(
             platform_string)
     else:
         platform = platformops.prompt_for_platform()
@@ -596,6 +592,10 @@ def _determine_platform(platform_string=None, iprofile=None):
         if platform.language_name == 'Multi-container Docker' and not iprofile:
             io.log_warning(prompts['ecs.permissions'])
     if isinstance(platform, PlatformVersion):
+        platform.hydrate(elasticbeanstalk.describe_platform_version)
+        if platform.platform_branch_lifecycle_state == platform_branch_lifecycle_states.RETIRED:
+            raise RetiredPlatformBranchError(alerts['platformbranch.retired'])
+        statusops.alert_platform_status(platform)
         if 'Multi-container Docker' in platform.platform_name and not iprofile:
             io.log_warning(prompts['ecs.permissions'])
 

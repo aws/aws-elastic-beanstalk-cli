@@ -16,7 +16,7 @@ from zipfile import ZipFile
 
 from cement.utils.misc import minimal_logger
 
-from ebcli.operations import gitops, buildspecops, commonops
+from ebcli.operations import gitops, buildspecops, commonops, statusops
 from ebcli.operations.tagops import tagops
 from ebcli.operations.tagops.taglist import TagList
 from ebcli.lib import cloudformation, elasticbeanstalk, heuristics, iam, utils
@@ -124,6 +124,8 @@ def make_new_env(
         elasticbeanstalk.get_environment_resources,
         health=False
     )
+
+    statusops.alert_environment_status(result)
 
     if nohang:
         return

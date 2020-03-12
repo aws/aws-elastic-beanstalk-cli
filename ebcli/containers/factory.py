@@ -24,8 +24,8 @@ from ebcli.containers.multicontainer import MultiContainer
 from ebcli.containers.preconfigured_container import PreconfiguredContainer
 from ebcli.objects.exceptions import NotSupportedError, NotFoundError, \
         NotInitializedError
-from ebcli.operations import platformops, solution_stack_ops
-from ebcli.resources.strings import strings
+from ebcli.operations import platform_version_ops, solution_stack_ops
+from ebcli.resources.strings import alerts, strings
 
 
 LOG = minimal_logger(__name__)
@@ -103,10 +103,10 @@ def _get_solution_stack():
     if solution_string:
         if PlatformVersion.is_custom_platform_arn(solution_string):
             try:
-                platformops.describe_custom_platform_version(solution_string)
+                platform_version_ops.describe_custom_platform_version(solution_string)
             except NotFoundError:
                 raise NotFoundError(
-                    'Platform arn {} does not appear to be valid'.format(solution_string)
+                    alerts['platform.invalidstring'].format(solution_string)
                 )
 
             soln_stk = PlatformVersion(solution_string)

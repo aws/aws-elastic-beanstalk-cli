@@ -15,10 +15,10 @@ from ebcli.core import io
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.objects.exceptions import NotFoundError, InvalidPlatformVersionError
 from ebcli.objects.platform import PlatformVersion
-from ebcli.operations import platformops, logsops
+from ebcli.operations import platform_version_ops, logsops
 from ebcli.core import fileoperations
 from ebcli.operations.logsops import paginate_cloudwatch_logs
-from ebcli.operations.platformops import VALID_PLATFORM_VERSION_FORMAT, VALID_PLATFORM_SHORT_FORMAT
+from ebcli.resources.regex import PlatformRegExpressions
 from ebcli.resources.strings import strings, flag_text
 
 
@@ -64,12 +64,12 @@ class GenericPlatformLogsController(AbstractBaseController):
         else:
             platform_name = fileoperations.get_platform_name()
 
-            if VALID_PLATFORM_VERSION_FORMAT.match(version):
+            if PlatformRegExpressions.VALID_PLATFORM_VERSION_FORMAT.match(version):
                 pass
             elif PlatformVersion.is_valid_arn(version):
                 _, platform_name, version = PlatformVersion.arn_to_platform(version)
-            elif VALID_PLATFORM_SHORT_FORMAT.match(version):
-                match = VALID_PLATFORM_SHORT_FORMAT.match(version)
+            elif PlatformRegExpressions.VALID_PLATFORM_SHORT_FORMAT.match(version):
+                match = PlatformRegExpressions.VALID_PLATFORM_SHORT_FORMAT.match(version)
                 platform_name, version = match.group(1, 2)
             else:
                 raise InvalidPlatformVersionError(strings['exit.invalidversion'])
@@ -82,7 +82,7 @@ class GenericPlatformLogsController(AbstractBaseController):
                     platform_name,
                     version,
                     log_name="%s/%s" % (platform_name, version),
-                    formatter=platformops.PackerStreamFormatter())
+                    formatter=platform_version_ops.PackerStreamFormatter())
             except NotFoundError:
                 raise NotFoundError('Unable to find logs in CloudWatch.')
         else:

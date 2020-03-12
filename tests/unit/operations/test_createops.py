@@ -548,6 +548,7 @@ Actual error: """,
         )
         self.assertEqual(4, download_sample_app_user_choice_mock.call_count)
 
+    @mock.patch('ebcli.operations.createops.statusops.alert_environment_status')
     @mock.patch('ebcli.operations.createops.resolve_roles')
     @mock.patch('ebcli.operations.createops.fileoperations.get_build_configuration')
     @mock.patch('ebcli.operations.createops.fileoperations.build_spec_exists')
@@ -573,7 +574,8 @@ Actual error: """,
             git_management_enabled_mock,
             build_spec_exists_mock,
             get_build_configuration_mock,
-            resolve_roles_mock
+            resolve_roles_mock,
+            alert_environment_status_mock,
     ):
         resolve_roles_mock.side_effect = None
         build_spec_exists_mock.return_value = True
@@ -613,6 +615,7 @@ Actual error: """,
             createops.elasticbeanstalk.get_environment_resources,
             health=False
         )
+        alert_environment_status_mock.assert_called_once_with(create_environment_result_mock)
         wait_for_success_events_mock.assert_called_once_with('request-id', timeout_in_minutes=None)
         create_env_mock.assert_called_once_with(env_request, interactive=True)
         upload_keypair_if_needed_mock.assert_called_once_with('aws-eb-us-west-2')
@@ -629,6 +632,7 @@ Actual error: """,
         )
         download_and_extract_sample_app_mock.assert_not_called()
 
+    @mock.patch('ebcli.operations.createops.statusops.alert_environment_status')
     @mock.patch('ebcli.operations.createops.resolve_roles')
     @mock.patch('ebcli.operations.createops.fileoperations.build_spec_exists')
     @mock.patch('ebcli.operations.createops.gitops.git_management_enabled')
@@ -650,7 +654,8 @@ Actual error: """,
             log_info_mock,
             git_management_enabled_mock,
             build_spec_exists_mock,
-            resolve_roles_mock
+            resolve_roles_mock,
+            alert_environment_status_mock,
     ):
         resolve_roles_mock.side_effect = None
         build_spec_exists_mock.return_value = False
@@ -679,6 +684,7 @@ Actual error: """,
             createops.elasticbeanstalk.get_environment_resources,
             health=False
         )
+        alert_environment_status_mock.assert_called_once_with(create_environment_result_mock)
         wait_for_success_events_mock.assert_called_once_with('request-id', timeout_in_minutes=10)
         create_env_mock.assert_called_once_with(env_request, interactive=True)
         upload_keypair_if_needed_mock.assert_called_once_with('aws-eb-us-west-2')
@@ -699,6 +705,7 @@ Actual error: """,
             ]
         )
 
+    @mock.patch('ebcli.operations.createops.statusops.alert_environment_status')
     @mock.patch('ebcli.operations.createops.resolve_roles')
     @mock.patch('ebcli.operations.createops.fileoperations.build_spec_exists')
     @mock.patch('ebcli.operations.createops.gitops.git_management_enabled')
@@ -720,7 +727,8 @@ Actual error: """,
             log_info_mock,
             git_management_enabled_mock,
             build_spec_exists_mock,
-            resolve_roles_mock
+            resolve_roles_mock,
+            alert_environment_status_mock,
     ):
         resolve_roles_mock.side_effect = None
         build_spec_exists_mock.return_value = False
@@ -758,11 +766,13 @@ Actual error: """,
                 mock.call('Creating new application version using project code'),
             ]
         )
+        alert_environment_status_mock.assert_not_called()
         create_environment_result_mock.print_env_details.assert_not_called()
         wait_for_success_events_mock.assert_not_called()
         create_env_mock.assert_not_called()
         upload_keypair_if_needed_mock.assert_not_called()
 
+    @mock.patch('ebcli.operations.createops.statusops.alert_environment_status')
     @mock.patch('ebcli.operations.createops.resolve_roles')
     @mock.patch('ebcli.operations.createops.fileoperations.build_spec_exists')
     @mock.patch('ebcli.operations.createops.gitops.git_management_enabled')
@@ -788,7 +798,8 @@ Actual error: """,
             log_info_mock,
             git_management_enabled_mock,
             build_spec_exists_mock,
-            resolve_roles_mock
+            resolve_roles_mock,
+            alert_environment_status_mock,
     ):
         build_spec_exists_mock.return_value = False
         git_management_enabled_mock.return_value = True
@@ -822,6 +833,7 @@ Actual error: """,
             createops.elasticbeanstalk.get_environment_resources,
             health=False
         )
+        alert_environment_status_mock.assert_called_once_with(create_environment_result_mock)
         wait_for_success_events_mock.assert_called_once_with('request-id', timeout_in_minutes=None)
         create_env_mock.assert_called_once_with(env_request, interactive=True)
         upload_keypair_if_needed_mock.assert_called_once_with('aws-eb-us-west-2')
@@ -843,6 +855,7 @@ Actual error: """,
             ]
         )
 
+    @mock.patch('ebcli.operations.createops.statusops.alert_environment_status')
     @mock.patch('ebcli.operations.createops.resolve_roles')
     @mock.patch('ebcli.operations.createops.fileoperations.build_spec_exists')
     @mock.patch('ebcli.operations.createops.gitops.git_management_enabled')
@@ -868,7 +881,8 @@ Actual error: """,
             log_info_mock,
             git_management_enabled_mock,
             build_spec_exists_mock,
-            resolve_roles_mock
+            resolve_roles_mock,
+            alert_environment_status_mock
     ):
         build_spec_exists_mock.return_value = False
         git_management_enabled_mock.return_value = False
@@ -907,6 +921,7 @@ Actual error: """,
             createops.elasticbeanstalk.get_environment_resources,
             health=False
         )
+        alert_environment_status_mock.assert_called_once_with(create_environment_result_mock)
         wait_for_success_events_mock.assert_called_once_with('request-id', timeout_in_minutes=None)
         create_env_mock.assert_called_once_with(env_request, interactive=True)
         upload_keypair_if_needed_mock.assert_called_once_with('aws-eb-us-west-2')
@@ -928,6 +943,7 @@ Actual error: """,
             ]
         )
 
+    @mock.patch('ebcli.operations.createops.statusops.alert_environment_status')
     @mock.patch('ebcli.operations.createops.resolve_roles')
     @mock.patch('ebcli.operations.createops.fileoperations.build_spec_exists')
     @mock.patch('ebcli.operations.createops.gitops.git_management_enabled')
@@ -949,7 +965,8 @@ Actual error: """,
             log_info_mock,
             git_management_enabled_mock,
             build_spec_exists_mock,
-            resolve_roles_mock
+            resolve_roles_mock,
+            alert_environment_status_mock,
     ):
         build_spec_exists_mock.return_value = False
         git_management_enabled_mock.return_value = False
@@ -976,6 +993,7 @@ Actual error: """,
             createops.elasticbeanstalk.get_environment_resources,
             health=False
         )
+        alert_environment_status_mock.assert_called_once_with(create_environment_result_mock)
         wait_for_success_events_mock.assert_called_once_with('request-id', timeout_in_minutes=None)
         create_env_mock.assert_called_once_with(env_request, interactive=True)
         upload_keypair_if_needed_mock.assert_called_once_with('aws-eb-us-west-2')

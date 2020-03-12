@@ -20,6 +20,10 @@ from ebcli.operations.platformops import (
     prompt_for_platform,
     set_platform,
 )
+from ebcli.operations.statusops import (
+    alert_platform_branch_status,
+    alert_platform_status,
+)
 from ebcli.resources.strings import strings, flag_text
 
 
@@ -40,11 +44,13 @@ class PlatformSelectController(AbstractBaseController):
         platform = prompt_for_platform()
 
         if isinstance(platform, PlatformVersion):
+            alert_platform_status(platform)
             if platform.platform_branch_name:
                 platform = platform.platform_branch_name
             else:
                 platform = platform.platform_name
         elif isinstance(platform, PlatformBranch):
+            alert_platform_branch_status(platform)
             platform = platform.branch_name
 
         fileoperations.write_config_setting('global', 'default_platform', platform)

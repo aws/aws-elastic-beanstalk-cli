@@ -19,6 +19,7 @@ import unittest
 from ebcli.controllers import deploy
 from ebcli.core.ebcore import EB
 from ebcli.core import fileoperations
+from ebcli.objects.environment import Environment
 from ebcli.objects.platform import PlatformVersion
 
 
@@ -45,13 +46,33 @@ class TestDeploy(unittest.TestCase):
         shutil.rmtree('testDir')
 
 
+class TestDeploy(TestDeploy):
+    @mock.patch('ebcli.controllers.deploy.elasticbeanstalk.get_environment')
+    @mock.patch('ebcli.controllers.deploy.statusops.alert_environment_status')
+    def test_check_env_lifecycle_state(
+        self,
+        alert_environment_status_mock,
+        get_environment_mock,
+    ):
+        environment_name = 'environment-1'
+        environment = Environment(name=environment_name)
+        get_environment_mock.return_value = environment
+
+        deploy._check_env_lifecycle_state(env_name=environment_name)
+
+        get_environment_mock.assert_called_once_with(env_name=environment_name)
+        alert_environment_status_mock.assert_called_once_with(environment)
+
+
 class TestErrorConditions(TestDeploy):
+    @mock.patch('ebcli.controllers.deploy._check_env_lifecycle_state')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
     def test_deploy__version_and_message_specified_together(
             self,
             get_env_name_mock,
-            get_app_name_mock
+            get_app_name_mock,
+            _check_env_lifecycle_state_mock,
     ):
         get_app_name_mock.return_value = 'my-application'
         get_env_name_mock.return_value = 'environment-1'
@@ -67,12 +88,14 @@ class TestErrorConditions(TestDeploy):
             str(context_manager.exception)
         )
 
+    @mock.patch('ebcli.controllers.deploy._check_env_lifecycle_state')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
     def test_deploy__version_and_label_specified_together(
             self,
             get_env_name_mock,
-            get_app_name_mock
+            get_app_name_mock,
+            _check_env_lifecycle_state_mock,
     ):
         get_app_name_mock.return_value = 'my-application'
         get_env_name_mock.return_value = 'environment-1'
@@ -90,6 +113,7 @@ class TestErrorConditions(TestDeploy):
 
 
 class TestDeployNormal(TestDeploy):
+    @mock.patch('ebcli.controllers.deploy._check_env_lifecycle_state')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
     @mock.patch('ebcli.controllers.deploy.deployops.deploy')
@@ -97,7 +121,8 @@ class TestDeployNormal(TestDeploy):
             self,
             deploy_mock,
             get_env_name_mock,
-            get_app_name_mock
+            get_app_name_mock,
+            _check_env_lifecycle_state_mock,
     ):
         get_app_name_mock.return_value = 'my-application'
         get_env_name_mock.return_value = 'environment-1'
@@ -106,6 +131,7 @@ class TestDeployNormal(TestDeploy):
         app.setup()
         app.run()
 
+        _check_env_lifecycle_state_mock.assert_called_once_with('environment-1')
         deploy_mock.assert_called_with(
             'my-application',
             'environment-1',
@@ -119,6 +145,7 @@ class TestDeployNormal(TestDeploy):
             timeout=None
         )
 
+    @mock.patch('ebcli.controllers.deploy._check_env_lifecycle_state')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
     @mock.patch('ebcli.controllers.deploy.deployops.deploy')
@@ -126,7 +153,8 @@ class TestDeployNormal(TestDeploy):
             self,
             deploy_mock,
             get_env_name_mock,
-            get_app_name_mock
+            get_app_name_mock,
+            _check_env_lifecycle_state_mock,
     ):
         get_app_name_mock.return_value = 'my-application'
         get_env_name_mock.return_value = 'environment-1'
@@ -135,6 +163,7 @@ class TestDeployNormal(TestDeploy):
         app.setup()
         app.run()
 
+        _check_env_lifecycle_state_mock.assert_called_once_with('environment-1')
         deploy_mock.assert_called_with(
             'my-application',
             'environment-1',
@@ -148,6 +177,7 @@ class TestDeployNormal(TestDeploy):
             timeout=0
         )
 
+    @mock.patch('ebcli.controllers.deploy._check_env_lifecycle_state')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
     @mock.patch('ebcli.controllers.deploy.deployops.deploy')
@@ -155,7 +185,8 @@ class TestDeployNormal(TestDeploy):
             self,
             deploy_mock,
             get_env_name_mock,
-            get_app_name_mock
+            get_app_name_mock,
+            _check_env_lifecycle_state_mock,
     ):
         get_app_name_mock.return_value = 'my-application'
         get_env_name_mock.return_value = 'environment-1'
@@ -164,6 +195,7 @@ class TestDeployNormal(TestDeploy):
         app.setup()
         app.run()
 
+        _check_env_lifecycle_state_mock.assert_called_once_with('environment-1')
         deploy_mock.assert_called_with(
             'my-application',
             'environment-1',
@@ -177,6 +209,7 @@ class TestDeployNormal(TestDeploy):
             timeout=None
         )
 
+    @mock.patch('ebcli.controllers.deploy._check_env_lifecycle_state')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
     @mock.patch('ebcli.controllers.deploy.deployops.deploy')
@@ -184,7 +217,8 @@ class TestDeployNormal(TestDeploy):
             self,
             deploy_mock,
             get_env_name_mock,
-            get_app_name_mock
+            get_app_name_mock,
+            _check_env_lifecycle_state_mock,
     ):
         get_app_name_mock.return_value = 'my-application'
         get_env_name_mock.return_value = 'environment-1'
@@ -199,6 +233,7 @@ class TestDeployNormal(TestDeploy):
         app.setup()
         app.run()
 
+        _check_env_lifecycle_state_mock.assert_called_once_with('environment-1')
         deploy_mock.assert_called_with(
             'my-application',
             'environment-1',
@@ -212,6 +247,7 @@ class TestDeployNormal(TestDeploy):
             timeout=None
         )
 
+    @mock.patch('ebcli.controllers.deploy._check_env_lifecycle_state')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
     @mock.patch('ebcli.controllers.deploy.deployops.deploy')
@@ -219,7 +255,8 @@ class TestDeployNormal(TestDeploy):
             self,
             deploy_mock,
             get_env_name_mock,
-            get_app_name_mock
+            get_app_name_mock,
+            _check_env_lifecycle_state_mock,
     ):
         open('env.yaml', 'w').close()
         get_app_name_mock.return_value = 'my-application'
@@ -235,6 +272,7 @@ class TestDeployNormal(TestDeploy):
         app.setup()
         app.run()
 
+        _check_env_lifecycle_state_mock.assert_called_once_with('environment-1')
         deploy_mock.assert_called_with(
             'my-application',
             'environment-1',
@@ -248,6 +286,7 @@ class TestDeployNormal(TestDeploy):
             timeout=None
         )
 
+    @mock.patch('ebcli.controllers.deploy._check_env_lifecycle_state')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
     @mock.patch('ebcli.controllers.deploy.deployops.deploy')
@@ -255,7 +294,8 @@ class TestDeployNormal(TestDeploy):
             self,
             deploy_mock,
             get_env_name_mock,
-            get_app_name_mock
+            get_app_name_mock,
+            _check_env_lifecycle_state_mock,
     ):
         get_app_name_mock.return_value = 'my-application'
         get_env_name_mock.return_value = 'environment-1'
@@ -271,6 +311,7 @@ class TestDeployNormal(TestDeploy):
         app.setup()
         app.run()
 
+        _check_env_lifecycle_state_mock.assert_called_once_with('environment-1')
         deploy_mock.assert_called_with(
             'my-application',
             'environment-1',
@@ -284,6 +325,7 @@ class TestDeployNormal(TestDeploy):
             timeout=None
         )
 
+    @mock.patch('ebcli.controllers.deploy._check_env_lifecycle_state')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
     @mock.patch('ebcli.controllers.deploy.deployops.deploy')
@@ -291,7 +333,8 @@ class TestDeployNormal(TestDeploy):
             self,
             deploy_mock,
             get_env_name_mock,
-            get_app_name_mock
+            get_app_name_mock,
+            _check_env_lifecycle_state_mock,
     ):
         get_app_name_mock.return_value = 'my-application'
         get_env_name_mock.return_value = 'environment-1'
@@ -305,6 +348,7 @@ class TestDeployNormal(TestDeploy):
         app.setup()
         app.run()
 
+        _check_env_lifecycle_state_mock.assert_called_once_with('environment-1')
         deploy_mock.assert_called_with(
             'my-application',
             'environment-1',
@@ -318,6 +362,7 @@ class TestDeployNormal(TestDeploy):
             timeout=None
         )
 
+    @mock.patch('ebcli.controllers.deploy._check_env_lifecycle_state')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
     @mock.patch('ebcli.controllers.deploy.deployops.deploy')
@@ -325,7 +370,8 @@ class TestDeployNormal(TestDeploy):
             self,
             deploy_mock,
             get_env_name_mock,
-            get_app_name_mock
+            get_app_name_mock,
+            _check_env_lifecycle_state_mock,
     ):
         get_app_name_mock.return_value = 'my-application'
         get_env_name_mock.return_value = 'environment-1'
@@ -339,6 +385,7 @@ class TestDeployNormal(TestDeploy):
         app.setup()
         app.run()
 
+        _check_env_lifecycle_state_mock.assert_called_once_with('environment-1')
         deploy_mock.assert_called_with(
             'my-application',
             'environment-1',
@@ -352,6 +399,7 @@ class TestDeployNormal(TestDeploy):
             timeout=None
         )
 
+    @mock.patch('ebcli.controllers.deploy._check_env_lifecycle_state')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
     @mock.patch('ebcli.controllers.deploy.deployops.deploy')
@@ -359,7 +407,8 @@ class TestDeployNormal(TestDeploy):
             self,
             deploy_mock,
             get_env_name_mock,
-            get_app_name_mock
+            get_app_name_mock,
+            _check_env_lifecycle_state_mock,
     ):
         get_app_name_mock.return_value = 'my-application'
         get_env_name_mock.return_value = 'environment-1'
@@ -373,6 +422,7 @@ class TestDeployNormal(TestDeploy):
         app.setup()
         app.run()
 
+        _check_env_lifecycle_state_mock.assert_called_once_with('environment-1')
         deploy_mock.assert_called_with(
             'my-application',
             'environment-1',
@@ -386,6 +436,7 @@ class TestDeployNormal(TestDeploy):
             timeout=None
         )
 
+    @mock.patch('ebcli.controllers.deploy._check_env_lifecycle_state')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_app_name')
     @mock.patch('ebcli.controllers.deploy.DeployController.get_env_name')
     @mock.patch('ebcli.controllers.deploy.deployops.deploy')
@@ -393,7 +444,8 @@ class TestDeployNormal(TestDeploy):
             self,
             deploy_mock,
             get_env_name_mock,
-            get_app_name_mock
+            get_app_name_mock,
+            _check_env_lifecycle_state_mock,
     ):
         get_app_name_mock.return_value = 'my-application'
         get_env_name_mock.return_value = 'environment-1'
@@ -408,6 +460,7 @@ class TestDeployNormal(TestDeploy):
         app.setup()
         app.run()
 
+        _check_env_lifecycle_state_mock.assert_called_once_with('environment-1')
         deploy_mock.assert_called_with(
             'my-application',
             'environment-1',
