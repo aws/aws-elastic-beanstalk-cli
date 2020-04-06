@@ -28,7 +28,6 @@ from ebcli.lib.utils import get_local_time
 from ebcli.resources.strings import prompts
 from ebcli.operations.lifecycleops import interactive_update_lifcycle_policy
 
-locale.setlocale(locale.LC_ALL, 'C')
 Queue = six.moves.queue.Queue
 LOG = minimal_logger(__name__)
 

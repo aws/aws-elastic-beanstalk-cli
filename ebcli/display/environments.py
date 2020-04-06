@@ -29,7 +29,6 @@ from ebcli.lib import utils
 from ebcli.objects.exceptions import NotFoundError, ValidationError
 from ebcli.resources.strings import strings
 
-locale.setlocale(locale.LC_ALL, 'C')
 Queue = six.moves.queue.Queue
 LOG = minimal_logger(__name__)
 TABLE_DATA_KEY = 'environments'

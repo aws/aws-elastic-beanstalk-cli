@@ -27,14 +27,12 @@ from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.resources.strings import responses
 
 Queue = six.moves.queue.Queue
-locale.setlocale(locale.LC_ALL, 'C')
 LOG = minimal_logger(__name__)
 
 
 class DataPoller(object):
 
     def __init__(self, app_name, env_name):
-        locale.setlocale(locale.LC_TIME, 'C')
         self.app_name = app_name
         self.env_name = env_name
         self.data_queue = Queue()

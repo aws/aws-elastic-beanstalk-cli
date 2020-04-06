@@ -23,7 +23,6 @@ from ebcli.display.screen import Screen
 from ebcli.lib import ec2, elasticbeanstalk, elb, elbv2
 from ebcli.resources import statics
 
-locale.setlocale(locale.LC_ALL, 'C')
 
 Queue = six.moves.queue.Queue
 LOG = minimal_logger(__name__)
