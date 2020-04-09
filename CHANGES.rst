@@ -2,6 +2,23 @@
 Changelog
 =========
 -------------------
+3.18.0 (2020-04-09)
+-------------------
+- Updated eb init command's --platform option to accept platform branch names
+- Updated eb init command's interactive platform menus to derive menu items from platform branches
+- Updated eb init command to display platform end-of-life alerts based on platform branch lifecycle state
+- Updated eb create --platform option to accept platform branch names
+- Updated eb create command to display platform end-of-life alerts based on platform branch lifecycle state
+- Updated eb platform select command's interactive menus to derive menu items from platform branches
+- Updated eb platform select command to display platform end-of-life alerts based on platform branch lifecycle state
+- Updated eb deploy command to display platform end-of-life alerts based on platform branch lifecycle state
+- Updated eb status command to display platform end-of-life alerts based on platform branch lifecycle state
+- Improving performance of .ebignore lookup
+- Upgrading botocore requirement to resolve awscli conflict
+- Upgrading pyyaml requirement to resolve awscli conflict
+- Upgrading colorama requirement to resolve awscli conflict
+
+-------------------
 3.17.1 (2020-01-22)
 -------------------
 - Updated botocore requirement to `>=1.14.0,<1.15`
