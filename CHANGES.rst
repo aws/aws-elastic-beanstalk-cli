@@ -1,4 +1,4 @@
-=========
+
 Changelog
 =========
 -------------------
@@ -213,9 +213,9 @@ Changelog
 - Fixed behavior of `--platform` flag to pick the latest version of solution stack when input is ambiguous
 - Fixed .ebignore logic to recognize files with Unicode characters
 - Fixed redundant downloading of Packer events published by CloudWatch
-- Fixed silent rescues of `UnicodeEncodeError`s when printing Packer events
+- Fixed silent rescues of `UnicodeEncodeError`\s when printing Packer events
 - Fixed `DescribeEvents` polling in the context of custom platforms
-- Fixed `eb local run` to work with `PlatformArn`s
+- Fixed `eb local run` to work with `PlatformArn`\s
 - Fixed local-remote inconsistency observed after deployments using CodeCommit
 - Fixed misspelling in the prompt for whether VPC ELB should be public
 

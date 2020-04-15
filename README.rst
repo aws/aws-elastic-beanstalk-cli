@@ -19,6 +19,7 @@ We value your contributions!
 Installation
 ============
 
+-------------------------------
 If you'd like to use the EB CLI
 -------------------------------
 
@@ -27,6 +28,7 @@ Use the scripts to install the EB CLI on Linux, macOS, or Windows. The scripts i
 The scripts also create a virtual environment for the EB CLI.
 For installation instructions, see the `aws/aws-elastic-beanstalk-cli-setup <https://github.com/aws/aws-elastic-beanstalk-cli-setup>`__ repository. 
 
+-----------------------------------------
 If you'd like to contribute to the EB CLI
 -----------------------------------------
 
@@ -70,3 +72,5 @@ For more information about a specific command, type:
 
 For a detailed command reference for all EB CLI commands, see `EB CLI Command Reference <https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-cmd-commands.html>`__
 in the *AWS Elastic Beanstalk Developer Guide*.
+
+
