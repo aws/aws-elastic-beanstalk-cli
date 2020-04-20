@@ -47,17 +47,21 @@ class GenericPlatformListController(AbstractBaseController):
         workspace_type = fileoperations.get_workspace_type(None)
         if workspace_type == Constants.WorkSpaceTypes.PLATFORM:
             echo(self.custom_platforms())
+            return
         elif workspace_type == Constants.WorkSpaceTypes.APPLICATION:
             if self.app.pargs.status:
                 raise InvalidOptionsError(
                     'You cannot use the "--status" option in application workspaces.'
                 )
-            if self.app.pargs.all_platforms:
+            elif self.app.pargs.all_platforms:
                 raise InvalidOptionsError(
                     'You cannot use the "--all-platforms" option in application workspaces.'
                 )
+        else:
+            if not self.app.pargs.region:
+                raise InvalidOptionsError('You must provide the "--region" option when not in a workspace.')
 
-            echo(self.all_platforms())
+        echo(self.all_platforms())
 
     def all_platforms(self):
         solution_stacks = solution_stack_ops.get_all_solution_stacks()

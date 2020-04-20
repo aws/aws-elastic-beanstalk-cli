@@ -18,6 +18,7 @@ import unittest
 
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
+from ebcli.controllers.platform.list import GenericPlatformListController
 from ebcli.lib import aws
 from ebcli.core.ebpcore import EBP
 from ebcli.objects.exceptions import (
@@ -27,6 +28,148 @@ from ebcli.objects.exceptions import (
 )
 from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.solutionstack import SolutionStack
+
+
+class TestGenericPlatformListController(unittest.TestCase):
+    def setUp(self):
+        self.controller = GenericPlatformListController()
+        self.controller.app = mock.MagicMock()
+
+    @mock.patch('ebcli.controllers.platform.list.fileoperations.get_workspace_type')
+    @mock.patch('ebcli.controllers.platform.list.GenericPlatformListController.custom_platforms')
+    @mock.patch('ebcli.controllers.platform.list.echo')
+    def test_do_command__platform_workspace(
+        self,
+        echo_mock,
+        custom_platforms_mock,
+        get_workspace_type_mock,
+    ):
+        workspace_type = 'Platform'
+        custom_platforms_response = [
+            'custom-platform-a',
+            'custom-platform-b',
+            'custom-platform-c',
+        ]
+        get_workspace_type_mock.return_value = workspace_type
+        custom_platforms_mock.return_value = custom_platforms_response
+
+        self.controller.do_command()
+
+        get_workspace_type_mock.assert_called_once_with(None)
+        custom_platforms_mock.assert_called_once_with()
+        echo_mock.assert_called_once_with(custom_platforms_response)
+
+    @mock.patch('ebcli.controllers.platform.list.fileoperations.get_workspace_type')
+    @mock.patch('ebcli.controllers.platform.list.GenericPlatformListController.all_platforms')
+    @mock.patch('ebcli.controllers.platform.list.echo')
+    def test_do_command__application_workspace(
+        self,
+        echo_mock,
+        all_platforms_mock,
+        get_workspace_type_mock,
+    ):
+        workspace_type = 'Application'
+        all_platforms_response = ['python-3.6', 'python-3.7', 'python-3.8']
+        get_workspace_type_mock.return_value = workspace_type
+        all_platforms_mock.return_value = all_platforms_response
+        self.controller.app.pargs.status = False
+        self.controller.app.pargs.all_platforms = False
+
+        self.controller.do_command()
+
+        get_workspace_type_mock.assert_called_once_with(None)
+        all_platforms_mock.assert_called_once_with()
+        echo_mock.assert_called_once_with(all_platforms_response)
+
+    @mock.patch('ebcli.controllers.platform.list.fileoperations.get_workspace_type')
+    @mock.patch('ebcli.controllers.platform.list.GenericPlatformListController.all_platforms')
+    @mock.patch('ebcli.controllers.platform.list.echo')
+    def test_do_command__application_workspace_with_status_option(
+        self,
+        echo_mock,
+        all_platforms_mock,
+        get_workspace_type_mock,
+    ):
+        workspace_type = 'Application'
+        all_platforms_response = ['python-3.6', 'python-3.7', 'python-3.8']
+        get_workspace_type_mock.return_value = workspace_type
+        all_platforms_mock.return_value = all_platforms_response
+        self.controller.app.pargs.status = True
+        self.controller.app.pargs.all_platforms = False
+
+        self.assertRaisesRegex(
+            InvalidOptionsError,
+            'You cannot use the "--status" option in application workspaces.',
+            self.controller.do_command
+        )
+
+    @mock.patch('ebcli.controllers.platform.list.fileoperations.get_workspace_type')
+    @mock.patch('ebcli.controllers.platform.list.GenericPlatformListController.all_platforms')
+    @mock.patch('ebcli.controllers.platform.list.echo')
+    def test_do_command__application_workspace_with_all_platforms_option(
+        self,
+        echo_mock,
+        all_platforms_mock,
+        get_workspace_type_mock,
+    ):
+        workspace_type = 'Application'
+        all_platforms_response = ['python-3.6', 'python-3.7', 'python-3.8']
+        get_workspace_type_mock.return_value = workspace_type
+        all_platforms_mock.return_value = all_platforms_response
+        self.controller.app.pargs.status = False
+        self.controller.app.pargs.all_platforms = True
+
+        self.assertRaisesRegex(
+            InvalidOptionsError,
+            'You cannot use the "--all-platforms" option in application workspaces.',
+            self.controller.do_command
+        )
+
+    @mock.patch('ebcli.controllers.platform.list.fileoperations.get_workspace_type')
+    @mock.patch('ebcli.controllers.platform.list.GenericPlatformListController.all_platforms')
+    @mock.patch('ebcli.controllers.platform.list.echo')
+    def test_do_command__no_workspace(
+        self,
+        echo_mock,
+        all_platforms_mock,
+        get_workspace_type_mock,
+    ):
+        workspace_type = None
+        all_platforms_response = ['python-3.6', 'python-3.7', 'python-3.8']
+        get_workspace_type_mock.return_value = workspace_type
+        all_platforms_mock.return_value = all_platforms_response
+        self.controller.app.pargs.status = None
+        self.controller.app.pargs.all_platforms = None
+        self.controller.app.pargs.region = 'us-east-1'
+
+        self.controller.do_command()
+
+        get_workspace_type_mock.assert_called_once_with(None)
+        all_platforms_mock.assert_called_once_with()
+        echo_mock.assert_called_once_with(all_platforms_response)
+
+    @mock.patch('ebcli.controllers.platform.list.fileoperations.get_workspace_type')
+    @mock.patch('ebcli.controllers.platform.list.GenericPlatformListController.all_platforms')
+    @mock.patch('ebcli.controllers.platform.list.echo')
+    def test_do_command__no_workspace_sans_region_option(
+        self,
+        echo_mock,
+        all_platforms_mock,
+        get_workspace_type_mock,
+    ):
+        workspace_type = None
+        all_platforms_response = ['python-3.6', 'python-3.7', 'python-3.8']
+        get_workspace_type_mock.return_value = workspace_type
+        all_platforms_mock.return_value = all_platforms_response
+        self.controller.app.pargs.status = False
+        self.controller.app.pargs.all_platforms = False
+        self.controller.app.pargs.region = None
+
+        self.assertRaisesRegex(
+            InvalidOptionsError,
+            'You must provide the "--region" option when not in a workspace.',
+            self.controller.do_command
+        )
 
 
 class ListTest(unittest.TestCase):
@@ -66,7 +209,7 @@ class ListTest(unittest.TestCase):
         )
 
 
-class TestEBPlatformList(ListTest):
+class TestEBPlatformListE2E(ListTest):
     @mock.patch('ebcli.controllers.platform.list.solution_stack_ops.get_all_solution_stacks')
     @mock.patch('ebcli.controllers.platform.list.platform_version_ops.list_custom_platform_versions')
     @mock.patch('ebcli.controllers.platform.list.io.echo')
@@ -224,18 +367,6 @@ class TestEBPlatformList(ListTest):
             'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.3.6',
             sep='{linesep}'.format(linesep=os.linesep)
         )
-
-    def test_list__neutral_workspace__all_platforms_and_status_filters_are_not_applicable(self):
-        self.setup_platform_workspace()
-        fileoperations.write_config_setting(
-            'global',
-            'workspace_type',
-            None
-        )
-
-        app = EB(argv=['platform', 'list', '-a', '-s', 'READY'])
-        app.setup()
-        app.run()
 
 
 class TestEBPList(ListTest):
@@ -396,15 +527,3 @@ class TestEBPList(ListTest):
             'arn:aws:elasticbeanstalk:us-west-2:123123123:platform/custom-platform-4/1.3.6',
             sep='{linesep}'.format(linesep=os.linesep)
         )
-
-    def test_list__neutral_workspace__command_is_not_applicable(self):
-        self.setup_platform_workspace()
-        fileoperations.write_config_setting(
-            'global',
-            'workspace_type',
-            None
-        )
-
-        app = EBP(argv=['list'])
-        app.setup()
-        app.run()
