@@ -2,6 +2,14 @@
 Changelog
 =========
 -------------------
+3.18.1 (2020-04-28)
+-------------------
+- Added af-south-1 (Cape Town) region
+- Added eu-south-1 (Milano) region
+- Fixed bug causing `eb logs` command to fail when logs contain unicode characters
+- Fixed bug that caused `eb platform` list to fail in un-initialized directory
+
+-------------------
 3.18.0 (2020-04-09)
 -------------------
 - Updated eb init command's --platform option to accept platform branch names
