@@ -14,7 +14,9 @@
 from os import path
 
 from ebcli.core import fileoperations
-
+from ebcli.lib import elasticbeanstalk
+from ebcli.objects.platform import PlatformBranch, PlatformVersion
+from ebcli.objects.solutionstack import SolutionStack
 
 CONTAINER_CONFIG_FILENAME = 'container_config.json'
 CONTAINERFILES_DIRNAME = 'containerfiles'
@@ -27,6 +29,7 @@ GENERIC_CONTAINER_KEY = 'generic_containers'
 MULTI_CONTAINER_KEY = 'multi_containers'
 VERSION_KEY = 'version'
 PLATFORM_KEY = 'platform'
+PLATFORM_NAME_KEY = 'platform_name'
 RUNTIME_IMG_KEY = 'runtime_image'
 RUNTIME_DOCKERFILE_KEY = 'runtime_dockerfile'
 RUNTIME_DEFAULT_LOG_KEY = 'runtime_default_log'
@@ -64,6 +67,10 @@ def is_generic(soln_stk, container_config):
     """
 
     expected_platform = container_config[GENERIC_CONTAINER_KEY][PLATFORM_KEY]
+
+    if isinstance(soln_stk, PlatformVersion):
+        return expected_platform in soln_stk.platform_shorthand
+
     return expected_platform == soln_stk.language_name
 
 
@@ -76,6 +83,10 @@ def is_multi(soln_stk, container_config):
     """
 
     expected_platform = container_config[MULTI_CONTAINER_KEY][PLATFORM_KEY]
+
+    if isinstance(soln_stk, PlatformVersion):
+        return expected_platform in soln_stk.platform_shorthand
+
     return expected_platform == soln_stk.language_name
 
 
@@ -104,8 +115,12 @@ def get_runtime_default_log_path(soln_stk, container_config):
 
 def _get_preconfig_info(soln_stk, container_config):
     containers = container_config[PRECONFIG_CONTAINER_KEY]
-    return next((c for c in containers if c[VERSION_KEY] == soln_stk.platform_shorthand),
-                None)
+    return next(
+        (
+            c for c in containers
+            if c[VERSION_KEY] == soln_stk.platform_shorthand
+            or c[PLATFORM_NAME_KEY] == soln_stk.platform_shorthand
+        ), None)
 
 
 def _get_runtime_dockerfile_path(soln_stk, container_config):
