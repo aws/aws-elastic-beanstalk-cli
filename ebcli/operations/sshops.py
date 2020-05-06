@@ -120,7 +120,7 @@ def ssh_into_instance(instance_id, keep_open=False, force_open=False, custom_ssh
 
     if has_restriction and not force_open:
         io.log_warning(strings['ssh.notopening'])
-    elif group_id:
+    elif group_id and not rule_existed_before:
         io.echo(strings['ssh.openingport'])
         ec2.authorize_ssh(ssh_group or group_id)
         io.echo(strings['ssh.portopen'])
