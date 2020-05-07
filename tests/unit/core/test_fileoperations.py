@@ -21,7 +21,7 @@ import zipfile
 
 import pytest
 import unittest
-from mock import call, patch
+from mock import call, patch, Mock
 
 from ebcli.core import fileoperations
 from ebcli.objects.buildconfiguration import BuildConfiguration
@@ -687,13 +687,16 @@ ccc""",
         fileoperations.delete_app_file('my-application')
 
     @unittest.skipIf(not hasattr(os, 'symlink'), reason='"symlink" appears to not have been defined on "os"')
-    def test_zip_up_project(self):
+    @patch('ebcli.core.fileoperations._validate_file_for_archive')
+    def test_zip_up_project(self, _validate_file_for_archive_mock):
+        _validate_file_for_archive_mock.side_effect = lambda f: not f.endswith('.sock')
         shutil.rmtree('home', ignore_errors=True)
         os.mkdir('src')
         os.mkdir(os.path.join('src', 'lib'))
         open(os.path.join('src', 'lib', 'app.py'), 'w').write('import os')
         open(os.path.join('src', 'lib', 'app.py~'), 'w').write('import os')
         open(os.path.join('src', 'lib', 'ignore-this-file.py'), 'w').write('import os')
+        open(os.path.join('src', 'lib', 'test.sock'), 'w').write('mock socket file')
 
         os.symlink(
             os.path.join('src', 'lib', 'app.py'),
@@ -730,6 +733,7 @@ ccc""",
         self.assertTrue(os.path.exists(os.path.join('tmp', 'src', 'lib', 'api-copy')))
         self.assertFalse(os.path.exists(os.path.join('tmp', 'src', 'lib', 'app.py~')))
         self.assertFalse(os.path.exists(os.path.join('tmp', 'src', 'lib', 'ignore-this-file.py')))
+        self.assertFalse(os.path.exists(os.path.join('tmp', 'src', 'lib', 'test.sock')))
 
     def test_delete_app_versions(self):
         os.mkdir(os.path.join('.elasticbeanstalk', 'app_versions'))
@@ -976,3 +980,27 @@ aws_secret_access_key = my-secret-key""",
 """,
                 buildspec.read()
             )
+
+    @patch('ebcli.core.fileoperations.os.stat')
+    def test___validate_file_for_archive__regular_files_are_valid(
+        self,
+        stat_mock,
+    ):
+        filepath = '/Users/dina/eb_applications/my-app/'
+        stat_mock.return_value = Mock(st_mode=33188)
+
+        actual = fileoperations._validate_file_for_archive(filepath)
+
+        self.assertTrue(actual)
+
+    @patch('ebcli.core.fileoperations.os.stat')
+    def test___validate_file_for_archive__ignores_socket_files(
+        self,
+        stat_mock,
+    ):
+        filepath = '/Users/dina/eb_applications/my-app/'
+        stat_mock.return_value = Mock(st_mode=49645)
+
+        actual = fileoperations._validate_file_for_archive(filepath)
+
+        self.assertFalse(actual)

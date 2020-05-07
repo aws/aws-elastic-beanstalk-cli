@@ -449,9 +449,15 @@ def _zipdir(path, zipf, ignore_list=None):
                 zipf.writestr(zipInfo, os.readlink(cur_dir))
         for f in files:
             cur_file = os.path.join(root, f)
-            if cur_file.endswith('~') or cur_file in ignore_list:
+
+            if (
+                cur_file.endswith('~')
+                or cur_file in ignore_list
+                or not _validate_file_for_archive(cur_file)
+            ):
                 # Ignore editor backup files (like file.txt~)
                 # Ignore anything in the .ebignore file
+                # Ignore files that cannot be archived
                 io.log_info('  -skipping: {}'.format(cur_file))
             else:
                 if root not in zipped_roots:
@@ -919,3 +925,8 @@ def open_file_for_editing(file_location):
                 editor
             )
         )
+
+
+def _validate_file_for_archive(file_location):
+    file_mode = os.stat(file_location).st_mode
+    return not stat.S_ISSOCK(file_mode)
