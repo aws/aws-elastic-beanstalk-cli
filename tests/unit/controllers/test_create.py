@@ -1025,6 +1025,7 @@ class TestCreateE2E(TestCreateBase):
 
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
+            elb_type='application',
             env_name=self.env_name,
             platform=self.solution,
         )
@@ -1065,6 +1066,7 @@ class TestCreateE2E(TestCreateBase):
 
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
+            elb_type='application',
             env_name=env_name,
             platform=self.solution,
             max_instances=max_instances,
@@ -1113,6 +1115,7 @@ class TestCreateE2E(TestCreateBase):
 
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
+            elb_type='application',
             env_name=env_name,
             platform=self.solution,
             enable_spot=True,
@@ -1156,6 +1159,7 @@ class TestCreateE2E(TestCreateBase):
 
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
+            elb_type='application',
             env_name=env_name,
             platform=self.solution,
             enable_spot=True,
@@ -1197,6 +1201,7 @@ class TestCreateE2E(TestCreateBase):
 
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
+            elb_type='application',
             env_name=env_name,
             platform=self.solution,
             enable_spot=None,
@@ -1247,6 +1252,7 @@ class TestCreateE2E(TestCreateBase):
 
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
+            elb_type='application',
             env_name=env_name,
             platform=self.solution,
             enable_spot=True,
@@ -1450,6 +1456,7 @@ CName: front-A08G28LG+""")
 
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
+            elb_type='application',
             env_name=self.env_name,
             platform=self.solution,
         )
@@ -1957,6 +1964,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
 
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
+            elb_type='application',
             env_name=env_name,
             platform=self.solution,
             vpc={
@@ -2135,6 +2143,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
 
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
+            elb_type='application',
             env_name=env_name,
             platform=self.solution,
             database={
@@ -2216,11 +2225,40 @@ class TestCreateModuleE2E(unittest.TestCase):
         )
 
     def test_get_elb_type_from_customer__non_interactive_mode(self):
+        self.assertEqual(
+            'application',
+            create.get_elb_type_from_customer(
+                interactive=False,
+                single=False,
+                tier=None
+            )
+        )
+
+    def test_get_elb_type_from_customer__non_interactive_mode_single(self):
         self.assertIsNone(
             create.get_elb_type_from_customer(
                 interactive=False,
                 single=True,
+                tier=None
+            )
+        )
+
+    def test_get_elb_type_from_customer__non_interactive_mode_webserver(self):
+        self.assertEqual(
+            'application',
+            create.get_elb_type_from_customer(
+                interactive=False,
+                single=False,
                 tier=Tier.from_raw_string('webserver')
+            )
+        )
+
+    def test_get_elb_type_from_customer__non_interactive_mode_worker(self):
+        self.assertIsNone(
+            create.get_elb_type_from_customer(
+                interactive=False,
+                single=False,
+                tier=Tier.from_raw_string('worker')
             )
         )
 

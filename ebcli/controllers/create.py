@@ -525,8 +525,10 @@ def get_elb_type_from_customer(interactive, single, tier):
     :param tier: the tier type of the environment
     :return: selected ELB type which is one among ['application', 'classic', 'network']
     """
-    if not interactive or single or (tier and not tier.is_webserver()):
+    if single or (tier and not tier.is_webserver()):
         return
+    elif not interactive:
+        return elb_names.APPLICATION_VERSION
 
     io.echo()
     io.echo('Select a load balancer type')
