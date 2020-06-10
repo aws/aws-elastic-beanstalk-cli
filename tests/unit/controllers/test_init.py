@@ -1631,7 +1631,7 @@ class TestInitModule(unittest.TestCase):
 
         get_branch_mock.assert_called_once_with('my-repository', 'my-branch')
         get_branch_interactive_mock.assert_not_called()
-        source_control_mock.setup_existing_codecommit_branch.assert_called_once_with('my-branch', None)
+        source_control_mock.setup_existing_codecommit_branch.assert_called_once_with('my-branch')
 
     @mock.patch('ebcli.controllers.initialize.codecommit.get_branch')
     @mock.patch('ebcli.controllers.initialize.get_branch_interactive')

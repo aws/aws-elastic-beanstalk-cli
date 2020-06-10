@@ -174,6 +174,40 @@ class TestGitSourceControl(unittest.TestCase):
         mock_exec_cmd.return_value = stdout, stderr, exit_code
         self.assertRaises(CommandError, sourcecontrol.Git().get_version_label)
 
+    @mock.patch.object(sourcecontrol.Git, '_run_cmd')
+    @mock.patch.object(sourcecontrol.Git, 'get_current_branch')
+    def test_get_current_repository_git_cmd_succeeded(
+        self,
+        get_current_branch_mock,
+        _run_cmd_mock,
+    ):
+        get_current_branch_mock.return_value = 'develop'
+        _run_cmd_mock.return_value = 'develop-remote', '', 0
+        actual = sourcecontrol.Git().get_current_repository()
+
+        get_current_branch_mock.assert_called_once_with()
+        _run_cmd_mock.assert_called_once_with(
+            ['git', 'config', '--get', 'branch.develop.remote'],
+            handle_exitcode=False)
+        self.assertEqual('develop-remote', actual)
+
+    @mock.patch.object(sourcecontrol.Git, '_run_cmd')
+    @mock.patch.object(sourcecontrol.Git, 'get_current_branch')
+    def test_get_current_repository__git_cmd_failed(
+        self,
+        get_current_branch_mock,
+        _run_cmd_mock,
+    ):
+        get_current_branch_mock.return_value = 'develop'
+        _run_cmd_mock.return_value = '', 'error message', 1
+        actual = sourcecontrol.Git().get_current_repository()
+
+        get_current_branch_mock.assert_called_once_with()
+        _run_cmd_mock.assert_called_once_with(
+            ['git', 'config', '--get', 'branch.develop.remote'],
+            handle_exitcode=False)
+        self.assertIsNone(actual)
+
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_current_branch(self):
         self.assertEqual('master', sourcecontrol.Git().get_current_branch())
@@ -246,3 +280,23 @@ class TestGitSourceControl(unittest.TestCase):
                     ]
                 )
             ])
+
+    @mock.patch.object(sourcecontrol.Git, '_run_cmd')
+    def test_fetch_remote_branches__git_cmd_succeded(self, _run_cmd_mock):
+        _run_cmd_mock.return_value = '', '', 0
+        actual = sourcecontrol.Git().fetch_remote_branches('develop')
+
+        _run_cmd_mock.assert_called_once_with(
+            ['git', 'fetch', 'develop'],
+            handle_exitcode=False)
+        self.assertTrue(actual)
+
+    @mock.patch.object(sourcecontrol.Git, '_run_cmd')
+    def test_fetch_remote_branches__git_cmd_failed(self, _run_cmd_mock):
+        _run_cmd_mock.return_value = '', '', 1
+        actual = sourcecontrol.Git().fetch_remote_branches('develop')
+
+        _run_cmd_mock.assert_called_once_with(
+            ['git', 'fetch', 'develop'],
+            handle_exitcode=False)
+        self.assertFalse(actual)

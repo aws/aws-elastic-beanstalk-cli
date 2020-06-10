@@ -323,7 +323,7 @@ def get_branch_interactive(repository):
             return None
     elif not new_branch:
         LOG.debug("Setting up an existing branch")
-        succesful_branch = source_control.setup_existing_codecommit_branch(branch_name, remote_url)
+        succesful_branch = source_control.setup_existing_codecommit_branch(branch_name)
         if not succesful_branch:
             io.echo("Could not set CodeCommit branch, run with '--debug' to get the full error")
             return None
@@ -462,7 +462,7 @@ def establish_codecommit_branch(repository, branch, source_control, source_locat
             else:
                 io.log_error(strings['codecommit.nobranch'])
                 raise ex
-        source_control.setup_existing_codecommit_branch(branch, None)
+        source_control.setup_existing_codecommit_branch(branch)
 
     return branch
 

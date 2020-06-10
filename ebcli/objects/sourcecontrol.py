@@ -178,7 +178,7 @@ class Git(SourceControl):
         current_remote = stdout
         if exitcode != 0:
             LOG.debug("No remote found for the current working directory.")
-            current_remote = "origin"
+            current_remote = None
 
         LOG.debug('Found remote: {}'.format(current_remote))
         return current_remote
@@ -430,8 +430,8 @@ class Git(SourceControl):
 
         LOG.debug('git branch result: ' + stdout)
 
-    def setup_existing_codecommit_branch(self, branch_name, remote_url=None):
-        self.fetch_remote_branches(self.codecommit_remote_name, remote_url)
+    def setup_existing_codecommit_branch(self, branch_name):
+        self.fetch_remote_branches(self.codecommit_remote_name)
 
         self.checkout_branch(branch_name, create_branch=True)
 
@@ -490,31 +490,22 @@ class Git(SourceControl):
         LOG.debug('git commit result: {0}'.format(stdout))
         return stdout
 
-    def fetch_remote_branches(self, remote_name, remote_url=None):
-        if not remote_url:
-            fetch_command = [
-                'git',
-                'fetch',
-                self.get_current_repository(),
-                '+refs/heads/*:refs/remotes/{0}/*'.format(remote_name)
-            ]
-            LOG.debug('Fetching remote branches using remote name: {0}'.format(' '.join(fetch_command)))
-        else:
-            self.verify_url_is_a_codecommit_url(remote_url)
-
-            fetch_command = [
-                'git',
-                'fetch',
-                remote_url
-            ]
-            LOG.debug('Fetching remote branches using remote URL: {0}'.format(' '.join(fetch_command)))
+    def fetch_remote_branches(self, remote_name):
+        fetch_command = [
+            'git',
+            'fetch',
+            remote_name
+        ]
+        LOG.debug('Fetching remote branches using remote name: {0}'.format(' '.join(fetch_command)))
 
         stdout, stderr, exitcode = self._run_cmd(fetch_command, handle_exitcode=False)
 
-        if stderr:
+        if exitcode != 0:
             LOG.debug('git fetch error: ' + stderr)
+            return False
 
         LOG.debug('git fetch result: {0}'.format(stdout))
+        return True
 
     def setup_codecommit_cred_config(self):
         LOG.debug('Setup git config settings for code commit credentials')
