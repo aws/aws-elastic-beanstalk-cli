@@ -74,6 +74,8 @@ class TestCreateBase(unittest.TestCase):
     def assertEnvironmentRequestsEqual(self, expected_request, actual_request):
         error_message = os.linesep.join(
             [
+                '',
+                '',
                 'Expected::',
                 '{}'.format(expected_request.__dict__),
                 '',

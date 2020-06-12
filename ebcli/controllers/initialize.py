@@ -335,17 +335,15 @@ def configure_codecommit(source):
     source_location, repository, branch = utils.parse_source(source)
     source_control = SourceControl.get_source_control()
 
-    try:
-        if not source_location:
-            io.validate_action(prompts['codecommit.usecc'], "y")
+    if not source_location:
+        should_continue = io.get_boolean_response(text=prompts['codecommit.usecc'], default=True)
+        if not should_continue:
+            LOG.debug("Denied option to use CodeCommit, continuing initialization")
+            return repository, branch
 
-        # Setup git config settings for code commit credentials
-        source_control.setup_codecommit_cred_config()
-
-        repository, branch = establish_codecommit_repository_and_branch(repository, branch, source_control, source_location)
-
-    except ValidationError:
-        LOG.debug("Denied option to use CodeCommit, continuing initialization")
+    # Setup git config settings for code commit credentials
+    source_control.setup_codecommit_cred_config()
+    repository, branch = establish_codecommit_repository_and_branch(repository, branch, source_control, source_location)
 
     return repository, branch
 

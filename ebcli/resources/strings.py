@@ -57,7 +57,6 @@ To get started, enter "eb platform init". Then enter "eb platform create".""",
     'create.downloading_sample_application': 'Downloading sample application to the '
                                              'current directory.',
     'create.sample_application_download_complete': 'Download complete.',
-    'create.user_choice_error': "'{user_choice}' is not a valid choice.",
     'events.info': 'Gets recent events.',
     'open.info': 'Opens the application URL in a browser.',
     'console.info': 'Opens the environment in the AWS Elastic Beanstalk Management Console.',
@@ -672,21 +671,17 @@ prompts = {
                            'Version:       {version}\n'
                            'Platform:      {platform}\n'
                            'Terminated:    {dat_term}\n'
-                           'Restore this environment? [y/n]\n',
+                           'Restore this environment?',
 
     'codesource.codesourceprompt': 'Select your codesource',
-
-    'appversion.redeploy.validate': 'Do you want to deploy a previous or '
-                                    'different version? (y/n)',
     'appversion.redeploy.prompt': 'Select a version # to deploy (1 to {}).',
     'appversion.redeploy.inprogress': 'Deploying version {}.',
 
     'appversion.delete.validate': 'Do you want to delete the application '
-                                  'version with label: {}? (y/n)',
+                                  'version with label: {}?',
     'appversion.delete.prompt': 'Select a version # to delete (1 to {}).',
 
-    'codecommit.usecc': 'Do you wish to continue with CodeCommit? (y/N) '
-                        '(default is n)',
+    'codecommit.usecc': 'Do you wish to continue with CodeCommit?',
 
     'codebuild.getplatform': 'Could not determine best image for buildspec '
                              'file please select from list.\n Current chosen '

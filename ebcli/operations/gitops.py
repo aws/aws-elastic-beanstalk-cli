@@ -99,9 +99,10 @@ def initialize_codecommit():
     if codecommit.region_supported():
         codecommit_setup = print_current_codecommit_settings()
         if codecommit_setup:
-            try:
-                io.validate_action("Do you wish to continue (y/n)", "y")
-            except ValidationError:
+            should_continue = io.get_boolean_response(
+                text='Do you wish to continue?',
+                default=True)
+            if not should_continue:
                 return
 
         source_control.setup_codecommit_cred_config()

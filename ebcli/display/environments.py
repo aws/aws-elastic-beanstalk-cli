@@ -143,25 +143,28 @@ class EnvironmentScreen(Screen):
         env_id = environment.get(u'EnvironmentId')
         should_exit_display = True
         if env_id:
-            try:
-                self.flusher(term.get_terminal())
-                io.validate_action(
-                    prompts['restore.selectedenv'].replace('{env_id}', env_id)
-                    .replace('{app}', utils.encode_to_ascii(environment.get('ApplicationName')))
-                    .replace('{desc}', utils.encode_to_ascii(environment.get('Description')))
-                    .replace('{cname}', utils.encode_to_ascii(environment.get('CNAME')))
-                    .replace('{version}', utils.encode_to_ascii(environment.get('VersionLabel')))
-                    .replace('{platform}', utils.encode_to_ascii(environment.get('SolutionStackName')))
-                    .replace('{dat_term}', environment.get('DateUpdated')), 'y')
-                from ebcli.operations import restoreops
-                # restore specified environment
-                self.request_id = restoreops.restore(env_id)
-                return should_exit_display
-            except ValidationError:
+            self.flusher(term.get_terminal())
+            prompt_text = prompts['restore.selectedenv'].format(
+                env_id=env_id,
+                app=utils.encode_to_ascii(environment.get('ApplicationName')),
+                desc=utils.encode_to_ascii(environment.get('Description')),
+                cname=utils.encode_to_ascii(environment.get('CNAME')),
+                version=utils.encode_to_ascii(environment.get('VersionLabel')),
+                platform=utils.encode_to_ascii(environment.get('SolutionStackName')),
+                dat_term=environment.get('DateUpdated'))
+            should_restore = io.get_boolean_response(prompt_text, default=True)
+
+            if not should_restore:
                 io.echo(responses['restore.norestore'])
                 time.sleep(1)
                 should_exit_display = False
                 return should_exit_display
+
+            from ebcli.operations import restoreops
+            # restore specified environment
+            self.request_id = restoreops.restore(env_id)
+            return should_exit_display
+
         # Exception should never get thrown
         else:
             raise Exception

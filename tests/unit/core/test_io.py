@@ -33,7 +33,7 @@ class TestIo(unittest.TestCase):
             'bad=char',
             'bad?char',
             'bad>char',
-            'bad\char',
+            'bad\\char',
             'bad/char',
             'bad#char',
             'bad?char',
@@ -69,17 +69,44 @@ class TestIo(unittest.TestCase):
             self.assertEqual(value, case)
 
     @mock.patch('ebcli.core.io.get_input')
-    def test_get_boolean_response_bad(self, mock_io):
+    def test_get_boolean_response(self, get_input_mock):
+        get_input_mock.return_value = 'y'
+        result = io.get_boolean_response()
+        get_input_mock.assert_called_once_with('(Y/n)', default='y')
+        self.assertTrue(result)
+
+    @mock.patch('ebcli.core.io.get_input')
+    def test_get_boolean_response__text_sans_default(self, get_input_mock):
+        get_input_mock.return_value = 'y'
+        result = io.get_boolean_response(text='This is the prompt text.')
+        get_input_mock.assert_called_once_with(
+            'This is the prompt text. (Y/n)',
+            default='y')
+        self.assertTrue(result)
+
+    @mock.patch('ebcli.core.io.get_input')
+    def test_get_boolean_response__text_default_false(self, get_input_mock):
+        get_input_mock.return_value = 'y'
+        result = io.get_boolean_response(
+            text='This is the prompt text.',
+            default=False)
+        get_input_mock.assert_called_once_with(
+            'This is the prompt text. (y/N)',
+            default='n')
+        self.assertTrue(result)
+
+    @mock.patch('ebcli.core.io.get_input')
+    def test_get_boolean_response__bad_input(self, get_input_mock):
         response_list = ['a', '1', 'Ys', 'x', '', 'nah', '?', 'y']
-        mock_io.side_effect = response_list
+        get_input_mock.side_effect = response_list
         result = io.get_boolean_response()
 
         self.assertTrue(result)
-        self.assertEqual(mock_io.call_count, len(response_list))
+        self.assertEqual(get_input_mock.call_count, len(response_list))
 
     @mock.patch('ebcli.core.io.get_input')
-    def test_get_boolean_response_true(self, mock_io):
-        mock_io.side_effect = ['y', 'Y', 'YES', 'yes', 'Yes']
+    def test_get_boolean_response_true(self, get_input_mock):
+        get_input_mock.side_effect = ['y', 'Y', 'YES', 'yes', 'Yes']
 
         result1 = io.get_boolean_response()
         result2 = io.get_boolean_response()
@@ -93,8 +120,8 @@ class TestIo(unittest.TestCase):
         self.assertTrue(result5)
 
     @mock.patch('ebcli.core.io.get_input')
-    def test_get_boolean_response_false(self, mock_io):
-        mock_io.side_effect = ['n', 'N', 'NO', 'no', 'No']
+    def test_get_boolean_response_false(self, get_input_mock):
+        get_input_mock.side_effect = ['n', 'N', 'NO', 'no', 'No']
         result1 = io.get_boolean_response()
         result2 = io.get_boolean_response()
         result3 = io.get_boolean_response()
