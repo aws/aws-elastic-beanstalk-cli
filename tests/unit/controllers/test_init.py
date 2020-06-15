@@ -2064,7 +2064,7 @@ class TestInitModule(unittest.TestCase):
             )
         )
 
-        region_supported_mock.assert_called_once_with('us-west-10')
+        region_supported_mock.assert_called_once_with()
 
     @mock.patch('ebcli.controllers.initialize.codecommit.region_supported')
     @mock.patch('ebcli.controllers.initialize.fileoperations.is_git_directory_present')
@@ -2086,7 +2086,7 @@ class TestInitModule(unittest.TestCase):
             )
         )
 
-        region_supported_mock.assert_called_once_with('us-west-2')
+        region_supported_mock.assert_called_once_with()
         echo_mock.assert_called_once_with(
             'Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization'
         )
@@ -2114,7 +2114,7 @@ class TestInitModule(unittest.TestCase):
             )
         )
 
-        region_supported_mock.assert_called_once_with('us-west-2')
+        region_supported_mock.assert_called_once_with()
         program_is_installed_mock.assert_called_once_with('git')
         echo_mock.assert_called_once_with(
             'Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization'
@@ -2146,7 +2146,7 @@ class TestInitModule(unittest.TestCase):
             )
         )
 
-        region_supported_mock.assert_called_once_with('us-west-2')
+        region_supported_mock.assert_called_once_with()
         program_is_installed_mock.assert_called_once_with('git')
         echo_mock.assert_not_called()
         directory_is_already_associated_with_a_branch_mock.assert_called_once_with()
@@ -2177,7 +2177,7 @@ class TestInitModule(unittest.TestCase):
             )
         )
 
-        region_supported_mock.assert_called_once_with('us-west-2')
+        region_supported_mock.assert_called_once_with()
         program_is_installed_mock.assert_called_once_with('git')
         echo_mock.assert_not_called()
         directory_is_already_associated_with_a_branch_mock.assert_called_once_with()

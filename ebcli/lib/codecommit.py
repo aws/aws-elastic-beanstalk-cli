@@ -12,29 +12,42 @@
 # language governing permissions and limitations under the License.
 from cement.utils.misc import minimal_logger
 
+from botocore.exceptions import EndpointConnectionError
 from ebcli.lib import aws
 from ebcli.core import io
 from ebcli.objects.exceptions import ServiceError
 
 LOG = minimal_logger(__name__)
 
-
 SUPPORTED_REGIONS = [
-    "ca-central-1",    # Canada (Central)
-    "us-east-1",       # US East (N. Virginia)
-    "us-east-2",       # US East (Ohio)
-    "us-west-1",       # US West (N. California)
-    "us-west-2",       # US West (Oregon)
-    "eu-west-1",       # EU (Ireland)
-    "eu-west-2",       # EU (London)
-    "eu-west-3",       # EU (Paris)
-    "eu-central-1",    # EU (Frankfurt)
+    "ap-east-1",       # Asia Pacific (Hong Kong)
     "ap-northeast-1",  # Asia Pacific (Tokyo)
     "ap-northeast-2",  # Asia Pacific (Seoul)
+    "ap-south-1",      # Asia Pacific (Mumbai)
     "ap-southeast-1",  # Asia Pacific (Singapore)
     "ap-southeast-2",  # Asia Pacific (Sydney)
-    "ap-south-1",      # Asia Pacific (Mumbai)
-    "sa-east-1"        # South America (Sao Paulo)
+    "ca-central-1",    # Canada (Central)
+    "cn-north-1",      # China (Beijing)
+    "cn-northwest-1"   # China (Ningxia)
+    "eu-central-1",    # Europe (Frankfurt)
+    "eu-north-1",      # Europe (Stockholm)
+    "eu-west-1",       # Europe (Ireland)
+    "eu-west-2",       # Europe (London)
+    "eu-west-3",       # Europe (Paris)
+    "me-south-1",      # Middle East (Bahrain)
+    "sa-east-1",       # South America (Sao Paulo)
+    "us-east-1",       # US East (N. Virginia)
+    "us-east-2",       # US East (Ohio)
+    "us-gov-east-1",   # AWS GovCloud (US-East)
+    "us-gov-west-1",   # AWS GovCloud (US-West)
+    "us-west-1",       # US West (N. California)
+    "us-west-2",       # US West (Oregon)
+]
+
+UNSUPPORTED_REGIONS = [
+    "af-south-1",      # Africa (Cape Town)
+    "ap-northeast-3",  # Asia Pacific (Osaka-Local)
+    "eu-south-1",      # Europe (Milan)
 ]
 
 
@@ -114,8 +127,26 @@ def list_branches(repo_name, next_token=None):
     return result
 
 
-def region_supported(region):
-    if region is not None and region in SUPPORTED_REGIONS:
+def region_supported():
+    region = aws.get_region_name()
+
+    if region is None or region in UNSUPPORTED_REGIONS:
+        return False
+    if region in SUPPORTED_REGIONS:
         return True
 
-    return False
+    # If region support is unknown attempt to make a request and check for
+    # connection error. If there is a connection error it is most likely that
+    # the region is not supported. This is a fall back for regions that have
+    # not been added to our region support lists.
+    try:
+        list_repositories()
+    except EndpointConnectionError as e:
+        LOG.debug(
+            'Could not connect to CodeCommit in region {}: {}'.format(
+                region, e))
+        return False
+    except Exception as e:
+        LOG.debug('Request failed while checking region support: {}'.format(e))
+
+    return True

@@ -106,12 +106,12 @@ class TestEventOps(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.get_branch_interactive')
     @mock.patch('ebcli.operations.gitops.set_repo_default_for_current_environment')
     @mock.patch('ebcli.operations.gitops.set_branch_default_for_current_environment')
-    @mock.patch('ebcli.operations.gitops.commonops.get_default_region')
+    @mock.patch('ebcli.operations.gitops.aws.get_region_name')
     @mock.patch('ebcli.operations.gitops.io.validate_action')
     def test_initialize_codecommit(
             self,
             validate_action_mock,
-            get_default_region_mock,
+            get_region_name_mock,
             set_branch_default_for_current_environment_mock,
             set_repo_default_for_current_environment_mock,
             get_branch_interactive_mock,
@@ -124,14 +124,13 @@ class TestEventOps(unittest.TestCase):
         source_control_mock.is_setup.return_value = True
         get_source_control_mock.return_value = source_control_mock
         region_supported_mock.return_value = True
-        get_default_region_mock.return_value = 'us-west-2'
         validate_action_mock.return_value = 'y'
         get_repository_interactive_mock.return_value = 'my-repository'
         get_branch_interactive_mock.return_value = 'my-branch'
 
         gitops.initialize_codecommit()
 
-        region_supported_mock.assert_called_once_with('us-west-2')
+        region_supported_mock.assert_called_once_with()
         validate_action_mock.assert_called_once_with(
             'Do you wish to continue (y/n)',
             'y'
@@ -146,14 +145,14 @@ class TestEventOps(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.get_branch_interactive')
     @mock.patch('ebcli.operations.gitops.set_repo_default_for_current_environment')
     @mock.patch('ebcli.operations.gitops.set_branch_default_for_current_environment')
-    @mock.patch('ebcli.operations.gitops.commonops.get_default_region')
+    @mock.patch('ebcli.operations.gitops.aws.get_region_name')
     @mock.patch('ebcli.operations.gitops.io.validate_action')
     @mock.patch('ebcli.operations.gitops.io.log_error')
     def test_initialize_codecommit__region_does_not_support_codecommit(
             self,
             log_error_mock,
             validate_action_mock,
-            get_default_region_mock,
+            get_region_name_mock,
             set_branch_default_for_current_environment_mock,
             set_repo_default_for_current_environment_mock,
             get_branch_interactive_mock,
@@ -166,11 +165,11 @@ class TestEventOps(unittest.TestCase):
         source_control_mock.is_setup.return_value = True
         get_source_control_mock.return_value = source_control_mock
         region_supported_mock.return_value = False
-        get_default_region_mock.return_value = 'some-region'
+        get_region_name_mock.return_value = 'some-region'
 
         gitops.initialize_codecommit()
 
-        region_supported_mock.assert_called_once_with('some-region')
+        region_supported_mock.assert_called_once_with()
         validate_action_mock.assert_not_called()
         set_repo_default_for_current_environment_mock.assert_not_called()
         set_branch_default_for_current_environment_mock.assert_not_called()
@@ -186,14 +185,14 @@ class TestEventOps(unittest.TestCase):
     @mock.patch('ebcli.controllers.initialize.get_branch_interactive')
     @mock.patch('ebcli.operations.gitops.set_repo_default_for_current_environment')
     @mock.patch('ebcli.operations.gitops.set_branch_default_for_current_environment')
-    @mock.patch('ebcli.operations.gitops.commonops.get_default_region')
+    @mock.patch('ebcli.operations.gitops.aws.get_region_name')
     @mock.patch('ebcli.operations.gitops.io.validate_action')
     @mock.patch('ebcli.operations.gitops.io.log_error')
     def test_initialize_codecommit__source_control_is_not_setup(
             self,
             log_error_mock,
             validate_action_mock,
-            get_default_region_mock,
+            get_region_name_mack,
             set_branch_default_for_current_environment_mock,
             set_repo_default_for_current_environment_mock,
             get_branch_interactive_mock,
@@ -210,7 +209,6 @@ class TestEventOps(unittest.TestCase):
 
         region_supported_mock.assert_not_called()
         validate_action_mock.assert_not_called()
-        get_default_region_mock.assert_not_called()
         set_repo_default_for_current_environment_mock.assert_not_called()
         set_branch_default_for_current_environment_mock.assert_not_called()
         get_repository_interactive_mock.assert_not_called()

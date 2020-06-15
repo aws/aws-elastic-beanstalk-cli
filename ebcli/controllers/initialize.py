@@ -499,8 +499,9 @@ def should_prompt_customer_to_opt_into_codecommit(
 
     if force_non_interactive:
         return False
-    elif source_location and not codecommit.region_supported(region_name):
-        io.log_warning(strings['codecommit.badregion'])
+    elif not codecommit.region_supported():
+        if source_location:
+            io.log_warning(strings['codecommit.badregion'])
         return False
     elif not fileoperations.is_git_directory_present():
         io.echo(strings['codecommit.nosc'])
