@@ -2,6 +2,17 @@
 Changelog
 =========
 -------------------
+3.18.2 (2020-07-06)
+-------------------
+- Ignore socket files during app version creation
+- Add platform branch support to eb local run
+- Set default value of elb-type to "application"
+- Check for security-group ssh rule before attempting to create one
+- Fix fetch logic for CodeCommit branches
+- Add fallback for regions with unknown CodeCommit support
+- Unify boolean prompts to use a single implementation
+
+-------------------
 3.18.1 (2020-04-28)
 -------------------
 - Added af-south-1 (Cape Town) region
