@@ -1733,3 +1733,116 @@ class TestElasticbeanstalk(unittest.TestCase):
             any_order=False
         )
         self.assertEqual(result, expected_result)
+
+    @mock.patch('ebcli.lib.elasticbeanstalk.describe_configuration_options')
+    def test_list_application_load_balancers__no_vpc(
+        self,
+        describe_configuration_options_mock
+    ):
+        PlatformArn =  "arn:aws:elasticbeanstalk:us-east-1::platform/Python 3.6 running on 64bit Amazon Linux/2.9.12"
+        vpc = None
+        api_response = {
+            'SolutionStackName': '64bit Amazon Linux 2018.03 v2.9.12 running Python 3.6',
+            'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/Python 3.6 running on 64bit Amazon Linux/2.9.12',
+            'Tier': {'Name': 'WebServer', 'Type': 'Standard', 'Version': '1.0'},
+            'Options': [
+                {
+                    'Namespace': 'aws:elbv2:loadbalancer',
+                    'Name': 'SharedLoadBalancer',
+                    'ChangeSeverity': 'Unknown',
+                    'UserDefined': False,
+                    'ValueType': 'Scalar',
+                    'ValueOptions': [
+                        'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-1/72074d479748b405',
+                        'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-2/5a957e362e1339a9',
+                        'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-3/3dfc9ab663f79319',
+                        'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-4/5791574adb5d39c4'],
+                    'Description': 'The arn of an existing load balancer to use for environment Load Balancer.'
+                },
+                {
+                    'Namespace': 'aws:elbv2:listener',
+                    'Name': 'Rules',
+                    'ChangeSeverity': 'Unknown',
+                    'UserDefined': False,
+                    'ValueType': 'List',
+                    'Description': 'List of rules to apply for the listener. These rules are defined in aws:elbv2:listenerrule namespace.'
+                }
+            ],
+            'ResponseMetadata': {'RequestId': '0538eaa9-5dc2-4976-81e0-c485da2f9234', 'HTTPStatusCode': 200, 'date': 'Tue, 07 Jul 2020 18:52:17 GMT', 'RetryAttempts': 0}
+        }
+
+        kwargs = {
+            'OptionSettings': [
+                {'Namespace': 'aws:elasticbeanstalk:environment', 'OptionName': 'LoadBalancerType', 'Value': 'application'},
+                {'Namespace': 'aws:elasticbeanstalk:environment', 'OptionName': 'LoadBalancerIsShared', 'Value': 'true'}
+            ],
+            'Options': [
+                {'Namespace': 'aws:elbv2:loadbalancer', 'OptionName': 'SharedLoadBalancer'}
+            ],
+            'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/Python 3.6 running on 64bit Amazon Linux/2.9.12'}
+
+        describe_configuration_options_mock.return_value = api_response
+        expected_result = api_response['Options'][0]['ValueOptions']
+
+        result = elasticbeanstalk.list_application_load_balancers(PlatformArn, vpc)
+
+        describe_configuration_options_mock.assert_called_once_with(**kwargs)
+        self.assertEqual(
+                expected_result, result
+            )
+
+    @mock.patch('ebcli.lib.elasticbeanstalk.describe_configuration_options')
+    def test_list_application_load_balancers__with_vpc(
+        self,
+        describe_configuration_options_mock
+    ):
+        PlatformArn =  "arn:aws:elasticbeanstalk:us-east-1::platform/Python 3.6 running on 64bit Amazon Linux/2.9.12"
+        vpc = {'id': 'vpc-00252f9da55164b47', 'ec2subnets': 'subnet-018b695a5badc7ec7,subnet-07ce18248accbe5c9'}
+
+        api_response = {
+            'SolutionStackName': '64bit Amazon Linux 2018.03 v2.9.12 running Python 3.6',
+            'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/Python 3.6 running on 64bit Amazon Linux/2.9.12',
+            'Tier': {'Name': 'WebServer', 'Type': 'Standard', 'Version': '1.0'},
+            'Options': [
+                {
+                    'Namespace': 'aws:elbv2:loadbalancer',
+                    'Name': 'SharedLoadBalancer',
+                    'ChangeSeverity': 'Unknown',
+                    'UserDefined': False,
+                    'ValueType': 'Scalar',
+                    'ValueOptions': [
+                        'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-vpc1/a2f730eefb8aab29',
+                        'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-vpc2/43ca57d4b9462ba6'],
+                    'Description': 'The arn of an existing load balancer to use for environment Load Balancer.'
+                },
+                {
+                    'Namespace': 'aws:elbv2:listener',
+                    'Name': 'Rules',
+                    'ChangeSeverity': 'Unknown',
+                    'UserDefined': False,
+                    'ValueType': 'List',
+                    'Description': 'List of rules to apply for the listener. These rules are defined in aws:elbv2:listenerrule namespace.'
+                }
+            ],
+            'ResponseMetadata': {'RequestId': '6a823882-f6af-46b4-8fa3-ccc8004766c8', 'HTTPStatusCode': 200, 'date': 'Tue, 07 Jul 2020 20:26:26 GMT', 'RetryAttempts': 0}
+        }
+        kwargs = {
+            'OptionSettings': [
+                {'Namespace': 'aws:elasticbeanstalk:environment', 'OptionName': 'LoadBalancerType', 'Value': 'application'},
+                {'Namespace': 'aws:elasticbeanstalk:environment', 'OptionName': 'LoadBalancerIsShared', 'Value': 'true'},
+                {'Namespace': 'aws:ec2:vpc', 'OptionName': 'VPCId', 'Value': 'vpc-00252f9da55164b47'},
+                {'Namespace': 'aws:ec2:vpc', 'OptionName': 'Subnets', 'Value': 'subnet-018b695a5badc7ec7,subnet-07ce18248accbe5c9'}
+            ],
+            'Options': [
+                {'Namespace': 'aws:elbv2:loadbalancer', 'OptionName': 'SharedLoadBalancer'}
+            ],
+            'PlatformArn': 'arn:aws:elasticbeanstalk:us-east-1::platform/Python 3.6 running on 64bit Amazon Linux/2.9.12'}
+
+        describe_configuration_options_mock.return_value = api_response
+        expected_result = api_response['Options'][0]['ValueOptions']
+
+        result = elasticbeanstalk.list_application_load_balancers(PlatformArn, vpc)
+        describe_configuration_options_mock.assert_called_once_with(**kwargs)
+        self.assertEqual(
+                expected_result, result
+            )
