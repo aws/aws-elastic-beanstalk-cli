@@ -124,3 +124,43 @@ class TestElbv2(unittest.TestCase):
                     'arn:aws:elasticloadbalancing:us-west-2:1123123123:targetgroup/awseb-AWSEB-213123123123/c432cd690a5f6d62'
                 ]
             )
+<<<<<<< HEAD
+=======
+
+    @mock.patch('ebcli.lib.elbv2._make_api_call')
+    def test_get_listeners_for_load_balancer__with_load_balancer_arn(
+            self,
+            _make_api_call_mock
+    ):
+        load_balancer_arn = 'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-2/5a957e362e1339a9'
+        _make_api_call_mock.return_value = mock_responses.GET_LISTENERS_FOR_LOAD_BALANCER_RESPONSE
+
+        expected_result = mock_responses.GET_LISTENERS_FOR_LOAD_BALANCER_RESPONSE
+
+        result = elbv2.get_listeners_for_load_balancer(load_balancer_arn)
+
+        _make_api_call_mock.assert_called_once_with('describe_listeners',LoadBalancerArn=load_balancer_arn)
+
+        self.assertEqual(
+            result,
+            expected_result
+        )
+
+    @mock.patch('ebcli.lib.elbv2._make_api_call')
+    def test_describe_load_balancer__pass_load_balancer_name(
+            self,
+            _make_api_call_mock
+    ):
+        load_balancer = ['alb-1']
+        _make_api_call_mock.return_value = mock_responses.DESCRIBE_LOAD_BALANCERS_RESPONSE
+
+        expected_result = mock_responses.DESCRIBE_LOAD_BALANCERS_RESPONSE
+        result = elbv2.describe_load_balancers(load_balancer)
+
+        _make_api_call_mock.assert_called_once_with('describe_load_balancers', Names=load_balancer)
+
+        self.assertEqual(
+            result,
+            expected_result
+        )
+>>>>>>> 6db311d8... Add SharedLBOps module

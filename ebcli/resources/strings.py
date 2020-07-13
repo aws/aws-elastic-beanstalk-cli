@@ -692,7 +692,11 @@ prompts = {
                                  'types separated by commas (at least two instance '
                                  'types are recommended).',
     'spot.enable_spot_prompt': 'Would you like to enable Spot Fleet requests '
-                               'for this environment?'
+                               'for this environment?',
+    'sharedlb.shared_load_balancer_request_prompt': 'Your account has one or more sharable load balancers. '
+                                                    'Would you like your new environment to use a shared load balancer?',
+    'sharedlb.shared_load_balancer_prompt': 'Select a shared load balancer',
+    'sharedlb.listener_prompt': 'Select a listener port for your shared load balancer',
 }
 
 alerts = {
@@ -723,6 +727,7 @@ alerts = {
     'sharedlb.listener': 'The selected load balancer has no listeners. '
                          'This prevents routing requests to your environment instances. '
                          'Use EC2 to add a listener to your load balancer.',
+<<<<<<< HEAD
     'create.can_not_use_options_together': 'You can\'t use the "{}" and "{}" options together.',
     'sharedalb.listener': 'The selected load balancer has no listeners. '
                           'This prevents routing requests to your environment instances. '
@@ -731,6 +736,8 @@ alerts = {
                                   'and an Application Load Balancer ("--elb-type application").',
     'sharedlb.wrong_elb_type': 'To specify any shared load balancer options, '
                                  'also specify an Application Load Balancer ("--elb-type application").',
+=======
+>>>>>>> 6db311d8... Add SharedLBOps module
 }
 
 flag_text = {
