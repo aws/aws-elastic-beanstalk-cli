@@ -473,5 +473,38 @@ class TestRequests(unittest.TestCase):
             request.option_settings
         )
 
+    def test_compile_shared_lb_options(self):
+        request_args = {
+            'elb_type': 'application',
+            'app_name': 'ebcli-intTest-app',
+            'env_name': 'my-awesome-env',
+            'shared_lb': 'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-1/72074d479748b405',
+            'shared_lb_port': '100'
+        }
+        request = requests.CreateEnvironmentRequest(**request_args)
+        self.assertEqual([], request.option_settings)
+
+        request.compile_shared_lb_options()
+        self.assertEqual(
+            [
+                {
+                    'Namespace': 'aws:elasticbeanstalk:environment',
+                    'OptionName': 'LoadBalancerIsShared',
+                    'Value': 'true'
+                },
+                {
+                    'Namespace': 'aws:elbv2:loadbalancer',
+                    'OptionName': 'SharedLoadBalancer',
+                    'Value': 'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-1/72074d479748b405'
+                },
+                {
+                    'Namespace': 'aws:elbv2:listener:100',
+                    'OptionName': 'Rules',
+                    'Value': 'default'
+                }
+            ],
+            request.option_settings
+        )
+
     def test_get_standard_kwargs(self):
         pass

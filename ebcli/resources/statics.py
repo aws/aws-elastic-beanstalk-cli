@@ -59,6 +59,11 @@ class namespaces(object):
     SPOT = 'aws:ec2:instances'
     CLOUDWATCH_LOGS = 'aws:elasticbeanstalk:cloudwatch:logs'
     CLOUDWATCH_ENVIRONMENT_HEALTH_LOGS = 'aws:elasticbeanstalk:cloudwatch:logs:health'
+<<<<<<< HEAD
+=======
+    LOAD_BALANCER_V2 = 'aws:elbv2:loadbalancer'
+    LISTENER = 'aws:elbv2:listener:{}'
+>>>>>>> bb4ed62d... Add shared load balancer option settings in CreateEnvironmentRequest
 
 
 class option_names(object):
