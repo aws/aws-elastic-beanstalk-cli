@@ -720,6 +720,17 @@ alerts = {
                               "longer supported.",
     'platform.invalidstring': 'Elastic Beanstalk can\'t find a platform '
                               'version that matches "{}".',
+    'sharedlb.listener': 'The selected load balancer has no listeners. '
+                         'This prevents routing requests to your environment instances. '
+                         'Use EC2 to add a listener to your load balancer.',
+    'create.can_not_use_options_together': 'You can\'t use the "{}" and "{}" options together.',
+    'sharedalb.listener': 'The selected load balancer has no listeners. '
+                          'This prevents routing requests to your environment instances. '
+                          'Use EC2 to add a listener to your load balancer.',
+    'sharedlb.missing_shared_lb': 'To specify "--shared-lb-port", also specify "--shared-lb" '
+                                  'and an Application Load Balancer ("--elb-type application").',
+    'sharedlb.wrong_elb_type': 'To specify any shared load balancer options, '
+                                 'also specify an Application Load Balancer ("--elb-type application").',
 }
 
 flag_text = {
@@ -776,7 +787,8 @@ flag_text = {
     'create.on_demand_above_base_percent' : 'percentage of additional On-Demand Instances in a mixed On-Demand / Spot environment',
     'create.min_instances' : 'minimum number of instances in the new environment',
     'create.max_instances' : 'maximum number of instances in the new environment',
-
+    'create.shared_lb': 'ARN of shared load balancer',
+    'create.shared_lb_port': 'Port number for shared load balancer listener',
 
     'deploy.env': 'environment name',
     'deploy.modules': 'modules to deploy',
