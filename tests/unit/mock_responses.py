@@ -5160,8 +5160,6 @@ DESCRIBE_STACK_EVENTS_RESPONSE__CREATE_FAILED = {
         'RetryAttempts': 0
     }
 }
-<<<<<<< HEAD
-=======
 
 
 GET_LISTENERS_FOR_LOAD_BALANCER_RESPONSE= [
@@ -5283,4 +5281,3 @@ DESCRIBE_LOAD_BALANCERS_RESPONSE = [
         }
     ]
 }]
->>>>>>> 6db311d8... Add SharedLBOps module

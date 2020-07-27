@@ -727,7 +727,6 @@ alerts = {
     'sharedlb.listener': 'The selected load balancer has no listeners. '
                          'This prevents routing requests to your environment instances. '
                          'Use EC2 to add a listener to your load balancer.',
-<<<<<<< HEAD
     'create.can_not_use_options_together': 'You can\'t use the "{}" and "{}" options together.',
     'sharedalb.listener': 'The selected load balancer has no listeners. '
                           'This prevents routing requests to your environment instances. '
@@ -736,8 +735,11 @@ alerts = {
                                   'and an Application Load Balancer ("--elb-type application").',
     'sharedlb.wrong_elb_type': 'To specify any shared load balancer options, '
                                  'also specify an Application Load Balancer ("--elb-type application").',
-=======
->>>>>>> 6db311d8... Add SharedLBOps module
+    'sharedlb.terminate': 'The environment "{env_name}" uses a shared load balancer. '
+                           'Processes and rules that you added during environment creation '
+                           'will be deleted during environment termination. '
+                           'Resources created outside of Elastic Beanstalk, '
+                           'like load balancers and listeners, will not be affected.',
 }
 
 flag_text = {

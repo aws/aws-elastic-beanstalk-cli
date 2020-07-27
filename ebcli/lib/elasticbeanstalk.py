@@ -16,7 +16,7 @@ import time
 
 from cement.utils.misc import minimal_logger
 from ebcli.objects.platform import PlatformVersion
-from ebcli.resources.statics import namespaces, option_names
+from ebcli.resources.statics import elb_names, namespaces, option_names
 
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.exceptions import NotFoundError, InvalidStateError, \
@@ -43,7 +43,7 @@ def describe_configuration_options(**kwargs):
     LOG.debug('Inside describe_configuration_options api wrapper')
     result = _make_api_call(
         'describe_configuration_options',
-        **kwargs,
+        **kwargs
     )
     return result
 

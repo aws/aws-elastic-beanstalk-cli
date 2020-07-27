@@ -16,6 +16,8 @@ import unittest
 from ebcli.lib import elbv2
 from ebcli.objects.exceptions import NotFoundError, ServiceError
 
+from .. import mock_responses
+
 
 class TestElbv2(unittest.TestCase):
     def test_get_instance_healths_from_target_groups__zero_target_groups_passed_in(self):
@@ -124,8 +126,6 @@ class TestElbv2(unittest.TestCase):
                     'arn:aws:elasticloadbalancing:us-west-2:1123123123:targetgroup/awseb-AWSEB-213123123123/c432cd690a5f6d62'
                 ]
             )
-<<<<<<< HEAD
-=======
 
     @mock.patch('ebcli.lib.elbv2._make_api_call')
     def test_get_listeners_for_load_balancer__with_load_balancer_arn(
@@ -163,4 +163,3 @@ class TestElbv2(unittest.TestCase):
             result,
             expected_result
         )
->>>>>>> 6db311d8... Add SharedLBOps module

@@ -65,8 +65,6 @@ def get_target_groups_for_load_balancer(load_balancer_arn):
         raise NotFoundError(e)
 
 
-<<<<<<< HEAD
-=======
 def get_listeners_for_load_balancer(load_balancer_arn):
     return _make_api_call(
             'describe_listeners',
@@ -81,6 +79,5 @@ def describe_load_balancers(load_balancer_name):
         )
 
 
->>>>>>> 6db311d8... Add SharedLBOps module
 def _sleep_to_prevent_elbv2_throttling():
     time.sleep(0.5)

@@ -73,7 +73,7 @@ def get_shared_lb_port_from_customer(interactive, selected_lb):
     result = elbv2.get_listeners_for_load_balancer(selected_lb)
     listener_list = [listener['Port'] for listener in result['Listeners']]
     listener_list.sort()
-    default_listener_index = listener_list.index(80)+1 if 80 in listener_list else 1
+    default_listener_index = listener_list.index(80)+1 if 80 in listener_list else None
 
     if len(listener_list) < 1:
         raise NotFoundError(alerts['sharedlb.listener'])

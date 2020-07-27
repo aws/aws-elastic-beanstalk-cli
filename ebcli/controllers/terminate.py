@@ -11,7 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings, prompts, flag_text
+from ebcli.resources.strings import alerts, flag_text, prompts, strings
 from ebcli.core import io
 from ebcli.operations import terminateops
 
@@ -40,9 +40,9 @@ class TerminateController(AbstractBaseController):
         ignore_links = self.app.pargs.ignore_links
         timeout = self.app.pargs.timeout
         nohang = self.app.pargs.nohang
+        app_name = self.get_app_name()
 
         if delete_application_and_resources:
-            app_name = self.get_app_name()
             cleanup = not self.app.pargs.region
             terminateops.delete_app(
                 app_name,
@@ -58,6 +58,10 @@ class TerminateController(AbstractBaseController):
             if not force:
                 io.echo(prompts['terminate.confirm'].format(env_name=env_name))
                 io.validate_action(prompts['terminate.validate'], env_name)
+
+            if terminateops.is_shared_load_balancer(app_name, env_name):
+                alert_message = alerts['sharedlb.terminate'].format(env_name=env_name)
+                io.log_alert(alert_message + '\n')
 
             terminateops.terminate(
                 env_name,

@@ -289,3 +289,136 @@ Application versions: 1
         terminateops.terminate('my-environment', nohang=True)
 
         wait_for_success_events_mock.assert_not_called()
+
+    @mock.patch('ebcli.operations.terminateops.elasticbeanstalk.describe_configuration_settings')
+    @mock.patch('ebcli.operations.terminateops.elasticbeanstalk.get_specific_configuration')
+    def test_is_shared_load_balancer__shared_application_load_balancer(
+        self,
+        get_specific_configuration_mock,
+        describe_configuration_settings_mock,
+    ):
+        namespace = 'aws:elasticbeanstalk:environment'
+        load_balancer_is_shared = 'LoadBalancerIsShared'
+        load_balancer_type = 'LoadBalancerType'
+        app_name = 'my-application'
+        env_name = 'my-environment'
+        env_config = [
+                {
+                    'Namespace': 'aws:elasticbeanstalk:environment',
+                    'OptionName': 'LoadBalancerType',
+                    'Value': 'application',
+                },
+                {
+                    'Namespace': 'aws:elasticbeanstalk:environment',
+                    'OptionName': 'LoadBalancerIsShared',
+                    'Value': 'true'
+                },
+            ]
+        expected_result = True
+
+        describe_configuration_settings_mock.return_value = env_config
+        get_specific_configuration_mock.side_effect = ['application', 'true']
+
+        result = terminateops.is_shared_load_balancer(app_name, env_name)
+
+        describe_configuration_settings_mock.assert_called_once_with(app_name, env_name)
+        get_specific_configuration_mock.assert_has_calls(
+            [
+                mock.call(
+                    env_config, namespace, load_balancer_type
+                ),
+                mock.call(
+                    env_config, namespace, load_balancer_is_shared
+                ),
+
+            ],
+            any_order=True
+        )
+
+        self.assertEqual(
+            result,
+            expected_result
+        )
+
+    @mock.patch('ebcli.operations.terminateops.elasticbeanstalk.describe_configuration_settings')
+    @mock.patch('ebcli.operations.terminateops.elasticbeanstalk.get_specific_configuration')
+    def test_is_shared_load_balancer__application_load_balancer(
+        self,
+        get_specific_configuration_mock,
+        describe_configuration_settings_mock,
+    ):
+        namespace = 'aws:elasticbeanstalk:environment'
+        load_balancer_is_shared = 'LoadBalancerIsShared'
+        load_balancer_type = 'LoadBalancerType'
+        app_name = 'my-application'
+        env_name = 'my-environment-2'
+        env_config = [
+                {
+                    'Namespace': 'aws:elasticbeanstalk:environment',
+                    'OptionName': 'LoadBalancerType',
+                    'Value': 'application',
+                },
+                {
+                    'Namespace': 'aws:elasticbeanstalk:environment',
+                    'OptionName': 'LoadBalancerIsShared',
+                    'Value': 'false'
+                },
+            ]
+        expected_result = False
+
+        describe_configuration_settings_mock.return_value = env_config
+        get_specific_configuration_mock.side_effect = ['application', 'false']
+
+        result = terminateops.is_shared_load_balancer(app_name, env_name)
+
+        describe_configuration_settings_mock.assert_called_once_with(app_name, env_name)
+        get_specific_configuration_mock.assert_has_calls(
+            [
+                mock.call(
+                    env_config, namespace, load_balancer_type
+                ),
+                mock.call(
+                    env_config, namespace, load_balancer_is_shared
+                ),
+
+            ],
+            any_order=True
+        )
+
+        self.assertEqual(
+            result,
+            expected_result
+        )
+
+    @mock.patch('ebcli.operations.terminateops.elasticbeanstalk.describe_configuration_settings')
+    @mock.patch('ebcli.operations.terminateops.elasticbeanstalk.get_specific_configuration')
+    def test_is_shared_load_balancer__classic_load_balancer(
+        self,
+        get_specific_configuration_mock,
+        describe_configuration_settings_mock,
+    ):
+        namespace = 'aws:elasticbeanstalk:environment'
+        load_balancer_is_shared = 'LoadBalancerIsShared'
+        load_balancer_type = 'LoadBalancerType'
+        app_name = 'my-application'
+        env_name = 'my-environment-3'
+        env_config = [
+                {
+                    'Namespace': 'aws:elasticbeanstalk:environment',
+                    'OptionName': 'LoadBalancerType',
+                    'Value': 'classic',
+                }
+            ]
+        expected_result = False
+        describe_configuration_settings_mock.return_value = env_config
+        get_specific_configuration_mock.return_value = 'classic'
+
+        result = terminateops.is_shared_load_balancer(app_name, env_name)
+
+        describe_configuration_settings_mock.assert_called_once_with(app_name, env_name)
+        get_specific_configuration_mock.assert_called_once_with(env_config, namespace, load_balancer_type)
+
+        self.assertEqual(
+            result,
+            expected_result
+        )

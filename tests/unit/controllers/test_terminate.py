@@ -21,14 +21,21 @@ class TestTerminate(unittest.TestCase):
     @mock.patch('ebcli.controllers.terminate.io.echo')
     @mock.patch('ebcli.controllers.terminate.io.validate_action')
     @mock.patch('ebcli.controllers.terminate.AbstractBaseController.get_env_name')
+    @mock.patch('ebcli.controllers.terminate.AbstractBaseController.get_app_name')
+    @mock.patch('ebcli.controllers.terminate.terminateops.is_shared_load_balancer')
+    @mock.patch('ebcli.controllers.terminate.io.log_alert')
     def test_terminate__single_environemnt__without_force_argument(
             self,
+            log_alert_mock,
+            is_shared_load_balancer_mock,
+            get_app_name_mock,
             get_env_name_mock,
             validate_action_mock,
             echo_mock,
             terminate_mock
     ):
         get_env_name_mock.return_value = 'my-environment'
+        get_app_name_mock.return_value = 'my-application'
 
         self.app = EB(argv=['terminate'])
         self.app.setup()
@@ -40,6 +47,8 @@ class TestTerminate(unittest.TestCase):
         validate_action_mock.assert_called_once_with(
             'To confirm, type the environment name', 'my-environment'
         )
+        is_shared_load_balancer_mock.assert_called_once_with('my-application', 'my-environment')
+
         terminate_mock.assert_called_once_with(
             'my-environment',
             force_terminate=False,
@@ -51,14 +60,21 @@ class TestTerminate(unittest.TestCase):
     @mock.patch('ebcli.controllers.terminate.io.echo')
     @mock.patch('ebcli.controllers.terminate.io.validate_action')
     @mock.patch('ebcli.controllers.terminate.AbstractBaseController.get_env_name')
+    @mock.patch('ebcli.controllers.terminate.AbstractBaseController.get_app_name')
+    @mock.patch('ebcli.controllers.terminate.terminateops.is_shared_load_balancer')
+    @mock.patch('ebcli.controllers.terminate.io.log_alert')
     def test_terminate__single_environemnt__with_force_argument(
             self,
+            log_alert_mock,
+            is_shared_load_balancer_mock,
+            get_app_name_mock,
             get_env_name_mock,
             validate_action_mock,
             echo_mock,
             terminate_mock
     ):
         get_env_name_mock.return_value = 'my-environment'
+        get_app_name_mock.return_value = 'my-application'
 
         self.app = EB(argv=['terminate', '--force'])
         self.app.setup()
@@ -66,6 +82,8 @@ class TestTerminate(unittest.TestCase):
 
         echo_mock.assert_not_called()
         validate_action_mock.assert_not_called()
+        is_shared_load_balancer_mock.assert_called_once_with('my-application', 'my-environment')
+
         terminate_mock.assert_called_once_with(
             'my-environment',
             force_terminate=False,
