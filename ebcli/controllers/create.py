@@ -528,7 +528,7 @@ def get_elb_type_from_customer(interactive, single, tier):
     if single or (tier and not tier.is_webserver()):
         return
     elif not interactive:
-        return elb_names.APPLICATION_VERSION
+        return
 
     io.echo()
     io.echo('Select a load balancer type')
