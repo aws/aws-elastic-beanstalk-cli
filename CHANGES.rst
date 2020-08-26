@@ -2,6 +2,15 @@
 Changelog
 =========
 -------------------
+3.19.0 (2020-09-08)
+-------------------
+- Added support for shared application load balancer during environment creation
+- Added `--shared-lb` and `--shared-lb-port` arguments to the `eb create` command
+- Removed default value of elb-type for non-interactive create environment flow
+- Updated botocore requirement to `>=1.17, <1.18`
+- Updated pytest-cov requirement to `<=2.9`
+
+-------------------
 3.18.2 (2020-07-06)
 -------------------
 - Ignore socket files during app version creation
