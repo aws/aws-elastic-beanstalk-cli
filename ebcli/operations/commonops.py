@@ -295,6 +295,8 @@ def _is_success_event(message):
         return True
     if message == responses['event.greenmessage']:
         return True
+    if message == responses['event.instancedeploymentsuccess']:
+        return True
     if responses['logs.successtail'] in message:
         return True
     if responses['logs.successbundle'] in message:

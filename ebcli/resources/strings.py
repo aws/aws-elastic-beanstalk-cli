@@ -956,6 +956,7 @@ responses = {
     'event.failedupdate': 'The environment was reverted to the previous configuration setting.',
     'event.updatebad': 'Update environment operation is complete, but with errors.',
     'event.updatefailed': 'Failed to deploy configuration.',
+    'event.instancedeploymentsuccess': 'Instance deployment completed successfully.',
     'git.norepository': 'Error: Not a git repository '
                         '(or any of the parent directories): .git',
     'health.nodescribehealth': 'DescribeEnvironmentHealth is not supported.',
