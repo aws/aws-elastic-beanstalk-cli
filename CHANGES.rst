@@ -2,6 +2,11 @@
 Changelog
 =========
 -------------------
+3.19.1 (2020-10-15)
+-------------------
+- Fixed bug that caused `eb logs --all/--zip` to fail for AL2 platforms
+
+-------------------
 3.19.0 (2020-09-08)
 -------------------
 - Added support for shared application load balancer during environment creation
