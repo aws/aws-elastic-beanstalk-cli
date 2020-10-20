@@ -2,6 +2,16 @@
 Changelog
 =========
 -------------------
+3.19.2 (2020-10-26)
+-------------------
+- Updated botocore requirement to `>=1.19.0,<1.20.0`
+- Updated coloroma requirement to `>=0.2.5,<0.4.4`
+- Updated python-dateutil requirement to `>=2.1,<3.0.0`
+- Updated requests requirement to `>=2.20.1,<=2.24`
+- Updated six requirement to `>=1.12.0,<=1.15.0`
+- Updated urllib3 requirement to `>=1.25.4,<1.25.8/1.26`
+
+-------------------
 3.19.1 (2020-10-15)
 -------------------
 - Fixed bug that caused `eb logs --all/--zip` to fail for AL2 platforms
@@ -12,7 +22,7 @@ Changelog
 - Added support for shared application load balancer during environment creation
 - Added `--shared-lb` and `--shared-lb-port` arguments to the `eb create` command
 - Removed default value of elb-type for non-interactive create environment flow
-- Updated botocore requirement to `>=1.17, <1.18`
+- Updated botocore requirement to `>=1.17,<1.18`
 - Updated pytest-cov requirement to `<=2.9`
 
 -------------------
@@ -55,7 +65,7 @@ Changelog
 3.17.1 (2020-01-22)
 -------------------
 - Updated botocore requirement to `>=1.14.0,<1.15`
-- Updated PyYAML requirement to `>=5.2, <5.3`
+- Updated PyYAML requirement to `>=5.2,<5.3`
 - Updated docker-compose requirement to `>=1.25.2,<1.26.0`
 
 -------------------
