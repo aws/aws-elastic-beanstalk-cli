@@ -106,8 +106,8 @@ function CreateAndLoad-Virtualenv()
     Invoke-Expression ".\$VENV_ENV_NAME\Scripts\activate"
     Exit-UponSubStepFailure
 
-    Print-SubStepTitle "Installing pip 18.1"
-    Invoke-Expression "python -m pip install pip==18.1"
+    Print-SubStepTitle "Installing pip 19.2"
+    Invoke-Expression "python -m pip install pip==19.2"
     Exit-UponSubStepFailure
 }
 
@@ -196,8 +196,8 @@ Print-StepTitle "Loading Python $PYTHON_VERSION virtualenv"
 Invoke-Expression ".\$VENV_ENV_NAME\Scripts\activate"
 Exit-UponFailure
 
-Print-StepTitle "Installing pip 18.1"
-Invoke-Expression "python -m pip install pip==18.1"
+Print-StepTitle "Installing pip 19.2"
+Invoke-Expression "python -m pip install pip==19.2"
 Exit-UponFailure
 
 Print-StepTitle "(Re)Installing AWSEBCLI and dependencies using commit $env:GIT_BRANCH/$GIT_COMMIT"

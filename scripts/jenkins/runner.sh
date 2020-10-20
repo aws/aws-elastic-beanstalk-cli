@@ -140,8 +140,8 @@ create_and_load_new_virtualenv()
     source $VENV_ENV_NAME/bin/activate
     exit_upon_substep_failure
 
-    substep_title "Installing pip 18.1"
-    pip install pip=="18.1"
+    substep_title "Installing pip 19.2"
+    pip install pip=="19.2"
     exit_upon_substep_failure
 }
 
@@ -223,8 +223,8 @@ step_title "Creating new Python $PYTHON_VERSION virtualenv"
 virtualenv -p $PYTHON_INSTALLATION $VENV_ENV_NAME
 exit_upon_failure
 
-step_title "Installing pip 18.1"
-pip install pip=="18.1"
+step_title "Installing pip 19.2"
+pip install pip=="19.2"
 exit_upon_failure
 
 step_title "Loading Python $PYTHON_VERSION virtualenv"

@@ -13,8 +13,8 @@
 from pip import __version__ as pip_version
 from pkg_resources import get_distribution, parse_version
 
-if pip_version != '18.1':
-    raise RuntimeError('You need pip==18.1 to check for dependency incompatibilities.')
+if pip_version != '19.2':
+    raise RuntimeError('You need pip==19.2 to check for dependency incompatibilities.')
 
 try:
     from pip._internal.operations.check import (
@@ -22,7 +22,7 @@ try:
         create_package_set_from_installed,
     )
 except ImportError:
-    raise RuntimeError('You need pip==18.1 to check for dependency incompatibilities.')
+    raise RuntimeError('You need pip==19.2 to check for dependency incompatibilities.')
 
 from ebcli.core import io
 
