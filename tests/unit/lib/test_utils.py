@@ -507,3 +507,13 @@ class TestUtils(TestCase):
         ]
 
         self.assertRaises(TypeError, utils.index_of, iterable, 'a', key='id')
+
+    def test_decode_bytes(self):
+        value = "\xfc"
+        result = utils.decode_bytes(value)
+        self.assertEqual("ü", result)
+
+    def test_decode_bytes_2(self):
+        value = "\xe0"
+        result = utils.decode_bytes(value)
+        self.assertEqual("à", result)
