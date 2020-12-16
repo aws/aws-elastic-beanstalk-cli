@@ -54,7 +54,7 @@ LOG = minimal_logger(__name__)
 def wait_for_success_events(request_id, timeout_in_minutes=None,
                             sleep_time=5, stream_events=True, can_abort=False,
                             streamer=None, app_name=None, env_name=None, version_label=None,
-                            platform_arn=None, timeout_error_message=None):
+                            platform_arn=None, timeout_error_message=None, log_events=False):
     if timeout_in_minutes == 0:
         return
     if timeout_in_minutes is None:
@@ -104,7 +104,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                         )
 
                     _raise_if_error_event(event.message)
-                    if _is_success_event(event.message):
+                    if _is_success_event(event.message, log_events):
                         return
                     last_time = event.event_date
                 else:
@@ -142,7 +142,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                     last_time = event.event_date
 
                 _raise_if_error_event(event.message)
-                if _is_success_event(event.message):
+                if _is_success_event(event.message, log_events):
                     return
     finally:
         streamer.end_stream()
@@ -282,7 +282,7 @@ def _raise_if_error_event(message):
         raise ServiceError(message)
 
 
-def _is_success_event(message):
+def _is_success_event(message, log_events=False):
     if message == responses['logs.pulled']:
         return True
     if message == responses['env.terminated']:
@@ -295,7 +295,7 @@ def _is_success_event(message):
         return True
     if message == responses['event.greenmessage']:
         return True
-    if message == responses['event.instancedeploymentsuccess']:
+    if message == responses['event.instancedeploymentsuccess'] and log_events:
         return True
     if responses['logs.successtail'] in message:
         return True

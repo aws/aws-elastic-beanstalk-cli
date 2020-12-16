@@ -480,7 +480,8 @@ def retrieve_beanstalk_logs(env_name, info_type, do_zip=False, instance_id=None)
         request_id,
         timeout_in_minutes=2,
         sleep_time=1,
-        stream_events=False
+        stream_events=False,
+        log_events=True
     )
 
     get_logs(env_name, info_type, do_zip=do_zip, instance_id=instance_id)

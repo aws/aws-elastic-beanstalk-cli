@@ -94,7 +94,10 @@ class TestCommonOperations(unittest.TestCase):
         self.assertTrue(commonops._is_success_event('Successfully launched environment: my-env'))
         self.assertTrue(commonops._is_success_event('Pulled logs for environment instances.'))
         self.assertTrue(commonops._is_success_event('terminateEnvironment completed successfully.'))
-        self.assertTrue(commonops._is_success_event('Instance deployment completed successfully.'))
+        self.assertFalse(commonops._is_success_event('Instance deployment completed successfully.'))
+
+    def test_is_success_event__log_events(self):
+        self.assertTrue(commonops._is_success_event('Instance deployment completed successfully.', log_events=True))
 
     def test_raise_if_error_event(self):
         with self.assertRaises(commonops.ServiceError):
