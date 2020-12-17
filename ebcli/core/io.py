@@ -100,7 +100,10 @@ def _convert_to_string(data):
         if sys.version_info[0] >= 3:
             return data
         else:
-            return data.encode('utf8')
+            try:
+                return data.encode('utf8')
+            except:
+                return data.encode('utf8', 'replace')
     elif isinstance(data, scalar_types) or hasattr(data, '__str__'):
         return str(data)
     else:
