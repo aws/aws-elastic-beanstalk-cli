@@ -2,6 +2,12 @@
 Changelog
 =========
 -------------------
+3.19.3 (2021-01-15)
+-------------------
+- Fixed UnicodeDecode error causing `eb logs` and `eb appversion` command to fail
+- Updated success event look up logic for `eb logs` command
+
+-------------------
 3.19.2 (2020-10-26)
 -------------------
 - Updated botocore requirement to `>=1.19.0,<1.20.0`
