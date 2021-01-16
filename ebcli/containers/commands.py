@@ -54,7 +54,7 @@ def build_img(docker_path, file_path=None):
     :return: str: id of the new image
     """
 
-    opts = ['-f', file_path] if file_path else []
+    opts = ['-q', '-f', file_path] if file_path else ['-q']
     args = ['docker', 'build'] + opts + [docker_path]
     output = _run_live(args)
     return _grab_built_image_id(output)
