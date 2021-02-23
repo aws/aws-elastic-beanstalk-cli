@@ -19,7 +19,7 @@ from ebcli.objects.platform import PlatformVersion
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.resources.strings import strings, flag_text
 from ebcli.core import io, fileoperations
-from ebcli.operations import configops, saved_configs, solution_stack_ops
+from ebcli.operations import configops, platformops, saved_configs, solution_stack_ops
 from ebcli.operations.tagops import tagops
 from ebcli.objects.exceptions import InvalidSyntaxError, NotFoundError
 from ebcli.lib import utils
@@ -90,7 +90,7 @@ class ConfigController(AbstractBaseController):
         platform = solution_stack_ops.get_default_solution_stack()
 
         if not PlatformVersion.is_valid_arn(platform):
-            platform = solution_stack_ops.find_solution_stack_from_string(platform)
+            platform = platformops.get_platform_for_platform_string(platform)
             platform = platform.name
 
         saved_configs.update_config(app_name, name)
