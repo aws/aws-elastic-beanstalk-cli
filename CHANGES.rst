@@ -2,6 +2,16 @@
 Changelog
 =========
 -------------------
+3.19.4 (2021-03-11)
+-------------------
+- Updated botocore requirement to `>=1.19.0,<1.21.0`
+- Updated requests requirement to `>=2.20.1,<=2.26`
+- Updated semantic_version requirement to `2.8.5`
+- Updated six requirement to `>=1.11.0,<1.15.0`
+- Updated platform lookup logic for `eb config put` command
+- Updated docker build command to use tags
+
+-------------------
 3.19.3 (2021-01-15)
 -------------------
 - Fixed UnicodeDecode error causing `eb logs` and `eb appversion` command to fail
