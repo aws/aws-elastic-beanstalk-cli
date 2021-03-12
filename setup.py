@@ -37,7 +37,7 @@ if sys.version_info[:2] == (3, 4):
     requires.append('PyYAML>=3.10,<5.3')
     requires.append('urllib3>=1.25.4,<1.25.8') # urllib3 dropped support for python 3.4 in point release 1.25.8
 else:
-    requires.append('PyYAML>=5.3.1,<5.4') # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
+    requires.append('PyYAML>=5.3.1,<5.5') # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
     requires.append('urllib3>=1.25.4,<1.26')
 
 testing_requires = [
