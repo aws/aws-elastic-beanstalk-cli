@@ -102,6 +102,8 @@ def deployment_logs_log_group_name(env_name):
     environment = elasticbeanstalk.get_environment(env_name=env_name)
     if 'windows' in environment.platform.name.lower():
         log_group_suffix = 'EBDeploy-Log'
+    elif 'Amazon Linux 2/' in environment.platform.name:
+        log_group_suffix = "var/log/eb-engine.log"
     else:
         log_group_suffix = 'var/log/eb-activity.log'
 
