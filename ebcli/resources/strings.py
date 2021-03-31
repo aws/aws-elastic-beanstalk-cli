@@ -204,6 +204,7 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                                               'add a trailing \'+\' to the environment name',
     'create.valid_spot_instances' : 'For Spot Instance types, specify a comma-separated list of two or more valid EC2 instance',
     'create.missing_enable_spot' : 'Specify the "--enable-spot" argument with any spot-related arguments.',
+    'config.updateanddisplay': 'You cannot use the "--update" and "--dispaly" options together.',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',
     'terminate.noenv': 'To delete the application and all application versions, type "eb terminate '
                        '--all".',
@@ -728,6 +729,7 @@ alerts = {
                          'This prevents routing requests to your environment instances. '
                          'Use EC2 to add a listener to your load balancer.',
     'create.can_not_use_options_together': 'You can\'t use the "{}" and "{}" options together.',
+    'scale.validation_error': 'Your min_instance should be less or equal than max_instance.',
     'sharedalb.listener': 'The selected load balancer has no listeners. '
                           'This prevents routing requests to your environment instances. '
                           'Use EC2 to add a listener to your load balancer.',
@@ -744,6 +746,7 @@ alerts = {
 
 flag_text = {
     'general.env': 'environment name',
+
     'base.version': 'show application/version info',
     'base.verbose': 'toggle verbose output',
     'base.profile': 'use a specific profile from your credential file',
@@ -764,6 +767,9 @@ flag_text = {
                          'for your code.'
                          ' Availables sources: {codecommit}. Available actions: '
                          '{enable, disable}',
+    'config.display': 'display current environment configuration settings',
+    'config.output': 'use certain string format (json or yaml) as input or output',
+    'config.update': 'update current environment configuration settings',
     'config.tags': 'a comma separated list of tags as key=value pairs',
     'create.name': 'desired Environment name',
     'create.cname': 'cname prefix',

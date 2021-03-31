@@ -25,7 +25,7 @@ from mock import call, patch, Mock
 
 from ebcli.core import fileoperations
 from ebcli.objects.buildconfiguration import BuildConfiguration
-from ebcli.objects.exceptions import NotInitializedError
+from ebcli.objects.exceptions import NotInitializedError, NotFoundError
 
 
 class TestFileOperations(unittest.TestCase):
@@ -53,7 +53,7 @@ class TestFileOperations(unittest.TestCase):
     def tearDown(self):
         os.chdir(self.test_root)
         if os.path.exists('testDir'):
-            shutil.rmtree('testDir',ignore_errors=True)
+            shutil.rmtree('testDir', ignore_errors=True)
 
     def test_get_aws_home(self):
         fileoperations.get_aws_home()
@@ -308,7 +308,7 @@ class TestFileOperations(unittest.TestCase):
         self.assertEqual(result, None)
 
     def test_get_config_setting_merge(self):
-        config = {'global':{'application_name':'myApp'}}
+        config = {'global': {'application_name': 'myApp'}}
         with open(fileoperations.global_config_file, 'w') as f:
             f.write(yaml.dump(config, default_flow_style=False))
 
@@ -364,7 +364,7 @@ class TestFileOperations(unittest.TestCase):
         get_project_root.side_effect = [os.path.sep]
         expected_file_path = '{}foo'.format(os.path.sep)
         self.assertEqual(fileoperations.project_file_path('foo'),
-                          expected_file_path)
+                         expected_file_path)
 
     @patch('ebcli.core.fileoperations.file_exists')
     @patch('ebcli.core.fileoperations.project_file_path')
@@ -395,7 +395,8 @@ class TestFileOperations(unittest.TestCase):
                                                    service_role=service_role, timeout=timeout)
         actual_build_config = fileoperations.get_build_configuration()
         self.assertEqual(expected_build_config.__str__(), actual_build_config.__str__(),
-                         "Expected '{0}' but got: {1}".format(expected_build_config.__str__(), actual_build_config.__str__()))
+                         "Expected '{0}' but got: {1}".format(expected_build_config.__str__(),
+                                                              actual_build_config.__str__()))
 
     @patch('ebcli.core.fileoperations.codecs')
     @patch('ebcli.core.fileoperations.safe_load')
@@ -566,6 +567,14 @@ ccc""",
             fileoperations.get_json_dict('file')
         )
 
+    def test_get_application_from_file__filename_provided(self):
+        with self.assertRaises(NotFoundError) as context_manager:
+            fileoperations.get_environment_from_file('my-environment', path='foo path')
+            self.assertEqual(
+                'Can not find configuration file in following path: foo path',
+                str(context_manager.exception)
+            )
+
     def test_get_application_from_file__app_yml_file_does_not_exist(self):
         self.assertIsNone(fileoperations.get_application_from_file('my-application'))
 
@@ -592,8 +601,27 @@ ccc""",
             fileoperations.get_application_from_file('my-application')
         )
 
-    def test_get_environment_from_file__env_yml_file_does_not_exist(self):
-        self.assertIsNone(fileoperations.get_environment_from_file('my-application'))
+    def test_get_environment_from_file__filename_provided(self):
+        with open('.elasticbeanstalk/user-modification.json', 'w') as file:
+            file.write('{"OptionSettings": {"namespace":{"option":"value"}}}')
+
+        self.assertEqual(
+            {
+                'OptionSettings': {
+                    'namespace': {'option': 'value'}
+                }
+            },
+            fileoperations.get_environment_from_file('my-environment', path='.elasticbeanstalk/user-modification.json',
+                                                     file_format='json')
+        )
+
+    def test_get_environment_from_file__file_does_not_exist(self):
+        with self.assertRaises(NotFoundError) as context_manager:
+            fileoperations.get_environment_from_file('my-environment', path='foo path')
+            self.assertEqual(
+                'Can not find configuration file in following path: foo path',
+                str(context_manager.exception)
+            )
 
     @patch('ebcli.core.fileoperations.codecs.open')
     def test_get_environment_from_file__yaml_parse_errors(self, codecs_mock):
@@ -947,7 +975,6 @@ aws_secret_access_key = my-secret-key""",
             fileoperations.get_workspace_type(default='platform')
         )
 
-
     def test_update_platform_version(self):
         self.create_config_file()
 
@@ -983,8 +1010,8 @@ aws_secret_access_key = my-secret-key""",
 
     @patch('ebcli.core.fileoperations.os.stat')
     def test___validate_file_for_archive__regular_files_are_valid(
-        self,
-        stat_mock,
+            self,
+            stat_mock,
     ):
         filepath = '/Users/dina/eb_applications/my-app/'
         stat_mock.return_value = Mock(st_mode=33188)
@@ -995,8 +1022,8 @@ aws_secret_access_key = my-secret-key""",
 
     @patch('ebcli.core.fileoperations.os.stat')
     def test___validate_file_for_archive__ignores_socket_files(
-        self,
-        stat_mock,
+            self,
+            stat_mock,
     ):
         filepath = '/Users/dina/eb_applications/my-app/'
         stat_mock.return_value = Mock(st_mode=49645)
