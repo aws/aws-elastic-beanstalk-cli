@@ -17,11 +17,16 @@ from ebcli.objects.environmentsettings import EnvironmentSettings
 from ebcli.objects.exceptions import InvalidSyntaxError
 from ebcli.resources.strings import prompts, strings
 from ebcli.operations import commonops
+
+from urllib.parse import urlparse
+
+from json import dumps, loads
+from json import JSONDecodeError
+
 from yaml import safe_dump, safe_load
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
-from json import dumps, loads
-from json import JSONDecodeError
+
 import os
 
 
@@ -42,7 +47,10 @@ def display_environment_configuration(app_name, env_name, output_format="yaml"):
 def modify_environment_configuration(env_name, usr_modification, nohang, timeout=None, configuration_format='yaml'):
 
     if usr_modification.startswith("file://"):
-        usr_modification = fileoperations.get_environment_from_file(env_name, path=usr_modification[7:], file_format=configuration_format)
+        parse = urlparse(usr_modification)
+        file_path = os.path.abspath(os.path.join(parse.netloc, parse.path))
+        usr_modification = fileoperations.get_environment_from_file(env_name, path=file_path,
+                                                                    file_format=configuration_format)
     else:
         try:
             if configuration_format == 'yaml':
