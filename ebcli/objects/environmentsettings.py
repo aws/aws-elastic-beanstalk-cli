@@ -166,7 +166,8 @@ class EnvironmentSettings(ConversionConfiguration):
     @staticmethod
     def convert_usr_model_to_api(settings):
         """
-                TODO: add comment
+        Convert a key-value based User model to api with namespaces
+        :return: an api model
         """
         changes = []
         for (resource_namespace, options) in settings.items():

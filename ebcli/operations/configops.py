@@ -46,7 +46,7 @@ def display_environment_configuration(app_name, env_name, output_format="yaml"):
 
 def modify_environment_configuration(env_name, usr_modification, nohang, timeout=None, configuration_format='yaml'):
 
-    if usr_modification.startswith("file://"):
+    if usr_modification.startswith("file:/"):
         parse = urlparse(usr_modification)
         file_path = os.path.abspath(os.path.join(parse.netloc, parse.path))
         usr_modification = fileoperations.get_environment_from_file(env_name, path=file_path,
