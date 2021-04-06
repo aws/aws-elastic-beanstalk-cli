@@ -20,8 +20,7 @@ from ebcli.operations import commonops
 
 from urllib.parse import urlparse
 
-from json import dumps, loads
-from json import JSONDecodeError
+from json import dumps, loads, JSONDecodeError
 
 from yaml import safe_dump, safe_load
 from yaml.parser import ParserError

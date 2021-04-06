@@ -17,7 +17,7 @@ from cement.core.controller import expose
 
 from ebcli.objects.platform import PlatformVersion
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings, flag_text
+from ebcli.resources.strings import strings, flag_text, alerts
 from ebcli.core import io, fileoperations
 from ebcli.operations import configops, platformops, saved_configs, solution_stack_ops
 from ebcli.operations.tagops import tagops
@@ -56,7 +56,7 @@ class ConfigController(AbstractBaseController):
         output = self.app.pargs.output
 
         if display and update:
-            raise InvalidOptionsError(strings['config.updateanddisplay'])
+            raise InvalidOptionsError(alerts['create.can_not_use_options_together'].format("--display", "--update"))
         if display:
             configops.display_environment_configuration(app_name, env_name, output_format=output)
         elif update:

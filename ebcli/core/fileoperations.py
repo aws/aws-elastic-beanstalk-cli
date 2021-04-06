@@ -29,8 +29,7 @@ from six import StringIO
 from yaml import safe_load, safe_dump
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
-from json import load
-from json import JSONDecodeError
+from json import load, JSONDecodeError
 try:
     import configparser
 except ImportError:
