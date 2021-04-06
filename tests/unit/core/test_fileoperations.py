@@ -611,8 +611,7 @@ ccc""",
                     'namespace': {'option': 'value'}
                 }
             },
-            fileoperations.get_environment_from_file('my-environment', path='.elasticbeanstalk/user-modification.json',
-                                                     file_format='json')
+            fileoperations.get_environment_from_file('my-environment', path='.elasticbeanstalk/user-modification.json')
         )
 
     def test_get_environment_from_file__file_does_not_exist(self):
@@ -623,17 +622,16 @@ ccc""",
                 str(context_manager.exception)
             )
 
-    @patch('ebcli.core.fileoperations.codecs.open')
-    def test_get_environment_from_file__yaml_parse_errors(self, codecs_mock):
+    @patch('ebcli.core.fileoperations.safe_load')
+    @patch('ebcli.core.fileoperations.load')
+    def test_get_environment_from_file__yaml_parse_errors(self, load_mock, safe_load_mock):
         open('.elasticbeanstalk/my-environment.env.yml', 'w').close()
 
-        codecs_mock.side_effect = fileoperations.ScannerError
+        safe_load_mock.side_effect = fileoperations.ScannerError
+        load_mock.side_effect = fileoperations.JSONDecodeError("foo", "", 0)
         with self.assertRaises(fileoperations.InvalidSyntaxError):
             fileoperations.get_environment_from_file('my-environment')
 
-        codecs_mock.side_effect = fileoperations.ParserError
-        with self.assertRaises(fileoperations.InvalidSyntaxError):
-            fileoperations.get_environment_from_file('my-environment')
 
     def test_get_environment_from_file__gets_environment(self):
         with open('.elasticbeanstalk/my-environment.env.yml', 'w') as file:

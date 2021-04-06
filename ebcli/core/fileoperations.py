@@ -577,7 +577,7 @@ def save_env_file(env):
     return file_name
 
 
-def get_environment_from_file(env_name, path=None, file_format='yaml'):
+def get_environment_from_file(env_name, path=None):
     cwd = os.getcwd()
     file_name = beanstalk_directory + env_name
 
@@ -588,15 +588,17 @@ def get_environment_from_file(env_name, path=None, file_format='yaml'):
             path = file_name + file_ext
         if os.path.exists(path):
             with codecs.open(path, 'r', encoding='utf8') as f:
-                if file_format == 'yaml':
+                try:
                     return safe_load(f)
-                elif file_format == 'json':
-                    return load(f)
+                except (ScannerError, ParserError):
+                    try:
+                        return load(f)
+                    except JSONDecodeError:
+                        raise InvalidSyntaxError('The environment file contains invalid syntax: Be sure your input '
+                                                 'matches one of the supported formats: yaml, json')
         else:
             raise NotFoundError('Can not find configuration file in following path: '+path)
-    except (ScannerError, ParserError, JSONDecodeError) as e:
-        raise InvalidSyntaxError('The environment file contains '
-                                 'invalid syntax: '+str(e))
+
 
     finally:
         os.chdir(cwd)

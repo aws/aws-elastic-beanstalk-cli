@@ -60,7 +60,7 @@ class ConfigController(AbstractBaseController):
         if display:
             configops.display_environment_configuration(app_name, env_name, output_format=output)
         elif update:
-            configops.modify_environment_configuration(env_name, update, nohang, timeout, configuration_format=output)
+            configops.modify_environment_configuration(env_name, update, nohang, timeout)
         else:
             input_exists = not sys.stdin.isatty()
             if not cfg and not input_exists:

@@ -43,28 +43,27 @@ def display_environment_configuration(app_name, env_name, output_format="yaml"):
         io.echo(dumps(usr_model, indent=4, sort_keys=True, default=str))
 
 
-def modify_environment_configuration(env_name, usr_modification, nohang, timeout=None, configuration_format='yaml'):
+def modify_environment_configuration(env_name, usr_modification, nohang, timeout=None):
 
     if usr_modification.startswith("file:/"):
         parse = urlparse(usr_modification)
         file_path = os.path.abspath(os.path.join(parse.netloc, parse.path))
-        usr_modification = fileoperations.get_environment_from_file(env_name, path=file_path,
-                                                                    file_format=configuration_format)
+        usr_modification = fileoperations.get_environment_from_file(env_name, path=file_path)
     else:
         try:
-            if configuration_format == 'yaml':
-                usr_modification = safe_load(usr_modification)
-            elif configuration_format == 'json':
+            usr_modification = safe_load(usr_modification)
+        except (ScannerError, ParserError):
+            try:
                 usr_modification = loads(usr_modification)
-        except (ScannerError, ParserError, JSONDecodeError):
-            raise InvalidSyntaxError('The environment configuration contains '
-                                     'invalid syntax.')
+            except JSONDecodeError:
+                raise InvalidSyntaxError('The environment file contains invalid syntax: Be sure your input '
+                                         'matches one of the supported formats: yaml, json')
     changes = []
     if "OptionSettings" in usr_modification:
         changes = EnvironmentSettings.convert_usr_model_to_api(usr_modification["OptionSettings"])
     remove = []
     if "OptionsToRemove" in usr_modification:
-        remove = EnvironmentSettings.convert_usr_model_to_api(usr_modification["OptionToRemove"])
+        remove = EnvironmentSettings.convert_usr_model_to_api(usr_modification["OptionsToRemove"])
     platform_arn = None
     if "PlatformArn" in usr_modification:
         platform_arn = usr_modification["PlatformArn"]

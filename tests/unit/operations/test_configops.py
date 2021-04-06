@@ -19,6 +19,7 @@ import mock
 from ebcli.operations import configops
 from ebcli.objects.exceptions import InvalidSyntaxError
 from yaml.scanner import ScannerError
+from json import JSONDecodeError
 
 class TestConfigOperations(unittest.TestCase):
     app_name = 'ebcli-app'
@@ -29,12 +30,13 @@ class TestConfigOperations(unittest.TestCase):
     file_location = '/wow/eb/white space/.intere-sting'
     editor = 'emacs'
     nohang = False
-    changes = "foo-change"
-    remove = "remove-me"
+    changes = [{'Namespace': 'aws:autoscaling:asg', 'OptionName': 'MaxSize', 'Value': '6'}]
+    remove = [{'Namespace': 'aws:autoscaling:asg', 'OptionName': 'MinSize'}]
 
     api_model = {'PlatformArn': platform_arn}
     usr_model = {'PlatformArn': new_platform_arn}
-    usr_modification = '{"OptionSettings":{"aws:autoscaling:asg":{"MaxSize":"6"}}}'
+    usr_modification = '{"OptionsToRemove":{"aws:autoscaling:asg":["MinSize"]},"OptionSettings":{' \
+                       '"aws:autoscaling:asg":{"MaxSize":"6"}}} '
     usr_modification_file = 'file://' + file_location
 
     @mock.patch('ebcli.operations.configops.commonops')
@@ -84,25 +86,23 @@ class TestConfigOperations(unittest.TestCase):
         mock_commonops.update_environment.assert_not_called()
 
     @mock.patch('ebcli.operations.configops.commonops')
-    @mock.patch('ebcli.operations.configops.EnvironmentSettings')
-    def test_modify_environment_configuration(self, mock_env_settings, mock_commonops):
-        mock_env_settings.return_value = mock_env_settings
-        mock_env_settings.convert_usr_model_to_api.return_value = self.changes
+    def test_modify_environment_configuration(self, mock_commonops):
         configops.modify_environment_configuration(self.env_name, self.usr_modification, self.nohang)
         # verify that changes will be made
         mock_commonops.update_environment.assert_called_with(self.env_name, self.changes, self.nohang,
                                                              platform_arn=None,
-                                                             remove=[], timeout=None,
+                                                             remove=self.remove, timeout=None,
                                                              solution_stack_name=None)
 
-    @mock.patch('ebcli.operations.configops.commonops')
-    @mock.patch('ebcli.operations.configops.fileoperations')
     @mock.patch('ebcli.operations.configops.safe_load')
-    def test_modify_environment_configuration_bad_usr_modification(self, mock_safe_load, mock_fileops, mock_commonops):
+    @mock.patch('ebcli.operations.configops.loads')
+    def test_modify_environment_configuration_bad_usr_modification(self, mock_loads, mock_safe_load):
         mock_safe_load.side_effect = ScannerError("Bad user changes")
+        mock_loads.side_effect = JSONDecodeError("Bad user changes", "", 0)
         with self.assertRaises(InvalidSyntaxError) as context_manager:
             configops.modify_environment_configuration(self.env_name, self.usr_modification, self.nohang)
             self.assertEqual(
-                'The environment configuration contains invalid syntax.',
+                'The environment configuration contains invalid syntax. Be sure your input matches one of the '
+                'supported formats: yaml, json',
                 str(context_manager.exception)
             )
