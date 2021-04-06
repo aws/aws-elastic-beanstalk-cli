@@ -38,7 +38,7 @@ def display_environment_configuration(app_name, env_name, output_format="yaml"):
     env_settings = EnvironmentSettings(api_model)
     usr_model = env_settings.convert_api_to_usr_model()
 
-    if output_format== "yaml":
+    if output_format == "yaml":
         io.echo(safe_dump(usr_model, default_flow_style=False, line_break=os.linesep))
     elif output_format == "json":
         io.echo(dumps(usr_model, indent=4, sort_keys=True, default=str))
