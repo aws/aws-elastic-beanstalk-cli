@@ -920,6 +920,8 @@ flag_text = {
 
     'codesource.sourcename': 'name of the code source to set as default',
 
+    'appversion.create': 'create a new application version',
+    'appversion.application': 'application TBD',
     'appversion.delete': 'delete the specified application version',
 
     'lifecycle.print': 'prints the current application version lifecycle policy',
