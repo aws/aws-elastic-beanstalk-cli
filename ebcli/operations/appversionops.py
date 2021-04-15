@@ -25,7 +25,7 @@ LOG = minimal_logger(__name__)
 
 
 def create_app_version_without_deployment(app_name, label=None,
-                                          staged=False, process=False, description=None, source=None):
+                                          staged=False, process=False, description=None, source=None, timeout=5):
     build_config = None
     if fileoperations.build_spec_exists():
         build_config = fileoperations.get_build_configuration()
@@ -64,7 +64,7 @@ def create_app_version_without_deployment(app_name, label=None,
         commonops.wait_for_processed_app_versions(
             app_name,
             [app_version_label],
-            timeout=5
+            timeout=timeout
         )
 
 

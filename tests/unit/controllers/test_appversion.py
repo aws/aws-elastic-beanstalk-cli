@@ -118,7 +118,8 @@ class TestAppVersions(unittest.TestCase):
             False,
             False,
             None,
-            None
+            None,
+            5
         )
 
     @mock.patch('ebcli.core.fileoperations.env_yaml_exists')
@@ -146,7 +147,8 @@ class TestAppVersions(unittest.TestCase):
             False,
             True,
             None,
-            None
+            None,
+            5
         )
 
     @mock.patch('ebcli.core.fileoperations.env_yaml_exists')
@@ -175,7 +177,8 @@ class TestAppVersions(unittest.TestCase):
             False,
             True,
             None,
-            None
+            None,
+            5
         )
 
     @mock.patch('ebcli.core.fileoperations.env_yaml_exists')
@@ -203,7 +206,8 @@ class TestAppVersions(unittest.TestCase):
             True,
             False,
             None,
-            None
+            None,
+            5
         )
 
     @mock.patch('ebcli.core.fileoperations.env_yaml_exists')
@@ -231,7 +235,8 @@ class TestAppVersions(unittest.TestCase):
             False,
             False,
             None,
-            'codecommit/my-repository/my-branch'
+            'codecommit/my-repository/my-branch',
+            5
         )
 
     @mock.patch('ebcli.core.fileoperations.env_yaml_exists')
@@ -259,5 +264,6 @@ class TestAppVersions(unittest.TestCase):
             False,
             False,
             None,
-            'codecommit/my-repository/my-branch/feature'
+            'codecommit/my-repository/my-branch/feature',
+            5
         )

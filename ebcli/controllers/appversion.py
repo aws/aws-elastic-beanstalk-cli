@@ -33,11 +33,11 @@ class AppVersionController(AbstractBaseController):
             (['--create', '-c'], dict(action='store_true', help=flag_text['appversion.create'])),
             (['--application', '-a'], dict(help=flag_text['appversion.application'])),
             (['--label', '-l'], dict(help=flag_text['deploy.label'])),
-            (['--description'], dict(help=flag_text['deploy.message'])),   
+            (['--description'], dict(help=flag_text['deploy.message'])),
             (['--staged'], dict(
-                action='store_true', help=flag_text['deploy.staged'])),
-            (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
-            (['--source'], dict(help=flag_text['deploy.source'])),
+                action='store_true', help=flag_text['appversion.staged'])),
+            (['--timeout'], dict(default=5, type=int, help=flag_text['general.timeout'])),
+            (['--source'], dict(help=flag_text['appversion.source'])),
             (['--process', '-p'], dict(
                 action='store_true', help=flag_text['deploy.process']))
         ]
@@ -50,17 +50,18 @@ class AppVersionController(AbstractBaseController):
             self.app_name = self.get_app_name()
         self.env_name = self.get_env_name(noerror=True)
 
-        if self.app.pargs.create is not False and self.app.pargs.delete is not None:
+        if self.app.pargs.create and self.app.pargs.delete is not None:
             raise InvalidOptionsError(alerts['create.can_not_use_options_together'].format("--create", "--delete"))
 
-        if self.app.pargs.create is not False:
+        if self.app.pargs.create:
             self.description = self.app.pargs.description
             self.staged = self.app.pargs.staged
             self.source = self.app.pargs.source
             self.label = self.app.pargs.label
+            self.timeout = self.app.pargs.timeout
             self.process = self.app.pargs.process or fileoperations.env_yaml_exists()
             appversionops.create_app_version_without_deployment(self.app_name, self.label, self.staged, self.process,
-                                                                self.description, self.source)
+                                                                self.description, self.source, self.timeout)
             return
 
         if self.app.pargs.delete is not None:
