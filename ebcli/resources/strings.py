@@ -920,10 +920,10 @@ flag_text = {
 
     'codesource.sourcename': 'name of the code source to set as default',
 
-    'appversion.create': 'create a new application version',
-    'appversion.application': 'application name',
-    'appversion.staged': 'create application version using files staged in git rather than the HEAD commit',
-    'appversion.source': 'source of code to create application version directly; example source_location/repo/branch',
+    'appversion.create': 'Create a new version for your application.',
+    'appversion.application': 'The name of the application you are addressing.',
+    'appversion.staged': 'Create application version using files staged in git index instead of the HEAD commit.',
+    'appversion.source': 'Source of code to create application version directly. example: source_location/repo/branch',
     'appversion.delete': 'delete the specified application version',
 
     'lifecycle.print': 'prints the current application version lifecycle policy',

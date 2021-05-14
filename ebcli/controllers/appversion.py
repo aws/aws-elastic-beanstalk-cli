@@ -33,7 +33,7 @@ class AppVersionController(AbstractBaseController):
             (['--create', '-c'], dict(action='store_true', help=flag_text['appversion.create'])),
             (['--application', '-a'], dict(help=flag_text['appversion.application'])),
             (['--label', '-l'], dict(help=flag_text['deploy.label'])),
-            (['--description'], dict(help=flag_text['deploy.message'])),
+            (['--message'], dict(help=flag_text['deploy.message'])),
             (['--staged'], dict(
                 action='store_true', help=flag_text['appversion.staged'])),
             (['--timeout'], dict(default=5, type=int, help=flag_text['general.timeout'])),
@@ -54,14 +54,14 @@ class AppVersionController(AbstractBaseController):
             raise InvalidOptionsError(alerts['create.can_not_use_options_together'].format("--create", "--delete"))
 
         if self.app.pargs.create:
-            self.description = self.app.pargs.description
+            self.message = self.app.pargs.message
             self.staged = self.app.pargs.staged
             self.source = self.app.pargs.source
             self.label = self.app.pargs.label
             self.timeout = self.app.pargs.timeout
             self.process = self.app.pargs.process or fileoperations.env_yaml_exists()
             appversionops.create_app_version_without_deployment(self.app_name, self.label, self.staged, self.process,
-                                                                self.description, self.source, self.timeout)
+                                                                self.message, self.source, self.timeout)
             return
 
         if self.app.pargs.delete is not None:
