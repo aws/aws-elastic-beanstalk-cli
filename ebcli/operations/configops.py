@@ -56,8 +56,8 @@ def modify_environment_configuration(env_name, usr_modification, nohang, timeout
             try:
                 usr_modification = loads(usr_modification)
             except JSONDecodeError:
-                raise InvalidSyntaxError('The environment file contains invalid syntax: Be sure your input '
-                                         'matches one of the supported formats: yaml, json')
+                raise InvalidSyntaxError('The environment configuration contains invalid syntax. Make sure your input '
+                                         'matches one of the supported formats: JSON, YAML')
     changes = []
     if "OptionSettings" in usr_modification:
         changes = EnvironmentSettings.convert_usr_model_to_api(usr_modification["OptionSettings"])

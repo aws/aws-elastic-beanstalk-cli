@@ -41,7 +41,7 @@ class ConfigController(AbstractBaseController):
             (['--tags'], dict(help=flag_text['config.tags'])),
             (['--display'], dict(action='store_true', help=flag_text['config.display'])),
             (['--update'], dict(help=flag_text['config.update'])),
-            (['--output'], dict(default='yaml', choices=['json', 'yaml'], help=flag_text['config.output']))
+            (['--format'], dict(default='yaml', choices=['json', 'yaml'], help=flag_text['config.format']))
         ]
         epilog = strings['config.epilog']
 
@@ -53,12 +53,12 @@ class ConfigController(AbstractBaseController):
         cfg = self.app.pargs.cfg
         display = self.app.pargs.display
         update = self.app.pargs.update
-        output = self.app.pargs.output
+        format = self.app.pargs.format
 
         if display and update:
             raise InvalidOptionsError(alerts['create.can_not_use_options_together'].format("--display", "--update"))
         if display:
-            configops.display_environment_configuration(app_name, env_name, output_format=output)
+            configops.display_environment_configuration(app_name, env_name, output_format=format)
         elif update:
             configops.modify_environment_configuration(env_name, update, nohang, timeout)
         else:

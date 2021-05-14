@@ -766,8 +766,8 @@ flag_text = {
                          ' Availables sources: {codecommit}. Available actions: '
                          '{enable, disable}',
     'config.display': 'display current environment configuration settings',
-    'config.output': 'use certain string format (json or yaml) as input or output',
-    'config.update': 'update current environment configuration settings',
+    'config.format': 'string format for output:  JSON or YAML',
+    'config.update': 'update configuration settings for current environment',
     'config.tags': 'a comma separated list of tags as key=value pairs',
     'create.name': 'desired Environment name',
     'create.cname': 'cname prefix',

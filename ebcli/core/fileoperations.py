@@ -591,13 +591,14 @@ def get_environment_from_file(env_name, path=None):
                 try:
                     return safe_load(f)
                 except (ScannerError, ParserError):
+                    f.seek(0)
                     try:
                         return load(f)
                     except JSONDecodeError:
-                        raise InvalidSyntaxError('The environment file contains invalid syntax: Be sure your input '
-                                                 'matches one of the supported formats: yaml, json')
+                        raise InvalidSyntaxError('The environment configuration contains invalid syntax. Make sure your input '
+                                             'matches one of the supported formats: JSON, YAML.')
         else:
-            raise NotFoundError('Can not find configuration file in following path: '+path)
+            raise NotFoundError('The file you specific in this configuration path cannot be found: '+path)
 
 
     finally:
