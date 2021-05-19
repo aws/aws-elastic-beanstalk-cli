@@ -33,7 +33,7 @@ class AppVersionController(AbstractBaseController):
             (['--create', '-c'], dict(action='store_true', help=flag_text['appversion.create'])),
             (['--application', '-a'], dict(help=flag_text['appversion.application'])),
             (['--label', '-l'], dict(help=flag_text['deploy.label'])),
-            (['--message'], dict(help=flag_text['deploy.message'])),
+            (['--message', '-m'], dict(help=flag_text['deploy.message'])),
             (['--staged'], dict(
                 action='store_true', help=flag_text['appversion.staged'])),
             (['--timeout'], dict(default=5, type=int, help=flag_text['general.timeout'])),
