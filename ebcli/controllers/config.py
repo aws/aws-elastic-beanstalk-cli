@@ -53,12 +53,12 @@ class ConfigController(AbstractBaseController):
         cfg = self.app.pargs.cfg
         display = self.app.pargs.display
         update = self.app.pargs.update
-        format = self.app.pargs.format
+        output_format = self.app.pargs.format
 
         if display and update:
             raise InvalidOptionsError(alerts['create.can_not_use_options_together'].format("--display", "--update"))
         if display:
-            configops.display_environment_configuration(app_name, env_name, output_format=format)
+            configops.display_environment_configuration(app_name, env_name, output_format=output_format)
         elif update:
             configops.modify_environment_configuration(env_name, update, nohang, timeout)
         else:
