@@ -29,6 +29,7 @@ from six import StringIO
 from yaml import safe_load, safe_dump
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
+from json import load, JSONDecodeError
 try:
     import configparser
 except ImportError:
@@ -576,20 +577,29 @@ def save_env_file(env):
     return file_name
 
 
-def get_environment_from_file(env_name):
+def get_environment_from_file(env_name, path=None):
     cwd = os.getcwd()
     file_name = beanstalk_directory + env_name
 
     try:
-        ProjectRoot.traverse()
-        file_ext = '.env.yml'
-        path = file_name + file_ext
+        if not path:
+            ProjectRoot.traverse()
+            file_ext = '.env.yml'
+            path = file_name + file_ext
         if os.path.exists(path):
             with codecs.open(path, 'r', encoding='utf8') as f:
-                return safe_load(f)
-    except (ScannerError, ParserError):
-        raise InvalidSyntaxError('The environment file contains '
-                                 'invalid syntax.')
+                try:
+                    return safe_load(f)
+                except (ScannerError, ParserError):
+                    f.seek(0)
+                    try:
+                        return load(f)
+                    except JSONDecodeError:
+                        raise InvalidSyntaxError('The environment configuration contains invalid syntax. Make sure your input '
+                                             'matches one of the supported formats: JSON, YAML.')
+        else:
+            raise NotFoundError('The file you specified in this configuration path cannot be found: '+path)
+
 
     finally:
         os.chdir(cwd)
