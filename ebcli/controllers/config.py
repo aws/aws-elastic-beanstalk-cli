@@ -39,9 +39,9 @@ class ConfigController(AbstractBaseController):
             (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
             (['--cfg'], dict(help='name of configuration')),
             (['--tags'], dict(help=flag_text['config.tags'])),
-            (['--display'], dict(action='store_true', help=flag_text['config.display'])),
-            (['--update'], dict(help=flag_text['config.update'])),
-            (['--format'], dict(default='yaml', choices=['json', 'yaml'], help=flag_text['config.format']))
+            (['-d', '--display'], dict(action='store_true', help=flag_text['config.display'])),
+            (['-u', '--update'], dict(help=flag_text['config.update'])),
+            (['-f', '--format'], dict(default='yaml', choices=['json', 'yaml'], help=flag_text['config.format']))
         ]
         epilog = strings['config.epilog']
 

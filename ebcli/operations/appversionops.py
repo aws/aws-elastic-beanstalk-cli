@@ -40,12 +40,12 @@ def create_app_version_without_deployment(app_name, label=None,
             message=description,
             build_config=build_config
         )
-        io.echo("Creating application version via specified source")
+        io.echo("Creating application version via specified source.")
         process = True
     elif gitops.git_management_enabled() and not staged:
         app_version_label = commonops.create_codecommit_app_version(
             app_name, process=process, label=label, message=description, build_config=build_config)
-        io.echo("Creating application version via CodeCommit")
+        io.echo("Creating application version via CodeCommit.")
         process = True
     else:
         app_version_label = commonops.create_app_version(
