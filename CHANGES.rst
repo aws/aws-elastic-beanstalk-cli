@@ -2,6 +2,15 @@
 Changelog
 =========
 -------------------
+3.20.0 (2021-06-09)
+-------------------
+- Updated PyYAML requirement to `>=5.3.1,<5.5`
+- Updated default log group for AL2 platforms
+- Added two new options for config command
+- Added a new command appversion to create application versions without deployment
+- Replaced default service role policy
+
+-------------------
 3.19.4 (2021-03-11)
 -------------------
 - Updated botocore requirement to `>=1.19.0,<1.21.0`
