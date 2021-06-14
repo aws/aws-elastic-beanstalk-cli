@@ -218,7 +218,7 @@ class CreateController(AbstractBaseController):
         if (spot_max_price or on_demand_base_capacity or on_demand_above_base_capacity) and not enable_spot:
             raise InvalidOptionsError(strings['create.missing_enable_spot'])
 
-        if instance_types is "":
+        if instance_types == "":
             raise InvalidOptionsError(strings['spot.instance_types_validation'])
 
         if itype and instance_types:
