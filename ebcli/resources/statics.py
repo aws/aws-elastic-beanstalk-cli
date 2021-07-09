@@ -28,6 +28,9 @@ class iam_documents(object):
     EC2_ASSUME_ROLE_PERMISSION = '{"Version": "2008-10-17","Statement": [{"Action":' \
                                  ' "sts:AssumeRole","Principal": {"Service": ' \
                                  '"ec2.amazonaws.com"},"Effect": "Allow","Sid": ""}]}'
+    EC2_ASSUME_ROLE_PERMISSION_CN = '{"Version": "2008-10-17","Statement": [{"Action":' \
+                                 ' "sts:AssumeRole","Principal": {"Service": ' \
+                                 '"ec2.amazonaws.com.cn"},"Effect": "Allow","Sid": ""}]}'
 
 
 class iam_attributes(object):
