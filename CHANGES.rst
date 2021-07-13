@@ -2,6 +2,11 @@
 Changelog
 =========
 -------------------
+3.20.1 (2021-07-13)
+-------------------
+- Changed IAM document for China region
+
+-------------------
 3.20.0 (2021-06-09)
 -------------------
 - Updated PyYAML requirement to `>=5.3.1,<5.5`
