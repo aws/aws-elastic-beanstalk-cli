@@ -28,7 +28,7 @@ requires = [
     'requests>=2.20.1,<=2.26',
     'setuptools >= 20.0',
     'semantic_version == 2.8.5',
-    'six>=1.11.0,<1.15.0',
+    'six>=1.11.0,<2.0.0',
     'termcolor == 1.1.0',
     'wcwidth>=0.1.7,<0.2.0',
 ]
