@@ -32,13 +32,20 @@ class EnvvarCollector(object):
         self.to_remove = envvars_to_remove or set()
 
     @classmethod
+    def from_list(cls, envvars_list):
+        if not envvars_list:
+            return cls()
+        envvars_map, envvars_to_remove = envvarops.create_environment_variables_list(
+            envvars_list, as_option_settings=False)
+        return cls(envvars_map, envvars_to_remove)
+
+    @classmethod
     def from_str(cls, envvars_str):
         if not envvars_str:
             return cls()
         envvars = envvars_str.split(',')
         envvars_map, envvars_to_remove = envvarops.create_environment_variables_list(
             envvars, as_option_settings=False)
-
         return cls(envvars_map, envvars_to_remove)
 
     def filtered(self):
