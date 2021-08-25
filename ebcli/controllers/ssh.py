@@ -35,6 +35,8 @@ class SSHController(AbstractBaseController):
             (['--setup'], dict(
                 action='store_true', help=flag_text['ssh.setup'])),
             (['--timeout'], dict(type=int, help=flag_text['ssh.timeout'])),
+            (['--prefer-private-ip'], dict(
+                action='store_true', help=flag_text['ssh.prefer_private_ip'])),
         ]
 
     def do_command(self):
