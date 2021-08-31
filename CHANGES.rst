@@ -2,6 +2,11 @@
 Changelog
 =========
 -------------------
+3.20.2 (2021-08-30)
+-------------------
+- Updated urllib3 requirement to `>=1.26.5`
+
+-------------------
 3.20.1 (2021-07-13)
 -------------------
 - Changed IAM document for China region
