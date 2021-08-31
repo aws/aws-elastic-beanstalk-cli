@@ -31,14 +31,9 @@ requires = [
     'six>=1.11.0,<1.15.0',
     'termcolor == 1.1.0',
     'wcwidth>=0.1.7,<0.2.0',
+    'PyYAML>=5.3.1,<5.5',# use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
+    'urllib3>=1.26.5', #1.26.5 fix CVE-2021-33503
 ]
-
-if sys.version_info[:2] == (3, 4):
-    requires.append('PyYAML>=3.10,<5.3')
-    requires.append('urllib3>=1.25.4,<1.25.8') # urllib3 dropped support for python 3.4 in point release 1.25.8
-else:
-    requires.append('PyYAML>=5.3.1,<5.5') # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
-    requires.append('urllib3>=1.25.4,<1.26')
 
 testing_requires = [
     'mock>=2.0.0',
