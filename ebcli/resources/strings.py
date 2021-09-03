@@ -202,12 +202,13 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'create.missing_plus_sign_in_group_name': 'The environment name specified in env.yaml does not end '
                                               'with a \'+\', but a group suffix was provided. Please '
                                               'add a trailing \'+\' to the environment name',
-    'create.valid_spot_instances' : 'For Spot Instance types, specify a comma-separated list of two or more valid EC2 instance',
-    'create.missing_enable_spot' : 'Specify the "--enable-spot" argument with any spot-related arguments.',
+    'create.valid_spot_instances': 'For Spot Instance types, specify a comma-separated list of two or more valid EC2 instance',
+    'create.missing_enable_spot': 'Specify the "--enable-spot" argument with any spot-related arguments.',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',
+    'ssh.noinstance': "You tried to connect to an environment with no running instances.  SSH can only connect to "
+                      "running instances.  Use 'eb health' to display the status of instances in this environment.",
     'terminate.noenv': 'To delete the application and all application versions, type "eb terminate '
                        '--all".',
-
     'cred.prompt':  'You have not yet set up your credentials or your credentials are incorrect \n'
                     'You must provide your credentials.',
     'prompt.invalid': 'You did not provide a valid value.',

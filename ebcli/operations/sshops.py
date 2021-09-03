@@ -49,6 +49,8 @@ def prepare_for_ssh(env_name, instance, keep_open, force, setup, number,
 
         elif len(instances) == 1:
             instance = instances[0]
+        elif len(instances) == 0:
+            raise InvalidOptionsError(strings['ssh.noinstance'])
         else:
             io.echo()
             io.echo('Select an instance to ssh into')

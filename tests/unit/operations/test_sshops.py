@@ -442,6 +442,24 @@ class TestSSHOps(unittest.TestCase):
         )
 
     @mock.patch('ebcli.operations.sshops.commonops.get_instance_ids')
+    def test_prepare_for_ssh__no_instance(self, mock_get_instance_ids):
+        mock_get_instance_ids.return_value = []
+        with self.assertRaises(sshops.InvalidOptionsError) as context_manager:
+            sshops.prepare_for_ssh(
+                'my-environment',
+                None,
+                False,
+                False,
+                False,
+                None
+            )
+        self.assertEqual(
+            "You tried to connect to an environment with no running instances.  SSH can only connect to running "
+            "instances.  Use 'eb health' to display the status of instances in this environment.",
+            str(context_manager.exception)
+        )
+
+    @mock.patch('ebcli.operations.sshops.commonops.get_instance_ids')
     @mock.patch('ebcli.operations.sshops.utils.prompt_for_item_in_list')
     @mock.patch('ebcli.operations.sshops.ssh_into_instance')
     def test_prepare_for_ssh__choose_instance_to_ssh_into(
