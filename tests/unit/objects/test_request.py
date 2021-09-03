@@ -279,11 +279,6 @@ class TestRequests(unittest.TestCase):
                 },
                 {
                     'Namespace': 'aws:ec2:instances',
-                    'OptionName': 'InstanceTypes',
-                    'Value': 't2.micro, t2.large'
-                },
-                {
-                    'Namespace': 'aws:ec2:instances',
                     'OptionName': 'SpotMaxPrice',
                     'Value': '.5'
                 },
