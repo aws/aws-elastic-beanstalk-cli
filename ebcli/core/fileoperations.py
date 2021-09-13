@@ -435,7 +435,10 @@ def _zipdir(path, zipf, ignore_list=None):
             continue
         for d in dirs:
             cur_dir = os.path.join(root, d)
-            if os.path.islink(cur_dir):
+            if (
+                os.path.islink(cur_dir)
+                and not cur_dir in ignore_list
+            ):
                 # It is probably safe to remove this code since os.walk seems to categorize
                 # symlinks-to-directories as files. This doesn't matter as far as creation
                 # of the zip is concerned, but just having the code around is confusing.
@@ -814,6 +817,9 @@ def get_ebignore_list():
 
     ignore_list = {f for f in spec.match_tree(get_project_root())}
     ignore_list.add('.ebignore')
+    
+    for line in read_from_text_file(location).split("\n"):
+        ignore_list.add(line)
 
     return ignore_list
 
