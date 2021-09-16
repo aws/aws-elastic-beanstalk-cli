@@ -28,7 +28,8 @@ LOG = minimal_logger(__name__)
 
 def prepare_for_ssh(env_name, instance, keep_open, force, setup, number,
                     keyname=None, no_keypair_error_message=None,
-                    custom_ssh=None, command=None, timeout=None):
+                    custom_ssh=None, command=None, timeout=None,
+                    prefer_private_ip=False):
     if setup:
         setup_ssh(env_name, keyname, timeout=timeout)
         return
@@ -60,7 +61,8 @@ def prepare_for_ssh(env_name, instance, keep_open, force, setup, number,
             keep_open=keep_open,
             force_open=force,
             custom_ssh=custom_ssh,
-            command=command
+            command=command,
+            prefer_private_ip=prefer_private_ip,
         )
     except NoKeypairError:
         if not no_keypair_error_message:
