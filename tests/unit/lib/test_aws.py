@@ -39,9 +39,16 @@ class TestAws(unittest.TestCase):
             }
         }
 
+        self.mock_credentials = {
+            'AWS_ACCESS_KEY_ID': 'access_key',
+            'AWS_SECRET_ACCESS_KEY': 'secret_key',
+            'AWS_CONFIG_FILE': 'no-exist-foo',
+        }
+
     def test_user_agent(self):
         aws.set_region('us-east-1')
-        client = aws._get_client('elasticbeanstalk')
+        with mock.patch('os.environ', self.mock_credentials):
+            client = aws._get_client('elasticbeanstalk')
         user_agent = client._client_config.user_agent
 
         self.assertTrue(
