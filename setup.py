@@ -23,7 +23,7 @@ requires = [
     'cement==2.8.2',
     'colorama>=0.2.5,<0.4.4',  # use the same range that 'docker-compose' uses
     'future>=0.16.0,<0.17.0',
-    'pathspec==0.5.9',
+    'pathspec==0.9.0',
     'python-dateutil>=2.1,<3.0.0',  # use the same range that 'botocore' uses
     'requests>=2.20.1,<=2.26',
     'setuptools >= 20.0',
