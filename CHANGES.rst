@@ -4,7 +4,7 @@ Changelog
 -------------------
 3.20.3 (2022-01-21)
 -------------------
-- Updated botocore requirement to `>=1.23.0,<1.24.0`
+- Updated botocore requirement to `>1.23.41,<1.24.0`
 - Updated pathspec requirement to `==0.9.0`
 - Increased timestamp precision of version label
 - Fix ssh bugs
