@@ -19,3 +19,4 @@ awsebcli.egg-info/
 *.coverage
 *.xml
 *.iml
+.vscode/

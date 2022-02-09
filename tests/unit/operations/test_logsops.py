@@ -1328,6 +1328,20 @@ class TestLogsOperations(unittest.TestCase):
         )
 
     @mock.patch('ebcli.operations.logsops.elasticbeanstalk.get_environment')
+    def test_deployment_logs_log_group_name__al2_platforms(self, get_environment_mock):
+        environment_mock = mock.MagicMock()
+        platform_mock = mock.MagicMock()
+        platform_mock.name = 'arn:aws:elasticbeanstalk:us-east-1::platform/Python 3.8 running on 64bit Amazon Linux 2/3.2.0'
+        environment_mock.platform = platform_mock
+
+        get_environment_mock.return_value = environment_mock
+
+        self.assertEqual(
+            '/aws/elasticbeanstalk/my-env/var/log/eb-engine.log',
+            logsops.deployment_logs_log_group_name('my-env')
+        )
+
+    @mock.patch('ebcli.operations.logsops.elasticbeanstalk.get_environment')
     def test_deployment_logs_log_group_name__windows_platform(self, get_environment_mock):
         environment_mock = mock.MagicMock()
         platform_mock = mock.MagicMock()

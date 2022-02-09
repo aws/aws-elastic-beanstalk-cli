@@ -20,6 +20,7 @@ from ebcli.core import io, fileoperations
 from ebcli.objects.sourcecontrol import SourceControl
 from ebcli.objects.exceptions import NotAuthorizedError
 from ebcli.operations import commonops
+from ebcli.resources.statics import elb_names, namespaces, option_names
 
 
 def terminate(
@@ -117,3 +118,20 @@ def cleanup_ignore_file():
         source_control = SourceControl.get_source_control()
         source_control.clean_up_ignore_file()
         fileoperations.write_config_setting('global', 'sc', None)
+
+
+def is_shared_load_balancer(app_name, env_name):
+    namespace = namespaces.ENVIRONMENT
+    load_balancer_is_shared = option_names.LOAD_BALANCER_IS_SHARED
+    load_balancer_type = option_names.LOAD_BALANCER_TYPE
+    app_name = app_name
+    env_name = env_name
+
+    env_config = elasticbeanstalk.describe_configuration_settings(app_name, env_name)
+    lb_type = elasticbeanstalk.get_specific_configuration(env_config, namespace, load_balancer_type)
+
+    if lb_type == elb_names.APPLICATION_VERSION:
+        value = elasticbeanstalk.get_specific_configuration(env_config, namespace, load_balancer_is_shared)
+        return value.lower() == 'true'
+    else:
+        return False

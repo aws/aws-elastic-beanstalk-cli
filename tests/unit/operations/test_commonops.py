@@ -94,6 +94,10 @@ class TestCommonOperations(unittest.TestCase):
         self.assertTrue(commonops._is_success_event('Successfully launched environment: my-env'))
         self.assertTrue(commonops._is_success_event('Pulled logs for environment instances.'))
         self.assertTrue(commonops._is_success_event('terminateEnvironment completed successfully.'))
+        self.assertFalse(commonops._is_success_event('Instance deployment completed successfully.'))
+
+    def test_is_success_event__log_events(self):
+        self.assertTrue(commonops._is_success_event('Instance deployment completed successfully.', log_events=True))
 
     def test_raise_if_error_event(self):
         with self.assertRaises(commonops.ServiceError):
@@ -253,6 +257,19 @@ class TestCommonOperations(unittest.TestCase):
 
         mock_iam.create_instance_profile.assert_called_once_with('pname')
         mock_iam.create_role_with_policy.assert_called_once_with('rname', iam_documents.EC2_ASSUME_ROLE_PERMISSION, 'policies')
+        mock_iam.add_role_to_profile.assert_called_once_with('pname', 'rname')
+        mock_iam.put_role_policy.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.iam')
+    @mock.patch('ebcli.operations.commonops.io')
+    @mock.patch('ebcli.lib.aws.get_region_name')
+    def test_create_instance_profile_successful_in_China(self, mock_get_region_name, _, mock_iam):
+        mock_get_region_name.return_value = 'cn-north-1'
+        commonops.create_instance_profile('pname', 'policies', 'rname')
+
+        mock_iam.create_instance_profile.assert_called_once_with('pname')
+        mock_iam.create_role_with_policy.assert_called_once_with('rname', iam_documents.EC2_ASSUME_ROLE_PERMISSION_CN,
+                                                                 'policies')
         mock_iam.add_role_to_profile.assert_called_once_with('pname', 'rname')
         mock_iam.put_role_policy.assert_not_called()
 

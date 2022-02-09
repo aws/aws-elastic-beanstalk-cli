@@ -74,6 +74,8 @@ class TestCreateBase(unittest.TestCase):
     def assertEnvironmentRequestsEqual(self, expected_request, actual_request):
         error_message = os.linesep.join(
             [
+                '',
+                '',
                 'Expected::',
                 '{}'.format(expected_request.__dict__),
                 '',
@@ -626,6 +628,54 @@ class TestCreateE2E(TestCreateBase):
 
         self.assertEqual(
             'You cannot use the "--min-instances" or "--max-instances" and "--scale" options together.',
+            str(context_manager.exception)
+        )
+
+    def test_create__single_and_shared_lb_together_provided_cause_an_exception(self):
+        self.app = EB(argv=['create', '--single', '--shared-lb', 'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-1/72074d479748b405'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'You can\'t use the "--single" and "--shared-lb" options together.',
+            str(context_manager.exception)
+        )
+
+    def test_create__shared_lb_without_elb_type(self):
+        self.app = EB(argv=['create', '--shared-lb', 'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-1/72074d479748b405'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'To specify any shared load balancer options, also specify an Application Load Balancer ("--elb-type application").',
+            str(context_manager.exception)
+        )
+
+    def test_create__shared_lb_with_classic_load_balancer(self):
+        self.app = EB(argv=['create', '--shared-lb','arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-1/72074d479748b405', '--elb-type', 'classic'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'To specify any shared load balancer options, also specify an Application Load Balancer ("--elb-type application").',
+            str(context_manager.exception)
+        )
+
+    def test_create__shared_lb_port_without_shared_lb(self):
+        self.app = EB(argv=['create', '--shared-lb-port', '80', '--elb-type', 'application'])
+        self.app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            self.app.run()
+
+        self.assertEqual(
+            'To specify "--shared-lb-port", also specify "--shared-lb" and an Application Load Balancer ("--elb-type application").' ,
             str(context_manager.exception)
         )
 
@@ -1268,6 +1318,99 @@ class TestCreateE2E(TestCreateBase):
             source=None
         )
 
+    @mock.patch('ebcli.operations.createops.make_new_env')
+    @mock.patch('ebcli.controllers.create._determine_platform')
+    @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    def test_create_non_interactive__all_shared_lb_options(
+            self,
+            is_cname_available_mock,
+            get_default_keyname_mock,
+            _determine_platform_mock,
+            make_new_env_mock,
+    ):
+        _determine_platform_mock.return_value = self.solution
+        is_cname_available_mock.return_value = True
+        get_default_keyname_mock.return_value = None
+        env_name = 'my-awesome-env'
+        shared_lb = 'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-1/72074d479748b405'
+        shared_lb_port = '80'
+        load_balancer_type = 'application'
+
+        self.app = EB(argv=[
+            'create', env_name,
+            '--elb-type', load_balancer_type,
+            '--shared-lb', shared_lb,
+            '--shared-lb-port', shared_lb_port])
+        self.app.setup()
+        self.app.run()
+
+        expected_environment_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            elb_type=load_balancer_type,
+            env_name=env_name,
+            platform=self.solution,
+            shared_lb=shared_lb,
+            shared_lb_port=shared_lb_port
+        )
+        call_args, kwargs = make_new_env_mock.call_args
+        actual_environment_request = call_args[0]
+        self.assertEqual(actual_environment_request, expected_environment_request)
+        make_new_env_mock.assert_called_with(
+            expected_environment_request,
+            branch_default=False,
+            process_app_version=False,
+            nohang=False,
+            interactive=False,
+            timeout=None,
+            source=None
+        )
+
+    @mock.patch('ebcli.operations.createops.make_new_env')
+    @mock.patch('ebcli.controllers.create._determine_platform')
+    @mock.patch('ebcli.operations.commonops.get_default_keyname')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
+    def test_create_non_interactive__shared_lb_only_request(
+            self,
+            is_cname_available_mock,
+            get_default_keyname_mock,
+            _determine_platform_mock,
+            make_new_env_mock,
+    ):
+        _determine_platform_mock.return_value = self.solution
+        is_cname_available_mock.return_value = True
+        get_default_keyname_mock.return_value = None
+        env_name = 'my-awesome-env'
+        shared_lb = 'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-1/72074d479748b405'
+        load_balancer_type = 'application'
+
+        self.app = EB(argv=[
+            'create', env_name,
+            '--elb-type', load_balancer_type,
+            '--shared-lb', shared_lb])
+        self.app.setup()
+        self.app.run()
+
+        expected_environment_request = CreateEnvironmentRequest(
+            app_name=self.app_name,
+            env_name=env_name,
+            elb_type=load_balancer_type,
+            platform=self.solution,
+            shared_lb=shared_lb,
+        )
+        call_args, kwargs = make_new_env_mock.call_args
+        actual_environment_request = call_args[0]
+        self.assertEqual(actual_environment_request, expected_environment_request)
+        make_new_env_mock.assert_called_with(
+            expected_environment_request,
+            branch_default=False,
+            process_app_version=False,
+            nohang=False,
+            interactive=False,
+            timeout=None,
+            source=None
+        )
+
     @mock.patch('ebcli.core.io.get_input')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.controllers.create._determine_platform')
@@ -1731,8 +1874,10 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
+    @mock.patch('ebcli.operations.shared_lb_ops.get_shared_lb_from_customer')
     def test_create_interactively_with_custom_vpc__vpc_argument_triggers_interactive_vpc_options(
             self,
+            get_shared_lb_from_customer_mock,
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
@@ -1749,25 +1894,26 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
         get_spot_request_from_customer_mock.return_value = None
+        get_shared_lb_from_customer_mock.return_value = None
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
-        load_balancer_choice = '1'
         vpc_id = 'my-vpc-id'
         ec2subnets = 'subnet-1,subnet-2,subnet-3'
         is_publicip = 'y'
         elbsubnets = 'subnet-1,subnet-2,subnet-3'
         securitygroups = 'security-group-1,security-group-2'
         is_elbpublic = 'n'
+        load_balancer_choice = '1'
 
         get_input_mock.side_effect = [
             env_name,
             cname_prefix,
-            load_balancer_choice,
             vpc_id,
             ec2subnets,
             elbsubnets,
-            securitygroups
+            securitygroups,
+            load_balancer_choice
         ]
         get_boolean_response_mock.side_effect = [
             is_publicip,
@@ -1779,7 +1925,6 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
             env_name=env_name,
             cname=cname_prefix,
             platform=self.solution,
-            elb_type='classic',
             vpc={
                 'id': 'my-vpc-id',
                 'ec2subnets': 'subnet-1,subnet-2,subnet-3',
@@ -1788,7 +1933,8 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
                 'publicip': 'true',
                 'securitygroups': 'security-group-1,security-group-2',
                 'dbsubnets': None
-            }
+            },
+            elb_type='classic'
         )
 
         self.app = EB(argv=['create', '--vpc'])
@@ -1999,8 +2145,10 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
+    @mock.patch('ebcli.operations.shared_lb_ops.get_shared_lb_from_customer')
     def test_create_interactively_with_database_and_vpc_arguments(
             self,
+            get_shared_lb_from_customer_mock,
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
@@ -2017,13 +2165,12 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_spot_request_from_customer_mock.return_value = None
+        get_shared_lb_from_customer_mock.return_value = None
+
 
         env_name = 'my-awesome-env'
         cname_prefix = env_name
         get_unique_cname_mock.return_value = cname_prefix
-        load_balancer_choice = '1'
-        database_user_name = 'root'
-        database_password = 'password'
 
         vpc_id = 'my-vpc-id'
         ec2subnets = 'subnet-1,subnet-2,subnet-3'
@@ -2033,18 +2180,20 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
         is_elb_public = 'y'
         rdssubnets = 'subnet-1,subnet-2,subnet-3'
 
+        load_balancer_choice = '1'
+        database_user_name = 'root'
+        database_password = 'password'
+
         get_input_mock.side_effect = [
             env_name,
             cname_prefix,
-            load_balancer_choice,
-
-            database_user_name,
-
             vpc_id,
             ec2subnets,
             elbsubnets,
             securitygroups,
-            rdssubnets
+            rdssubnets,
+            load_balancer_choice,
+            database_user_name,
         ]
         get_boolean_response_mock.side_effect = [
             is_ec2_public,
@@ -2059,15 +2208,6 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
             env_name=env_name,
             cname=env_name,
             platform=self.solution,
-            elb_type='classic',
-            database={
-                'username': 'root',
-                'password': 'password',
-                'engine': None,
-                'size': None,
-                'instance': None,
-                'version': None
-            },
             vpc={
                 'id': 'my-vpc-id',
                 'ec2subnets': 'subnet-1,subnet-2,subnet-3',
@@ -2076,6 +2216,15 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
                 'publicip': 'true',
                 'securitygroups': 'security-group-1,security-group-2',
                 'dbsubnets': 'subnet-1,subnet-2,subnet-3',
+            },
+            elb_type='classic',
+            database={
+                'username': 'root',
+                'password': 'password',
+                'engine': None,
+                'size': None,
+                'instance': None,
+                'version': None
             }
         )
 
@@ -2219,8 +2368,35 @@ class TestCreateModuleE2E(unittest.TestCase):
         self.assertIsNone(
             create.get_elb_type_from_customer(
                 interactive=False,
+                single=False,
+                tier=None
+            )
+        )
+
+    def test_get_elb_type_from_customer__non_interactive_mode_single(self):
+        self.assertIsNone(
+            create.get_elb_type_from_customer(
+                interactive=False,
                 single=True,
+                tier=None
+            )
+        )
+
+    def test_get_elb_type_from_customer__non_interactive_mode_webserver(self):
+        self.assertIsNone(
+            create.get_elb_type_from_customer(
+                interactive=False,
+                single=False,
                 tier=Tier.from_raw_string('webserver')
+            )
+        )
+
+    def test_get_elb_type_from_customer__non_interactive_mode_worker(self):
+        self.assertIsNone(
+            create.get_elb_type_from_customer(
+                interactive=False,
+                single=False,
+                tier=Tier.from_raw_string('worker')
             )
         )
 
@@ -2250,6 +2426,58 @@ class TestCreateModuleE2E(unittest.TestCase):
                 single=None,
                 tier=Tier.from_raw_string('worker')
             )
+        )
+
+    @mock.patch('ebcli.controllers.create.shared_lb_ops.validate_shared_lb_for_non_interactive')
+    @mock.patch('ebcli.controllers.create.shared_lb_ops.get_shared_lb_from_customer')
+    def test_get_shared_load_balancer__for_interactive(
+        self,
+        get_shared_lb_from_customer_mock,
+        validate_shared_lb_for_non_interactive_mock,
+    ):
+        shared_lb=None
+        interactive=True
+        elb_type='application'
+        platform='arn:aws:elasticbeanstalk:us-east-1::platform/Python 3.6 running on 64bit Amazon Linux/2.9.12'
+        vpc=None
+
+        validate_shared_lb_for_non_interactive_mock.assert_not_called()
+        get_shared_lb_from_customer_mock.return_value = 'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-1/72074d479748b405'
+
+        result = create.get_shared_load_balancer(interactive, elb_type, platform, shared_lb, vpc)
+
+        expected_result = 'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-1/72074d479748b405'
+        get_shared_lb_from_customer_mock.assert_called_once_with(interactive, elb_type, platform, vpc)
+
+        self.assertEqual(
+            result,
+            expected_result
+        )
+
+    @mock.patch('ebcli.controllers.create.shared_lb_ops.validate_shared_lb_for_non_interactive')
+    @mock.patch('ebcli.controllers.create.shared_lb_ops.get_shared_lb_from_customer')
+    def test_get_shared_load_balancer__for_non_interactive(
+        self,
+        get_shared_lb_from_customer_mock,
+        validate_shared_lb_for_non_interactive_mock,
+    ):
+        shared_lb='alb-1'
+        interactive=False
+        elb_type=None
+        platform=None
+        vpc=None
+
+        validate_shared_lb_for_non_interactive_mock.return_value = 'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-1/72074d479748b405'
+        get_shared_lb_from_customer_mock.assert_not_called()
+
+        result = create.get_shared_load_balancer(interactive, elb_type, platform, shared_lb, vpc)
+
+        expected_result = 'arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-1/72074d479748b405'
+        validate_shared_lb_for_non_interactive_mock.assert_called_once_with(shared_lb)
+
+        self.assertEqual(
+            result,
+            expected_result
         )
 
     def test_get_environment_name__env_yaml_exists__env_name_present__group_name_is_provided(self):

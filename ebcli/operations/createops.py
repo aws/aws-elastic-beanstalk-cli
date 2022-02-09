@@ -33,7 +33,7 @@ DEFAULT_SERVICE_ROLE_NAME = 'aws-elasticbeanstalk-service-role'
 
 DEFAULT_SERVICE_ROLE_POLICIES = [
     'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth',
-    'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService'
+    'arn:aws:iam::aws:policy/AWSElasticBeanstalkManagedUpdatesCustomerRolePolicy'
 ]
 
 
@@ -144,16 +144,12 @@ def should_download_sample_app():
 
     :return: User's choice of whether the sample application should be downloaded
     """
-    user_input = None
     if heuristics.directory_is_empty():
-        io.echo(strings['create.sample_application_download_option'])
-        user_input = download_sample_app_user_choice()
+        return io.get_boolean_response(
+            text=strings['create.sample_application_download_option'],
+            default=True)
 
-        while user_input not in ['y', 'n', 'Y', 'N']:
-            io.echo(strings['create.user_choice_error'].format(user_choice=user_input))
-            user_input = download_sample_app_user_choice()
-
-    return True if user_input in ['y', 'Y'] else False
+    return False
 
 
 def download_and_extract_sample_app(env_name):
@@ -214,16 +210,6 @@ def retrieve_application_version_url(env_name):
         io.log_warning('{}. '.format(strings['cloudformation.cannot_find_app_source_for_environment']))
 
     return url
-
-
-def download_sample_app_user_choice():
-    """
-    Method accepts the user's choice of whether the sample application should be downloaded.
-    Defaults to 'Y' when none is provided.
-
-    :return: user's choice of whether the sample application should be downloaded
-    """
-    return io.get_input('(Y/n)', default='y')
 
 
 def create_env(env_request, interactive=True):

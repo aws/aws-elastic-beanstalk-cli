@@ -49,6 +49,8 @@ def prepare_for_ssh(env_name, instance, keep_open, force, setup, number,
 
         elif len(instances) == 1:
             instance = instances[0]
+        elif len(instances) == 0:
+            raise InvalidOptionsError(strings['ssh.noinstance'])
         else:
             io.echo()
             io.echo('Select an instance to ssh into')
@@ -120,7 +122,7 @@ def ssh_into_instance(instance_id, keep_open=False, force_open=False, custom_ssh
 
     if has_restriction and not force_open:
         io.log_warning(strings['ssh.notopening'])
-    elif group_id:
+    elif group_id and not rule_existed_before:
         io.echo(strings['ssh.openingport'])
         ec2.authorize_ssh(ssh_group or group_id)
         io.echo(strings['ssh.portopen'])

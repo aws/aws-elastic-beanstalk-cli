@@ -42,23 +42,9 @@ def get_spot_request_from_customer(interactive):
     if not interactive:
         return
     io.echo()
-    io.echo(prompts['spot.enable_spot_prompt'])
-    user_input = prompt_for_enable_spot_request()
-    while user_input not in ['y', 'n', 'Y', 'N']:
-        io.echo(strings['create.user_choice_error'].format(user_choice=user_input))
-        user_input = prompt_for_enable_spot_request()
-
-    return user_input in ['y', 'Y']
-
-
-def prompt_for_enable_spot_request():
-    """
-    Method accepts the user's choice of whether spot requests should be enabled.
-    Defaults to 'n' when none is provided.
-
-    :return: user's choice of whether the spot request should be enabled
-    """
-    return io.get_input('(y/N)', default='n')
+    return io.get_boolean_response(
+        text=prompts['spot.enable_spot_prompt'],
+        default=False)
 
 
 def prompt_for_instance_types():
@@ -68,5 +54,5 @@ def prompt_for_instance_types():
     :return: user's choice of whether the spot request should be enabled
     """
     instance_types = io.prompt(strings['spot.instance_type_defaults_notice'])
-    io.echo('')
+    io.echo()
     return instance_types

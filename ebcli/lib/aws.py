@@ -240,6 +240,10 @@ def make_api_call(service_name, operation_name, **operation_options):
                 botocore.exceptions.ParamValidationError) as e:
             raise ValidationError(str(e))
 
+        except botocore.exceptions.EndpointConnectionError as e:
+            LOG.debug(e)
+            raise
+
         except botocore.exceptions.BotoCoreError:
             LOG.error('Botocore Error')
             raise

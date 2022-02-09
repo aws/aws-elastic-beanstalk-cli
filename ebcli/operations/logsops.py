@@ -102,6 +102,8 @@ def deployment_logs_log_group_name(env_name):
     environment = elasticbeanstalk.get_environment(env_name=env_name)
     if 'windows' in environment.platform.name.lower():
         log_group_suffix = 'EBDeploy-Log'
+    elif 'Amazon Linux 2/' in environment.platform.name:
+        log_group_suffix = "var/log/eb-engine.log"
     else:
         log_group_suffix = 'var/log/eb-activity.log'
 
@@ -480,7 +482,8 @@ def retrieve_beanstalk_logs(env_name, info_type, do_zip=False, instance_id=None)
         request_id,
         timeout_in_minutes=2,
         sleep_time=1,
-        stream_events=False
+        stream_events=False,
+        log_events=True
     )
 
     get_logs(env_name, info_type, do_zip=do_zip, instance_id=instance_id)

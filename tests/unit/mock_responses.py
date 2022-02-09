@@ -5160,3 +5160,124 @@ DESCRIBE_STACK_EVENTS_RESPONSE__CREATE_FAILED = {
         'RetryAttempts': 0
     }
 }
+
+
+GET_LISTENERS_FOR_LOAD_BALANCER_RESPONSE= [
+{
+    "Listeners": [
+        {
+            "ListenerArn": "arn:aws:elasticloadbalancing:us-east-1:881508045124:listener/app/alb-2/5a957e362e1339a9/45eb527de2160a42",
+            "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-2/5a957e362e1339a9",
+            "Port": 100,
+            "Protocol": "HTTP",
+            "DefaultActions": [
+                {
+                    "Type": "forward",
+                    "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:881508045124:targetgroup/alb-2-tg-1/e62e3762716b3f54",
+                    "Order": 1,
+                    "ForwardConfig": {
+                        "TargetGroups": [
+                            {
+                                "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:881508045124:targetgroup/alb-2-tg-1/e62e3762716b3f54",
+                                "Weight": 1
+                            }
+                        ],
+                        "TargetGroupStickinessConfig": {
+                            "Enabled": 'false'
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "ListenerArn": "arn:aws:elasticloadbalancing:us-east-1:881508045124:listener/app/alb-2/5a957e362e1339a9/a9716362c384b615",
+            "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-2/5a957e362e1339a9",
+            "Port": 80,
+            "Protocol": "HTTP",
+            "DefaultActions": [
+                {
+                    "Type": "forward",
+                    "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:881508045124:targetgroup/alb-2-tg-1/e62e3762716b3f54",
+                    "Order": 1,
+                    "ForwardConfig": {
+                        "TargetGroups": [
+                            {
+                                "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:881508045124:targetgroup/alb-2-tg-1/e62e3762716b3f54",
+                                "Weight": 1
+                            }
+                        ],
+                        "TargetGroupStickinessConfig": {
+                            "Enabled": 'false'
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}]
+
+
+GET_LISTENERS_FOR_LOAD_BALANCER_RESPONSE_2 = [
+{
+    "Listeners": [
+        {
+            "ListenerArn": "arn:aws:elasticloadbalancing:us-east-1:881508045124:listener/app/alb-3/3dfc9ab663f79319/156708acbcbfec4b",
+            "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-3/3dfc9ab663f79319",
+            "Port": 80,
+            "Protocol": "HTTP",
+            "DefaultActions": [
+                {
+                    "Type": "forward",
+                    "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:881508045124:targetgroup/alb-3-tg-1/584bea6a7a357574",
+                    "ForwardConfig": {
+                        "TargetGroups": [
+                            {
+                                "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:881508045124:targetgroup/alb-3-tg-1/584bea6a7a357574",
+                                "Weight": 1
+                            }
+                        ],
+                        "TargetGroupStickinessConfig": {
+                            "Enabled": 'false'
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}]
+
+
+DESCRIBE_LOAD_BALANCERS_RESPONSE = [
+{
+    "LoadBalancers": [
+        {
+            "LoadBalancerArn": "arn:aws:elasticloadbalancing:us-east-1:881508045124:loadbalancer/app/alb-1/72074d479748b405",
+            "DNSName": "alb-1-1923055434.us-east-1.elb.amazonaws.com",
+            "CanonicalHostedZoneId": "Z35SXDOTRQ7X7K",
+            "CreatedTime": "2020-07-07T17:18:20.290Z",
+            "LoadBalancerName": "alb-1",
+            "Scheme": "internet-facing",
+            "VpcId": "vpc-bae3dbc0",
+            "State": {
+                "Code": "active"
+            },
+            "Type": "application",
+            "AvailabilityZones": [
+                {
+                    "ZoneName": "us-east-1b",
+                    "SubnetId": "subnet-74e80255",
+                    "LoadBalancerAddresses": []
+                },
+                {
+                    "ZoneName": "us-east-1a",
+                    "SubnetId": "subnet-7a0be71c",
+                    "LoadBalancerAddresses": []
+                }
+            ],
+            "SecurityGroups": [
+                "sg-abdee486"
+            ],
+            "IpAddressType": "ipv4"
+        }
+    ]
+}]

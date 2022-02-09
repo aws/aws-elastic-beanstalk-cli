@@ -106,8 +106,8 @@ function CreateAndLoad-Virtualenv()
     Invoke-Expression ".\$VENV_ENV_NAME\Scripts\activate"
     Exit-UponSubStepFailure
 
-    Print-SubStepTitle "Installing pip 18.1"
-    Invoke-Expression "python -m pip install pip==18.1"
+    Print-SubStepTitle "Installing pip 21.1"
+    Invoke-Expression "python -m pip install pip==21.1"
     Exit-UponSubStepFailure
 }
 
@@ -131,13 +131,14 @@ function CheckFor-CVEs()
     Print-SubStepTitle "Checking for known security vulnerabilities"
     Invoke-Expression "safety check"
     Exit-UponSubStepFailure
+
+    Print-SubStepTitle "Deleting Python $PYTHON_VERSION virtualenv"
+    Remove-Item -Path $VENV_ENV_NAME -Recurse
+    Exit-UponSubStepFailure
     $SUBSTEP_NUMBER = 1
 }
-# Jenkins is failing to run "safety check" using Python 3.5-3.7:
-#     https://github.com/pyupio/safety/issues/119
-#
-# CheckFor-CVEs
-# Exit-UponFailure
+CheckFor-CVEs
+Exit-UponFailure
 
 Print-StepTitle "Ensuring AWSEBCLI installs correctly after AWSCLI"
 function Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI()
@@ -156,12 +157,13 @@ function Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI()
     Invoke-Expression "python .\tests\test_dependencies_mismatch.py"
     Exit-UponSubStepFailure
 
-    Print-StepTitle "Deleting Python $PYTHON_VERSION virtualenv"
+    Print-SubStepTitle "Deleting Python $PYTHON_VERSION virtualenv"
     Remove-Item -Path $VENV_ENV_NAME -Recurse
     Exit-UponSubStepFailure
     $SUBSTEP_NUMBER = 1
 }
 Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI
+Exit-UponFailure
 
 Print-StepTitle "Ensuring AWSCLI installs correctly after AWSEBCLI"
 function Ensure-AWSCLIInstallsCorrectlyAfterAWSEBCLI()
@@ -180,13 +182,14 @@ function Ensure-AWSCLIInstallsCorrectlyAfterAWSEBCLI()
     Invoke-Expression "python .\tests\test_dependencies_mismatch.py"
     Exit-UponSubStepFailure
 
-    Print-StepTitle "Deleting Python $PYTHON_VERSION virtualenv"
+    Print-SubStepTitle "Deleting Python $PYTHON_VERSION virtualenv"
     Remove-Item -Path $VENV_ENV_NAME -Recurse
     Exit-UponSubStepFailure
 
     $SUBSTEP_NUMBER = 1
 }
 Ensure-AWSEBCLIInstallsCorrectlyAfterAWSCLI
+Exit-UponFailure
 
 Print-StepTitle "Create new Python $PYTHON_VERSION virtualenv"
 Invoke-Expression "virtualenv.exe -p '$PYTHON_INSTALLATION' '$VENV_ENV_NAME'"
@@ -196,8 +199,8 @@ Print-StepTitle "Loading Python $PYTHON_VERSION virtualenv"
 Invoke-Expression ".\$VENV_ENV_NAME\Scripts\activate"
 Exit-UponFailure
 
-Print-StepTitle "Installing pip 18.1"
-Invoke-Expression "python -m pip install pip==18.1"
+Print-StepTitle "Installing pip 21.1"
+Invoke-Expression "python -m pip install pip==21.1"
 Exit-UponFailure
 
 Print-StepTitle "(Re)Installing AWSEBCLI and dependencies using commit $env:GIT_BRANCH/$GIT_COMMIT"

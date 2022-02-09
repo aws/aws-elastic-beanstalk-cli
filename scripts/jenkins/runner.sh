@@ -140,8 +140,8 @@ create_and_load_new_virtualenv()
     source $VENV_ENV_NAME/bin/activate
     exit_upon_substep_failure
 
-    substep_title "Installing pip 18.1"
-    pip install pip=="18.1"
+    substep_title "Installing pip 21.1"
+    pip install pip=="21.1"
     exit_upon_substep_failure
 }
 
@@ -160,6 +160,10 @@ check_for_cves()
 
     substep_title "Checking for known security vulnerabilities"
     safety check
+    exit_upon_substep_failure
+
+    substep_title "Deleting Python $PYTHON_VERSION virtualenv"
+    rm -rf $VENV_ENV_NAME
     exit_upon_substep_failure
     SUBSTEP_NUMBER=1
 }
@@ -223,8 +227,8 @@ step_title "Creating new Python $PYTHON_VERSION virtualenv"
 virtualenv -p $PYTHON_INSTALLATION $VENV_ENV_NAME
 exit_upon_failure
 
-step_title "Installing pip 18.1"
-pip install pip=="18.1"
+step_title "Installing pip 21.1"
+pip install pip=="21.1"
 exit_upon_failure
 
 step_title "Loading Python $PYTHON_VERSION virtualenv"

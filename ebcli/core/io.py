@@ -100,7 +100,10 @@ def _convert_to_string(data):
         if sys.version_info[0] >= 3:
             return data
         else:
-            return data.encode('utf8')
+            try:
+                return data.encode('utf8')
+            except:
+                return data.encode('utf8', 'replace')
     elif isinstance(data, scalar_types) or hasattr(data, '__str__'):
         return str(data)
     else:
@@ -275,18 +278,27 @@ def update_upload_progress(progress):
     sys.stdout.flush()
 
 
-def get_boolean_response(text=None):
+def get_boolean_response(text=None, default=True):
+    if not isinstance(default, bool):
+        raise TypeError('get_boolean_response() named argument \'default\' must '
+                        'be a bool, not {}'.format(type(default).__name__))
+
+    prompt_message = ''
+    default_string = 'y' if default else 'n'
+    prompt_value_options = '(Y/n)' if default else '(y/N)'
+
     if text:
-        string = text + ' (Y/n)'
-    else:
-        string = '(Y/n)'
-    response = get_input(string, default='y').lower()
+        prompt_message = text + ' '
+
+    prompt_message += prompt_value_options
+    response = get_input(prompt_message, default=default_string).lower()
+
     while response not in ('y', 'n', 'yes', 'no'):
         echo(
             strings['prompt.invalid'],
             strings['prompt.yes-or-no']
         )
-        response = prompt('Y/n', default='y').lower()
+        response = get_input(prompt_value_options, default=default_string).lower()
 
     if response in ('y', 'yes'):
         return True

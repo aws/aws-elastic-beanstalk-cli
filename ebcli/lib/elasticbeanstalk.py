@@ -16,7 +16,7 @@ import time
 
 from cement.utils.misc import minimal_logger
 from ebcli.objects.platform import PlatformVersion
-from ebcli.resources.statics import namespaces, option_names
+from ebcli.resources.statics import elb_names, namespaces, option_names
 
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.exceptions import NotFoundError, InvalidStateError, \
@@ -37,6 +37,59 @@ def _make_api_call(operation_name, **operation_options):
     return aws.make_api_call('elasticbeanstalk',
                              operation_name,
                              **operation_options)
+
+
+def describe_configuration_options(**kwargs):
+    LOG.debug('Inside describe_configuration_options api wrapper')
+    result = _make_api_call(
+        'describe_configuration_options',
+        **kwargs
+    )
+    return result
+
+
+def list_application_load_balancers(platform, vpc=None):
+    platform_arn = str(platform)
+    options = []
+    option_settings = []
+    kwargs = dict()
+
+    option_settings.append({
+        'Namespace': namespaces.ENVIRONMENT,
+        'OptionName': option_names.LOAD_BALANCER_TYPE,
+        'Value': elb_names.APPLICATION_VERSION
+    })
+    option_settings.append({
+        'Namespace': namespaces.ENVIRONMENT,
+        'OptionName': option_names.LOAD_BALANCER_IS_SHARED,
+        'Value': 'true'
+    })
+    if vpc:
+        if vpc['id']:
+            option_settings.append({
+                'Namespace': namespaces.VPC,
+                'OptionName': option_names.VPC_ID,
+                'Value': vpc['id']
+            })
+        if vpc['ec2subnets']:
+            option_settings.append({
+                'Namespace': namespaces.VPC,
+                'OptionName': option_names.SUBNETS,
+                'Value': vpc['ec2subnets']
+            })
+    options.append({
+        'Namespace': namespaces.LOAD_BALANCER_V2,
+        'OptionName': option_names.SHARED_LOAD_BALANCER
+    })
+
+    kwargs['OptionSettings'] = option_settings
+    kwargs['Options'] = options
+    kwargs['PlatformArn'] = platform_arn
+
+    describe_configuration_options_result = describe_configuration_options(**kwargs)
+    alb_list = next((option["ValueOptions"] for option in describe_configuration_options_result["Options"] if option["Name"] == "SharedLoadBalancer"), None)
+
+    return alb_list
 
 
 def delete_platform(arn):

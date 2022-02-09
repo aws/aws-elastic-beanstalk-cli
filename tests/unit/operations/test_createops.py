@@ -327,7 +327,7 @@ class TestCreateOps(unittest.TestCase):
             trust_document_mock,
             [
                 'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth',
-                'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService'
+                'arn:aws:iam::aws:policy/AWSElasticBeanstalkManagedUpdatesCustomerRolePolicy'
             ]
         )
 
@@ -356,7 +356,7 @@ Actual error: """,
             trust_document_mock,
             [
                 'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth',
-                'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService'
+                'arn:aws:iam::aws:policy/AWSElasticBeanstalkManagedUpdatesCustomerRolePolicy'
             ]
         )
 
@@ -504,49 +504,20 @@ Actual error: """,
 
     @mock.patch('ebcli.operations.createops.heuristics.directory_is_empty')
     @mock.patch('ebcli.operations.createops.io.echo')
-    @mock.patch('ebcli.operations.createops.download_sample_app_user_choice')
+    @mock.patch('ebcli.operations.createops.io.get_boolean_response')
     def test_should_download_sample_app(
             self,
-            download_sample_app_user_choice_mock,
+            get_boolean_response_mock,
             echo_mock,
-            directory_id_empty_mock
+            directory_is_empty_mock
     ):
-        directory_id_empty_mock.return_value = True
+        directory_is_empty_mock.return_value = True
 
-        for user_input in ['y', 'Y']:
-            download_sample_app_user_choice_mock.return_value = user_input
-            self.assertTrue(createops.should_download_sample_app())
-
-        for user_input in ['n', 'N']:
-            download_sample_app_user_choice_mock.return_value = user_input
-            self.assertFalse(createops.should_download_sample_app())
-
-    @mock.patch('ebcli.operations.createops.heuristics.directory_is_empty')
-    @mock.patch('ebcli.operations.createops.io.echo')
-    @mock.patch('ebcli.operations.createops.download_sample_app_user_choice')
-    def test_should_download_sample_app__request_choice_until_valid_input_is_provided(
-            self,
-            download_sample_app_user_choice_mock,
-            echo_mock,
-            directory_id_empty_mock
-    ):
-        directory_id_empty_mock.return_value = True
-        download_sample_app_user_choice_mock.side_effect = [
-            'u',
-            'v',
-            'x',
-            'y'
-        ]
+        get_boolean_response_mock.return_value = True
         self.assertTrue(createops.should_download_sample_app())
-        echo_mock.assert_has_calls(
-            [
-                mock.call('Do you want to download the sample application into the current directory?'),
-                mock.call("'u' is not a valid choice."),
-                mock.call("'v' is not a valid choice."),
-                mock.call("'x' is not a valid choice.")
-            ]
-        )
-        self.assertEqual(4, download_sample_app_user_choice_mock.call_count)
+
+        get_boolean_response_mock.return_value = False
+        self.assertFalse(createops.should_download_sample_app())
 
     @mock.patch('ebcli.operations.createops.statusops.alert_environment_status')
     @mock.patch('ebcli.operations.createops.resolve_roles')

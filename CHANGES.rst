@@ -2,6 +2,85 @@
 Changelog
 =========
 -------------------
+3.20.3 (2022-01-21)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.24.0`
+- Updated pathspec requirement to `==0.9.0`
+- Increased timestamp precision of version label
+- Fix ssh bugs
+
+-------------------
+3.20.2 (2021-08-30)
+-------------------
+- Updated urllib3 requirement to `>=1.26.5`
+
+-------------------
+3.20.1 (2021-07-13)
+-------------------
+- Changed IAM document for China region
+- Updated botocore requirement to `>=1.21.0,<1.22.0`
+
+-------------------
+3.20.0 (2021-06-09)
+-------------------
+- Updated PyYAML requirement to `>=5.3.1,<5.5`
+- Updated default log group for AL2 platforms
+- Added two new options for config command
+- Added a new command appversion to create application versions without deployment
+- Replaced default service role policy
+
+-------------------
+3.19.4 (2021-03-11)
+-------------------
+- Updated botocore requirement to `>=1.19.0,<1.21.0`
+- Updated requests requirement to `>=2.20.1,<=2.26`
+- Updated semantic_version requirement to `2.8.5`
+- Updated six requirement to `>=1.11.0,<1.15.0`
+- Updated platform lookup logic for `eb config put` command
+- Updated docker build command to use tags
+
+-------------------
+3.19.3 (2021-01-15)
+-------------------
+- Fixed UnicodeDecode error causing `eb logs` and `eb appversion` command to fail
+- Updated success event look up logic for `eb logs` command
+
+-------------------
+3.19.2 (2020-10-26)
+-------------------
+- Updated botocore requirement to `>=1.19.0,<1.20.0`
+- Updated coloroma requirement to `>=0.2.5,<0.4.4`
+- Updated python-dateutil requirement to `>=2.1,<3.0.0`
+- Updated requests requirement to `>=2.20.1,<=2.24`
+- Updated six requirement to `>=1.12.0,<=1.15.0`
+- Updated urllib3 requirement to `>=1.25.4,<1.25.8/1.26`
+
+-------------------
+3.19.1 (2020-10-15)
+-------------------
+- Fixed bug that caused `eb logs --all/--zip` to fail for AL2 platforms
+
+-------------------
+3.19.0 (2020-09-08)
+-------------------
+- Added support for shared application load balancer during environment creation
+- Added `--shared-lb` and `--shared-lb-port` arguments to the `eb create` command
+- Removed default value of elb-type for non-interactive create environment flow
+- Updated botocore requirement to `>=1.17,<1.18`
+- Updated pytest-cov requirement to `<=2.9`
+
+-------------------
+3.18.2 (2020-07-06)
+-------------------
+- Ignore socket files during app version creation
+- Add platform branch support to eb local run
+- Set default value of elb-type to "application"
+- Check for security-group ssh rule before attempting to create one
+- Fix fetch logic for CodeCommit branches
+- Add fallback for regions with unknown CodeCommit support
+- Unify boolean prompts to use a single implementation
+
+-------------------
 3.18.1 (2020-04-28)
 -------------------
 - Added af-south-1 (Cape Town) region
@@ -30,7 +109,7 @@ Changelog
 3.17.1 (2020-01-22)
 -------------------
 - Updated botocore requirement to `>=1.14.0,<1.15`
-- Updated PyYAML requirement to `>=5.2, <5.3`
+- Updated PyYAML requirement to `>=5.2,<5.3`
 - Updated docker-compose requirement to `>=1.25.2,<1.26.0`
 
 -------------------

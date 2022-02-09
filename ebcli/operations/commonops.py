@@ -54,7 +54,7 @@ LOG = minimal_logger(__name__)
 def wait_for_success_events(request_id, timeout_in_minutes=None,
                             sleep_time=5, stream_events=True, can_abort=False,
                             streamer=None, app_name=None, env_name=None, version_label=None,
-                            platform_arn=None, timeout_error_message=None):
+                            platform_arn=None, timeout_error_message=None, log_events=False):
     if timeout_in_minutes == 0:
         return
     if timeout_in_minutes is None:
@@ -104,7 +104,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                         )
 
                     _raise_if_error_event(event.message)
-                    if _is_success_event(event.message):
+                    if _is_success_event(event.message, log_events):
                         return
                     last_time = event.event_date
                 else:
@@ -142,7 +142,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
                     last_time = event.event_date
 
                 _raise_if_error_event(event.message)
-                if _is_success_event(event.message):
+                if _is_success_event(event.message, log_events):
                     return
     finally:
         streamer.end_stream()
@@ -282,7 +282,7 @@ def _raise_if_error_event(message):
         raise ServiceError(message)
 
 
-def _is_success_event(message):
+def _is_success_event(message, log_events=False):
     if message == responses['logs.pulled']:
         return True
     if message == responses['env.terminated']:
@@ -294,6 +294,8 @@ def _is_success_event(message):
     if message == responses['app.deletesuccess']:
         return True
     if message == responses['event.greenmessage']:
+        return True
+    if message == responses['event.instancedeploymentsuccess'] and log_events:
         return True
     if responses['logs.successtail'] in message:
         return True
@@ -503,9 +505,8 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
     else:
         version_label = source_control.get_version_label()
         if staged:
-            timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            timestamp = datetime.now().strftime("%y%m%d_%H%M%S%f")
             version_label = version_label + '-stage-' + timestamp
-
     if message:
         description = message
     else:
@@ -1081,7 +1082,11 @@ def set_region_for_application(interactive, region, force_non_interactive, platf
 
 
 def _create_instance_role(role_name, policy_arns):
-    document = iam_documents.EC2_ASSUME_ROLE_PERMISSION
+    region = aws.get_region_name()
+    if isinstance(region, str) and region.split('-')[0] == 'cn':
+        document = iam_documents.EC2_ASSUME_ROLE_PERMISSION_CN
+    else:
+        document = iam_documents.EC2_ASSUME_ROLE_PERMISSION
     ret = iam.create_role_with_policy(role_name, document, policy_arns)
     return ret
 

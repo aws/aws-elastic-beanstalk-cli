@@ -36,6 +36,7 @@ from ebcli.operations import (
     platform_branch_ops,
     saved_configs,
     solution_stack_ops,
+    shared_lb_ops,
     spotops,
     statusops,
 )
@@ -82,6 +83,8 @@ class CreateController(AbstractBaseController):
             (['--cfg'], dict(help=flag_text['create.config'])),
             (['--source'], dict(help=flag_text['create.source'])),
             (['--elb-type'], dict(help=flag_text['create.elb_type'])),
+            (['-ls', '--shared-lb'], dict(help=flag_text['create.shared_lb'])),
+            (['-lp', '--shared-lb-port'], dict(help=flag_text['create.shared_lb_port'])),
             (['-es', '--enable-spot'], dict(action='store_true', help=flag_text['create.enable_spot'])),
             (['-sm', '--spot-max-price'], dict(help=flag_text['create.maxprice'])),
             (['-it', '--instance-types'], dict(help=flag_text['create.instance_types'])),
@@ -156,6 +159,8 @@ class CreateController(AbstractBaseController):
         timeout = self.app.pargs.timeout
         cfg = self.app.pargs.cfg
         elb_type = self.app.pargs.elb_type
+        shared_lb = self.app.pargs.shared_lb
+        shared_lb_port = self.app.pargs.shared_lb_port
         source = self.app.pargs.source
         process = self.app.pargs.process
         enable_spot = self.app.pargs.enable_spot
@@ -184,6 +189,15 @@ class CreateController(AbstractBaseController):
 
         if single and elb_type:
             raise InvalidOptionsError(strings['create.single_and_elb_type'])
+
+        if single and shared_lb:
+            raise InvalidOptionsError(alerts['create.can_not_use_options_together'].format("--single", "--shared-lb"))
+
+        if (shared_lb or shared_lb_port) and elb_type != 'application':
+            raise InvalidOptionsError(alerts['sharedlb.wrong_elb_type'])
+
+        if shared_lb_port and not shared_lb:
+            raise InvalidOptionsError(alerts['sharedlb.missing_shared_lb'])
 
         if cname and tier and Tier.looks_like_worker_tier(tier):
             raise InvalidOptionsError(strings['worker.cname'])
@@ -221,11 +235,13 @@ class CreateController(AbstractBaseController):
         env_name = provided_env_name or get_environment_name(app_name, group)
         cname = cname or get_environment_cname(env_name, provided_env_name, tier)
         key_name = key_name or commonops.get_default_keyname()
+        vpc = self.form_vpc_object(tier, single)
         elb_type = elb_type or get_elb_type_from_customer(interactive, single, tier)
+        shared_lb = get_shared_load_balancer(interactive, elb_type, platform, shared_lb, vpc)
+        shared_lb_port = shared_lb_port or shared_lb_ops.get_shared_lb_port_from_customer(interactive, shared_lb)
         enable_spot = enable_spot or spotops.get_spot_request_from_customer(interactive)
         instance_types = instance_types or spotops.get_spot_instance_types_from_customer(interactive, enable_spot)
         database = self.form_database_object()
-        vpc = self.form_vpc_object(tier, single)
 
         if not timeout and database:
             timeout = 15
@@ -250,6 +266,8 @@ class CreateController(AbstractBaseController):
             database=database,
             vpc=vpc,
             elb_type=elb_type,
+            shared_lb = shared_lb,
+            shared_lb_port = shared_lb_port,
             enable_spot=enable_spot,
             instance_types=instance_types,
             spot_max_price=spot_max_price,
@@ -525,7 +543,9 @@ def get_elb_type_from_customer(interactive, single, tier):
     :param tier: the tier type of the environment
     :return: selected ELB type which is one among ['application', 'classic', 'network']
     """
-    if not interactive or single or (tier and not tier.is_webserver()):
+    if single or (tier and not tier.is_webserver()):
+        return
+    elif not interactive:
         return
 
     io.echo()
@@ -537,6 +557,15 @@ def get_elb_type_from_customer(interactive, single, tier):
     elb_type = result
 
     return elb_type
+
+
+def get_shared_load_balancer(interactive, elb_type, platform, shared_lb=None, vpc=None):
+    if shared_lb:
+        shared_lb = shared_lb_ops.validate_shared_lb_for_non_interactive(shared_lb)
+    else:
+        shared_lb = shared_lb_ops.get_shared_lb_from_customer(interactive, elb_type, platform, vpc)
+
+    return shared_lb
 
 
 def get_and_validate_envars(environment_variables_input):

@@ -15,7 +15,7 @@ import copy
 from ebcli.objects.solutionstack import SolutionStack
 from ebcli.objects.platform import PlatformVersion
 from ebcli.resources.strings import strings
-from ebcli.resources.statics import namespaces, option_names
+from ebcli.resources.statics import elb_names, namespaces, option_names
 
 
 class OptionSetting(object):
@@ -57,7 +57,7 @@ class CreateEnvironmentRequest(object):
                  single_instance=False, key_name=None,
                  sample_application=False, tags=None, scale=None,
                  database=None, vpc=None, template_name=None, group_name=None,
-                 elb_type=None, enable_spot=None, instance_types=None,
+                 elb_type=None, shared_lb=None, shared_lb_port=None, enable_spot=None, instance_types=None,
                  spot_max_price=None, on_demand_base_capacity=None,
                  on_demand_above_base_capacity=None, min_instances=None,
                  max_instances=None):
@@ -89,6 +89,8 @@ class CreateEnvironmentRequest(object):
             self.vpc = dict(vpc)
 
         self.elb_type = elb_type
+        self.shared_lb = shared_lb
+        self.shared_lb_port = shared_lb_port
         self.scale = None
         self.option_settings = []
         self.compiled = False
@@ -148,6 +150,7 @@ class CreateEnvironmentRequest(object):
             self.compile_vpc_options()
             self.compile_spot_options()
             self.compile_common_options()
+            self.compile_shared_lb_options()
             self.compiled = True
 
     def get_standard_kwargs(self):
@@ -203,6 +206,11 @@ class CreateEnvironmentRequest(object):
                 namespaces.LAUNCH_CONFIGURATION,
                 option_names.INSTANCE_TYPE,
                 self.instance_type)
+        if self.instance_types:
+            self.add_option_setting(
+                namespaces.SPOT,
+                option_names.INSTANCE_TYPES,
+                self.instance_types)
         if self.single_instance:
             self.add_option_setting(
                 namespaces.ENVIRONMENT,
@@ -336,11 +344,6 @@ class CreateEnvironmentRequest(object):
         namespace = namespaces.SPOT
         self.add_option_setting(namespace, option_names.ENABLE_SPOT, 'true')
 
-        if self.instance_types:
-            self.add_option_setting(
-                namespaces.SPOT,
-                option_names.INSTANCE_TYPES,
-                self.instance_types)
 
         if self.on_demand_base_capacity:
             self.add_option_setting(namespace, option_names.ON_DEMAND_BASE_CAPACITY, self.on_demand_base_capacity)
@@ -359,6 +362,29 @@ class CreateEnvironmentRequest(object):
                 namespace,
                 option_names.ON_DEMAND_PERCENTAGE_ABOVE_BASE_CAPACITY,
                 self.on_demand_above_base_capacity)
+
+    def compile_shared_lb_options(self):
+        if self.elb_type != elb_names.APPLICATION_VERSION or self.shared_lb==None:
+            return
+
+        if self.shared_lb:
+            self.add_option_setting(
+                namespaces.ENVIRONMENT,
+                option_names.LOAD_BALANCER_IS_SHARED,
+                'true'
+            )
+            self.add_option_setting(
+                namespaces.LOAD_BALANCER_V2,
+                option_names.SHARED_LOAD_BALANCER,
+                self.shared_lb)
+
+        if self.shared_lb_port and self.shared_lb:
+            namespace = namespaces.LISTENER.format(self.shared_lb_port)
+            self.add_option_setting(
+                namespace,
+                option_names.LISTENER_RULE,
+                'default'
+            )
 
 
 class CloneEnvironmentRequest(CreateEnvironmentRequest):

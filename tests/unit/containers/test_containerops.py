@@ -10,17 +10,30 @@
 # distributed on an 'AS IS' BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-
-from ebcli.containers import containerops as cops
 from mock import patch, Mock
 from unittest import TestCase
 
+from ebcli.containers import containerops as cops
+from ebcli.objects.platform import PlatformVersion
 
-PRECONFIG_SOLN_STK = Mock(platform_shorthand='GlassFish 4.1 Java 8 (Preconfigured - Docker)')
-GENERIC_SOLN_STK = Mock(language_name='Docker')
-MULTI_SOLN_STK = Mock(language_name='Multi-container Docker')
-NON_DOCKER_SOLN_STK = Mock(platform_shorthand='Ruby 2.0 (Puma)', language_name='Ruby')
-EXPECTED_PRECONFIG_LOG_PATH = '/usr/local/glassfish4/glassfish/domains/domain1/logs'
+
+PRECONFIG_SOLN_STK = Mock(platform_shorthand='GlassFish 5.0 Java 8 (Preconfigured - Docker)')
+PRECONFIG_PLATFORM_VERSION = PlatformVersion(
+    platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/Preconfigured Docker - GlassFish 5.0 with Java 8 running on 64bit Amazon Linux/1.0.0'
+)
+GENERIC_SOLN_STK = Mock(platform_shorthand='Docker', language_name='Docker')
+GENERIC_PLATFORM_VERSION = PlatformVersion(
+    platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/Docker running on 64bit Amazon Linux 2/1.0.0'
+)
+MULTI_SOLN_STK = Mock(platform_shorthand='Multi-container Docker', language_name='Multi-container Docker')
+MULTI_PLATFORM_VERSION = PlatformVersion(
+    platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/Multi-container Docker running on 64bit Amazon Linux/1.0.0'
+)
+NON_DOCKER_SOLN_STK = Mock(platform_shorthand='Ruby 2.6 (Puma)', language_name='Ruby')
+NON_DOCKER_PLATFORM_VERSION = PlatformVersion(
+    platform_arn='arn:aws:elasticbeanstalk:us-east-1::platform/Puma with Ruby 2.6 running on 64bit Amazon Linux/1.0.0'
+)
+EXPECTED_PRECONFIG_LOG_PATH = '/usr/local/glassfish5/glassfish/domains/domain1/logs'
 
 
 class TestContainerOps(TestCase):
@@ -29,8 +42,11 @@ class TestContainerOps(TestCase):
 
     def test_is_container(self):
         self.assertTrue(cops.is_container(GENERIC_SOLN_STK, self.config))
+        self.assertTrue(cops.is_container(GENERIC_PLATFORM_VERSION, self.config))
         self.assertTrue(cops.is_container(PRECONFIG_SOLN_STK, self.config))
+        self.assertTrue(cops.is_container(PRECONFIG_PLATFORM_VERSION, self.config))
         self.assertFalse(cops.is_container(NON_DOCKER_SOLN_STK, self.config))
+        self.assertFalse(cops.is_container(NON_DOCKER_PLATFORM_VERSION, self.config))
 
     def test_is_preconfigured(self):
         self.assertTrue(cops.is_preconfigured(PRECONFIG_SOLN_STK, self.config))
@@ -56,5 +72,8 @@ class TestContainerOps(TestCase):
 
     def test_get_runtime_default_log_path(self):
         actual_log = cops.get_runtime_default_log_path(PRECONFIG_SOLN_STK,
+                                                       self.config)
+        self.assertEqual(EXPECTED_PRECONFIG_LOG_PATH, actual_log)
+        actual_log = cops.get_runtime_default_log_path(PRECONFIG_PLATFORM_VERSION,
                                                        self.config)
         self.assertEqual(EXPECTED_PRECONFIG_LOG_PATH, actual_log)

@@ -557,7 +557,7 @@ def _resolve_s3_bucket_and_key(
 def _resolve_version_label(source_control, staged):
     version_label = source_control.get_version_label()
     if staged:
-        timestamp = _datetime_now().strftime("%y%m%d_%H%M%S")
+        timestamp = _datetime_now().strftime("%y%m%d_%H%M%S%f")
         version_label = version_label + '-stage-' + timestamp
     return version_label
 

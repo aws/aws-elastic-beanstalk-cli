@@ -17,11 +17,11 @@ from cement.core.controller import expose
 
 from ebcli.objects.platform import PlatformVersion
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.resources.strings import strings, flag_text
+from ebcli.resources.strings import strings, flag_text, alerts
 from ebcli.core import io, fileoperations
-from ebcli.operations import configops, saved_configs, solution_stack_ops
+from ebcli.operations import configops, platformops, saved_configs, solution_stack_ops
 from ebcli.operations.tagops import tagops
-from ebcli.objects.exceptions import InvalidSyntaxError, NotFoundError
+from ebcli.objects.exceptions import InvalidSyntaxError, NotFoundError, InvalidOptionsError
 from ebcli.lib import utils
 
 
@@ -38,7 +38,10 @@ class ConfigController(AbstractBaseController):
                                        help=flag_text['config.nohang'])),
             (['--timeout'], dict(type=int, help=flag_text['general.timeout'])),
             (['--cfg'], dict(help='name of configuration')),
-            (['--tags'], dict(help=flag_text['config.tags']))
+            (['--tags'], dict(help=flag_text['config.tags'])),
+            (['-d', '--display'], dict(action='store_true', help=flag_text['config.display'])),
+            (['-u', '--update'], dict(help=flag_text['config.update'])),
+            (['-f', '--format'], dict(default='yaml', choices=['json', 'yaml'], help=flag_text['config.format']))
         ]
         epilog = strings['config.epilog']
 
@@ -48,24 +51,34 @@ class ConfigController(AbstractBaseController):
         timeout = self.app.pargs.timeout
         nohang = self.app.pargs.nohang
         cfg = self.app.pargs.cfg
+        display = self.app.pargs.display
+        update = self.app.pargs.update
+        output_format = self.app.pargs.format
 
-        input_exists = not sys.stdin.isatty()
-        if not cfg and not input_exists:
-            configops.update_environment_configuration(app_name, env_name,
-                                                       nohang,
-                                                       timeout=timeout)
-            return
+        if display and update:
+            raise InvalidOptionsError(alerts['create.can_not_use_options_together'].format("--display", "--update"))
+        if display:
+            configops.display_environment_configuration(app_name, env_name, output_format=output_format)
+        elif update:
+            configops.modify_environment_configuration(env_name, update, nohang, timeout)
+        else:
+            input_exists = not sys.stdin.isatty()
+            if not cfg and not input_exists:
+                configops.update_environment_configuration(app_name, env_name,
+                                                           nohang,
+                                                           timeout=timeout)
+                return
 
-        if cfg:
-            cfg_name = saved_configs.resolve_config_name(app_name, cfg)
-            saved_configs.update_environment_with_config_file(env_name,
-                                                              cfg_name, nohang,
-                                                              timeout=timeout)
-        elif input_exists:
-            data = sys.stdin.read()
-            saved_configs.update_environment_with_config_data(env_name, data,
-                                                              nohang,
-                                                              timeout=timeout)
+            if cfg:
+                cfg_name = saved_configs.resolve_config_name(app_name, cfg)
+                saved_configs.update_environment_with_config_file(env_name,
+                                                                  cfg_name, nohang,
+                                                                  timeout=timeout)
+            elif input_exists:
+                data = sys.stdin.read()
+                saved_configs.update_environment_with_config_data(env_name, data,
+                                                                  nohang,
+                                                                  timeout=timeout)
 
     @expose(help='Save a configuration of the environment.')
     def save(self):
@@ -90,7 +103,7 @@ class ConfigController(AbstractBaseController):
         platform = solution_stack_ops.get_default_solution_stack()
 
         if not PlatformVersion.is_valid_arn(platform):
-            platform = solution_stack_ops.find_solution_stack_from_string(platform)
+            platform = platformops.get_platform_for_platform_string(platform)
             platform = platform.name
 
         saved_configs.update_config(app_name, name)

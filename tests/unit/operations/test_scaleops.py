@@ -22,7 +22,7 @@ from ebcli.operations import scaleops
 from .. import mock_responses
 
 
-class TestSSHOps(unittest.TestCase):
+class TestScaleOps(unittest.TestCase):
     def setUp(self):
         self.root_dir = os.getcwd()
         if not os.path.exists('testDir'):

@@ -13,19 +13,71 @@
 import mock
 import unittest
 
+from botocore.exceptions import EndpointConnectionError
 from ebcli.lib import codecommit
+from ebcli.objects.exceptions import ValidationError
 
 from .. import mock_responses
 
 
 class TestCloudWatch(unittest.TestCase):
-    def test_region_not_supported(self):
-        region_supported = codecommit.region_supported('fake_region')
+    @mock.patch('ebcli.lib.codecommit.aws.get_region_name')
+    @mock.patch('ebcli.lib.codecommit.list_repositories')
+    def test_region_supported__supported_region(
+        self,
+        list_repositories_mock,
+        get_region_name_mock,
+    ):
+        get_region_name_mock.return_value = 'us-east-1'
+        region_supported = codecommit.region_supported()
+        self.assertTrue(region_supported)
+
+    @mock.patch('ebcli.lib.codecommit.aws.get_region_name')
+    @mock.patch('ebcli.lib.codecommit.list_repositories')
+    def test_region_supported__unsupported_region(
+        self,
+        list_repositories_mock,
+        get_region_name_mock,
+    ):
+        get_region_name_mock.return_value = 'af-south-1'
+        region_supported = codecommit.region_supported()
         self.assertFalse(region_supported)
 
-    def test_region_supported(self):
-        region_supported = codecommit.region_supported('us-east-1')
+    @mock.patch('ebcli.lib.codecommit.aws.get_region_name')
+    @mock.patch('ebcli.lib.codecommit.list_repositories')
+    def test_region_supported__unknown_supported_region(
+        self,
+        list_repositories_mock,
+        get_region_name_mock,
+    ):
+        get_region_name_mock.return_value = 'unknown-region'
+        region_supported = codecommit.region_supported()
         self.assertTrue(region_supported)
+
+    @mock.patch('ebcli.lib.codecommit.aws.get_region_name')
+    @mock.patch('ebcli.lib.codecommit.list_repositories')
+    def test_region_supported__unknown_supported_region_with_exception(
+        self,
+        list_repositories_mock,
+        get_region_name_mock,
+    ):
+        get_region_name_mock.return_value = 'unknown-region'
+        list_repositories_mock.side_effect = ValidationError
+        region_supported = codecommit.region_supported()
+        self.assertTrue(region_supported)
+
+    @mock.patch('ebcli.lib.codecommit.aws.get_region_name')
+    @mock.patch('ebcli.lib.codecommit.list_repositories')
+    def test_region_supported__unknown_supported_region_with_exception(
+        self,
+        list_repositories_mock,
+        get_region_name_mock,
+    ):
+        get_region_name_mock.return_value = 'unknown-region'
+        list_repositories_mock.side_effect = EndpointConnectionError(
+            endpoint_url='xxx')
+        region_supported = codecommit.region_supported()
+        self.assertFalse(region_supported)
 
     @mock.patch('ebcli.lib.codecommit.aws.make_api_call')
     def test_list_branches(

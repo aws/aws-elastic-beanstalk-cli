@@ -276,7 +276,7 @@ class TestConfigPut(TestConfig):
         )
 
     @mock.patch('ebcli.controllers.config.solution_stack_ops.get_default_solution_stack')
-    @mock.patch('ebcli.controllers.config.solution_stack_ops.find_solution_stack_from_string')
+    @mock.patch('ebcli.controllers.config.platformops.get_platform_for_platform_string')
     @mock.patch('ebcli.controllers.config.saved_configs.update_config')
     @mock.patch('ebcli.controllers.config.saved_configs.validate_config_file')
     @mock.patch('ebcli.controllers.config.ConfigController.get_app_name')
@@ -285,12 +285,12 @@ class TestConfigPut(TestConfig):
             get_app_name_mock,
             validate_config_file_mock,
             update_config_mock,
-            find_solution_stack_from_string_mock,
+            get_platform_for_platform_string_mock,
             get_default_solution_stack_mock
     ):
         get_default_solution_stack_mock.return_value = '64bit Amazon Linux 2018.03 v2.8.0 running Go 1.10'
         get_app_name_mock.return_value = 'my-application'
-        find_solution_stack_from_string_mock.return_value = self.platform
+        get_platform_for_platform_string_mock.return_value = self.platform
 
         app = EB(argv=['config', 'put', 'my-cfg-name.config'])
         app.setup()

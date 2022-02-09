@@ -163,6 +163,24 @@ class EnvironmentSettings(ConversionConfiguration):
                      ]:
                 del setting['ResourceName']
 
+    @staticmethod
+    def convert_usr_model_to_api(settings):
+        """
+        Convert a key-value based User model to api with namespaces
+        :return: an api model
+        """
+        changes = []
+        for (resource_namespace, options) in settings.items():
+            namespace, resource_name = _get_namespace_and_resource_name(resource_namespace)
+            if isinstance(options,dict):
+                for(option_name, value) in options.items():
+                    changes.append(_get_option_setting_dict(namespace, option_name, value, resource_name))
+            else:
+                for option_name in options:
+                    changes.append(_get_option_setting_dict(namespace, option_name, None, resource_name))
+        return changes
+
+
 
 def _get_option_setting_dict(namespace, optionname, value, resource_name):
     d = {'Namespace': namespace, 'OptionName': optionname}

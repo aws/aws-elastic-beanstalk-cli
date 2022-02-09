@@ -375,7 +375,10 @@ def encode_to_ascii(unicode_value):
 def decode_bytes(value):
     if sys.version_info[0] >= 3:
         if isinstance(value, bytes):
-            value = value.decode('utf8')
+            try:
+                value = value.decode('utf8')
+            except:
+                value = value.decode('utf-8', 'replace')
     return value
 
 

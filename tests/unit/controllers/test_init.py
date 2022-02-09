@@ -1631,7 +1631,7 @@ class TestInitModule(unittest.TestCase):
 
         get_branch_mock.assert_called_once_with('my-repository', 'my-branch')
         get_branch_interactive_mock.assert_not_called()
-        source_control_mock.setup_existing_codecommit_branch.assert_called_once_with('my-branch', None)
+        source_control_mock.setup_existing_codecommit_branch.assert_called_once_with('my-branch')
 
     @mock.patch('ebcli.controllers.initialize.codecommit.get_branch')
     @mock.patch('ebcli.controllers.initialize.get_branch_interactive')
@@ -1794,73 +1794,81 @@ class TestInitModule(unittest.TestCase):
     def test_configure_keyname__iis_platform(
             self,
             write_config_setting_mock,
-            get_keyname_mock
+            get_keyname_mock,
     ):
         initialize.configure_keyname('IIS 10', None, None, False, False)
 
         get_keyname_mock.assert_not_called()
         write_config_setting_mock.assert_not_called()
 
-    @mock.patch('ebcli.controllers.initialize.io.validate_action')
+    @mock.patch('ebcli.controllers.initialize.io.get_boolean_response')
+    @mock.patch('ebcli.controllers.initialize.establish_codecommit_repository_and_branch')
+    @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
     def test_configure_codecommit__source_location_not_specified__customer_opts_out(
             self,
-            validate_action_mock
+            get_source_control_mock,
+            establish_codecommit_repository_and_branch_mock,
+            get_boolean_response_mock,
     ):
-        validate_action_mock.side_effect = initialize.ValidationError
+        get_boolean_response_mock.return_value = False
 
-        initialize.configure_codecommit(None)
+        actual_repository, actual_branch = initialize.configure_codecommit(None)
 
-        validate_action_mock.assert_called_once_with(
-            'Do you wish to continue with CodeCommit? (y/N) (default is n)',
-            'y'
-        )
+        get_boolean_response_mock.assert_called_once_with(
+            text='Do you wish to continue with CodeCommit?',
+            default=True)
+        self.assertIsNone(actual_repository)
+        self.assertIsNone(actual_branch)
 
-    @mock.patch('ebcli.controllers.initialize.io.validate_action')
+    @mock.patch('ebcli.controllers.initialize.io.get_boolean_response')
     @mock.patch('ebcli.controllers.initialize.establish_codecommit_repository_and_branch')
     @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
     def test_configure_codecommit__source_location_not_specified__customer_opts_in(
             self,
             get_source_control_mock,
             establish_codecommit_repository_and_branch_mock,
-            validate_action_mock
+            get_boolean_response_mock,
     ):
         source_control_mock = mock.MagicMock()
         get_source_control_mock.return_value = source_control_mock
-        validate_action_mock.side_effect = None
-        establish_codecommit_repository_and_branch_mock.return_value = ('repository', 'branch')
+        get_boolean_response_mock.return_value = True
+        establish_codecommit_repository_and_branch_mock.return_value = ('expected_repository', 'expected_branch')
 
-        initialize.configure_codecommit(None)
+        actual_repository, actual_branch = initialize.configure_codecommit(None)
 
-        validate_action_mock.assert_called_once_with(
-            'Do you wish to continue with CodeCommit? (y/N) (default is n)',
-            'y'
-        )
+        get_boolean_response_mock.assert_called_once_with(
+            text='Do you wish to continue with CodeCommit?',
+            default=True)
         source_control_mock.setup_codecommit_cred_config.assert_called_once_with()
         establish_codecommit_repository_and_branch_mock.assert_called_once_with(
             None, None, source_control_mock, None
         )
+        self.assertEqual('expected_repository', actual_repository)
+        self.assertEqual('expected_branch', actual_branch)
 
-    @mock.patch('ebcli.controllers.initialize.io.validate_action')
+    @mock.patch('ebcli.controllers.initialize.io.get_boolean_response')
     @mock.patch('ebcli.controllers.initialize.establish_codecommit_repository_and_branch')
     @mock.patch('ebcli.controllers.initialize.SourceControl.get_source_control')
     def test_configure_codecommit__source_location_specified(
             self,
             get_source_control_mock,
             establish_codecommit_repository_and_branch_mock,
-            validate_action_mock,
+            get_boolean_response_mock,
     ):
         source_control_mock = mock.MagicMock()
         get_source_control_mock.return_value = source_control_mock
-        validate_action_mock.side_effect = None
-        establish_codecommit_repository_and_branch_mock.return_value = ('repository', 'branch')
+        get_boolean_response_mock.return_value = False
+        establish_codecommit_repository_and_branch_mock.return_value = ('expected_repository', 'expected_branch')
 
-        initialize.configure_codecommit('codecommit/repository/branch')
+        actual_repository, actual_branch = initialize.configure_codecommit('codecommit/repository/branch')
 
-        validate_action_mock.assert_not_called()
+        get_boolean_response_mock.assert_not_called()
         source_control_mock.setup_codecommit_cred_config.assert_called_once_with()
         establish_codecommit_repository_and_branch_mock.assert_called_once_with(
             'repository', 'branch', source_control_mock, 'codecommit'
         )
+        self.assertEqual('expected_repository', actual_repository)
+        self.assertEqual('expected_branch', actual_branch)
 
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_application_name')
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_current_directory_name')
@@ -2064,7 +2072,7 @@ class TestInitModule(unittest.TestCase):
             )
         )
 
-        region_supported_mock.assert_called_once_with('us-west-10')
+        region_supported_mock.assert_called_once_with()
 
     @mock.patch('ebcli.controllers.initialize.codecommit.region_supported')
     @mock.patch('ebcli.controllers.initialize.fileoperations.is_git_directory_present')
@@ -2086,7 +2094,7 @@ class TestInitModule(unittest.TestCase):
             )
         )
 
-        region_supported_mock.assert_called_once_with('us-west-2')
+        region_supported_mock.assert_called_once_with()
         echo_mock.assert_called_once_with(
             'Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization'
         )
@@ -2114,7 +2122,7 @@ class TestInitModule(unittest.TestCase):
             )
         )
 
-        region_supported_mock.assert_called_once_with('us-west-2')
+        region_supported_mock.assert_called_once_with()
         program_is_installed_mock.assert_called_once_with('git')
         echo_mock.assert_called_once_with(
             'Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization'
@@ -2146,7 +2154,7 @@ class TestInitModule(unittest.TestCase):
             )
         )
 
-        region_supported_mock.assert_called_once_with('us-west-2')
+        region_supported_mock.assert_called_once_with()
         program_is_installed_mock.assert_called_once_with('git')
         echo_mock.assert_not_called()
         directory_is_already_associated_with_a_branch_mock.assert_called_once_with()
@@ -2177,7 +2185,7 @@ class TestInitModule(unittest.TestCase):
             )
         )
 
-        region_supported_mock.assert_called_once_with('us-west-2')
+        region_supported_mock.assert_called_once_with()
         program_is_installed_mock.assert_called_once_with('git')
         echo_mock.assert_not_called()
         directory_is_already_associated_with_a_branch_mock.assert_called_once_with()

@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 from cement.utils.misc import minimal_logger
 from ebcli.core import fileoperations, io
-from ebcli.lib import codecommit
+from ebcli.lib import aws, codecommit
 from ebcli.objects.exceptions import CommandError, ValidationError
 from ebcli.objects.sourcecontrol import SourceControl
 
@@ -96,12 +96,13 @@ def initialize_codecommit():
         io.log_error("Cannot setup CodeCommit because there is no Source Control setup")
         return
 
-    if codecommit.region_supported(commonops.get_default_region()):
+    if codecommit.region_supported():
         codecommit_setup = print_current_codecommit_settings()
         if codecommit_setup:
-            try:
-                io.validate_action("Do you wish to continue (y/n)", "y")
-            except ValidationError:
+            should_continue = io.get_boolean_response(
+                text='Do you wish to continue?',
+                default=True)
+            if not should_continue:
                 return
 
         source_control.setup_codecommit_cred_config()
@@ -113,7 +114,7 @@ def initialize_codecommit():
         set_repo_default_for_current_environment(repository)
         set_branch_default_for_current_environment(branch)
     else:
-        io.log_error("The region {0} is not supported by CodeCommit".format(commonops.get_default_region()))
+        io.log_error("The region {0} is not supported by CodeCommit".format(aws.get_region_name()))
 
 
 def disable_codecommit():

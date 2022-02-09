@@ -57,7 +57,6 @@ To get started, enter "eb platform init". Then enter "eb platform create".""",
     'create.downloading_sample_application': 'Downloading sample application to the '
                                              'current directory.',
     'create.sample_application_download_complete': 'Download complete.',
-    'create.user_choice_error': "'{user_choice}' is not a valid choice.",
     'events.info': 'Gets recent events.',
     'open.info': 'Opens the application URL in a browser.',
     'console.info': 'Opens the environment in the AWS Elastic Beanstalk Management Console.',
@@ -203,12 +202,13 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'create.missing_plus_sign_in_group_name': 'The environment name specified in env.yaml does not end '
                                               'with a \'+\', but a group suffix was provided. Please '
                                               'add a trailing \'+\' to the environment name',
-    'create.valid_spot_instances' : 'For Spot Instance types, specify a comma-separated list of two or more valid EC2 instance',
-    'create.missing_enable_spot' : 'Specify the "--enable-spot" argument with any spot-related arguments.',
+    'create.valid_spot_instances': 'For Spot Instance types, specify a comma-separated list of two or more valid EC2 instance',
+    'create.missing_enable_spot': 'Specify the "--enable-spot" argument with any spot-related arguments.',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',
+    'ssh.noinstance': "You tried to connect to an environment with no running instances.  SSH can only connect to "
+                      "running instances.  Use 'eb health' to display the status of instances in this environment.",
     'terminate.noenv': 'To delete the application and all application versions, type "eb terminate '
                        '--all".',
-
     'cred.prompt':  'You have not yet set up your credentials or your credentials are incorrect \n'
                     'You must provide your credentials.',
     'prompt.invalid': 'You did not provide a valid value.',
@@ -672,21 +672,17 @@ prompts = {
                            'Version:       {version}\n'
                            'Platform:      {platform}\n'
                            'Terminated:    {dat_term}\n'
-                           'Restore this environment? [y/n]\n',
+                           'Restore this environment?',
 
     'codesource.codesourceprompt': 'Select your codesource',
-
-    'appversion.redeploy.validate': 'Do you want to deploy a previous or '
-                                    'different version? (y/n)',
     'appversion.redeploy.prompt': 'Select a version # to deploy (1 to {}).',
     'appversion.redeploy.inprogress': 'Deploying version {}.',
 
     'appversion.delete.validate': 'Do you want to delete the application '
-                                  'version with label: {}? (y/n)',
+                                  'version with label: {}?',
     'appversion.delete.prompt': 'Select a version # to delete (1 to {}).',
 
-    'codecommit.usecc': 'Do you wish to continue with CodeCommit? (y/N) '
-                        '(default is n)',
+    'codecommit.usecc': 'Do you wish to continue with CodeCommit?',
 
     'codebuild.getplatform': 'Could not determine best image for buildspec '
                              'file please select from list.\n Current chosen '
@@ -697,7 +693,11 @@ prompts = {
                                  'types separated by commas (at least two instance '
                                  'types are recommended).',
     'spot.enable_spot_prompt': 'Would you like to enable Spot Fleet requests '
-                               'for this environment?'
+                               'for this environment?',
+    'sharedlb.shared_load_balancer_request_prompt': 'Your account has one or more sharable load balancers. '
+                                                    'Would you like your new environment to use a shared load balancer?',
+    'sharedlb.shared_load_balancer_prompt': 'Select a shared load balancer',
+    'sharedlb.listener_prompt': 'Select a listener port for your shared load balancer',
 }
 
 alerts = {
@@ -725,10 +725,27 @@ alerts = {
                               "longer supported.",
     'platform.invalidstring': 'Elastic Beanstalk can\'t find a platform '
                               'version that matches "{}".',
+    'sharedlb.listener': 'The selected load balancer has no listeners. '
+                         'This prevents routing requests to your environment instances. '
+                         'Use EC2 to add a listener to your load balancer.',
+    'create.can_not_use_options_together': 'You can\'t use the "{}" and "{}" options together.',
+    'sharedalb.listener': 'The selected load balancer has no listeners. '
+                          'This prevents routing requests to your environment instances. '
+                          'Use EC2 to add a listener to your load balancer.',
+    'sharedlb.missing_shared_lb': 'To specify "--shared-lb-port", also specify "--shared-lb" '
+                                  'and an Application Load Balancer ("--elb-type application").',
+    'sharedlb.wrong_elb_type': 'To specify any shared load balancer options, '
+                                 'also specify an Application Load Balancer ("--elb-type application").',
+    'sharedlb.terminate': 'The environment "{env_name}" uses a shared load balancer. '
+                           'Processes and rules that you added during environment creation '
+                           'will be deleted during environment termination. '
+                           'Resources created outside of Elastic Beanstalk, '
+                           'like load balancers and listeners, will not be affected.',
 }
 
 flag_text = {
     'general.env': 'environment name',
+
     'base.version': 'show application/version info',
     'base.verbose': 'toggle verbose output',
     'base.profile': 'use a specific profile from your credential file',
@@ -749,6 +766,9 @@ flag_text = {
                          'for your code.'
                          ' Availables sources: {codecommit}. Available actions: '
                          '{enable, disable}',
+    'config.display': 'display current environment configuration settings',
+    'config.format': 'string format for output:  JSON or YAML',
+    'config.update': 'update configuration settings for current environment',
     'config.tags': 'a comma separated list of tags as key=value pairs',
     'create.name': 'desired Environment name',
     'create.cname': 'cname prefix',
@@ -781,7 +801,8 @@ flag_text = {
     'create.on_demand_above_base_percent' : 'percentage of additional On-Demand Instances in a mixed On-Demand / Spot environment',
     'create.min_instances' : 'minimum number of instances in the new environment',
     'create.max_instances' : 'maximum number of instances in the new environment',
-
+    'create.shared_lb': 'ARN of shared load balancer',
+    'create.shared_lb_port': 'Port number for shared load balancer listener',
 
     'deploy.env': 'environment name',
     'deploy.modules': 'modules to deploy',
@@ -904,6 +925,10 @@ flag_text = {
 
     'codesource.sourcename': 'name of the code source to set as default',
 
+    'appversion.create': 'Create a new version for your application.',
+    'appversion.application': 'The name of the application you are addressing.',
+    'appversion.staged': 'Create application version using files staged in git index instead of the HEAD commit.',
+    'appversion.source': 'Source of code to create application version directly. example: source_location/repo/branch',
     'appversion.delete': 'delete the specified application version',
 
     'lifecycle.print': 'prints the current application version lifecycle policy',
@@ -940,6 +965,7 @@ responses = {
     'event.failedupdate': 'The environment was reverted to the previous configuration setting.',
     'event.updatebad': 'Update environment operation is complete, but with errors.',
     'event.updatefailed': 'Failed to deploy configuration.',
+    'event.instancedeploymentsuccess': 'Instance deployment completed successfully.',
     'git.norepository': 'Error: Not a git repository '
                         '(or any of the parent directories): .git',
     'health.nodescribehealth': 'DescribeEnvironmentHealth is not supported.',

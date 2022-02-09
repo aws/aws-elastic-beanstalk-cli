@@ -122,7 +122,7 @@ def get_and_print_environment_vars(pathconfig=PathConfig):
 
 def setenv(var_list, pathconfig=PathConfig):
     setenv_env = LocalState.get_envvarcollector(pathconfig.local_state_path())
-    opt_env = EnvvarCollector.from_str(','.join(var_list))
+    opt_env = EnvvarCollector.from_list(var_list)
     merged_env = setenv_env.merge(opt_env)
 
     LocalState.save_envvarcollector(merged_env.filtered(),

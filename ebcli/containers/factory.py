@@ -22,9 +22,15 @@ from ebcli.containers.fshandler import ContainerFSHandler, MultiContainerFSHandl
 from ebcli.containers.generic_container import GenericContainer
 from ebcli.containers.multicontainer import MultiContainer
 from ebcli.containers.preconfigured_container import PreconfiguredContainer
+from ebcli.lib import elasticbeanstalk
 from ebcli.objects.exceptions import NotSupportedError, NotFoundError, \
         NotInitializedError
-from ebcli.operations import platform_version_ops, solution_stack_ops
+from ebcli.operations import (
+    platformops,
+    platform_version_ops,
+    solution_stack_ops,
+    statusops,
+)
 from ebcli.resources.strings import alerts, strings
 
 
@@ -42,7 +48,7 @@ def make_container(envvars_str=None, host_port=None, allow_insecure_ssl=False,
     :return Container/MultiContainer
     """
 
-    soln_stk = _get_solution_stack()
+    soln_stk = _determine_platform()
     container_cfg = containerops.get_configuration()
     opt_env = EnvvarCollector.from_str(envvars_str)
 
@@ -96,31 +102,17 @@ def make_container_fs_handler(pathconfig):
                               dockerrun=dockerrun_dict)
 
 
-def _get_solution_stack():
-    solution_string = solution_stack_ops.get_default_solution_stack()
-    soln_stk = None
+def _determine_platform():
+    platform_string = platformops.get_configured_default_platform()
 
-    if solution_string:
-        if PlatformVersion.is_custom_platform_arn(solution_string):
-            try:
-                platform_version_ops.describe_custom_platform_version(solution_string)
-            except NotFoundError:
-                raise NotFoundError(
-                    alerts['platform.invalidstring'].format(solution_string)
-                )
-
-            soln_stk = PlatformVersion(solution_string)
-        else:
-            try:
-                soln_stk = solution_stack_ops.find_solution_stack_from_string(solution_string)
-
-                if PlatformVersion.is_eb_managed_platform_arn(soln_stk):
-                    soln_stk = PlatformVersion.get_platform_name(soln_stk)
-
-            except NotFoundError:
-                raise NotFoundError('Solution stack {} does not appear to be valid'.format(solution_string))
-
-    if not soln_stk:
+    if platform_string:
+        platform = platformops.get_platform_for_platform_string(
+            platform_string)
+    else:
         raise NotInitializedError
 
-    return soln_stk
+    if isinstance(platform, PlatformVersion):
+        platform.hydrate(elasticbeanstalk.describe_platform_version)
+        statusops.alert_platform_status(platform)
+
+    return platform

@@ -323,7 +323,7 @@ def get_branch_interactive(repository):
             return None
     elif not new_branch:
         LOG.debug("Setting up an existing branch")
-        succesful_branch = source_control.setup_existing_codecommit_branch(branch_name, remote_url)
+        succesful_branch = source_control.setup_existing_codecommit_branch(branch_name)
         if not succesful_branch:
             io.echo("Could not set CodeCommit branch, run with '--debug' to get the full error")
             return None
@@ -335,17 +335,15 @@ def configure_codecommit(source):
     source_location, repository, branch = utils.parse_source(source)
     source_control = SourceControl.get_source_control()
 
-    try:
-        if not source_location:
-            io.validate_action(prompts['codecommit.usecc'], "y")
+    if not source_location:
+        should_continue = io.get_boolean_response(text=prompts['codecommit.usecc'], default=True)
+        if not should_continue:
+            LOG.debug("Denied option to use CodeCommit, continuing initialization")
+            return repository, branch
 
-        # Setup git config settings for code commit credentials
-        source_control.setup_codecommit_cred_config()
-
-        repository, branch = establish_codecommit_repository_and_branch(repository, branch, source_control, source_location)
-
-    except ValidationError:
-        LOG.debug("Denied option to use CodeCommit, continuing initialization")
+    # Setup git config settings for code commit credentials
+    source_control.setup_codecommit_cred_config()
+    repository, branch = establish_codecommit_repository_and_branch(repository, branch, source_control, source_location)
 
     return repository, branch
 
@@ -462,7 +460,7 @@ def establish_codecommit_branch(repository, branch, source_control, source_locat
             else:
                 io.log_error(strings['codecommit.nobranch'])
                 raise ex
-        source_control.setup_existing_codecommit_branch(branch, None)
+        source_control.setup_existing_codecommit_branch(branch)
 
     return branch
 
@@ -499,8 +497,9 @@ def should_prompt_customer_to_opt_into_codecommit(
 
     if force_non_interactive:
         return False
-    elif source_location and not codecommit.region_supported(region_name):
-        io.log_warning(strings['codecommit.badregion'])
+    elif not codecommit.region_supported():
+        if source_location:
+            io.log_warning(strings['codecommit.badregion'])
         return False
     elif not fileoperations.is_git_directory_present():
         io.echo(strings['codecommit.nosc'])
