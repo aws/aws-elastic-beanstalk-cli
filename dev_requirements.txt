@@ -2,4 +2,4 @@ flake8
 pytest<4.0.0
 mock
 pytest-cov<=2.9
-pytest_socket==0.3.1
+pytest_socket==0.5.1
