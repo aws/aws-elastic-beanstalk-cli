@@ -2,6 +2,19 @@
 Changelog
 =========
 -------------------
+3.20.3 (2022-01-21)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.24.0`
+- Updated pathspec requirement to `==0.9.0`
+- Increased timestamp precision of version label
+- Fix ssh bugs
+
+-------------------
+3.20.2 (2021-08-30)
+-------------------
+- Updated urllib3 requirement to `>=1.26.5`
+
+-------------------
 3.20.1 (2021-07-13)
 -------------------
 - Changed IAM document for China region

@@ -505,9 +505,8 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
     else:
         version_label = source_control.get_version_label()
         if staged:
-            timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            timestamp = datetime.now().strftime("%y%m%d_%H%M%S%f")
             version_label = version_label + '-stage-' + timestamp
-
     if message:
         description = message
     else:

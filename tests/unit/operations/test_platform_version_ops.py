@@ -1226,7 +1226,7 @@ class TestPlatformVersionOperations(unittest.TestCase):
         source_control = mock.MagicMock()
         source_control.get_version_label.return_value = 'my-version-label'
 
-        self.assertEqual('my-version-label-stage-180719_215021', platform_version_ops._resolve_version_label(source_control, True))
+        self.assertEqual('my-version-label-stage-180719_215021623000', platform_version_ops._resolve_version_label(source_control, True))
 
     @mock.patch('ebcli.operations.platform_version_ops.get_latest_platform_version')
     def test__resolve_version_number__could_notget_latest_platform_version(
