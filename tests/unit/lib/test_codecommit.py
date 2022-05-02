@@ -39,7 +39,7 @@ class TestCloudWatch(unittest.TestCase):
         list_repositories_mock,
         get_region_name_mock,
     ):
-        get_region_name_mock.return_value = 'af-south-1'
+        get_region_name_mock.return_value = 'ap-southeast-3'
         region_supported = codecommit.region_supported()
         self.assertFalse(region_supported)
 
