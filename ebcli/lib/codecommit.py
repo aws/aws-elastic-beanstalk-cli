@@ -20,9 +20,11 @@ from ebcli.objects.exceptions import ServiceError
 LOG = minimal_logger(__name__)
 
 SUPPORTED_REGIONS = [
+    "af-south-1",      # Africa (Cape Town)
     "ap-east-1",       # Asia Pacific (Hong Kong)
     "ap-northeast-1",  # Asia Pacific (Tokyo)
     "ap-northeast-2",  # Asia Pacific (Seoul)
+    "ap-northeast-3",  # Asia Pacific (Osaka-Local)
     "ap-south-1",      # Asia Pacific (Mumbai)
     "ap-southeast-1",  # Asia Pacific (Singapore)
     "ap-southeast-2",  # Asia Pacific (Sydney)
@@ -31,6 +33,7 @@ SUPPORTED_REGIONS = [
     "cn-northwest-1"   # China (Ningxia)
     "eu-central-1",    # Europe (Frankfurt)
     "eu-north-1",      # Europe (Stockholm)
+    "eu-south-1",      # Europe (Milan)
     "eu-west-1",       # Europe (Ireland)
     "eu-west-2",       # Europe (London)
     "eu-west-3",       # Europe (Paris)
@@ -45,9 +48,7 @@ SUPPORTED_REGIONS = [
 ]
 
 UNSUPPORTED_REGIONS = [
-    "af-south-1",      # Africa (Cape Town)
-    "ap-northeast-3",  # Asia Pacific (Osaka-Local)
-    "eu-south-1",      # Europe (Milan)
+    "ap-southeast-3",  # Asia Pacific (Jakarta)
 ]
 
 
