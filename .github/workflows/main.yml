@@ -8,9 +8,7 @@ on:
     branches: [ master ]
   workflow_dispatch:
   
-permissions:
-  pull-requests: write
-  contents: write
+permissions: write-all
   
 jobs:
   # WindowsBuild and AmazonLinux build run unit tests and E2E tests
