@@ -1,0 +1,64 @@
+# This is a basic workflow that set up CICD infra
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on pull request events but only for the main branch
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+  
+permissions:
+  pull-requests: write
+  contents: write
+  
+jobs:
+  # WindowsBuild and AmazonLinux build run unit tests and E2E tests
+  WindowsBuild:
+    # Although the job runs on Ubuntu, but it will trigger a codebuild job that runs on Win
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+      - name: Run CodeBuild
+        uses: aws-actions/aws-codebuild-run-build@v1
+        with:
+          project-name: EBCLI-codetest-windows
+  AmazonLinuxBuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+      - name: Run CodeBuild
+        uses: aws-actions/aws-codebuild-run-build@v1
+        with:
+          project-name: EBCLI-codetest-AL
+  # The auto merge will only be executed if author is dependabot
+  dependabotAutoMerge:
+    needs: [WindowsBuild, AmazonLinuxBuild]
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v1.1.1
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Approve a PR
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Enable auto-merge for Dependabot PRs
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
