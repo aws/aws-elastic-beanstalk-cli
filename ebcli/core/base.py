@@ -39,7 +39,7 @@ class EbBaseController(controller.CementBaseController):
     def default(self):
         if self.app.pargs.version:
             io.echo(strings['app.version_message'], __version__,
-                    '(Python', sys.version[0:5] + ')')
+                    '(Python', sys.version + ')')
         else:
             self.app.args.print_help()
 
