@@ -43,13 +43,13 @@ jobs:
   dependabotAutoMerge:
     needs: [WindowsBuild, AmazonLinuxBuild]
     runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }}
+    #if: ${{ github.actor == 'dependabot[bot]' }}
     steps:
       - name: Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v1.1.1
         with:
-          github-token: "${{ secrets.BEANRUNNER_BOT_TOKEN }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Approve a PR
         run: gh pr review --approve "$PR_URL"
         env:
