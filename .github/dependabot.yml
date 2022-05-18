@@ -9,6 +9,7 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+      time: "20:30" #UTC  
     allow:
       - dependency-name: "botocore*"
         dependency-type: "all"
