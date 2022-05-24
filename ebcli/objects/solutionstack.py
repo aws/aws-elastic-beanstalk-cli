@@ -152,6 +152,9 @@ class SolutionStack(object):
         if 'Multi-container Docker' in self.name:
             return 'Multi-container Docker'
 
+        if '64bit Amazon Linux 2 ' in self.name and 'running Docker' in self.name:
+            return 'Docker running on 64bit Amazon Linux 2'
+
         shorthand = self.platform_shorthand.split(' ')[0]
 
         if '(BETA)' in self.name:
