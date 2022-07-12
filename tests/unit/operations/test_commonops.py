@@ -2687,8 +2687,10 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
     @mock.patch('ebcli.operations.commonops.credentials_are_valid')
     @mock.patch('ebcli.operations.commonops.setup_credentials')
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    @mock.patch('os.environ.get')
     def test_set_up_credentials__eb_cli_is_used_as_default_profile(
             self,
+            get_mock,
             write_config_setting_mock,
             setup_credentials_mock,
             credentials_are_valid_mock,
@@ -2697,6 +2699,7 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
     ):
         check_credentials_mock.return_value = ['eb-cli', 'us-east-1']
         credentials_are_valid_mock.return_value = True
+        get_mock.return_value = None
 
         commonops.set_up_credentials(
             None,
