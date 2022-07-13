@@ -13,27 +13,15 @@
 # language governing permissions and limitations under the License.
 import sys
 
+from pkg_resources import parse_requirements
 from setuptools import setup, find_packages
 
 import ebcli
 
 
-requires = [
-    'botocore>1.23.41,<1.24.0',
-    'cement==2.8.2',
-    'colorama>=0.2.5,<0.4.4',  # use the same range that 'docker-compose' uses
-    'future>=0.16.0,<0.17.0',
-    'pathspec==0.9.0',
-    'python-dateutil>=2.1,<3.0.0',  # use the same range that 'botocore' uses
-    'requests>=2.20.1,<=2.26',
-    'setuptools >= 20.0',
-    'semantic_version == 2.8.5',
-    'six>=1.11.0,<1.15.0',
-    'termcolor == 1.1.0',
-    'wcwidth>=0.1.7,<0.2.0',
-    'PyYAML>=5.3.1,<5.5',# use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
-    'urllib3>=1.26.5', #1.26.5 fix CVE-2021-33503
-]
+with open("requirements.txt") as req:
+    install_reqs = parse_requirements(req)
+    requires = [str(ir) for ir in install_reqs]
 
 testing_requires = [
     'mock>=2.0.0',
