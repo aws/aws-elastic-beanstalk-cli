@@ -110,6 +110,11 @@ def _get_option(config, section, key, default):
 def is_git_directory_present():
     return os.path.isdir('.git')
 
+def is_parent_directory_in_ignore_list(filepath, ignore_list):
+    for directory in ignore_list:
+        if os.path.abspath(filepath).startswith(os.path.abspath(directory)):
+            return True
+    return False
 
 def clean_up():
     cwd = os.getcwd()
@@ -423,7 +428,6 @@ def zip_up_project(location, ignore_list=None):
     finally:
         os.chdir(cwd)
 
-
 def _zipdir(path, zipf, ignore_list=None):
     if ignore_list is None:
         ignore_list = {'.gitignore'}
@@ -447,7 +451,10 @@ def _zipdir(path, zipf, ignore_list=None):
                     zipInfo.external_attr = 2716663808
                 else:
                     zipInfo.external_attr = long(2716663808)
-                zipf.writestr(zipInfo, os.readlink(cur_dir))
+                if not is_parent_directory_in_ignore_list(cur_dir, ignore_list):
+                    zipf.writestr(zipInfo, os.readlink(cur_dir))
+                else:
+                    io.log_info(' -skipping: {}'.format(cur_dir))
         for f in files:
             cur_file = os.path.join(root, f)
 
@@ -455,6 +462,7 @@ def _zipdir(path, zipf, ignore_list=None):
                 cur_file.endswith('~')
                 or cur_file in ignore_list
                 or not _validate_file_for_archive(cur_file)
+                or is_parent_directory_in_ignore_list(cur_file, ignore_list)
             ):
                 # Ignore editor backup files (like file.txt~)
                 # Ignore anything in the .ebignore file
@@ -812,7 +820,8 @@ def get_ebignore_list():
     with codecs.open(location, 'r', encoding='utf-8') as f:
         spec = PathSpec.from_lines('gitwildmatch', f)
 
-    ignore_list = {f for f in spec.match_tree(get_project_root())}
+    matches = [f for f in spec.match_tree_entries(get_project_root())]
+    ignore_list = {match.path for match in matches}
     ignore_list.add('.ebignore')
 
     return ignore_list
