@@ -717,24 +717,33 @@ ccc""",
     def test_zip_up_project(self, _validate_file_for_archive_mock):
         _validate_file_for_archive_mock.side_effect = lambda f: not f.endswith('.sock')
         shutil.rmtree('home', ignore_errors=True)
+        os.mkdir('ignore-me')
+        os.mkdir('linkme')
         os.mkdir('src')
         os.mkdir(os.path.join('src', 'lib'))
         open(os.path.join('src', 'lib', 'app.py'), 'w').write('import os')
         open(os.path.join('src', 'lib', 'app.py~'), 'w').write('import os')
         open(os.path.join('src', 'lib', 'ignore-this-file.py'), 'w').write('import os')
         open(os.path.join('src', 'lib', 'test.sock'), 'w').write('mock socket file')
+        open(os.path.join('ignore-me', 'text.txt'), 'w').write('import os')
+        open(os.path.join('linkme', 'foobar.txt'), 'w').write('import os linkme')
 
         os.symlink(
-            os.path.join('src', 'lib', 'app.py'),
-            os.path.join('src', 'lib', 'app.py-copy')
+            os.path.abspath(os.path.join('src', 'lib', 'app.py')),
+            os.path.abspath(os.path.join('src', 'lib', 'app.py-copy'))
         )
 
         os.mkdir(os.path.join('src', 'lib', 'api'))
 
         if sys.version_info > (3, 0):
             os.symlink(
-                os.path.join('src', 'lib', 'api'),
-                os.path.join('src', 'lib', 'api-copy'),
+                os.path.abspath(os.path.join('src', 'lib', 'api')),
+                os.path.abspath(os.path.join('src', 'lib', 'api-copy')),
+                target_is_directory=True
+            )
+            os.symlink(
+                os.path.abspath(os.path.join('linkme')),
+                os.path.abspath(os.path.join('ignore-me','linkme')),
                 target_is_directory=True
             )
         else:
@@ -747,7 +756,7 @@ ccc""",
 
         fileoperations.zip_up_project(
             'app.zip',
-            ignore_list=[os.path.join('src', 'lib', 'ignore-this-file.py')]
+            ignore_list=[os.path.join('src', 'lib', 'ignore-this-file.py'), os.path.join('ignore-me/')]
         )
 
         os.mkdir('tmp')
@@ -760,6 +769,7 @@ ccc""",
         self.assertFalse(os.path.exists(os.path.join('tmp', 'src', 'lib', 'app.py~')))
         self.assertFalse(os.path.exists(os.path.join('tmp', 'src', 'lib', 'ignore-this-file.py')))
         self.assertFalse(os.path.exists(os.path.join('tmp', 'src', 'lib', 'test.sock')))
+        self.assertFalse(os.path.exists(os.path.join('tmp','ignore-me', 'link-me')))
 
     def test_delete_app_versions(self):
         os.mkdir(os.path.join('.elasticbeanstalk', 'app_versions'))

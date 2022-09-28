@@ -140,6 +140,7 @@ directory_2/
         self.assertEqual(
             {
                 'directory_1{}.gitkeep'.format(os.path.sep),
+                'directory_1',
                 'directory_2{}.gitkeep'.format(os.path.sep),
                 '.ebignore'
             },
@@ -206,7 +207,7 @@ directory_1/directory_2/*
         open('file 1', 'w').close()
 
         with open('.ebignore', 'w') as file:
-            ebignore_file_contents = """
+            ebignore_file_contents = r"""
 file\ 1
 """
 
@@ -234,7 +235,7 @@ file\ 1
         open('!file_1', 'w').close()
 
         with open('.ebignore', 'w') as file:
-            ebignore_file_contents = """
+            ebignore_file_contents = r"""
 \!file_1
 """
 
@@ -265,7 +266,7 @@ file\ 1
         open('ändrar något i databasen', 'w').close()
 
         with open('.ebignore', 'wb') as file:
-            ebignore_file_contents = """
+            ebignore_file_contents = r"""
 哈哈
 昨夜のコンサートは最高でした。
 ändrar\ något\ i\ databasen
