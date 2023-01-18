@@ -90,7 +90,7 @@ class TestAbstractBaseController(unittest.TestCase):
         self.test_target.check_for_cli_update(input_version)
 
         cli_update_exists_mock.assert_called_once_with(input_version)
-        log_alert_mock.not_called()
+        log_alert_mock.assert_not_called()
 
     @mock.patch('ebcli.core.abstractcontroller.io.log_alert')
     @mock.patch('ebcli.core.abstractcontroller.cli_update_exists')
