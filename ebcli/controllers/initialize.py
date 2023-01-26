@@ -83,6 +83,7 @@ class InitController(AbstractBaseController):
         if modules and len(modules) > 0:
             self.initialize_multiple_directories(
                 modules,
+                app_name,
                 region_name,
                 interactive,
                 force_non_interactive,
@@ -125,6 +126,7 @@ class InitController(AbstractBaseController):
     def initialize_multiple_directories(
             self,
             modules,
+            app_name,
             region,
             interactive,
             force_non_interactive,
@@ -134,7 +136,6 @@ class InitController(AbstractBaseController):
             platform
     ):
         application_created = False
-        app_name = None
         cwd = os.getcwd()
         for module in modules:
             if os.path.exists(module) and os.path.isdir(module):
