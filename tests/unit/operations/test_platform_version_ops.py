@@ -13,6 +13,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 from datetime import datetime
+import os
 
 import mock
 import unittest
@@ -29,6 +30,16 @@ from ebcli.operations import platform_version_ops
 
 
 class TestPlatformVersionOperations(unittest.TestCase):
+
+    def tearDown(self):
+        self.root_dir = os.getcwd()
+        os.chdir(self.root_dir)
+        file_names = ["some-random-file","platform.yaml"]
+        for file_name in range(len(file_names)):
+            if os.path.isfile(file_names[file_name]):
+                os.remove(file_names[file_name])
+            else:
+                print("Error: %s file not found" % file_names[file_name])
 
     custom_platforms_list = [
         {
