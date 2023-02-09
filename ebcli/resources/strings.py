@@ -874,6 +874,7 @@ flag_text = {
     'ssh.setup': 'setup SSH for the environment',
     'ssh.timeout': "Specify the timeout period in minutes. Can only be used with the "
                    "'--setup' argument.",
+    'ssh.prefer_private_ip': "Prefer connecting to an instance's private IP address",
 
     'cleanup.resources': 'Valid values include (builder, versions, all). You can specify '
                          '"builder" to terminate the environment used to create this platform. '
