@@ -58,8 +58,7 @@ class TestInit(unittest.TestCase):
             keep_open=False,
             number=None,
             setup=False,
-            timeout=None,
-            prefer_private_ip=False
+            timeout=None
         )
 
     @mock.patch('ebcli.controllers.ssh.SSHController.get_env_name')
@@ -84,8 +83,7 @@ class TestInit(unittest.TestCase):
             keep_open=False,
             number=None,
             setup=True,
-            timeout=10,
-            prefer_private_ip=False
+            timeout=10
         )
 
     @mock.patch('ebcli.controllers.ssh.SSHController.get_env_name')
@@ -110,8 +108,7 @@ class TestInit(unittest.TestCase):
             keep_open=False,
             number=None,
             setup=True,
-            timeout=None,
-            prefer_private_ip=False
+            timeout=None
         )
 
     @mock.patch('ebcli.controllers.ssh.SSHController.get_env_name')

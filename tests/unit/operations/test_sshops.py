@@ -321,28 +321,6 @@ class TestSSHOps(unittest.TestCase):
 
         sshops.ssh_into_instance('instance-id')
         call_mock.assert_called_once_with(['ssh', '-i', 'aws-eb-us-west-2', 'ec2-user@172.31.35.210'])
-    
-    @mock.patch('ebcli.operations.sshops.ec2.describe_instance')
-    @mock.patch('ebcli.operations.sshops.ec2.describe_security_group')
-    @mock.patch('ebcli.operations.sshops.ec2.authorize_ssh')
-    @mock.patch('ebcli.operations.sshops._get_ssh_file')
-    @mock.patch('ebcli.operations.sshops.subprocess.call')
-    def test_ssh_into_instance__uses_private_address_when_private_ip_flag_is_present(
-            self,
-            call_mock,
-            _get_ssh_file_mock,
-            authorize_ssh_mock,
-            describe_security_group_mock,
-            describe_instance_mock
-    ):
-        describe_instance_response = deepcopy(mock_responses.DESCRIBE_INSTANCES_RESPONSE['Reservations'][0]['Instances'][0])
-        describe_instance_mock.return_value = describe_instance_response
-        describe_security_group_mock.return_value = mock_responses.DESCRIBE_SECURITY_GROUPS_RESPONSE['SecurityGroups'][0]
-        _get_ssh_file_mock.return_value = 'aws-eb-us-west-2'
-        call_mock.return_value = 0
-
-        sshops.ssh_into_instance('instance-id', prefer_private_ip=True)
-        call_mock.assert_called_once_with(['ssh', '-i', 'aws-eb-us-west-2', 'ec2-user@172.31.35.210'])
 
     @mock.patch('ebcli.operations.sshops.ec2.describe_instance')
     @mock.patch('ebcli.operations.sshops.ec2.describe_security_group')
@@ -542,8 +520,7 @@ class TestSSHOps(unittest.TestCase):
             command=None,
             custom_ssh=None,
             force_open=False,
-            keep_open=False,
-            prefer_private_ip=False
+            keep_open=False
         )
 
     @mock.patch('ebcli.operations.sshops.commonops.get_instance_ids')
@@ -576,8 +553,7 @@ class TestSSHOps(unittest.TestCase):
             command=None,
             custom_ssh=None,
             force_open=False,
-            keep_open=False,
-            prefer_private_ip=False
+            keep_open=False
         )
 
     @mock.patch('ebcli.operations.sshops.commonops.get_instance_ids')
@@ -613,8 +589,7 @@ class TestSSHOps(unittest.TestCase):
             command=None,
             custom_ssh=None,
             force_open=False,
-            keep_open=False,
-            prefer_private_ip=False
+            keep_open=False
         )
         log_error_mock.assert_called_once_with(
             'This environment is not set up for SSH. Use "eb ssh --setup" to set up SSH for the environment.'
