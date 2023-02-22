@@ -36,6 +36,16 @@ def get_instance_profiles():
     return result['InstanceProfiles']
 
 
+def get_all_roles(Marker):
+    result = _make_api_call('list_roles', Marker=Marker)
+    return result
+
+
+def get_all_roles_without_marker():
+    result = _make_api_call('list_roles')
+    return result
+
+
 def get_roles():
     result = _make_api_call('list_roles')
     return result['Roles']
