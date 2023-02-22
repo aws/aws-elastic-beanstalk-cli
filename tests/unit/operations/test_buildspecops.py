@@ -61,6 +61,18 @@ class TestBuildSpecOps(unittest.TestCase):
                                        u'Path': '/service-role/',
                                        u'Arn': 'arn:aws:iam::123456789098:role/service-role/aws-codebuild-role'
                                        }]
+    
+    list_roles_without_marker_response_as_dict = { u'Roles':[{u'AssumeRolePolicyDocument':
+                                           {u'Version': u'2012-10-17', u'Statement': [
+                                               {u'Action': u'sts:AssumeRole', u'Effect': u'Allow',
+                                                u'Principal': {u'Service': u'codebuild.amazonaws.com'}}]},
+                                       u'RoleName': 'aws-codebuild-role',
+                                       u'Path': '/service-role/',
+                                       u'Arn': 'arn:aws:iam::123456789098:role/service-role/aws-codebuild-role'
+                                       }],
+                                       u'IsTruncated': False,
+                                       u'Marker': r'\u+0031'
+    }
 
     def setUp(self):
         self.patcher_beanstalk = mock.patch('ebcli.operations.buildspecops.elasticbeanstalk')
@@ -175,34 +187,33 @@ class TestBuildSpecOps(unittest.TestCase):
 
         self.assertRaises(ValidationError, buildspecops.validate_build_config, build_config)
 
-    @mock.patch('ebcli.lib.iam.get_roles')
-    def test_validate_build_config_without_image(self, mock_get_roles):
+    @mock.patch('ebcli.lib.iam.get_all_roles_without_marker')
+    def test_validate_build_config_without_image(self, mock_get_all_roles_without_marker):
         build_config = copy.deepcopy(self.build_config)
-        build_config.image = None
-        mock_get_roles.return_value = self.list_roles_response
-
+        build_config.image = None 
+        mock_get_all_roles_without_marker.return_value = self.list_roles_without_marker_response_as_dict
+        
         self.assertRaises(ValidationError, buildspecops.validate_build_config, build_config)
 
-        mock_get_roles.assert_called_with()
+        mock_get_all_roles_without_marker.assert_called_with()
 
-
-    @mock.patch('ebcli.lib.iam.get_roles')
-    def test_validate_build_config_with_invalid_role(self, mock_get_roles):
+    @mock.patch('ebcli.lib.iam.get_all_roles_without_marker')
+    def test_validate_build_config_with_invalid_role(self, mock_get_all_roles_without_marker):
         build_config = copy.deepcopy(self.build_config)
         build_config.service_role = 'bad-role'
-        mock_get_roles.return_value = self.list_roles_response
+        mock_get_all_roles_without_marker.return_value = self.list_roles_without_marker_response_as_dict
 
         self.assertRaises(ValidationError, buildspecops.validate_build_config, build_config)
 
-        mock_get_roles.assert_called_with()
+        mock_get_all_roles_without_marker.assert_called_with()
 
-    @mock.patch('ebcli.lib.iam.get_roles')
-    def test_validate_build_config_happy_case(self, mock_get_roles):
-        mock_get_roles.return_value = self.list_roles_response
+    @mock.patch('ebcli.lib.iam.get_all_roles_without_marker')
+    def test_validate_build_config_happy_case(self, mock_get_all_roles_without_marker):
+        mock_get_all_roles_without_marker.return_value = self.list_roles_without_marker_response_as_dict
 
         buildspecops.validate_build_config(self.build_config)
 
-        mock_get_roles.assert_called_with()
+        mock_get_all_roles_without_marker.assert_called_with()
 
     @mock.patch('ebcli.operations.buildspecops.elasticbeanstalk.get_application_versions')
     @mock.patch('ebcli.operations.buildspecops.io.log_error')

@@ -79,13 +79,33 @@ def stream_build_configuration_app_version_creation(app_name, app_version_label,
 
 def validate_build_config(build_config):
     if build_config.service_role is not None:
-        from ebcli.lib.iam import get_roles
+        from ebcli.lib.iam import get_all_roles, get_all_roles_without_marker
         role = build_config.service_role
         validated_role = None
-        existing_roles = get_roles()
-        for existing_role in existing_roles:
-            if role == existing_role['Arn'] or role == existing_role['RoleName']:
-                validated_role = existing_role['Arn']
+        isTruncated = True
+        marker = ''
+        result = {}
+        result = get_all_roles_without_marker()
+        existing_roles = []
+        existing_role = {}
+        existing_roles = result['Roles']
+        
+        my_flag = True
+        while my_flag and validated_role is None:
+            
+            isTruncated = result['IsTruncated']
+            
+            for existing_role in existing_roles:
+                if role == existing_role['Arn'] or role == existing_role['RoleName']:
+                    validated_role = existing_role['Arn']
+            if validated_role is not None:
+                break
+            if isTruncated and validated_role is None:
+                marker = result['Marker']
+                result = get_all_roles(Marker=marker)
+                existing_roles = result['Roles']
+            if isTruncated == False and validated_role is None:
+                my_flag = False
 
         if validated_role is None:
             LOG.debug("Role '{0}' not found in retrieved list of roles".format(role))
