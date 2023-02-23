@@ -102,7 +102,7 @@ def validate_build_config(build_config):
                 break
             if isTruncated and validated_role is None:
                 marker = result['Marker']
-                result = get_all_roles(Marker=marker)
+                result = get_all_roles(marker)
                 existing_roles = result['Roles']
             if isTruncated == False and validated_role is None:
                 my_flag = False
