@@ -2,6 +2,20 @@
 Changelog
 =========
 -------------------
+3.20.4 (2023-02-27)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.29.81`
+- Removed usage of future package
+- Opened new regions (ap-southeast-3 and ap-northeast-3)
+- Fixed symlinked files related issues
+- Fixed modules related issues
+- Fixed several unit tests
+- Fixed Docker AL2 platform Notfound bug
+- Integrated codecommit in new regions (eu-south-1,ap-northeast-3, af-south-1)
+- Updated eb create command to create application elb as default
+- Updated to display full results when --version flag is specified
+
+-------------------
 3.20.3 (2022-01-21)
 -------------------
 - Updated botocore requirement to `>1.23.41,<1.24.0`
