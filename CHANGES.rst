@@ -2,6 +2,12 @@
 Changelog
 =========
 -------------------
+3.20.5 (2022-02-28)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.29.82`
+- Include requirements.txt into pypi distribution tarball
+
+-------------------
 3.20.4 (2023-02-27)
 -------------------
 - Updated botocore requirement to `>1.23.41,<1.29.81`
