@@ -36,19 +36,12 @@ def get_instance_profiles():
     return result['InstanceProfiles']
 
 
-def get_all_roles(marker):
-    result = _make_api_call('list_roles', Marker=marker)
+def get_roles(marker=None):
+    if marker:
+        result = _make_api_call('list_roles', Marker=marker)
+    else:
+        result = _make_api_call('list_roles')
     return result
-
-
-def get_all_roles_without_marker():
-    result = _make_api_call('list_roles')
-    return result
-
-
-def get_roles():
-    result = _make_api_call('list_roles')
-    return result['Roles']
 
 
 def get_role(role_name):
@@ -84,7 +77,8 @@ def get_instance_profile_names():
 
 
 def get_role_names():
-    roles = get_roles()
+    result = get_roles()
+    roles = result['Roles']
     lst = []
     for role in roles:
         lst.append(role['RoleName'])
