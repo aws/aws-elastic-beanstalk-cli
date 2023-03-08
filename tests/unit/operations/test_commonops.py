@@ -61,7 +61,7 @@ class TestCommonOperations(unittest.TestCase):
     image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3'
     compute_type = 'BUILD_GENERAL1_SMALL'
     service_role = 'eb-test'
-    list_roles_without_marker_response_as_dict = { u'Roles':[{u'AssumeRolePolicyDocument':
+    list_roles_response_as_dict = { u'Roles':[{u'AssumeRolePolicyDocument':
                                            {u'Version': u'2012-10-17', u'Statement': [
                                                {u'Action': u'sts:AssumeRole', u'Effect': u'Allow',
                                                 u'Principal': {u'Service': u'codebuild.amazonaws.com'}}]},
@@ -237,8 +237,8 @@ class TestCommonOperations(unittest.TestCase):
 
     @mock.patch('ebcli.operations.commonops.elasticbeanstalk')
     def test_create_application_version_wrapper_with_build_config(self, mock_beanstalk):
-        with mock.patch('ebcli.lib.iam.get_all_roles_without_marker') as mock_iam_get_roles:
-            mock_iam_get_roles.return_value = self.list_roles_without_marker_response_as_dict
+        with mock.patch('ebcli.lib.iam.get_roles') as mock_iam_get_roles:
+            mock_iam_get_roles.return_value = self.list_roles_response_as_dict
 
             actual_return = commonops._create_application_version(self.app_name, self.app_version_name,
                                                   self.description, self.s3_bucket, self.s3_key, build_config=self.build_config)
