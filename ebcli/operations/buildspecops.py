@@ -82,23 +82,11 @@ def validate_build_config(build_config):
         from ebcli.lib.iam import get_roles
         role = build_config.service_role
         validated_role = None
-        isTruncated = True
-        marker = ''
-        while isTruncated and validated_role is None:
-            if marker == '':
-                result = get_roles()
-            else:
-                result = get_roles(marker)
-            
-            isTruncated = result['IsTruncated']
-            existing_roles = result['Roles']
-            
-            for existing_role in existing_roles:
-                if role == existing_role['Arn'] or role == existing_role['RoleName']:
-                    validated_role = existing_role['Arn']
-                    break
-            if isTruncated:
-                marker = result['Marker']
+        existing_roles = get_roles()
+        for existing_role in existing_roles:
+            if role == existing_role['Arn'] or role == existing_role['RoleName']:
+                validated_role = existing_role['Arn']
+                break
 
         if validated_role is None:
             LOG.debug("Role '{0}' not found in retrieved list of roles".format(role))

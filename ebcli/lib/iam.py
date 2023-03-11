@@ -36,12 +36,23 @@ def get_instance_profiles():
     return result['InstanceProfiles']
 
 
-def get_roles(marker=None):
-    if marker:
-        result = _make_api_call('list_roles', Marker=marker)
-    else:
-        result = _make_api_call('list_roles')
-    return result
+def get_roles():
+    isTruncated = True
+    marker = ''
+    roles = []
+    while isTruncated:
+        if marker == '':
+            result = _make_api_call('list_roles')
+        else:
+            result = _make_api_call('list_roles', Marker=marker)
+        isTruncated = result['IsTruncated']
+        existing_roles = result['Roles']
+        for role in existing_roles:
+            roles.append(role)
+        if isTruncated:
+            marker = result['Marker']
+
+    return roles
 
 
 def get_role(role_name):
@@ -77,8 +88,7 @@ def get_instance_profile_names():
 
 
 def get_role_names():
-    result = get_roles()
-    roles = result['Roles']
+    roles = get_roles()
     lst = []
     for role in roles:
         lst.append(role['RoleName'])
