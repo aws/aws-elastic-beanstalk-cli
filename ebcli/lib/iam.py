@@ -37,8 +37,22 @@ def get_instance_profiles():
 
 
 def get_roles():
-    result = _make_api_call('list_roles')
-    return result['Roles']
+    isTruncated = True
+    marker = ''
+    roles = []
+    while isTruncated:
+        if marker == '':
+            result = _make_api_call('list_roles')
+        else:
+            result = _make_api_call('list_roles', Marker=marker)
+        isTruncated = result['IsTruncated']
+        existing_roles = result['Roles']
+        for role in existing_roles:
+            roles.append(role)
+        if isTruncated:
+            marker = result['Marker']
+
+    return roles
 
 
 def get_role(role_name):

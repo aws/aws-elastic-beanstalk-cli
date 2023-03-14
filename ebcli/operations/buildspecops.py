@@ -86,6 +86,7 @@ def validate_build_config(build_config):
         for existing_role in existing_roles:
             if role == existing_role['Arn'] or role == existing_role['RoleName']:
                 validated_role = existing_role['Arn']
+                break
 
         if validated_role is None:
             LOG.debug("Role '{0}' not found in retrieved list of roles".format(role))

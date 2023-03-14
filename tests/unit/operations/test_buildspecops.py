@@ -178,13 +178,12 @@ class TestBuildSpecOps(unittest.TestCase):
     @mock.patch('ebcli.lib.iam.get_roles')
     def test_validate_build_config_without_image(self, mock_get_roles):
         build_config = copy.deepcopy(self.build_config)
-        build_config.image = None
+        build_config.image = None 
         mock_get_roles.return_value = self.list_roles_response
-
+        
         self.assertRaises(ValidationError, buildspecops.validate_build_config, build_config)
 
         mock_get_roles.assert_called_with()
-
 
     @mock.patch('ebcli.lib.iam.get_roles')
     def test_validate_build_config_with_invalid_role(self, mock_get_roles):

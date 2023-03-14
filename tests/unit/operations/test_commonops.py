@@ -61,7 +61,7 @@ class TestCommonOperations(unittest.TestCase):
     image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3'
     compute_type = 'BUILD_GENERAL1_SMALL'
     service_role = 'eb-test'
-    service_role_arn = 'arn:testcli:eb-test'
+    service_role_arn = 'arn:aws:iam::123456789123:role/eb-test'
     timeout = 60
     build_config = BuildConfiguration(image=image, compute_type=compute_type,
                                       service_role=service_role, timeout=timeout)
