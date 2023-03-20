@@ -756,7 +756,7 @@ ccc""",
 
         fileoperations.zip_up_project(
             'app.zip',
-            ignore_list=[os.path.join('src', 'lib', 'ignore-this-file.py'), os.path.join('ignore-me/')]
+            ignore_list=[os.path.join('src', 'lib', 'ignore-this-file.py'), os.path.join('ignore-me/'), os.path.join('src', 'lib', 'api-copy')]
         )
 
         os.mkdir('tmp')
@@ -765,7 +765,7 @@ ccc""",
         self.assertTrue(os.path.exists(os.path.join('tmp', 'src', 'lib', 'app.py')))
         self.assertTrue(os.path.exists(os.path.join('tmp', 'src', 'lib', 'api')))
         self.assertTrue(os.path.exists(os.path.join('tmp', 'src', 'lib', 'app.py-copy')))
-        self.assertTrue(os.path.exists(os.path.join('tmp', 'src', 'lib', 'api-copy')))
+        self.assertFalse(os.path.exists(os.path.join('tmp', 'src', 'lib', 'api-copy')))
         self.assertFalse(os.path.exists(os.path.join('tmp', 'src', 'lib', 'app.py~')))
         self.assertFalse(os.path.exists(os.path.join('tmp', 'src', 'lib', 'ignore-this-file.py')))
         self.assertFalse(os.path.exists(os.path.join('tmp', 'src', 'lib', 'test.sock')))

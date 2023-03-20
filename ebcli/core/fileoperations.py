@@ -22,11 +22,11 @@ import sys
 import warnings
 import yaml
 import zipfile
-from pathspec import PathSpec
 
 from cement.utils.misc import minimal_logger
 from ebcli.core import fileoperations
 from ebcli.objects.buildconfiguration import BuildConfiguration
+from pathspec import PathSpec
 from six import StringIO
 from yaml import safe_load, safe_dump
 from yaml.parser import ParserError
@@ -111,12 +111,6 @@ def _get_option(config, section, key, default):
 
 def is_git_directory_present():
     return os.path.isdir('.git')
-
-def is_parent_directory_in_ignore_list(filepath, ignore_list):
-    for directory in ignore_list:
-        if os.path.abspath(filepath).startswith(os.path.abspath(directory)):
-            return True
-    return False
 
 def clean_up():
     cwd = os.getcwd()
@@ -458,10 +452,6 @@ def _zipdir(path, zipf, ignore_list=None):
                     zipInfo.external_attr = 2716663808
                 else:
                     zipInfo.external_attr = long(2716663808)
-                if not is_parent_directory_in_ignore_list(cur_dir, ignore_list):
-                    zipf.writestr(zipInfo, os.readlink(cur_dir))
-                else:
-                    io.log_info(' -skipping: {}'.format(cur_dir))
         for f in files:
             cur_file = os.path.join(root, f)
 
@@ -469,7 +459,6 @@ def _zipdir(path, zipf, ignore_list=None):
                 cur_file.endswith('~')
                 or cur_file in ignore_list
                 or not _validate_file_for_archive(cur_file)
-                or is_parent_directory_in_ignore_list(cur_file, ignore_list)
             ):
                 # Ignore editor backup files (like file.txt~)
                 # Ignore anything in the .ebignore file
