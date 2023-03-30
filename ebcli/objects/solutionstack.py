@@ -405,6 +405,7 @@ class SolutionStack(object):
 
         :return: A SolutionStack object representing the input language name
         """
+        solution_stack_list = sorted(solution_stack_list)
         for solution_stack in solution_stack_list:
             if solution_stack.language_name.lower() == language_name.lower():
                 return solution_stack
