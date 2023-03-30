@@ -438,20 +438,6 @@ def _zipdir(path, zipf, ignore_list=None):
         if '.elasticbeanstalk' in root:
             io.log_info('  -skipping: {}'.format(root))
             continue
-        for d in dirs:
-            cur_dir = os.path.join(root, d)
-            if os.path.islink(cur_dir):
-                # It is probably safe to remove this code since os.walk seems to categorize
-                # symlinks-to-directories as files. This doesn't matter as far as creation
-                # of the zip is concerned, but just having the code around is confusing.
-                zipInfo = zipfile.ZipInfo()
-                zipInfo.filename = os.path.join(root, d)
-
-                # 2716663808L is the "magic code" for symlinks
-                if sys.version_info > (3,):
-                    zipInfo.external_attr = 2716663808
-                else:
-                    zipInfo.external_attr = long(2716663808)
         for f in files:
             cur_file = os.path.join(root, f)
 
