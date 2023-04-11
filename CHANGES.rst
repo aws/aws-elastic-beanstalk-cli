@@ -2,7 +2,15 @@
 Changelog
 =========
 -------------------
-3.20.5 (2022-02-28)
+3.20.6 (2023-04-11)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.29.100`
+- Fixed platforms bug
+- Fixed Codebuild bug
+- Fixed Symlink and Performance Issues
+
+-------------------
+3.20.5 (2023-02-28)
 -------------------
 - Updated botocore requirement to `>1.23.41,<1.29.82`
 - Include requirements.txt into pypi distribution tarball
