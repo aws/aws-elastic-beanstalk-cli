@@ -1,0 +1,21 @@
+Metadata-Version: 2.1
+Name: cement
+Version: 2.8.2
+Summary: CLI Application Framework for Python
+Home-page: http://builtoncement.org
+Author: Data Folk Labs, LLC
+Author-email: team@datafolklabs.com
+License: BSD
+Keywords: cli framework
+License-File: LICENSE
+
+
+Cement is an advanced CLI Application Framework for Python.  Its goal is to
+introduce a standard, and feature-full platform for both simple and complex
+command line applications as well as support rapid development needs without
+sacrificing quality.
+
+For more information please visit the official site at:
+
+    * http://builtoncement.com/
+
