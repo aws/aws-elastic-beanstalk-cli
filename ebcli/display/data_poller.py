@@ -209,7 +209,7 @@ def collapse_instance_health_data(instances_health):
             if 'LoadAverage' in instance else '-'
 
         instance['launched'] = utils.get_local_time_as_string(instance['LaunchedAt'])
-        instance['running'] = format_time_since(instance['LaunchedAt'])
+        instance['running'] = format_time_since(instance.get('LaunchedAt'))
 
         duration = instance.get('Duration', 10)
         instance['requests'] = request_count / (duration * 1.0)
