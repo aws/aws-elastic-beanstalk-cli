@@ -20,3 +20,4 @@ awsebcli.egg-info/
 *.xml
 *.iml
 .vscode/
+venv
