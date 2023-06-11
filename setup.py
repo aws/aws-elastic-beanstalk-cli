@@ -37,7 +37,7 @@ extras_require = {
 
 }
 if not sys.platform.startswith('win'):
-    requires.append('docker-compose >= 1.25.2, < 1.26.0')
+    requires.append('docker-compose >= 1.25.2, <= 1.29.2')
     requires.append('blessed>=1.9.5')
 
 
