@@ -2,6 +2,14 @@
 Changelog
 =========
 -------------------
+3.20.7 (2023-06-21)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.29.159`
+- Updated requests requirement to `>2.31`
+- Updated .gitignore
+- Updated LauchedAt Attribute for DescribeInstancesHealth
+
+-------------------
 3.20.6 (2023-04-11)
 -------------------
 - Updated botocore requirement to `>1.23.41,<1.29.100`
