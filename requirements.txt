@@ -9,5 +9,5 @@ semantic_version == 2.8.5
 six>=1.11.0,<1.15.0
 termcolor == 1.1.0
 wcwidth>=0.1.7,<0.2.0
-PyYAML>=5.3.1,<5.5 # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
+PyYAML>=5.3.1,<6.1 # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
 urllib3>=1.26.5 #1.26.5 fix CVE-2021-33503
