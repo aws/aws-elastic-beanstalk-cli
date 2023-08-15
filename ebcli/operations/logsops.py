@@ -102,7 +102,12 @@ def deployment_logs_log_group_name(env_name):
     environment = elasticbeanstalk.get_environment(env_name=env_name)
     if 'windows' in environment.platform.name.lower():
         log_group_suffix = 'EBDeploy-Log'
-    elif 'Amazon Linux 2/' in environment.platform.name:
+    # TODO: The logic here is we judge if platform is beyond or equal to Amazon Linux 2 - if it is we use "var/log/eb-engine.log" otherwise we use 'var/log/eb-activity.log'
+    # However the problem is Amazon Linux 1 platform naming does not have a fixed pattern, which is hard to write if statement
+    # Therefore we have to judge by 'Amazon Linux 2/' or 'Amazon Linux 2023/' which follows a fixed naming pattern
+    # We should resolve this tech debt by investigating the naming pattern of Amazon linux 1 platform. Luckily there
+    # will be no more new Amazon Linux 1 platforms so once we figured out a pattern, we would solve the issues forever.
+    elif 'Amazon Linux 2/' in environment.platform.name or 'Amazon Linux 2023/' in environment.platform.name:
         log_group_suffix = "var/log/eb-engine.log"
     else:
         log_group_suffix = 'var/log/eb-activity.log'
