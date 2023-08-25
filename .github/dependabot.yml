@@ -14,3 +14,6 @@ updates:
     allow:
       - dependency-name: "botocore*"
         dependency-type: "all"
+    ignore:
+      - dependency-name: "botocore*"
+        update-types: [ "version-update:semver-patch" ]
