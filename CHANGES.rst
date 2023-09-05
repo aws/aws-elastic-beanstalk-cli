@@ -2,6 +2,22 @@
 Changelog
 =========
 -------------------
+3.20.9 (2023-08-31)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.32.0`
+- Updated six requirement to `>=1.11.0,<1.17.0`
+- Update dependabot configuration to only update minor version
+- Bug fix for Cloudformation pagination token
+
+-------------------
+3.20.8 (2023-08-15)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.31.27`
+- Updated urllib3 requirement to `>=1.26.5,<2`
+- Updated docker-compose requirement to `>= 1.25.2, <= 1.29.2`
+- Updated PyYAML requirement to `>=5.3.1,<6.1`
+
+-------------------
 3.20.7 (2023-06-21)
 -------------------
 - Updated botocore requirement to `>1.23.41,<1.29.159`

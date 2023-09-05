@@ -72,7 +72,7 @@ def describe_stacks(stack_name=None):
     all_stacks = response['Stacks']
     while next_token:
         utils.sleep(sleep_time=0.5)
-        response = _make_api_call('describe_stacks')
+        response = _make_api_call('describe_stacks',NextToken=next_token)
         all_stacks.extend(response['Stacks'])
         next_token = response.get('NextToken')
     return all_stacks
