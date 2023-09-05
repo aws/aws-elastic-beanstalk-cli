@@ -115,7 +115,7 @@ def up(compose_path=None, allow_insecure_ssl=False):
 
 def _compose_run(args):
     if not is_docker_compose_installed():
-        raise RuntimeError("Docker Compose v2 is not installed. Please install it and try again.")
+        raise RuntimeError("Docker Compose is not installed. Please install it and try again.")
     utils.exec_cmd_live_output(['docker','compose'] + args)
 
 
