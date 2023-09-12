@@ -425,17 +425,44 @@ def handle_buildspec_image(solution, force_non_interactive):
         return
 
     build_spec = fileoperations.get_build_configuration()
+    
     if not force_non_interactive and build_spec and build_spec.image is None:
-        LOG.debug("Buildspec file is present but image is does not exist. Attempting to fill best guess.")
+        LOG.debug("Buildspec file is present but image does not exist. Attempting to fill best guess.")
         platform_image = initializeops.get_codebuild_image_from_platform(solution)
 
-        if type(platform_image) is dict:
-            io.echo(strings['codebuild.latestplatform'].replace('{platform}', solution))
-        else:
-            io.echo(prompts['codebuild.getplatform'].replace('{platform}', solution))
-            selected = utils.prompt_for_index_in_list([image['description'] for image in platform_image][0])
-            platform_image = [image for image in platform_image if selected == image['description']][0]
-        fileoperations.write_buildspec_config_header('Image', platform_image['name'])
+    # Debug Statement 1: To check what is returned by get_codebuild_image_from_platform
+        LOG.debug(f"Platform images available: {platform_image}")
+
+        if not platform_image:  # If platform_image is empty
+            io.echo("No images found for platform: {platform}".format(platform=solution))
+            return
+
+    # Debug Statement 2: To check the type of the first element in platform_image
+        LOG.debug(f"Type of first element in platform_image: {type(platform_image[0])}")
+
+        if type(platform_image[0]) is dict:  # Check the type of the first element in the list
+            if len(platform_image) == 1:
+                io.echo(strings['codebuild.latestplatform'].replace('{platform}', solution))
+                selected_image = platform_image[0]
+            else:
+                io.echo(prompts['codebuild.getplatform'].replace('{platform}', solution))
+                selected = utils.prompt_for_index_in_list([image['description'] for image in platform_image])
+                selected_description = platform_image[selected]['description']
+            
+            # Debug Statement 3: To check what the user selected
+                LOG.debug(f"User selected: {selected_description}")
+
+                matching_images = [image for image in platform_image if selected_description == image['description']]
+
+            # Debug Statement 4: To log the descriptions in platform_image
+                LOG.debug(f"Available image descriptions: {[image['description'] for image in platform_image]}")
+
+                if not matching_images:
+                    LOG.error(f"No matching images found for selected description: {selected}")
+                    return
+
+                selected_image = matching_images[0]
+            fileoperations.write_buildspec_config_header('Image', selected_image['name'])
 
 
 def set_default_env(interactive, force_non_interactive):

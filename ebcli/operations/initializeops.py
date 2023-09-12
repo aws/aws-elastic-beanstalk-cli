@@ -95,12 +95,26 @@ def setup_ignore_file():
 
 
 def get_codebuild_image_from_platform(platform):
-    platform_image = None
+    platform_images = []  # Store multiple matches in a list
     beanstalk_images = codebuild.list_curated_environment_images()
+
+    # Log the entire list for debugging purposes
+    LOG.debug("Fetched beanstalk_images: {}".format(beanstalk_images))
+
+    # Validate that beanstalk_images is a list of dictionaries
+    if not isinstance(beanstalk_images, list) or not all(isinstance(i, dict) for i in beanstalk_images):
+        LOG.error("Unexpected format for beanstalk_images. Expected a list of dictionaries.")
+        return []
+
     for image in beanstalk_images:
-        if platform in image['description']:
-            platform_image = image
+        if 'description' in image and platform in image['description']:
+            platform_images.append(image)
 
-    LOG.debug("Searching for images for platform '{0}'. Found: {1}".format(platform, platform_image))
+    # If no platform-specific images found, return all images
+    if not platform_images:
+        LOG.debug("No matching platform images found. Returning all images.")
+        return beanstalk_images
 
-    return beanstalk_images if platform_image is None else platform_image
+    LOG.debug("Searching for images for platform '{0}'. Found: {1}".format(platform, platform_images))
+
+    return platform_images
