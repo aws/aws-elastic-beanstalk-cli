@@ -1436,7 +1436,7 @@ class TestInitModule(unittest.TestCase):
                 'description': 'Java 8 Running on Amazon Linux 32bit '
             }
         ]
-        prompt_for_index_in_list_mock.return_value = 'Java 8 Running on Amazon Linux 32bit '
+        prompt_for_index_in_list_mock.return_value =  1
 
         self.assertIsNone(initialize.handle_buildspec_image('Java 8', False))
 
