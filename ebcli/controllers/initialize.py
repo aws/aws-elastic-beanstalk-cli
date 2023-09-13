@@ -440,7 +440,7 @@ def handle_buildspec_image(solution, force_non_interactive):
                 selected_image = platform_image[0]
             else:
                 io.echo(prompts['codebuild.getplatform'].replace('{platform}', solution))
-                selected = utils.prompt_for_index_in_list([image['description'] for image in platform_image])
+                selected = int(utils.prompt_for_index_in_list([image['description'] for image in platform_image]))
                 
                 if selected is not None and 0 <= selected < len(platform_image):
                     selected_description = platform_image[selected]['description']

@@ -69,7 +69,7 @@ class TestInitializeOperations(unittest.TestCase):
         images_for_platform = initializeops.get_codebuild_image_from_platform("Java 8")
 
         self.assertEqual(expected_image, images_for_platform,
-                         "Expected '{0}' but got: {1}".format(expected_image, images_for_platform))
+                         "Expected '{0}' but got: {1}".format([expected_image], images_for_platform))
 
     @mock.patch('ebcli.operations.initializeops.codebuild')
     def test_get_codebuild_image_from_platform_that_does_not_match(self, mock_codebuild):
