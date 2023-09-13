@@ -1453,7 +1453,8 @@ class TestInitModule(unittest.TestCase):
                 )
             ]
         )
-        prompt_for_index_in_list_mock.assert_called_once_with('Java 8 Running on Amazon Linux 64bit ')
+        prompt_for_index_in_list_mock.assert_called_once_with(['Java 8 Running on Amazon Linux 64bit ', 'Java 8 Running on Amazon Linux 32bit '])
+
 
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_build_configuration')
     @mock.patch('ebcli.controllers.initialize.initializeops.get_codebuild_image_from_platform')
