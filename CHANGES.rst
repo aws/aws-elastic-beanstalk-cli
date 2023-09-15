@@ -4,8 +4,8 @@ Changelog
 -------------------
 3.20.10 (2023-09-15)
 -------------------
-- Removed Docker-compose as a dependancy 
-- Fixed Codebuild image bug   
+- Removed Docker-compose as a dependancy
+- Fixed Codebuild image bug
 
 -------------------
 3.20.9 (2023-08-31)
