@@ -57,7 +57,7 @@ def list_curated_environment_images():
     each available platform from CodeBuild.
     :return: array of image dictionaries
     """
-    regex_search_version = "AWS ElasticBeanstalk - (.*)v([0-9]+\.[0-9]+\.[0-9]+)"
+    regex_search_version = r"AWS Elastic Beanstalk - (.*?)v([0-9]+\.[0-9]+\.[0-9]+)"
     result = _make_api_call('list_curated_environment_images')
     beanstalk_images = []
     for platform in result['platforms']:
