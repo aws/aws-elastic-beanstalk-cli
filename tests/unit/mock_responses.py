@@ -2443,61 +2443,72 @@ BATCH_GET_BUILDS = {
 
 
 LIST_CURATED_ENVIRONMENT_IMAGES_RESPONSE = {
-    'platforms':
-        [
-            {
-                'languages': [
-                    {
-                        'images': [
-                            {
-                                'name': 'aws/codebuild/eb-java-7-amazonlinux-64:2.1.3', 'description': 'AWS ElasticBeanstalk - Java 7 Running on Amazon Linux 64bit v2.1.3'
-                            },
-                            {
-                                'name': 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3', 'description': 'AWS ElasticBeanstalk - Java 8 Running on Amazon Linux 64bit v2.1.3'
-                            },
-                            {
-                                'name': 'aws/codebuild/eb-java-7-amazonlinux-64:2.1.6', 'description': 'AWS ElasticBeanstalk - Java 7 Running on Amazon Linux 64bit v2.1.6'
-                            },
-                            {
-                                'name': 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6', 'description': 'AWS ElasticBeanstalk - Java 8 Running on Amazon Linux 64bit v2.1.6'
-                            }
-                        ],
-                        'language': 'Java'
-                    },
-                    {
-                        'images': [
-                            {
-                                'name': 'aws/codebuild/eb-go-1.5-amazonlinux-64:2.1.3', 'description': 'AWS ElasticBeanstalk - Go 1.5 Running on Amazon Linux 64bit v2.1.3'
-                            },
-                            {
-                                'name': 'aws/codebuild/eb-go-1.5-amazonlinux-64:2.1.6', 'description': 'AWS ElasticBeanstalk - Go 1.5 Running on Amazon Linux 64bit v2.1.6'
-                            }
-                        ],
-                        'language': 'Golang'
-                    },
-                    {
-                        'images': [
-                            {
-                                'name': 'aws/codebuild/android-java-6:24.4.1', 'description': 'AWS CodeBuild - Android 24.4.1 with java 6'
-                            },
-                            {
-                                'name': 'aws/codebuild/android-java-7:24.4.1', 'description': 'AWS CodeBuild - Android 24.4.1 with java 7'
-                            },
-                            {
-                                'name': 'aws/codebuild/android-java-8:24.4.1', 'description': 'AWS CodeBuild - Android 24.4.1 with java 8'
-                            }
-                        ],
-                        'language': 'Android'
-                    }
-                ]
-            }
-        ],
+    'platforms': [
+        {
+            'languages': [
+                {
+                    'images': [
+                        {
+                            'name': 'aws/codebuild/eb-java-7-amazonlinux-64:2.1.3',
+                            'description': 'AWS Elastic Beanstalk - Java 7 Running on Amazon Linux 64bit v2.1.3'
+                        },
+                        {
+                            'name': 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3',
+                            'description': 'AWS Elastic Beanstalk - Java 8 Running on Amazon Linux 64bit v2.1.3'
+                        },
+                        {
+                            'name': 'aws/codebuild/eb-java-7-amazonlinux-64:2.1.6',
+                            'description': 'AWS Elastic Beanstalk - Java 7 Running on Amazon Linux 64bit v2.1.6'
+                        },
+                        {
+                            'name': 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6',
+                            'description': 'AWS Elastic Beanstalk - Java 8 Running on Amazon Linux 64bit v2.1.6'
+                        }
+                    ],
+                    'language': 'Java'
+                },
+                {
+                    'images': [
+                        {
+                            'name': 'aws/codebuild/eb-go-1.5-amazonlinux-64:2.1.3',
+                            'description': 'AWS Elastic Beanstalk - Go 1.5 Running on Amazon Linux 64bit v2.1.3'
+                        },
+                        {
+                            'name': 'aws/codebuild/eb-go-1.5-amazonlinux-64:2.1.6',
+                            'description': 'AWS Elastic Beanstalk - Go 1.5 Running on Amazon Linux 64bit v2.1.6'
+                        }
+                    ],
+                    'language': 'Golang'
+                },
+                # The "Android" images don't match the "AWS Elastic Beanstalk" pattern so they can remain unchanged
+                {
+                    'images': [
+                        {
+                            'name': 'aws/codebuild/android-java-6:24.4.1',
+                            'description': 'AWS CodeBuild - Android 24.4.1 with java 6'
+                        },
+                        {
+                            'name': 'aws/codebuild/android-java-7:24.4.1',
+                            'description': 'AWS CodeBuild - Android 24.4.1 with java 7'
+                        },
+                        {
+                            'name': 'aws/codebuild/android-java-8:24.4.1',
+                            'description': 'AWS CodeBuild - Android 24.4.1 with java 8'
+                        }
+                    ],
+                    'language': 'Android'
+                }
+            ]
+        }
+    ],
     'ResponseMetadata': {
         'date': 'Tue, 22 Nov 2016 21:36:19 GMT',
-        'RetryAttempts': 0, 'HTTPStatusCode': 200,
+        'RetryAttempts': 0,
+        'HTTPStatusCode': 200,
         'RequestId': 'b47ba2d1-b0fb-11e6-a6a7-6fc6c5a33aee'
     }
 }
+
 
 
 LIST_REPOSITORIES_RESPONSE = {
