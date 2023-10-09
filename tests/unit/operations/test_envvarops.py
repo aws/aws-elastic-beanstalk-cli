@@ -30,7 +30,7 @@ class TestEnvvarOps(unittest.TestCase):
             Counter(frozenset(iteritems(d)) for d in ls2))
 
     def test_sanitize_environment_variables_from_customer_input(self):
-        environment_variables_input = '  """  DB_USER"""   =     "\"  r=o\"o\'t\"\"  "   ,  DB_PAS\ = SWORD="\"pass=\'\"word\""'
+        environment_variables_input = '  """  DB_USER"""   =     "\"  r=o\"o\'t\"\"  "   ,  DB_PAS\\ = SWORD="\"pass=\'\"word\""'
 
         self.assertEqual(
             [
