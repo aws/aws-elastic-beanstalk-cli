@@ -134,7 +134,7 @@ class ArgumentSyntaxValidatorTest(unittest.TestCase):
         Python identifies certain Unicode characters as letters, but not others.
 
         For example, the greek delta symbol is not a Unicode letter, and hence
-        will not match `\w` during regex comparisons, whereas the Swedish `a`
+        will not match `\\w` during regex comparisons, whereas the Swedish `a`
         is a letter.
 
         It is also to be noted that even if Python recognizes a Unicode character
