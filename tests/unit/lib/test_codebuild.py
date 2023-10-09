@@ -78,7 +78,8 @@ class TestCloudWatch(unittest.TestCase):
             make_api_call_mock
     ):
         make_api_call_mock.return_value = mock_responses.LIST_CURATED_ENVIRONMENT_IMAGES_RESPONSE
-
+        result = codebuild.list_curated_environment_images()
+        print(result)
         self.assertEqual(
             [
                 {
@@ -94,5 +95,5 @@ class TestCloudWatch(unittest.TestCase):
                     'description': 'Go 1.5 Running on Amazon Linux 64bit '
                 }
             ],
-            codebuild.list_curated_environment_images()
+            result
         )

@@ -64,8 +64,10 @@ def list_curated_environment_images():
         for language in platform['languages']:
             languages_by_platform_version = {}
             for image in language['images']:
-                if 'Elastic Beanstalk'.encode(errors='ignore') in image['description'].encode(errors='ignore'):
+                print(image['description'])  # This will print every description
+                if 'Elastic Beanstalk' in image['description']:
                     matches = re.search(regex_search_version, image['description'])
+                    print("Matched:", image['description'])  # This will print only the matched descriptions
 
                     # Get the Platform version for the current image
                     current_version = int(matches.group(2).replace(".", ""))
