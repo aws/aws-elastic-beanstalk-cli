@@ -67,24 +67,27 @@ def list_curated_environment_images():
                 print(image['description'])  # This will print every description
                 if 'Elastic Beanstalk' in image['description']:
                     matches = re.search(regex_search_version, image['description'])
-                    print("Matched:", image['description'])  # This will print only the matched descriptions
+                    if matches:  # Ensure matches is not None
+                        print("Matched:", image['description'])  # This will print only the matched descriptions
 
-                    # Get the Platform version for the current image
-                    current_version = int(matches.group(2).replace(".", ""))
+                        # Get the Platform version for the current image
+                        current_version = int(matches.group(2).replace(".", ""))
 
-                    # Set the description to to something nicer than the full description from CodeBuild
-                    image['description'] = matches.group(1)
+                        # Set the description to to something nicer than the full description from CodeBuild
+                        image['description'] = matches.group(1)
 
-                    # Append the image to the correct array with the Platform version as the key
-                    if current_version in languages_by_platform_version.keys():
-                        current_value = languages_by_platform_version[current_version]
-                        current_value.append(image)
-                    else:
-                        current_value = [image]
-                    languages_by_platform_version[current_version] = current_value
+                        # Append the image to the correct array with the Platform version as the key
+                        if current_version in languages_by_platform_version.keys():
+                            current_value = languages_by_platform_version[current_version]
+                            current_value.append(image)
+                        else:
+                            current_value = [image]
+                        languages_by_platform_version[current_version] = current_value
 
-            # Add the image dictionaries of the highest available platform version for the current language
+            # Before adding to beanstalk_images, print the list of images you're about to add.
             if languages_by_platform_version:
+                print("Adding to beanstalk images:", languages_by_platform_version[max(languages_by_platform_version.keys())])
                 beanstalk_images += languages_by_platform_version[max(languages_by_platform_version.keys())]
 
     return beanstalk_images
+
