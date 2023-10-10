@@ -180,6 +180,9 @@ class CreateController(AbstractBaseController):
 
         if single and scale:
             raise InvalidOptionsError(strings['create.singleandsize'])
+        
+        if min_instances == 0 and max_instances == 0:
+            raise InvalidOptionsError(strings['create.minmaxzero'])
 
         if (max_instances or min_instances) and scale:
             raise InvalidOptionsError(strings['create.scaleandminmax'])
