@@ -186,7 +186,7 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                            'list of key=value pairs.',
     'create.sampleandlabel': 'You cannot use the "--sample" and "--version" options together.',
     'create.singleandsize': 'You cannot use the "--single" and "--scale" options together.',
-    'create.minmaxzero':'You cannot set "--min-instances" and "--max-instances" to zero.'
+    'create.minmaxzero':'You cannot set "--min-instances" and "--max-instances" to zero.',
     'create.scaleandminmax': 'You cannot use the "--min-instances" or "--max-instances" and "--scale" options together.',
     'create.singleandminmax': 'You cannot use the "--min-instances" or "--max-instances" and "--single" options together.',
     'create.itype_and_instances' : 'You cannot use the "--instance-type" and "--instance-types" together.',
