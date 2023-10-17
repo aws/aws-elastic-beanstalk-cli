@@ -403,7 +403,7 @@ def zip_up_folder(directory, location, ignore_list=None):
     try:
         os.chdir(directory)
         io.log_info('Zipping up folder at location: ' + str(os.getcwd()))
-        zipf = zipfile.ZipFile(location, 'w', zipfile.ZIP_DEFLATED, allowZip64=True)
+        zipf = zipfile.ZipFile(location, 'w', zipfile.ZIP_DEFLATED, allowZip64=True, compresslevel=9)
         _zipdir('./', zipf, ignore_list=ignore_list)
         zipf.close()
         LOG.debug('File size: ' + str(os.path.getsize(location)))
