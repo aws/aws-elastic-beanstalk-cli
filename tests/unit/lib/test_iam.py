@@ -45,4 +45,4 @@ class TestIAM(unittest.TestCase):
         # Test for a role that doesn't exist
         self.assertFalse(iam.role_exists('SomeRandomIAMRole'))
 
-        get_roles_mock.assert_called_once()
+        self.assertEqual(get_roles_mock.call_count, 2)
