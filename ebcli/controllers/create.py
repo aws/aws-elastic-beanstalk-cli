@@ -16,7 +16,7 @@ import time
 
 from ebcli.core import io, fileoperations, hooks
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.lib import elasticbeanstalk, utils
+from ebcli.lib import elasticbeanstalk, utils, iam 
 from ebcli.objects.exceptions import (
     AlreadyExistsError,
     InvalidOptionsError,
@@ -223,6 +223,9 @@ class CreateController(AbstractBaseController):
 
         if itype and instance_types:
             raise InvalidOptionsError(strings['create.itype_and_instances'])
+        
+        if service_role and not iam.role_exists(service_role):
+            raise InvalidOptionsError(f"The specified service role '{service_role}' does not exist. Please use a role that exists or create a new role .")
 
         platform = _determine_platform(platform, iprofile)
 
