@@ -1436,7 +1436,7 @@ class TestInitModule(unittest.TestCase):
                 'description': 'Java 8 Running on Amazon Linux 32bit '
             }
         ]
-        prompt_for_index_in_list_mock.return_value = 'Java 8 Running on Amazon Linux 32bit '
+        prompt_for_index_in_list_mock.return_value =  1
 
         self.assertIsNone(initialize.handle_buildspec_image('Java 8', False))
 
@@ -1453,7 +1453,8 @@ class TestInitModule(unittest.TestCase):
                 )
             ]
         )
-        prompt_for_index_in_list_mock.assert_called_once_with('Java 8 Running on Amazon Linux 64bit ')
+        prompt_for_index_in_list_mock.assert_called_once_with(['Java 8 Running on Amazon Linux 64bit ', 'Java 8 Running on Amazon Linux 32bit '])
+
 
     @mock.patch('ebcli.controllers.initialize.fileoperations.get_build_configuration')
     @mock.patch('ebcli.controllers.initialize.initializeops.get_codebuild_image_from_platform')
@@ -1481,10 +1482,10 @@ class TestInitModule(unittest.TestCase):
         )
         build_spec_exists_mock.return_value = True
         get_build_configuration_mock.return_value = build_config
-        get_codebuild_image_from_platform_mock.return_value = {
+        get_codebuild_image_from_platform_mock.return_value = [{
             'name': 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.6',
             'description': 'Java 8 Running on Amazon Linux 64bit '
-        }
+        }]
         prompt_for_index_in_list_mock.return_value = 'Java 8 Running on Amazon Linux 32bit '
 
         self.assertIsNone(initialize.handle_buildspec_image('Java 8', False))

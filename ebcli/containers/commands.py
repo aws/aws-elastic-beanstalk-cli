@@ -19,6 +19,7 @@ from ebcli.core import fileoperations
 from ebcli.lib import utils
 from ebcli.objects.exceptions import ValidationError, CommandError
 from ebcli.resources.strings import strings
+from .utils import is_docker_compose_installed
 
 
 EXPOSE_CMD = 'EXPOSE'
@@ -113,7 +114,9 @@ def up(compose_path=None, allow_insecure_ssl=False):
 
 
 def _compose_run(args):
-    utils.exec_cmd_live_output(['docker-compose'] + args)
+    if not is_docker_compose_installed():
+        raise RuntimeError("Docker Compose is not installed. Please install it and try again.")
+    utils.exec_cmd_live_output(['docker','compose'] + args)
 
 
 def get_container_lowlvl_info(container_id):

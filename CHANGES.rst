@@ -1,6 +1,20 @@
 
 Changelog
 =========
+--------------------
+3.20.10 (2023-09-15)
+--------------------
+- Removed Docker-compose as a dependancy
+- Fixed Codebuild image bug
+
+-------------------
+3.20.9 (2023-08-31)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.32.0`
+- Updated six requirement to `>=1.11.0,<1.17.0`
+- Update dependabot configuration to only update minor version
+- Bug fix for Cloudformation pagination token
+
 -------------------
 3.20.8 (2023-08-15)
 -------------------
