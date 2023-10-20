@@ -29,3 +29,20 @@ class TestIAM(unittest.TestCase):
         self.assertEqual('123123123123', iam.account_id())
 
         make_api_call_mock.assert_called_once_with('iam', 'get_user')
+
+    @mock.patch('ebcli.lib.iam.get_roles')
+    def test_role_exists(self, get_roles_mock):
+        # Mock the get_roles function to return a sample list of roles
+        mock_roles = [
+            {'RoleName': 'aws-elasticbeanstalk-ec2-role'},
+            {'RoleName': 'aws-elasticbeanstalk-service-role'}
+        ]
+        get_roles_mock.return_value = mock_roles
+
+        # Test for a role that exists
+        self.assertTrue(iam.role_exists('aws-elasticbeanstalk-ec2-role'))
+
+        # Test for a role that doesn't exist
+        self.assertFalse(iam.role_exists('SomeRandomIAMRole'))
+
+        get_roles_mock.assert_called_once()
