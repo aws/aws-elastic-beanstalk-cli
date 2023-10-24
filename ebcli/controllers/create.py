@@ -13,7 +13,7 @@
 import argparse
 import os
 import time
-
+import yaml
 from ebcli.core import io, fileoperations, hooks
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.lib import elasticbeanstalk, utils, iam
@@ -533,7 +533,23 @@ def get_cname_from_customer(env_name):
             break
     return cname
 
+def get_elb_type_from_ebextensions():
+    ebextensions_dir = './.ebextensions'
+    if not os.path.exists(ebextensions_dir):
+        return None
 
+    for config_file in os.listdir(ebextensions_dir):
+        with open(os.path.join(ebextensions_dir, config_file), 'r') as f:
+            try:
+                config = yaml.safe_load(f)
+                option_settings = config.get('option_settings', [])
+                for setting in option_settings:
+                    if setting.get('namespace') == 'aws:elasticbeanstalk:environment' and setting.get('optionName') == 'LoadBalancerType':
+                        return setting.get('value')
+            except yaml.YAMLError:
+                continue
+
+    return None
 def get_elb_type_from_customer(interactive, single, tier):
     """
     Prompt customer to specify the ELB type if operating in the interactive mode and
@@ -546,6 +562,9 @@ def get_elb_type_from_customer(interactive, single, tier):
     :param tier: the tier type of the environment
     :return: selected ELB type which is one among ['application', 'classic', 'network']
     """
+    elb_type_from_ebextensions = get_elb_type_from_ebextensions()
+    if elb_type_from_ebextensions:
+        return elb_type_from_ebextensions
     if single or (tier and not tier.is_webserver()):
         return
     elif not interactive:
