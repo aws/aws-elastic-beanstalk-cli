@@ -81,7 +81,7 @@ class TestSSHOps(unittest.TestCase):
                 '-f',
                 os.path.expanduser('~') + '{0}.ssh{0}aws-eb-us-west-2'.format(os.path.sep),
                 '-C',
-                'aws-eb-us-west-2',
+                'aws-eb-us-west-2'
             ]
         )
 
