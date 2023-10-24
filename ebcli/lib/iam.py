@@ -186,3 +186,15 @@ def get_managed_policy_document(arn):
                              PolicyArn=arn,
                              VersionId=policy_version)
     return details['PolicyVersion']['Document']
+
+def role_exists(role_name):
+    """
+    Check if a given IAM role exists.
+    :param role_name: Name of the IAM role to check.
+    :return: True if the role exists, False otherwise.
+    """
+    roles = get_roles()
+    for role in roles:
+        if role['RoleName'] == role_name:
+            return True
+    return False
