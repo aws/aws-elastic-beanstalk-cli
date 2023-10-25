@@ -132,7 +132,7 @@ def ssh_into_instance(instance_id, keep_open=False, force_open=False, custom_ssh
             custom_ssh = custom_ssh.split()
         else:
             ident_file = _get_ssh_file(keypair_name)
-            custom_ssh = ['ssh', '-i', ident_file]
+            custom_ssh = ['ssh', '-i', ident_file, '-o', 'IdentitiesOnly yes']
 
         custom_ssh.extend([user + '@' + ip])
 

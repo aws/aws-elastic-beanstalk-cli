@@ -55,7 +55,7 @@ class TestSSHOps(unittest.TestCase):
                 '-f',
                 os.path.expanduser('~') + '{0}.ssh{0}aws-eb-us-west-2'.format(os.path.sep),
                 '-C',
-                'aws-eb-us-west-2'
+                'aws-eb-us-west-2'                
             ]
         )
 
@@ -320,7 +320,7 @@ class TestSSHOps(unittest.TestCase):
         call_mock.return_value = 0
 
         sshops.ssh_into_instance('instance-id')
-        call_mock.assert_called_once_with(['ssh', '-i', 'aws-eb-us-west-2', 'ec2-user@172.31.35.210'])
+        call_mock.assert_called_once_with(['ssh', '-i', 'aws-eb-us-west-2', '-o', 'IdentitiesOnly yes', 'ec2-user@172.31.35.210'])
 
     @mock.patch('ebcli.operations.sshops.ec2.describe_instance')
     @mock.patch('ebcli.operations.sshops.ec2.describe_security_group')
@@ -346,7 +346,7 @@ class TestSSHOps(unittest.TestCase):
         sshops.ssh_into_instance('instance-id')
         authorize_ssh_mock.assert_not_called()
         revoke_ssh_mock.assert_not_called()
-        call_mock.assert_called_once_with(['ssh', '-i', 'aws-eb-us-west-2', 'ec2-user@54.218.96.238'])
+        call_mock.assert_called_once_with(['ssh', '-i', 'aws-eb-us-west-2', '-o', 'IdentitiesOnly yes', 'ec2-user@54.218.96.238'])
 
     @mock.patch('ebcli.operations.sshops.ec2.describe_instance')
     @mock.patch('ebcli.operations.sshops.ec2.describe_security_group')
@@ -372,7 +372,7 @@ class TestSSHOps(unittest.TestCase):
         sshops.ssh_into_instance('instance-id')
         authorize_ssh_mock.assert_called_once_with('sg-12312313')
         revoke_ssh_mock.assert_called_once_with('sg-12312313')
-        call_mock.assert_called_once_with(['ssh', '-i', 'aws-eb-us-west-2', 'ec2-user@54.218.96.238'])
+        call_mock.assert_called_once_with(['ssh', '-i', 'aws-eb-us-west-2', '-o', 'IdentitiesOnly yes', 'ec2-user@54.218.96.238'])
 
     @mock.patch('ebcli.operations.sshops.prompt_for_ec2_keyname')
     @mock.patch('ebcli.operations.sshops.commonops.update_environment')
