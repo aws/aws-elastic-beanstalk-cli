@@ -2381,7 +2381,7 @@ class TestCreateModuleE2E(unittest.TestCase):
     @mock.patch('os.path.exists')
     @mock.patch('os.listdir')
     @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="valid_yaml_content")
-    def test_saved_configs_prioritized(self, mock_file, mock_listdir, mock_exists, mock_yaml):
+    def test_check_elb_type_from_configs_saved_configs_prioritized(self, mock_file, mock_listdir, mock_exists, mock_yaml):
         mock_exists.return_value = True
         mock_listdir.return_value = ['config1.yaml']
         mock_yaml.return_value = {
@@ -2398,7 +2398,7 @@ class TestCreateModuleE2E(unittest.TestCase):
     @mock.patch('os.path.exists')
     @mock.patch('os.listdir')
     @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="valid_yaml_content")
-    def test_ebextensions_checked(self, mock_file, mock_listdir, mock_exists, mock_yaml):
+    def test_check_elb_type_from_configs_ebextensions_checked(self, mock_file, mock_listdir, mock_exists, mock_yaml):
         mock_exists.return_value = True
         mock_listdir.return_value = ['config1.yaml']
         mock_yaml.return_value = {
@@ -2416,7 +2416,7 @@ class TestCreateModuleE2E(unittest.TestCase):
     @mock.patch('os.path.exists')
     @mock.patch('os.listdir')
     @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="invalid: yaml: data")
-    def test_malformed_yaml_raises_value_error(self, mock_file, mock_listdir, mock_exists):
+    def test_check_elb_type_from_configs_malformed_yaml_raises_value_error(self, mock_file, mock_listdir, mock_exists):
         mock_exists.return_value = True
         mock_listdir.return_value = ['config1.yaml']
         
@@ -2426,7 +2426,7 @@ class TestCreateModuleE2E(unittest.TestCase):
     @mock.patch('os.path.exists')
     @mock.patch('os.listdir')
     @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="option_settings: []")
-    def test_returns_none_when_elb_not_found(self, mock_file, mock_listdir, mock_exists):
+    def test_check_elb_type_from_configs_returns_none_when_elb_not_found(self, mock_file, mock_listdir, mock_exists):
         mock_exists.return_value = True
         mock_listdir.return_value = ['config1.yaml']
 
@@ -2436,7 +2436,7 @@ class TestCreateModuleE2E(unittest.TestCase):
     @mock.patch('os.path.exists')
     @mock.patch('os.listdir')
     @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="OptionSettings: {random_namespace: {random_option: random_value}}")
-    def test_setting_not_present_in_saved_configs(self, mock_file, mock_listdir, mock_exists, mock_yaml):
+    def test_check_elb_type_from_configs_setting_not_present_in_saved_configs(self, mock_file, mock_listdir, mock_exists, mock_yaml):
         mock_exists.return_value = True
         mock_listdir.return_value = ['config1.yaml']
         mock_yaml.return_value = {
@@ -2524,7 +2524,7 @@ class TestCreateModuleE2E(unittest.TestCase):
             )
         )
 
-    @mock.patch('create.check_elb_type_from_configs')
+    @mock.patch('ebcli.controllers.create.check_elb_type_from_configs')
     def test_elb_type_configured_interactive(self, mock_check_elb):
         mock_check_elb.return_value = True  # ELB type is configured
         
@@ -2537,7 +2537,7 @@ class TestCreateModuleE2E(unittest.TestCase):
         
         self.assertIsNone(result)
 
-    @mock.patch('create.check_elb_type_from_configs')
+    @mock.patch('ebcli.controllers.create.check_elb_type_from_configs')
     def test_elb_type_configured_non_interactive(self, mock_check_elb):
         mock_check_elb.return_value = True  # ELB type is configured
         
