@@ -2415,7 +2415,7 @@ class TestCreateModuleE2E(unittest.TestCase):
 
     @mock.patch('os.path.exists')
     @mock.patch('os.listdir')
-    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="invalid: yaml::data")
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="invalid: yaml: data")
     def test_malformed_yaml_raises_value_error(self, mock_file, mock_listdir, mock_exists):
         mock_exists.return_value = True
         mock_listdir.return_value = ['config1.yaml']
