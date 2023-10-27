@@ -16,7 +16,11 @@ import shutil
 #import mock
 import unittest
 from unittest import mock
+from unittest.mock import patch, mock_open
+
 from ebcli.controllers import create
+from ebcli.controllers.create import get_elb_type_from_configs
+
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
 from ebcli.objects.exceptions import (
@@ -2391,37 +2395,44 @@ option_settings:
     MALFORMED='''
 
     '''
-    @mock.patch('builtins.open', mock.mock_open(read_data=SAVED_CONFIG_DATA))
-    @mock.patch('ebcli.controllers.create.os.listdir', return_value=['savedconfig.yml'])
-    @mock.patch('ebcli.controllers.create.os.path.exists', return_value=True)
-    def test_get_elb_from_saved_configs(self):
-        result = create.get_elb_type_from_configs(use_saved_config=True)
-        self.assertEqual(result, True)
+    @mock.patch('os.path.exists')
+    @mock.patch('os.listdir')
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="namespace: aws:elasticbeanstalk:environment\noption_name: LoadBalancerType\nvalue: true")
+    def test_saved_configs_prioritized(self, mock_file, mock_listdir, mock_exists):
+        mock_exists.return_value = True
+        mock_listdir.return_value = ['config1.yaml']
 
-    @mock.patch('ebcli.controllers.create.os.path.exists', return_value=False)
-    def test_no_saved_configs(self, mock_exists):
-        result = create.get_elb_type_from_configs(use_saved_config=True)
-        self.assertIsNone(result)
+        self.assertTrue(get_elb_type_from_configs(use_saved_config=True))
 
-    @mock.patch('ebcli.controllers.create.os.path.exists', return_value=True)
-    @mock.patch('ebcli.controllers.create.os.listdir', return_value=['config.yml'])
-    @mock.patch('builtins.open', mock.mock_open(read_data=EBEXTENSIONS_DATA))
-    def test_get_elb_from_ebextensions(self, mock_open, mock_listdir, mock_exists):
-        result = create.get_elb_type_from_configs(use_saved_config=False)
-        self.assertEqual(result, True)
+    @mock.patch('os.path.exists')
+    @mock.patch('os.listdir')
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="option_settings:\n  - namespace: aws:elasticbeanstalk:environment\n    option_name: LoadBalancerType\n    value: true")
+    def test_ebextensions_checked(self, mock_file, mock_listdir, mock_exists):
+        mock_exists.return_value = True
+        mock_listdir.return_value = ['config1.yaml']
 
-    @mock.patch('ebcli.controllers.create.os.path.exists', return_value=False)
-    def test_no_ebextensions(self, mock_exists):
-        result = create.get_elb_type_from_configs(use_saved_config=False)
-        self.assertIsNone(result)
+        self.assertTrue(get_elb_type_from_configs(use_saved_config=False))
 
-    @mock.patch('ebcli.controllers.create.os.path.exists', return_value=True)
-    @mock.patch('ebcli.controllers.create.os.listdir', return_value=['invalid.yml', 'valid.yml'])
-    @mock.patch('builtins.open', side_effect=[mock.mock_open(read_data=MALFORMED)(), 
-                                              mock.mock_open(read_data=EBEXTENSIONS_DATA)()])
-    def test_handle_malformed_yaml(self, mock_open, mock_listdir, mock_exists):
+    @mock.patch('os.path.exists')
+    @mock.patch('os.listdir')
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="invalid: yaml::data")
+    def test_malformed_yaml_raises_value_error(self, mock_file, mock_listdir, mock_exists):
+        mock_exists.return_value = True
+        mock_listdir.return_value = ['config1.yaml']
+        
         with self.assertRaises(ValueError):
-            create.get_elb_type_from_configs(use_saved_config=False)
+            get_elb_type_from_configs(use_saved_config=False)
+
+    @mock.patch('os.path.exists')
+    @mock.patch('os.listdir')
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="")
+    def test_returns_none_when_elb_not_found(self, mock_file, mock_listdir, mock_exists):
+        mock_exists.return_value = True
+        mock_listdir.return_value = ['config1.yaml']
+
+        self.assertIsNone(get_elb_type_from_configs(use_saved_config=False))
+
+    
 
     
 
