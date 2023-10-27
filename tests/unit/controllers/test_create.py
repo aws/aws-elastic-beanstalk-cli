@@ -2396,7 +2396,7 @@ option_settings:
     '''
     @mock.patch('ebcli.controllers.create.os.path.exists', return_value=True)
     @mock.patch('ebcli.controllers.create.os.listdir', return_value=['savedconfig.yml'])
-    @mock.patch('ebcli.controllers.create.builtins.open', mock.mock_open(read_data=SAVED_CONFIG_DATA))
+    @mock.patch('builtins.open', mock.mock_open(read_data=SAVED_CONFIG_DATA))
     def test_get_elb_from_saved_configs(self, mock_open, mock_listdir, mock_exists):
         result = create.get_elb_type_from_configs(use_saved_config=True)
         self.assertEqual(result, True)
@@ -2408,7 +2408,7 @@ option_settings:
 
     @mock.patch('ebcli.controllers.create.os.path.exists', return_value=True)
     @mock.patch('ebcli.controllers.create.os.listdir', return_value=['config.yml'])
-    @mock.patch('ebcli.controllers.create.builtins.open', mock.mock_open(read_data=EBEXTENSIONS_DATA))
+    @mock.patch('builtins.open', mock.mock_open(read_data=EBEXTENSIONS_DATA))
     def test_get_elb_from_ebextensions(self, mock_open, mock_listdir, mock_exists):
         result = create.get_elb_type_from_configs(use_saved_config=False)
         self.assertEqual(result, True)
@@ -2420,11 +2420,11 @@ option_settings:
 
     @mock.patch('ebcli.controllers.create.os.path.exists', return_value=True)
     @mock.patch('ebcli.controllers.create.os.listdir', return_value=['invalid.yml', 'valid.yml'])
-    @mock.patch('ebcli.controllers.create.builtins.open', side_effect=[mock.mock_open(read_data=MALFORMED)(), 
+    @mock.patch('builtins.open', side_effect=[mock.mock_open(read_data=MALFORMED)(), 
                                               mock.mock_open(read_data=EBEXTENSIONS_DATA)()])
     def test_handle_malformed_yaml(self, mock_open, mock_listdir, mock_exists):
-        result = create.get_elb_type_from_configs(use_saved_config=False)
-        self.assertEqual(result, True)
+        with self.assertRaises(ValueError):
+            create.get_elb_type_from_configs(use_saved_config=False)
 
     @mock.patch('os.path.exists', return_value=False)
     def test_no_ebextensions(self, mock_exists):

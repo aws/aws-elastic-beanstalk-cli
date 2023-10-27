@@ -553,7 +553,7 @@ def get_elb_type_from_configs(use_saved_config=False):
                             if namespace == 'aws:elasticbeanstalk:environment' and setting.get('LoadBalancerType'):
                                 return True
                     except yaml.YAMLError:
-                        continue
+                        raise ValueError(f"Malformed YAML in file {config_file} in saved_configs.")
 
     else:
         # Then check in .ebextensions
@@ -569,7 +569,8 @@ def get_elb_type_from_configs(use_saved_config=False):
                                 if setting.get('value'):
                                     return True
                     except yaml.YAMLError:
-                        continue
+                        raise ValueError(f"Malformed YAML in file {config_file} in .ebextensions.")
+
 
     return None
 
