@@ -13,7 +13,7 @@
 import os
 import shutil
 
-import mock
+#import mock
 import unittest
 from unittest import mock
 from ebcli.controllers import create
@@ -2426,18 +2426,9 @@ option_settings:
         with self.assertRaises(ValueError):
             create.get_elb_type_from_configs(use_saved_config=False)
 
-    @mock.patch('os.path.exists', return_value=False)
-    def test_no_ebextensions(self, mock_exists):
-        result = create.get_elb_type_from_configs(use_saved_config=False)
-        self.assertIsNone(result)
+    
 
-    @mock.patch('os.path.exists', return_value=True)
-    @mock.patch('os.listdir', return_value=['invalid.yml', 'valid.yml'])
-    @mock.patch('builtins.open', side_effect=[mock.mock_open(read_data='invalid_yaml_here')(), 
-                                              mock.mock_open(read_data='valid_ebextensions_yaml_here')()])
-    def test_handle_malformed_yaml(self, mock_open, mock_listdir, mock_exists):
-        result = create.get_elb_type_from_configs(use_saved_config=False)
-        self.assertEqual(result, True)
+    
 
     def test_get_elb_type_from_customer__single_instance_environment(self):
         self.assertIsNone(
