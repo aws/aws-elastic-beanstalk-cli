@@ -13,9 +13,9 @@
 import os
 import shutil
 
-import mock
+#import mock
 import unittest
-
+from unittest import mock
 from ebcli.controllers import create
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
