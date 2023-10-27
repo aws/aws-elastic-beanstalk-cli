@@ -2373,6 +2373,47 @@ class TestCreateModuleE2E(unittest.TestCase):
 
         self.assertEqual('some_cfg', create.get_template_name('some_app', 'some_cfg'))
 
+    
+    def setUp(self):
+        if not os.path.exists('testDir'):
+            os.makedirs('testDir')
+        os.chdir('testDir')
+
+    def tearDown(self):
+        os.chdir(os.path.pardir)
+        if os.path.exists('testDir'):
+            shutil.rmtree('testDir')
+    SAVED_CONFIG_DATA='''
+   EnvironmentConfigurationMetadata:
+  Description: Configuration created from the EB CLI using "eb config save".
+OptionSettings:
+  aws:elasticbeanstalk:command:
+    BatchSize: '30'
+  aws:elasticbeanstalk:environment:
+    LoadBalancerType: network
+''' 
+    EBEXTENSIONS_DATA = '''
+option_settings:
+  - namespace: aws:elasticbeanstalk:environment
+    option_name: LoadBalancerType
+    value: classic
+'''       
+    @mock.patch('os.path.exists', return_value=True)
+    @mock.patch('os.listdir', return_value=['savedconfig.yml'])
+    @mock.patch('builtins.open', mock.mock_open(read_data=SAVED_CONFIG_DATA))
+    def test_get_elb_type_from_configs__saved_config(self, mock_open, mock_listdir, mock_exists):
+        with mock.patch('os.path.join', return_value='.elasticbeanstalk/saved_configs/savedconfig.yml'):
+            result = create.get_elb_type_from_configs(use_saved_config=True)
+            self.assertEqual(result, True)
+
+    @mock.patch('os.path.exists', return_value=True)
+    @mock.patch('os.listdir', return_value=['config.yaml'])
+    @mock.patch('builtins.open', mock.mock_open(read_data=EBEXTENSIONS_DATA))
+    def test_get_elb_type_from_configs__ebextensions(self, mock_open, mock_listdir, mock_exists):
+        with mock.patch('os.path.join', return_value='.ebextensions/config.yaml'):
+            result = create.get_elb_type_from_configs(use_saved_config=False)
+            self.assertEqual(result, True)
+
     def test_get_elb_type_from_customer__single_instance_environment(self):
         self.assertIsNone(
             create.get_elb_type_from_customer(
@@ -2382,12 +2423,27 @@ class TestCreateModuleE2E(unittest.TestCase):
             )
         )
 
-    def test_get_elb_type_from_customer__non_interactive_mode(self):
+    @mock.patch('ebcli.controllers.create.get_elb_type_from_configs', return_value=True)
+    def test_get_elb_type_from_customer__elb_configured(self, mock_get_elb_type_from_configs):
+        self.assertIsNone(
+            create.get_elb_type_from_customer(
+                interactive=False,
+                single=False,
+                tier=Tier.from_raw_string('webserver'),
+                cfg_flag_used=True
+            )
+        )
+        mock_get_elb_type_from_configs.assert_called_once_with(use_saved_config=True)
+
+
+    @mock.patch('ebcli.controllers.create.get_elb_type_from_configs', return_value=None)
+    def test_get_elb_type_from_customer__non_interactive_mode(self, mock_get_elb_type_from_configs):
         self.assertEqual(
             create.get_elb_type_from_customer(
                 interactive=False,
                 single=False,
-                tier=None
+                tier=None,
+                cfg_flag_used=True
             ),
             'application'
         )

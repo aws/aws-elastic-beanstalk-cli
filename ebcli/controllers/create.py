@@ -551,7 +551,7 @@ def get_elb_type_from_configs(use_saved_config=False):
                         option_settings = config.get('OptionSettings', {})
                         for namespace, setting in option_settings.items():
                             if namespace == 'aws:elasticbeanstalk:environment' and setting.get('LoadBalancerType'):
-                                return setting['LoadBalancerType']
+                                return True
                     except yaml.YAMLError:
                         continue
 
@@ -566,7 +566,8 @@ def get_elb_type_from_configs(use_saved_config=False):
                         option_settings = config.get('option_settings', [])
                         for setting in option_settings:
                             if setting.get('namespace') == 'aws:elasticbeanstalk:environment' and setting.get('option_name') == 'LoadBalancerType':
-                                return setting.get('value')
+                                if setting.get('value'):
+                                    return True
                     except yaml.YAMLError:
                         continue
 
@@ -584,11 +585,9 @@ def get_elb_type_from_customer(interactive, single, tier, cfg_flag_used=False):
     :param tier: the tier type of the environment
     :return: selected ELB type which is one among ['application', 'classic', 'network']
     """
-    elb_type_from_config = get_elb_type_from_configs(use_saved_config=cfg_flag_used)
-    if elb_type_from_config:
-        return elb_type_from_config
-    if single or (tier and not tier.is_webserver()):
-        return
+    elb_type_is_configured = get_elb_type_from_configs(use_saved_config=cfg_flag_used)
+    if single or (tier and not tier.is_webserver()) or elb_type_is_configured:
+      return
     elif not interactive:
         return elb_names.APPLICATION_VERSION
 
