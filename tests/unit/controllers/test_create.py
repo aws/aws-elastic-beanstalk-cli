@@ -2431,11 +2431,6 @@ class TestCreateModuleE2E(unittest.TestCase):
         mock_listdir.return_value = ['config1.yaml']
 
         self.assertIsNone(get_elb_type_from_configs(use_saved_config=False))
-    
-
-    
-
-    
 
     def test_get_elb_type_from_customer__single_instance_environment(self):
         self.assertIsNone(
@@ -2445,10 +2440,7 @@ class TestCreateModuleE2E(unittest.TestCase):
                 tier=Tier.from_raw_string('webserver')
             )
         )
-
-    
-
-
+        
     def test_get_elb_type_from_customer__non_interactive_mode(self):
         self.assertEqual(
             create.get_elb_type_from_customer(
