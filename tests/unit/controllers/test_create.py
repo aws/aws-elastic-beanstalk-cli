@@ -19,7 +19,7 @@ from unittest import mock
 from unittest.mock import patch, mock_open
 
 from ebcli.controllers import create
-from ebcli.controllers.create import get_elb_type_from_configs
+from ebcli.controllers.create import check_elb_type_from_configs
 
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
@@ -2392,7 +2392,7 @@ class TestCreateModuleE2E(unittest.TestCase):
             }
         }
 
-        self.assertTrue(get_elb_type_from_configs(use_saved_config=True))
+        self.assertTrue(check_elb_type_from_configs(use_saved_config=True))
 
     @mock.patch('yaml.safe_load')
     @mock.patch('os.path.exists')
@@ -2411,7 +2411,7 @@ class TestCreateModuleE2E(unittest.TestCase):
             ]
         }
 
-        self.assertTrue(get_elb_type_from_configs(use_saved_config=False))
+        self.assertTrue(check_elb_type_from_configs(use_saved_config=False))
 
     @mock.patch('os.path.exists')
     @mock.patch('os.listdir')
@@ -2421,7 +2421,7 @@ class TestCreateModuleE2E(unittest.TestCase):
         mock_listdir.return_value = ['config1.yaml']
         
         with self.assertRaises(ValueError):
-            get_elb_type_from_configs(use_saved_config=False)
+            check_elb_type_from_configs(use_saved_config=False)
 
     @mock.patch('os.path.exists')
     @mock.patch('os.listdir')
@@ -2430,7 +2430,23 @@ class TestCreateModuleE2E(unittest.TestCase):
         mock_exists.return_value = True
         mock_listdir.return_value = ['config1.yaml']
 
-        self.assertIsNone(get_elb_type_from_configs(use_saved_config=False))
+        self.assertFalse(check_elb_type_from_configs(use_saved_config=False))
+    
+    @mock.patch('yaml.safe_load')
+    @mock.patch('os.path.exists')
+    @mock.patch('os.listdir')
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="OptionSettings: {random_namespace: {random_option: random_value}}")
+    def test_setting_not_present_in_saved_configs(self, mock_file, mock_listdir, mock_exists, mock_yaml):
+        mock_exists.return_value = True
+        mock_listdir.return_value = ['config1.yaml']
+        mock_yaml.return_value = {
+            'random_namespace': {
+            'random_option': 'random_value'
+        }}
+
+        self.assertFalse(check_elb_type_from_configs(use_saved_config=True))
+    
+
 
     def test_get_elb_type_from_customer__single_instance_environment(self):
         self.assertIsNone(
