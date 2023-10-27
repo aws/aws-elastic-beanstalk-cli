@@ -13,10 +13,14 @@
 import os
 import shutil
 
-import mock
+#import mock
 import unittest
+from unittest import mock
+from unittest.mock import patch, mock_open
 
 from ebcli.controllers import create
+from ebcli.controllers.create import get_elb_type_from_configs
+
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
 from ebcli.objects.exceptions import (
@@ -2332,6 +2336,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
         self.assertEnvironmentRequestsEqual(expected_environment_request, actual_environment_request)
 
 
+
 class TestCreateModuleE2E(unittest.TestCase):
     def setUp(self):
         if not os.path.exists('testDir'):
@@ -2373,6 +2378,61 @@ class TestCreateModuleE2E(unittest.TestCase):
 
         self.assertEqual('some_cfg', create.get_template_name('some_app', 'some_cfg'))
 
+    @mock.patch('yaml.safe_load')
+    @mock.patch('os.path.exists')
+    @mock.patch('os.listdir')
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="valid_yaml_content")
+    def test_saved_configs_prioritized(self, mock_file, mock_listdir, mock_exists, mock_yaml):
+        mock_exists.return_value = True
+        mock_listdir.return_value = ['config1.yaml']
+        mock_yaml.return_value = {
+            'OptionSettings': {
+                'aws:elasticbeanstalk:environment': {
+                    'LoadBalancerType': True
+                }
+            }
+        }
+
+        self.assertTrue(get_elb_type_from_configs(use_saved_config=True))
+
+    @mock.patch('yaml.safe_load')
+    @mock.patch('os.path.exists')
+    @mock.patch('os.listdir')
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="valid_yaml_content")
+    def test_ebextensions_checked(self, mock_file, mock_listdir, mock_exists, mock_yaml):
+        mock_exists.return_value = True
+        mock_listdir.return_value = ['config1.yaml']
+        mock_yaml.return_value = {
+            'option_settings': [
+                {
+                    'namespace': 'aws:elasticbeanstalk:environment',
+                    'option_name': 'LoadBalancerType',
+                    'value': True
+                }
+            ]
+        }
+
+        self.assertTrue(get_elb_type_from_configs(use_saved_config=False))
+
+    @mock.patch('os.path.exists')
+    @mock.patch('os.listdir')
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="invalid: yaml: data")
+    def test_malformed_yaml_raises_value_error(self, mock_file, mock_listdir, mock_exists):
+        mock_exists.return_value = True
+        mock_listdir.return_value = ['config1.yaml']
+        
+        with self.assertRaises(ValueError):
+            get_elb_type_from_configs(use_saved_config=False)
+
+    @mock.patch('os.path.exists')
+    @mock.patch('os.listdir')
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="option_settings: []")
+    def test_returns_none_when_elb_not_found(self, mock_file, mock_listdir, mock_exists):
+        mock_exists.return_value = True
+        mock_listdir.return_value = ['config1.yaml']
+
+        self.assertIsNone(get_elb_type_from_configs(use_saved_config=False))
+
     def test_get_elb_type_from_customer__single_instance_environment(self):
         self.assertIsNone(
             create.get_elb_type_from_customer(
@@ -2388,6 +2448,7 @@ class TestCreateModuleE2E(unittest.TestCase):
                 interactive=False,
                 single=False,
                 tier=None
+                
             ),
             'application'
         )
