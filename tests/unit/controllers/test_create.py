@@ -2525,7 +2525,7 @@ class TestCreateModuleE2E(unittest.TestCase):
         )
 
     @mock.patch('ebcli.controllers.create.check_elb_type_from_configs')
-    def test_elb_type_configured_interactive(self, mock_check_elb):
+    def test_get_elb_type_from_customer_elb_type_configured_interactive(self, mock_check_elb):
         mock_check_elb.return_value = True  # ELB type is configured
         
         result = create.get_elb_type_from_customer(
@@ -2538,7 +2538,7 @@ class TestCreateModuleE2E(unittest.TestCase):
         self.assertIsNone(result)
 
     @mock.patch('ebcli.controllers.create.check_elb_type_from_configs')
-    def test_elb_type_configured_non_interactive(self, mock_check_elb):
+    def test_get_elb_type_from_customer_elb_type_configured_non_interactive(self, mock_check_elb):
         mock_check_elb.return_value = True  # ELB type is configured
         
         result = create.get_elb_type_from_customer(
