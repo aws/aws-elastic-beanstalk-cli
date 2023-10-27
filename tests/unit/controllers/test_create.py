@@ -2389,15 +2389,12 @@ option_settings:
     value: classic
 '''       
     MALFORMED='''
-option_settings:
-    namespace: aws:elasticbeanstalk:environment
-    option_name: LoadBalancerType
-    value: classic
+
     '''
-    @mock.patch('ebcli.controllers.create.os.path.exists', return_value=True)
-    @mock.patch('ebcli.controllers.create.os.listdir', return_value=['savedconfig.yml'])
     @mock.patch('builtins.open', mock.mock_open(read_data=SAVED_CONFIG_DATA))
-    def test_get_elb_from_saved_configs(self, mock_open, mock_listdir, mock_exists):
+    @mock.patch('ebcli.controllers.create.os.listdir', return_value=['savedconfig.yml'])
+    @mock.patch('ebcli.controllers.create.os.path.exists', return_value=True)
+    def test_get_elb_from_saved_configs(self):
         result = create.get_elb_type_from_configs(use_saved_config=True)
         self.assertEqual(result, True)
 
