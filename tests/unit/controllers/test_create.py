@@ -2401,7 +2401,7 @@ option_settings:
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.listdir', return_value=['savedconfig.yml'])
     @mock.patch('builtins.open', mock.mock_open(read_data=SAVED_CONFIG_DATA))
-    def test_get_elb_type_from_configs__saved_config(self, mock_open, mock_listdir, mock_exists):
+    def test_get_elb_type_from_configs__saved_config(self, *,mock_open, mock_listdir, mock_exists):
         with mock.patch('os.path.join', return_value='.elasticbeanstalk/saved_configs/savedconfig.yml'):
             result = create.get_elb_type_from_configs(use_saved_config=True)
             self.assertEqual(result, True)
@@ -2409,7 +2409,7 @@ option_settings:
     @mock.patch('os.path.exists', return_value=True)
     @mock.patch('os.listdir', return_value=['config.yaml'])
     @mock.patch('builtins.open', mock.mock_open(read_data=EBEXTENSIONS_DATA))
-    def test_get_elb_type_from_configs__ebextensions(self, mock_open, mock_listdir, mock_exists):
+    def test_get_elb_type_from_configs__ebextensions(self, *,mock_open, mock_listdir, mock_exists):
         with mock.patch('os.path.join', return_value='.ebextensions/config.yaml'):
             result = create.get_elb_type_from_configs(use_saved_config=False)
             self.assertEqual(result, True)
