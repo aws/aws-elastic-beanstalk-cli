@@ -2377,39 +2377,39 @@ class TestCreateModuleE2E(unittest.TestCase):
 
         self.assertEqual('some_cfg', create.get_template_name('some_app', 'some_cfg'))
 
-    SAVED_CONFIG_DATA='''
-   EnvironmentConfigurationMetadata:
-  Description: Configuration created from the EB CLI using "eb config save".
-OptionSettings:
-  aws:elasticbeanstalk:command:
-    BatchSize: '30'
-  aws:elasticbeanstalk:environment:
-    LoadBalancerType: network
-''' 
-    EBEXTENSIONS_DATA = '''
-option_settings:
-  - namespace: aws:elasticbeanstalk:environment
-    option_name: LoadBalancerType
-    value: classic
-'''       
-    MALFORMED='''
-
-    '''
+    @mock.patch('yaml.safe_load')
     @mock.patch('os.path.exists')
     @mock.patch('os.listdir')
-    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="namespace: aws:elasticbeanstalk:environment\noption_name: LoadBalancerType\nvalue: true")
-    def test_saved_configs_prioritized(self, mock_file, mock_listdir, mock_exists):
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="valid_yaml_content")
+    def test_saved_configs_prioritized(self, mock_file, mock_listdir, mock_exists, mock_yaml):
         mock_exists.return_value = True
         mock_listdir.return_value = ['config1.yaml']
+        mock_yaml.return_value = {
+            'OptionSettings': {
+                'aws:elasticbeanstalk:environment': {
+                    'LoadBalancerType': True
+                }
+            }
+        }
 
         self.assertTrue(get_elb_type_from_configs(use_saved_config=True))
 
+    @mock.patch('yaml.safe_load')
     @mock.patch('os.path.exists')
     @mock.patch('os.listdir')
-    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="option_settings:\n  - namespace: aws:elasticbeanstalk:environment\n    option_name: LoadBalancerType\n    value: true")
-    def test_ebextensions_checked(self, mock_file, mock_listdir, mock_exists):
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="valid_yaml_content")
+    def test_ebextensions_checked(self, mock_file, mock_listdir, mock_exists, mock_yaml):
         mock_exists.return_value = True
         mock_listdir.return_value = ['config1.yaml']
+        mock_yaml.return_value = {
+            'option_settings': [
+                {
+                    'namespace': 'aws:elasticbeanstalk:environment',
+                    'option_name': 'LoadBalancerType',
+                    'value': True
+                }
+            ]
+        }
 
         self.assertTrue(get_elb_type_from_configs(use_saved_config=False))
 
@@ -2425,13 +2425,12 @@ option_settings:
 
     @mock.patch('os.path.exists')
     @mock.patch('os.listdir')
-    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="")
+    @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="some_other_yaml_content")
     def test_returns_none_when_elb_not_found(self, mock_file, mock_listdir, mock_exists):
         mock_exists.return_value = True
         mock_listdir.return_value = ['config1.yaml']
 
         self.assertIsNone(get_elb_type_from_configs(use_saved_config=False))
-
     
 
     
