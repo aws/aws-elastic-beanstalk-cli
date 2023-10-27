@@ -2524,6 +2524,32 @@ class TestCreateModuleE2E(unittest.TestCase):
             )
         )
 
+    @mock.patch('create.check_elb_type_from_configs')
+    def test_elb_type_configured_interactive(self, mock_check_elb):
+        mock_check_elb.return_value = True  # ELB type is configured
+        
+        result = create.get_elb_type_from_customer(
+            interactive=True,
+            single=False,  
+            tier=None,  
+            cfg_flag_used=True
+        )
+        
+        self.assertIsNone(result)
+
+    @mock.patch('create.check_elb_type_from_configs')
+    def test_elb_type_configured_non_interactive(self, mock_check_elb):
+        mock_check_elb.return_value = True  # ELB type is configured
+        
+        result = create.get_elb_type_from_customer(
+            interactive=False,
+            single=False,  
+            tier=None,  
+            cfg_flag_used=True
+        )
+        
+        self.assertIsNone(result)
+
     @mock.patch('ebcli.controllers.create.shared_lb_ops.validate_shared_lb_for_non_interactive')
     @mock.patch('ebcli.controllers.create.shared_lb_ops.get_shared_lb_from_customer')
     def test_get_shared_load_balancer__for_interactive(
