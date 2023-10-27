@@ -533,11 +533,11 @@ def get_cname_from_customer(env_name):
             break
     return cname
 
-def get_elb_type_from_configs(use_saved_config=False):
+def check_elb_type_from_configs(use_saved_config=False):
     """
-    Retrieve the ELB type from either the .ebextensions or saved_configs directories.
+    Checks if  the ELB type is present from either the .ebextensions or saved_configs directories.
     :param use_saved_config: Boolean indicating if --cfg flag was used.
-    :return: ELB type if found, else None.
+    :return: True, else False.
     """
 
     # If --cfg flag is used, prioritize checking saved_configs first
@@ -572,7 +572,7 @@ def get_elb_type_from_configs(use_saved_config=False):
                         raise ValueError(f"Malformed YAML in file {config_file} in .ebextensions.")
 
 
-    return None
+    return False
 
 def get_elb_type_from_customer(interactive, single, tier, cfg_flag_used=False):
     """
@@ -586,7 +586,7 @@ def get_elb_type_from_customer(interactive, single, tier, cfg_flag_used=False):
     :param tier: the tier type of the environment
     :return: selected ELB type which is one among ['application', 'classic', 'network']
     """
-    elb_type_is_configured = get_elb_type_from_configs(use_saved_config=cfg_flag_used)
+    elb_type_is_configured = check_elb_type_from_configs(use_saved_config=cfg_flag_used)
     if single or (tier and not tier.is_webserver()) or elb_type_is_configured:
       return
     elif not interactive:
