@@ -565,7 +565,11 @@ def check_elb_type_from_configs(use_saved_config=False):
                         config = yaml.safe_load(f)
                         option_settings = config.get('option_settings', [])
                         if isinstance(option_settings, dict):
+                            env = option_settings.get('aws:elasticbeanstalk:environment', {})
+                            if env.get('LoadBalancerType'):
+                                return True
                             continue
+                        
                         for setting in option_settings:
                             if setting.get('namespace') == 'aws:elasticbeanstalk:environment' and setting.get('option_name') == 'LoadBalancerType':
                                 if setting.get('value'):
