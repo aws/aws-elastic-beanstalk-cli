@@ -19,6 +19,7 @@ import subprocess
 import sys
 import threading
 import types
+import yaml
 
 from ebcli.core import fileoperations
 from ebcli.core import io
@@ -1701,11 +1702,20 @@ class PlatformWorkspaceTests(TestHelpTexts, HelpTestsMixin):
             'my-custom-platform',
             workspace_type='Platform'
         )
+        cls.enforce_imdsv2()
 
     @classmethod
     def tearDownClass(cls):
         os.chdir(cls.root_dir)
 
+    @classmethod
+    def enforce_imdsv2(cls):
+        config_path = os.path.join(os.getcwd(), '.elasticbeanstalk', 'config.yml')
+        with open(config_path, 'r') as file:
+            config = yaml.safe_load(file)
+        config['settings']['aws:autoscaling:launchconfiguration']['DisableIMDSv1'] = 'true'
+        with open(config_path, 'w') as file:
+            yaml.safe_dump(config, file)
 
 class ApplicationWorkspaceTests(TestHelpTexts, HelpTestsMixin):
     @classmethod
@@ -1722,10 +1732,20 @@ class ApplicationWorkspaceTests(TestHelpTexts, HelpTestsMixin):
             'php-7.2',
             workspace_type='Application'
         )
+        cls.enforce_imdsv2()
 
     @classmethod
     def tearDownClass(cls):
         os.chdir(cls.root_dir)
+
+    @classmethod
+    def enforce_imdsv2(cls):
+        config_path = os.path.join(os.getcwd(), '.elasticbeanstalk', 'config.yml')
+        with open(config_path, 'r') as file:
+            config = yaml.safe_load(file)
+        config['settings']['aws:autoscaling:launchconfiguration']['DisableIMDSv1'] = 'true'
+        with open(config_path, 'w') as file:
+            yaml.safe_dump(config, file)
 
 
 class NoWorkspaceTests(TestHelpTexts, HelpTestsMixin):
@@ -1746,10 +1766,20 @@ class NoWorkspaceTests(TestHelpTexts, HelpTestsMixin):
                 )
         except fileoperations.NotInitializedError:
             pass
-
+        cls.enforce_imdsv2
+        
     @classmethod
     def tearDownClass(cls):
         os.chdir(cls.root_dir)
+    
+    @classmethod
+    def enforce_imdsv2(cls):
+        config_path = os.path.join(os.getcwd(), '.elasticbeanstalk', 'config.yml')
+        with open(config_path, 'r') as file:
+            config = yaml.safe_load(file)
+        config['settings']['aws:autoscaling:launchconfiguration']['DisableIMDSv1'] = 'true'
+        with open(config_path, 'w') as file:
+            yaml.safe_dump(config, file)
 
 
 if __name__ == '__main__':
