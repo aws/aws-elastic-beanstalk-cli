@@ -45,7 +45,6 @@ setup_options = dict(
     version=ebcli.__version__,
     description='Command Line Interface for AWS EB.',
     long_description=open('README.rst').read() + open('CHANGES.rst').read(),
-    scripts=['bin/eb'],
     data_files=[('', ['requirements.txt'])],
     author='AWS Elastic Beanstalk',
     author_email='aws-eb-cli@amazon.com',
