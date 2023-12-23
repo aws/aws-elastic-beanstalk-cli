@@ -148,7 +148,7 @@ class Git(SourceControl):
             self._run_cmd(['git', 'describe', '--always', '--abbrev=4'])
 
         version_label = 'app-{}-{:%y%m%d_%H%M%S%f}'.format(stdout, datetime.datetime.now())
-        return version_label.replace('.', '_')
+        return version_label.replace('.', '_').replace('/', '_')
 
     def untracked_changes_exist(self):
         try:
