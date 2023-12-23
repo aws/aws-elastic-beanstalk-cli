@@ -13,7 +13,6 @@
 /out
 eb.py
 awsebcli.egg-info/
-.eggs/
 *.DS_Store
 .cache/
 *.coverage
