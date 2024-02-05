@@ -51,7 +51,7 @@ setup_options = dict(
     author_email='aws-eb-cli@amazon.com',
     url='http://aws.amazon.com/elasticbeanstalk/',
     packages=find_packages('.', exclude=['tests*', 'docs*', 'sampleApps*', 'scripts*']),
-    package_dir={'ebcli': 'ebcli'},
+    package_dir={'ebcli': 'ebcli', 'cement': 'cement'},
     package_data={
         'ebcli.lib': ['botocoredata/*/*/*.json'],
         'ebcli.containers': ['containerfiles/*'],
