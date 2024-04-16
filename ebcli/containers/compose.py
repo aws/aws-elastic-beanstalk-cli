@@ -18,6 +18,7 @@ from ebcli.containers.envvarcollector import EnvvarCollector
 
 
 AWSEB_LOGS = 'awseb-logs-'
+COMPOSE_SERVICES_KEY = 'services'
 COMPOSE_CMD_KEY = 'command'
 COMPOSE_ENV_KEY = 'environment'
 COMPOSE_IMG_KEY = 'image'
@@ -76,7 +77,7 @@ def compose_dict(dockerrun, docker_proj_path, host_log, high_priority_env):
     for definition in definitions:
         _add_service(services, definition, volume_map, host_log, high_priority_env)
 
-    return services
+    return {COMPOSE_SERVICES_KEY: services}
 
 
 def _add_service(services, definition, volume_map, host_log, high_priority_env):
