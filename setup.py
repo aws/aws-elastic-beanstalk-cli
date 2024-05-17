@@ -41,9 +41,9 @@ if not sys.platform.startswith('win'):
 
 
 setup_options = dict(
-    name='awsebcli',
+    name='awsebcli_inscribe',
     version=ebcli.__version__,
-    description='Command Line Interface for AWS EB.',
+    description='Command Line Interface for AWS EB (Inscribe fork).',
     long_description=open('README.rst').read() + open('CHANGES.rst').read(),
     scripts=['bin/eb'],
     data_files=[('', ['requirements.txt'])],

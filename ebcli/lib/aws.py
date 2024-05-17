@@ -218,7 +218,10 @@ def make_api_call(service_name, operation_name, **operation_options):
             return response_data
 
         except botocore.exceptions.ClientError as e:
-            _handle_response_code(e.response, attempt, aggregated_error_message)
+            try:
+                _handle_response_code(e.response, attempt, aggregated_error_message, operation_name)
+            except StopIteration:
+                return e.response.get('Error', {}).get('Message', '')
         except botocore.parsers.ResponseParserError as e:
             LOG.debug('Botocore could not parse response received')
             if attempt > max_attempts:
@@ -258,7 +261,7 @@ def make_api_call(service_name, operation_name, **operation_options):
             raise ServiceError(error)
 
 
-def _handle_response_code(response_data, attempt, aggregated_error_message):
+def _handle_response_code(response_data, attempt, aggregated_error_message, operation_name):
     max_attempts = 10
 
     LOG.debug('Response: ' + str(response_data))
@@ -275,6 +278,11 @@ def _handle_response_code(response_data, attempt, aggregated_error_message):
             if attempt > max_attempts:
                 raise MaxRetriesError('Max retries exceeded for '
                                       'throttling error')
+        if isinstance(error, ServiceError) and operation_name == "complete_multipart_upload":
+            LOG.debug('Received a service error')
+            if attempt > max_attempts:
+                raise MaxRetriesError('Max retries exceeded for '
+                                      'service error')
         else:
             raise error
     elif status == 403:
@@ -288,6 +296,9 @@ def _handle_response_code(response_data, attempt, aggregated_error_message):
         else:
             raise NotAuthorizedError('Operation Denied. ' + message)
     elif status == 404:
+        if operation_name == "complete_multipart_upload" and attempt > 1:
+            LOG.debug('Unable to determine if complete_multipart_upload was successful. Continuing...')
+            raise StopIteration
         LOG.debug('Received a 404')
         raise NotFoundError(message)
     elif status == 409:

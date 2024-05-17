@@ -12,7 +12,7 @@
 /dist
 /out
 eb.py
-awsebcli.egg-info/
+awsebcli_inscribe.egg-info/
 .eggs/
 *.DS_Store
 .cache/
