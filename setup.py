@@ -37,7 +37,7 @@ extras_require = {
 
 }
 if not sys.platform.startswith('win'):
-    requires.append('blessed>=1.9.5')
+    requires.append('blessed>=1.20.0')
 
 
 setup_options = dict(
