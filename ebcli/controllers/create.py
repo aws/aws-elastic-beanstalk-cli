@@ -13,7 +13,7 @@
 import argparse
 import os
 import time
-import yaml
+
 from ebcli.core import io, fileoperations, hooks
 from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.lib import elasticbeanstalk, utils, iam
@@ -239,7 +239,7 @@ class CreateController(AbstractBaseController):
         cname = cname or get_environment_cname(env_name, provided_env_name, tier)
         key_name = key_name or commonops.get_default_keyname()
         vpc = self.form_vpc_object(tier, single)
-        elb_type = elb_type or get_elb_type_from_customer(interactive, single, tier,cfg_flag_used=cfg)
+        elb_type = elb_type or get_elb_type_from_customer(interactive, single, tier)
         shared_lb = get_shared_load_balancer(interactive, elb_type, platform, shared_lb, vpc)
         shared_lb_port = shared_lb_port or shared_lb_ops.get_shared_lb_port_from_customer(interactive, shared_lb)
         enable_spot = enable_spot or spotops.get_spot_request_from_customer(interactive)
@@ -533,48 +533,8 @@ def get_cname_from_customer(env_name):
             break
     return cname
 
-def check_elb_type_from_configs(use_saved_config=False):
-    """
-    Checks if  the ELB type is present from either the .ebextensions or saved_configs directories.
-    :param use_saved_config: Boolean indicating if --cfg flag was used.
-    :return: True, else False.
-    """
 
-    # If --cfg flag is used, prioritize checking saved_configs first
-    if use_saved_config:
-        saved_configs_dir = './.elasticbeanstalk/saved_configs'
-        if os.path.exists(saved_configs_dir):
-            for config_file in os.listdir(saved_configs_dir):
-                with open(os.path.join(saved_configs_dir, config_file), 'r') as f:
-                    try:
-                        config = yaml.safe_load(f)
-                        option_settings = config.get('OptionSettings', {})
-                        for namespace, setting in option_settings.items():
-                            if namespace == 'aws:elasticbeanstalk:environment' and setting.get('LoadBalancerType'):
-                                return True
-                    except yaml.YAMLError:
-                        raise ValueError(f"Malformed YAML in file {config_file} in saved_configs.")
-
-    else:
-        # Then check in .ebextensions
-        ebextensions_dir = './.ebextensions'
-        if os.path.exists(ebextensions_dir):
-            for config_file in os.listdir(ebextensions_dir):
-                with open(os.path.join(ebextensions_dir, config_file), 'r') as f:
-                    try:
-                        config = yaml.safe_load(f)
-                        option_settings = config.get('option_settings', [])
-                        for setting in option_settings:
-                            if setting.get('namespace') == 'aws:elasticbeanstalk:environment' and setting.get('option_name') == 'LoadBalancerType':
-                                if setting.get('value'):
-                                    return True
-                    except yaml.YAMLError:
-                        raise ValueError(f"Malformed YAML in file {config_file} in .ebextensions.")
-
-
-    return False
-
-def get_elb_type_from_customer(interactive, single, tier, cfg_flag_used=False):
+def get_elb_type_from_customer(interactive, single, tier):
     """
     Prompt customer to specify the ELB type if operating in the interactive mode and
     on a load-balanced environment.
@@ -586,9 +546,8 @@ def get_elb_type_from_customer(interactive, single, tier, cfg_flag_used=False):
     :param tier: the tier type of the environment
     :return: selected ELB type which is one among ['application', 'classic', 'network']
     """
-    elb_type_is_configured = check_elb_type_from_configs(use_saved_config=cfg_flag_used)
-    if single or (tier and not tier.is_webserver()) or elb_type_is_configured:
-      return
+    if single or (tier and not tier.is_webserver()):
+        return
     elif not interactive:
         return elb_names.APPLICATION_VERSION
 

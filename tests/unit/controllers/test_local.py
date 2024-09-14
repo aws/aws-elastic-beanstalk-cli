@@ -121,7 +121,6 @@ class TestLocalOpen(TestLocal):
 
 
 class TestLocalStatus(TestLocal):
-    @mock.patch('ebcli.controllers.local.compat.setup')
     @mock.patch('ebcli.controllers.local.factory.make_container')
     @mock.patch('ebcli.controllers.local.ContainerViewModel.from_container')
     @mock.patch('ebcli.controllers.local.localops.print_container_details')
@@ -130,9 +129,7 @@ class TestLocalStatus(TestLocal):
             print_container_details_mock,
             from_container_mock,
             make_container_mock,
-            setup_mock
     ):
-        setup_mock.side_effect = None
         container_mock = mock.MagicMock()
         make_container_mock.return_value = container_mock
         container_view_model_mock = mock.MagicMock()
