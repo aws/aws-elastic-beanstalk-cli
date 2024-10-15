@@ -58,7 +58,6 @@ class LocalRunController(AbstractBaseController):
                          dict(action='store_true', help=flag_text['local.run.insecuressl']))]
 
     def do_command(self):
-        compat.setup()
         cnt = factory.make_container(self.app.pargs.envvars,
                                      self.app.pargs.port,
                                      self.app.pargs.allow_insecure_ssl)
@@ -93,7 +92,6 @@ class LocalOpenController(AbstractBaseController):
         arguments = []
 
     def do_command(self):
-        compat.setup()
         cnt = factory.make_container()
         cnt_viewmodel = ContainerViewModel.from_container(cnt)
         localops.open_webpage(cnt_viewmodel)
@@ -111,7 +109,6 @@ class LocalStatusController(AbstractBaseController):
         arguments = []
 
     def do_command(self):
-        compat.setup()
         cnt = factory.make_container()
         cnt_viewmodel = ContainerViewModel.from_container(cnt)
         localops.print_container_details(cnt_viewmodel)

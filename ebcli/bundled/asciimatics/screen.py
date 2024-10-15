@@ -16,10 +16,6 @@
 This module defines common screen output function.  For more details, see
 http://asciimatics.readthedocs.io/en/latest/io.html
 """
-from __future__ import division
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import os
 import signal

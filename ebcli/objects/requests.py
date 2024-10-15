@@ -206,6 +206,11 @@ class CreateEnvironmentRequest(object):
                 namespaces.LAUNCH_CONFIGURATION,
                 option_names.INSTANCE_TYPE,
                 self.instance_type)
+        if self.instance_types:
+            self.add_option_setting(
+                namespaces.SPOT,
+                option_names.INSTANCE_TYPES,
+                self.instance_types)
         if self.single_instance:
             self.add_option_setting(
                 namespaces.ENVIRONMENT,
@@ -339,11 +344,6 @@ class CreateEnvironmentRequest(object):
         namespace = namespaces.SPOT
         self.add_option_setting(namespace, option_names.ENABLE_SPOT, 'true')
 
-        if self.instance_types:
-            self.add_option_setting(
-                namespaces.SPOT,
-                option_names.INSTANCE_TYPES,
-                self.instance_types)
 
         if self.on_demand_base_capacity:
             self.add_option_setting(namespace, option_names.ON_DEMAND_BASE_CAPACITY, self.on_demand_base_capacity)

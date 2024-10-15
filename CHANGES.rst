@@ -1,6 +1,116 @@
 
 Changelog
 =========
+--------------------
+3.21.0 (2024-09-17)
+--------------------
+- Updated botocore requirement to `>=1.35.0,<1.36.0`
+- Updated cement to `2.10.14` to fix EBCLI for Python 3.12
+- Updated colorama requirement to `>=0.4.6,<0.5`
+- Updated semantic_version requirement to `>=2.10.0,<2.11`
+- Updated termcolor requirement to `>=2.4.0,<3`
+- Updated wcwidth requirement to `>=0.2.13,<0.3`
+- Updated blessed requirement from Windows to `>=1.20.0`
+- Declared support drop for Python 2.7 and Python < 3.7
+- Fixed bug preventing environment creates and updates with JSON ebextensions
+- Removed explicit check for Docker installation
+
+--------------------
+3.20.10 (2023-09-15)
+--------------------
+- Removed Docker-compose as a dependancy
+- Fixed Codebuild image bug
+
+-------------------
+3.20.9 (2023-08-31)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.32.0`
+- Updated six requirement to `>=1.11.0,<1.17.0`
+- Update dependabot configuration to only update minor version
+- Bug fix for Cloudformation pagination token
+
+-------------------
+3.20.8 (2023-08-15)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.31.27`
+- Updated urllib3 requirement to `>=1.26.5,<2`
+- Updated docker-compose requirement to `>= 1.25.2, <= 1.29.2`
+- Updated PyYAML requirement to `>=5.3.1,<6.1`
+
+-------------------
+3.20.7 (2023-06-21)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.29.159`
+- Updated requests requirement to `>2.31`
+- Updated .gitignore
+- Updated LauchedAt Attribute for DescribeInstancesHealth
+
+-------------------
+3.20.6 (2023-04-11)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.29.100`
+- Fixed platforms bug
+- Fixed Codebuild bug
+- Fixed Symlink and Performance Issues
+
+-------------------
+3.20.5 (2023-02-28)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.29.82`
+- Include requirements.txt into pypi distribution tarball
+
+-------------------
+3.20.4 (2023-02-27)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.29.81`
+- Removed usage of future package
+- Opened new regions (ap-southeast-3 and ap-northeast-3)
+- Fixed symlinked files related issues
+- Fixed modules related issues
+- Fixed several unit tests
+- Fixed Docker AL2 platform Notfound bug
+- Integrated codecommit in new regions (eu-south-1,ap-northeast-3, af-south-1)
+- Updated eb create command to create application elb as default
+- Updated to display full results when --version flag is specified
+
+-------------------
+3.20.3 (2022-01-21)
+-------------------
+- Updated botocore requirement to `>1.23.41,<1.24.0`
+- Updated pathspec requirement to `==0.9.0`
+- Increased timestamp precision of version label
+- Fix ssh bugs
+
+-------------------
+3.20.2 (2021-08-30)
+-------------------
+- Updated urllib3 requirement to `>=1.26.5`
+
+-------------------
+3.20.1 (2021-07-13)
+-------------------
+- Changed IAM document for China region
+- Updated botocore requirement to `>=1.21.0,<1.22.0`
+
+-------------------
+3.20.0 (2021-06-09)
+-------------------
+- Updated PyYAML requirement to `>=5.3.1,<5.5`
+- Updated default log group for AL2 platforms
+- Added two new options for config command
+- Added a new command appversion to create application versions without deployment
+- Replaced default service role policy
+
+-------------------
+3.19.4 (2021-03-11)
+-------------------
+- Updated botocore requirement to `>=1.19.0,<1.21.0`
+- Updated requests requirement to `>=2.20.1,<=2.26`
+- Updated semantic_version requirement to `2.8.5`
+- Updated six requirement to `>=1.11.0,<1.15.0`
+- Updated platform lookup logic for `eb config put` command
+- Updated docker build command to use tags
+
 -------------------
 3.19.3 (2021-01-15)
 -------------------

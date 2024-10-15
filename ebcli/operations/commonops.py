@@ -505,9 +505,8 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
     else:
         version_label = source_control.get_version_label()
         if staged:
-            timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
+            timestamp = datetime.now().strftime("%y%m%d_%H%M%S%f")
             version_label = version_label + '-stage-' + timestamp
-
     if message:
         description = message
     else:
@@ -1083,7 +1082,11 @@ def set_region_for_application(interactive, region, force_non_interactive, platf
 
 
 def _create_instance_role(role_name, policy_arns):
-    document = iam_documents.EC2_ASSUME_ROLE_PERMISSION
+    region = aws.get_region_name()
+    if isinstance(region, str) and region.split('-')[0] == 'cn':
+        document = iam_documents.EC2_ASSUME_ROLE_PERMISSION_CN
+    else:
+        document = iam_documents.EC2_ASSUME_ROLE_PERMISSION
     ret = iam.create_role_with_policy(role_name, document, policy_arns)
     return ret
 

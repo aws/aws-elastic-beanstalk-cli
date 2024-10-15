@@ -13,32 +13,15 @@
 # language governing permissions and limitations under the License.
 import sys
 
+from pkg_resources import parse_requirements
 from setuptools import setup, find_packages
 
 import ebcli
 
 
-requires = [
-    'botocore>=1.19.0,<1.20.0',
-    'cement==2.8.2',
-    'colorama>=0.2.5,<0.4.4',  # use the same range that 'docker-compose' uses
-    'future>=0.16.0,<0.17.0',
-    'pathspec==0.5.9',
-    'python-dateutil>=2.1,<3.0.0',  # use the same range that 'botocore' uses
-    'requests>=2.20.1,<=2.24',
-    'setuptools >= 20.0',
-    'semantic_version == 2.5.0',
-    'six>=1.12.0,<=1.15.0',
-    'termcolor == 1.1.0',
-    'wcwidth>=0.1.7,<0.2.0',
-]
-
-if sys.version_info[:2] == (3, 4):
-    requires.append('PyYAML>=3.10,<5.3')
-    requires.append('urllib3>=1.25.4,<1.25.8') # urllib3 dropped support for python 3.4 in point release 1.25.8
-else:
-    requires.append('PyYAML>=5.3.1,<5.4') # use the same range that 'aws-cli' uses. This is also compatible with 'docker-compose'
-    requires.append('urllib3>=1.25.4,<1.26')
+with open("requirements.txt") as req:
+    install_reqs = parse_requirements(req)
+    requires = [str(ir) for ir in install_reqs]
 
 testing_requires = [
     'mock>=2.0.0',
@@ -54,8 +37,7 @@ extras_require = {
 
 }
 if not sys.platform.startswith('win'):
-    requires.append('docker-compose >= 1.25.2, < 1.26.0')
-    requires.append('blessed>=1.9.5')
+    requires.append('blessed>=1.20.0')
 
 
 setup_options = dict(
@@ -64,7 +46,7 @@ setup_options = dict(
     description='Command Line Interface for AWS EB.',
     long_description=open('README.rst').read() + open('CHANGES.rst').read(),
     scripts=['bin/eb'],
-    data_files=[],
+    data_files=[('', ['requirements.txt'])],
     author='AWS Elastic Beanstalk',
     author_email='aws-eb-cli@amazon.com',
     url='http://aws.amazon.com/elasticbeanstalk/',
@@ -84,10 +66,12 @@ setup_options = dict(
         'Natural Language :: English',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
     ),
     entry_points={
         'console_scripts': [

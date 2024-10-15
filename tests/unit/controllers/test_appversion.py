@@ -18,6 +18,7 @@ import unittest
 
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
+from ebcli.objects.exceptions import InvalidOptionsError
 
 
 class TestAppVersions(unittest.TestCase):
@@ -76,3 +77,193 @@ class TestAppVersions(unittest.TestCase):
         self.app.close()
 
         appversionops_mock.display_versions.assert_called_with(self.app_name, None, app_versions)
+
+    @mock.patch('ebcli.controllers.appversion.AppVersionController.get_app_name')
+    @mock.patch('ebcli.controllers.appversion.AppVersionController.get_env_name')
+    def test_create_and_delete_specified_together(
+            self,
+            get_env_name_mock,
+            get_app_name_mock,
+    ):
+        get_app_name_mock.return_value = 'my-application'
+        get_env_name_mock.return_value = 'environment-1'
+
+        app = EB(argv=['appversion', '--create', '--delete', 'version-to-delete'])
+        app.setup()
+
+        with self.assertRaises(InvalidOptionsError) as context_manager:
+            app.run()
+
+        self.assertEqual(
+            'You can\'t use the "--create" and "--delete" options together.',
+            str(context_manager.exception)
+        )
+
+    @mock.patch('ebcli.controllers.appversion.AppVersionController.get_env_name')
+    @mock.patch('ebcli.controllers.appversion.appversionops.create_app_version_without_deployment')
+    def test_create_with_application_name(
+            self,
+            appversion_create_mock,
+            get_env_name_mock,
+    ):
+        get_env_name_mock.return_value = 'environment-1'
+
+        app = EB(argv=['appversion', '--create', '--application', 'user-defined-name'])
+        app.setup()
+        app.run()
+
+        appversion_create_mock.assert_called_with(
+            'user-defined-name',
+            None,
+            False,
+            False,
+            None,
+            None,
+            5
+        )
+
+    @mock.patch('ebcli.core.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.appversion.AppVersionController.get_app_name')
+    @mock.patch('ebcli.controllers.appversion.AppVersionController.get_env_name')
+    @mock.patch('ebcli.controllers.appversion.appversionops.create_app_version_without_deployment')
+    def test_create_with_label_and_description(
+            self,
+            appversion_create_mock,
+            get_env_name_mock,
+            get_app_name_mock,
+            file_exists_mock
+    ):
+        file_exists_mock.return_value = False
+        get_env_name_mock.return_value = 'environment-1'
+        get_app_name_mock.return_value = 'my-application'
+
+        app = EB(argv=['appversion', '--create', '--application', 'user-defined-name', '--process'])
+        app.setup()
+        app.run()
+
+        appversion_create_mock.assert_called_with(
+            'user-defined-name',
+            None,
+            False,
+            True,
+            None,
+            None,
+            5
+        )
+
+    @mock.patch('ebcli.core.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.appversion.AppVersionController.get_app_name')
+    @mock.patch('ebcli.controllers.appversion.AppVersionController.get_env_name')
+    @mock.patch('ebcli.controllers.appversion.appversionops.create_app_version_without_deployment')
+    def test_create_with_env_yaml_exists(
+            self,
+            appversion_create_mock,
+            get_env_name_mock,
+            get_app_name_mock,
+            file_exists_mock
+    ):
+
+        get_env_name_mock.return_value = 'environment-1'
+        get_app_name_mock.return_value = 'my-application'
+        file_exists_mock.return_value = True
+
+        app = EB(argv=['appversion', '--create'])
+        app.setup()
+        app.run()
+
+        appversion_create_mock.assert_called_with(
+            'my-application',
+            None,
+            False,
+            True,
+            None,
+            None,
+            5
+        )
+
+    @mock.patch('ebcli.core.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.appversion.AppVersionController.get_app_name')
+    @mock.patch('ebcli.controllers.appversion.AppVersionController.get_env_name')
+    @mock.patch('ebcli.controllers.appversion.appversionops.create_app_version_without_deployment')
+    def test_create_with_staged_files(
+            self,
+            appversion_create_mock,
+            get_env_name_mock,
+            get_app_name_mock,
+            file_exists_mock
+    ):
+        get_env_name_mock.return_value = 'environment-1'
+        get_app_name_mock.return_value = 'my-application'
+        file_exists_mock.return_value = False
+
+        app = EB(argv=['appversion', '--create', '--staged'])
+        app.setup()
+        app.run()
+
+        appversion_create_mock.assert_called_with(
+            'my-application',
+            None,
+            True,
+            False,
+            None,
+            None,
+            5
+        )
+
+    @mock.patch('ebcli.core.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.appversion.AppVersionController.get_app_name')
+    @mock.patch('ebcli.controllers.appversion.AppVersionController.get_env_name')
+    @mock.patch('ebcli.controllers.appversion.appversionops.create_app_version_without_deployment')
+    def test_create_with_codecommit_source(
+            self,
+            appversion_create_mock,
+            get_env_name_mock,
+            get_app_name_mock,
+            file_exists_mock
+    ):
+        get_env_name_mock.return_value = 'environment-1'
+        get_app_name_mock.return_value = 'my-application'
+        file_exists_mock.return_value = False
+
+        app = EB(argv=['appversion', '--create', '--source', 'codecommit/my-repository/my-branch'])
+        app.setup()
+        app.run()
+
+        appversion_create_mock.assert_called_with(
+            'my-application',
+            None,
+            False,
+            False,
+            None,
+            'codecommit/my-repository/my-branch',
+            5
+        )
+
+    @mock.patch('ebcli.core.fileoperations.env_yaml_exists')
+    @mock.patch('ebcli.controllers.appversion.AppVersionController.get_app_name')
+    @mock.patch('ebcli.controllers.appversion.AppVersionController.get_env_name')
+    @mock.patch('ebcli.controllers.appversion.appversionops.create_app_version_without_deployment')
+    def test_create_with_codecommit_source_that_has_forward_slash(
+            self,
+            appversion_create_mock,
+            get_env_name_mock,
+            get_app_name_mock,
+            file_exists_mock
+    ):
+        get_env_name_mock.return_value = 'environment-1'
+        get_app_name_mock.return_value = 'my-application'
+        file_exists_mock.return_value = False
+
+        app = EB(argv=['appversion', '--create', '--source', 'codecommit/my-repository/my-branch/feature'])
+        app.setup()
+        app.run()
+
+        appversion_create_mock.assert_called_with(
+            'my-application',
+            None,
+            False,
+            False,
+            None,
+            'codecommit/my-repository/my-branch/feature',
+            5
+        )

@@ -202,12 +202,13 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'create.missing_plus_sign_in_group_name': 'The environment name specified in env.yaml does not end '
                                               'with a \'+\', but a group suffix was provided. Please '
                                               'add a trailing \'+\' to the environment name',
-    'create.valid_spot_instances' : 'For Spot Instance types, specify a comma-separated list of two or more valid EC2 instance',
-    'create.missing_enable_spot' : 'Specify the "--enable-spot" argument with any spot-related arguments.',
+    'create.valid_spot_instances': 'For Spot Instance types, specify a comma-separated list of two or more valid EC2 instance',
+    'create.missing_enable_spot': 'Specify the "--enable-spot" argument with any spot-related arguments.',
     'ssh.instanceandnumber': 'You cannot use the "--instance" and "--number" options together.',
+    'ssh.noinstance': "You tried to connect to an environment with no running instances.  SSH can only connect to "
+                      "running instances.  Use 'eb health' to display the status of instances in this environment.",
     'terminate.noenv': 'To delete the application and all application versions, type "eb terminate '
                        '--all".',
-
     'cred.prompt':  'You have not yet set up your credentials or your credentials are incorrect \n'
                     'You must provide your credentials.',
     'prompt.invalid': 'You did not provide a valid value.',
@@ -744,6 +745,7 @@ alerts = {
 
 flag_text = {
     'general.env': 'environment name',
+
     'base.version': 'show application/version info',
     'base.verbose': 'toggle verbose output',
     'base.profile': 'use a specific profile from your credential file',
@@ -764,6 +766,9 @@ flag_text = {
                          'for your code.'
                          ' Availables sources: {codecommit}. Available actions: '
                          '{enable, disable}',
+    'config.display': 'display current environment configuration settings',
+    'config.format': 'string format for output:  JSON or YAML',
+    'config.update': 'update configuration settings for current environment',
     'config.tags': 'a comma separated list of tags as key=value pairs',
     'create.name': 'desired Environment name',
     'create.cname': 'cname prefix',
@@ -920,6 +925,10 @@ flag_text = {
 
     'codesource.sourcename': 'name of the code source to set as default',
 
+    'appversion.create': 'Create a new version for your application.',
+    'appversion.application': 'The name of the application you are addressing.',
+    'appversion.staged': 'Create application version using files staged in git index instead of the HEAD commit.',
+    'appversion.source': 'Source of code to create application version directly. example: source_location/repo/branch',
     'appversion.delete': 'delete the specified application version',
 
     'lifecycle.print': 'prints the current application version lifecycle policy',

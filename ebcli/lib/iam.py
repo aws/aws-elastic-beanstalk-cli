@@ -37,8 +37,22 @@ def get_instance_profiles():
 
 
 def get_roles():
-    result = _make_api_call('list_roles')
-    return result['Roles']
+    isTruncated = True
+    marker = ''
+    roles = []
+    while isTruncated:
+        if marker == '':
+            result = _make_api_call('list_roles')
+        else:
+            result = _make_api_call('list_roles', Marker=marker)
+        isTruncated = result['IsTruncated']
+        existing_roles = result['Roles']
+        for role in existing_roles:
+            roles.append(role)
+        if isTruncated:
+            marker = result['Marker']
+
+    return roles
 
 
 def get_role(role_name):
@@ -172,3 +186,15 @@ def get_managed_policy_document(arn):
                              PolicyArn=arn,
                              VersionId=policy_version)
     return details['PolicyVersion']['Document']
+
+def role_exists(role_name):
+    """
+    Check if a given IAM role exists.
+    :param role_name: Name of the IAM role to check.
+    :return: True if the role exists, False otherwise.
+    """
+    roles = get_roles()
+    for role in roles:
+        if role['RoleName'] == role_name:
+            return True
+    return False

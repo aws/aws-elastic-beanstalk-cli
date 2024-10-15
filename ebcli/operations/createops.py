@@ -33,7 +33,7 @@ DEFAULT_SERVICE_ROLE_NAME = 'aws-elasticbeanstalk-service-role'
 
 DEFAULT_SERVICE_ROLE_POLICIES = [
     'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth',
-    'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService'
+    'arn:aws:iam::aws:policy/AWSElasticBeanstalkManagedUpdatesCustomerRolePolicy'
 ]
 
 

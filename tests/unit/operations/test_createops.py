@@ -327,7 +327,7 @@ class TestCreateOps(unittest.TestCase):
             trust_document_mock,
             [
                 'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth',
-                'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService'
+                'arn:aws:iam::aws:policy/AWSElasticBeanstalkManagedUpdatesCustomerRolePolicy'
             ]
         )
 
@@ -356,7 +356,7 @@ Actual error: """,
             trust_document_mock,
             [
                 'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth',
-                'arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService'
+                'arn:aws:iam::aws:policy/AWSElasticBeanstalkManagedUpdatesCustomerRolePolicy'
             ]
         )
 

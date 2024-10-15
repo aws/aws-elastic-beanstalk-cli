@@ -13,10 +13,13 @@
 import os
 import shutil
 
-import mock
+#import mock
 import unittest
+from unittest import mock
+from unittest.mock import patch, mock_open
 
 from ebcli.controllers import create
+
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
 from ebcli.objects.exceptions import (
@@ -1073,10 +1076,12 @@ class TestCreateE2E(TestCreateBase):
         self.app.setup()
         self.app.run()
 
+        elb_type= 'application'
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
             env_name=self.env_name,
             platform=self.solution,
+            elb_type=elb_type,
         )
         call_args, kwargs = make_new_env_mock.call_args
         actual_environment_request = call_args[0]
@@ -1105,6 +1110,7 @@ class TestCreateE2E(TestCreateBase):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        elb_type = 'application'
         env_name = 'my-awesome-env'
         min_instances = '5'
         max_instances = '15'
@@ -1118,7 +1124,8 @@ class TestCreateE2E(TestCreateBase):
             env_name=env_name,
             platform=self.solution,
             max_instances=max_instances,
-            min_instances=min_instances
+            min_instances=min_instances,
+            elb_type=elb_type,
         )
         call_args, kwargs = make_new_env_mock.call_args
         actual_environment_request = call_args[0]
@@ -1147,6 +1154,7 @@ class TestCreateE2E(TestCreateBase):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        elb_type = 'application'
         env_name = 'my-awesome-env'
         min_instances = '15'
         max_instances = '5'
@@ -1168,7 +1176,8 @@ class TestCreateE2E(TestCreateBase):
             enable_spot=True,
             on_demand_base_capacity=on_demand_base_capacity,
             max_instances=max_instances,
-            min_instances=min_instances
+            min_instances=min_instances,
+            elb_type=elb_type,
         )
         call_args, kwargs = make_new_env_mock.call_args
         actual_environment_request = call_args[0]
@@ -1197,6 +1206,7 @@ class TestCreateE2E(TestCreateBase):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        elb_type = 'application'
         env_name = 'my-awesome-env'
         instance_types='t2.micro, t3.micro'
 
@@ -1209,7 +1219,8 @@ class TestCreateE2E(TestCreateBase):
             env_name=env_name,
             platform=self.solution,
             enable_spot=True,
-            instance_types=instance_types
+            instance_types=instance_types,
+            elb_type=elb_type,
         )
         call_args, kwargs = make_new_env_mock.call_args
         actual_environment_request = call_args[0]
@@ -1238,6 +1249,7 @@ class TestCreateE2E(TestCreateBase):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        elb_type= 'application'
         env_name = 'my-awesome-env'
         instance_types="t2.micro, t3.micro"
 
@@ -1250,7 +1262,8 @@ class TestCreateE2E(TestCreateBase):
             env_name=env_name,
             platform=self.solution,
             enable_spot=None,
-            instance_types=instance_types
+            instance_types=instance_types,
+            elb_type=elb_type
         )
         call_args, kwargs = make_new_env_mock.call_args
         actual_environment_request = call_args[0]
@@ -1279,6 +1292,7 @@ class TestCreateE2E(TestCreateBase):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
+        elb_type='application'
         env_name = 'my-awesome-env'
         instance_types="t2.micro, t3.micro"
         spot_max_price = ".05"
@@ -1303,7 +1317,8 @@ class TestCreateE2E(TestCreateBase):
             instance_types=instance_types,
             spot_max_price=spot_max_price,
             on_demand_base_capacity=spot_on_demand_base,
-            on_demand_above_base_capacity=spot_on_demand_above_base
+            on_demand_above_base_capacity=spot_on_demand_above_base,
+            elb_type=elb_type,
         )
         call_args, kwargs = make_new_env_mock.call_args
         actual_environment_request = call_args[0]
@@ -1585,16 +1600,18 @@ CName: front-A08G28LG+""")
             argv=[
                 'create',
                 self.env_name,
-                '--source', 'codecommit/my-repository/my-branch/feature'
+                '--source', 'codecommit/my-repository/my-branch/feature',
             ]
         )
         self.app.setup()
         self.app.run()
 
+        elb_type = 'application'
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
             env_name=self.env_name,
             platform=self.solution,
+            elb_type=elb_type,
         )
         call_args, kwargs = make_new_env_mock.call_args
         actual_environment_request = call_args[0]
@@ -1606,7 +1623,7 @@ CName: front-A08G28LG+""")
             nohang=False,
             interactive=False,
             timeout=None,
-            source='codecommit/my-repository/my-branch/feature'
+            source='codecommit/my-repository/my-branch/feature',
         )
 
 
@@ -2099,11 +2116,13 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
 
+        elb_type = 'application'
         env_name = 'my-awesome-env'
 
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
             env_name=env_name,
+            elb_type=elb_type,
             platform=self.solution,
             vpc={
                 'id': 'my-vpc-id',
@@ -2257,6 +2276,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
         is_cname_available_mock.return_value = True
         get_default_keyname_mock.return_value = None
 
+        elb_type = 'application'
         env_name = 'my-awesome-env'
 
         self.app = EB(
@@ -2285,6 +2305,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
         expected_environment_request = CreateEnvironmentRequest(
             app_name=self.app_name,
             env_name=env_name,
+            elb_type=elb_type,
             platform=self.solution,
             database={
                 'username': 'root',
@@ -2363,14 +2384,16 @@ class TestCreateModuleE2E(unittest.TestCase):
                 tier=Tier.from_raw_string('webserver')
             )
         )
-
+        
     def test_get_elb_type_from_customer__non_interactive_mode(self):
-        self.assertIsNone(
+        self.assertEqual(
             create.get_elb_type_from_customer(
                 interactive=False,
                 single=False,
-                tier=None
-            )
+                tier=None,
+                
+            ),
+            'application'
         )
 
     def test_get_elb_type_from_customer__non_interactive_mode_single(self):
@@ -2383,12 +2406,13 @@ class TestCreateModuleE2E(unittest.TestCase):
         )
 
     def test_get_elb_type_from_customer__non_interactive_mode_webserver(self):
-        self.assertIsNone(
+        self.assertEqual(
             create.get_elb_type_from_customer(
                 interactive=False,
                 single=False,
                 tier=Tier.from_raw_string('webserver')
-            )
+            ),
+            'application'
         )
 
     def test_get_elb_type_from_customer__non_interactive_mode_worker(self):

@@ -11,7 +11,6 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from __future__ import print_function
 import datetime
 import fileinput
 import os
@@ -84,7 +83,7 @@ class NoSC(SourceControl):
         return None
 
     def get_version_label(self):
-        suffix = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
+        suffix = datetime.datetime.now().strftime("%y%m%d_%H%M%S%f")
         return 'app-' + suffix
 
     def get_current_branch(self):
@@ -148,7 +147,7 @@ class Git(SourceControl):
         stdout, stderr, exitcode = \
             self._run_cmd(['git', 'describe', '--always', '--abbrev=4'])
 
-        version_label = 'app-{}-{:%y%m%d_%H%M%S}'.format(stdout, datetime.datetime.now())
+        version_label = 'app-{}-{:%y%m%d_%H%M%S%f}'.format(stdout, datetime.datetime.now())
         return version_label.replace('.', '_')
 
     def untracked_changes_exist(self):

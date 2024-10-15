@@ -19,6 +19,7 @@ from ebcli.core import fileoperations
 from ebcli.lib import utils
 from ebcli.objects.exceptions import ValidationError, CommandError
 from ebcli.resources.strings import strings
+from .utils import is_docker_compose_installed
 
 
 EXPOSE_CMD = 'EXPOSE'
@@ -53,12 +54,13 @@ def build_img(docker_path, file_path=None):
     :param file_path: str: optional name of Dockerfile
     :return: str: id of the new image
     """
-
-    opts = ['-f', file_path] if file_path else []
+    img = utils.random_string(6)
+    tag = utils.random_string(6)
+    img_tag = '{}:{}'.format(img, tag)
+    opts = ['-t', img_tag ,'-f', file_path] if file_path else ['-t', img_tag]
     args = ['docker', 'build'] + opts + [docker_path]
     output = _run_live(args)
-    return _grab_built_image_id(output)
-
+    return _get_img_id_from_img_tag(img_tag)
 
 def run_container(full_docker_path, image_id, host_port=None,
                   envvars_map=None, volume_map=None, name=None):
@@ -112,7 +114,9 @@ def up(compose_path=None, allow_insecure_ssl=False):
 
 
 def _compose_run(args):
-    utils.exec_cmd_live_output(['docker-compose'] + args)
+    if not is_docker_compose_installed():
+        raise RuntimeError("Docker Compose is not installed. Please install it and try again.")
+    utils.exec_cmd_live_output(['docker','compose'] + args)
 
 
 def get_container_lowlvl_info(container_id):
@@ -192,6 +196,18 @@ def compose_version():
     return _run_quiet(args).split()[-1]
 
 
+def _get_img_id_from_img_tag(img_tag):
+    """
+    Get image id for a given image tag
+    :param img_tag: str: image tag
+    :return image id
+    """
+    opts = ['-q']
+    args = ['docker', 'images'] + opts +[img_tag]
+    output = _run_quiet(args)
+    return output.split()[0]
+
+
 def _get_network_settings(container_id):
     info = get_container_lowlvl_info(container_id)
     return info[NETWORK_SETTINGS_KEY]
@@ -200,12 +216,6 @@ def _get_network_settings(container_id):
 def _pull_img(img):
     args = ['docker', 'pull', img]
     return _run_live(args)
-
-
-def _grab_built_image_id(build_output):
-    last_line = build_output.split()[-1]
-    image_id = last_line.split()[-1]
-    return image_id
 
 
 def _run_container(image_id, container_port, host_port, envvars_map,

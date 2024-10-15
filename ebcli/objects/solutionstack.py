@@ -152,6 +152,9 @@ class SolutionStack(object):
         if 'Multi-container Docker' in self.name:
             return 'Multi-container Docker'
 
+        if '64bit Amazon Linux 2 ' in self.name and 'running Docker' in self.name:
+            return 'Docker running on 64bit Amazon Linux 2'
+
         shorthand = self.platform_shorthand.split(' ')[0]
 
         if '(BETA)' in self.name:
@@ -402,6 +405,7 @@ class SolutionStack(object):
 
         :return: A SolutionStack object representing the input language name
         """
+        solution_stack_list = sorted(solution_stack_list)
         for solution_stack in solution_stack_list:
             if solution_stack.language_name.lower() == language_name.lower():
                 return solution_stack

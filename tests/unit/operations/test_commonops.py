@@ -61,7 +61,7 @@ class TestCommonOperations(unittest.TestCase):
     image = 'aws/codebuild/eb-java-8-amazonlinux-64:2.1.3'
     compute_type = 'BUILD_GENERAL1_SMALL'
     service_role = 'eb-test'
-    service_role_arn = 'arn:testcli:eb-test'
+    service_role_arn = 'arn:aws:iam::123456789123:role/eb-test'
     timeout = 60
     build_config = BuildConfiguration(image=image, compute_type=compute_type,
                                       service_role=service_role, timeout=timeout)
@@ -257,6 +257,19 @@ class TestCommonOperations(unittest.TestCase):
 
         mock_iam.create_instance_profile.assert_called_once_with('pname')
         mock_iam.create_role_with_policy.assert_called_once_with('rname', iam_documents.EC2_ASSUME_ROLE_PERMISSION, 'policies')
+        mock_iam.add_role_to_profile.assert_called_once_with('pname', 'rname')
+        mock_iam.put_role_policy.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.iam')
+    @mock.patch('ebcli.operations.commonops.io')
+    @mock.patch('ebcli.lib.aws.get_region_name')
+    def test_create_instance_profile_successful_in_China(self, mock_get_region_name, _, mock_iam):
+        mock_get_region_name.return_value = 'cn-north-1'
+        commonops.create_instance_profile('pname', 'policies', 'rname')
+
+        mock_iam.create_instance_profile.assert_called_once_with('pname')
+        mock_iam.create_role_with_policy.assert_called_once_with('rname', iam_documents.EC2_ASSUME_ROLE_PERMISSION_CN,
+                                                                 'policies')
         mock_iam.add_role_to_profile.assert_called_once_with('pname', 'rname')
         mock_iam.put_role_policy.assert_not_called()
 
@@ -2674,8 +2687,10 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
     @mock.patch('ebcli.operations.commonops.credentials_are_valid')
     @mock.patch('ebcli.operations.commonops.setup_credentials')
     @mock.patch('ebcli.controllers.initialize.fileoperations.write_config_setting')
+    @mock.patch('os.environ.get')
     def test_set_up_credentials__eb_cli_is_used_as_default_profile(
             self,
+            get_mock,
             write_config_setting_mock,
             setup_credentials_mock,
             credentials_are_valid_mock,
@@ -2684,6 +2699,7 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
     ):
         check_credentials_mock.return_value = ['eb-cli', 'us-east-1']
         credentials_are_valid_mock.return_value = True
+        get_mock.return_value = None
 
         commonops.set_up_credentials(
             None,

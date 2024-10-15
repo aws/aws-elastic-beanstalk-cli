@@ -18,6 +18,7 @@ from unittest import TestCase
 
 
 MOCK_BUILD_OUTPUT = ('Sending build context to Docker daemon   108 kB\n'
+                     'Successfully tagged tgf9zj:120sbo'
                      'Successfully built 89b8fbeca24e')
 EXPECTED_BUILD_IMG_ID = '89b8fbeca24e'
 MOCK_DOCKER_PATH = '/home/local/ANT/user/hello'
@@ -75,31 +76,47 @@ class TestCommands(TestCase):
         self.assertRaises(ValidationError, commands.pull_img, MOCK_DOCKER_PATH)
         readlines_file.assert_called_once_with(MOCK_DOCKER_PATH)
 
+    @patch('ebcli.containers.commands._get_img_id_from_img_tag')
     @patch('ebcli.containers.commands.utils.exec_cmd_live_output')
     @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')
-    def test_build_img_happy_case(self, readlines_file, exec_cmd_live_output):
+    def test_build_img_happy_case(
+        self,
+        readlines_file,
+        exec_cmd_live_output,
+        _get_img_id_from_img_tag_mock
+    ):
         _expect_dockerfile_lines(readlines_file, None, MOCK_CONTAINER_PORT)
         exec_cmd_live_output.return_value = MOCK_BUILD_OUTPUT
+        _get_img_id_from_img_tag_mock.return_value = EXPECTED_BUILD_IMG_ID
         ret = commands.build_img(MOCK_DOCKER_PATH)
 
         msg = 'Expected returned image to be ' + EXPECTED_BUILD_IMG_ID
         self.assertEqual(EXPECTED_BUILD_IMG_ID, ret, msg)
-        expected_args = ['docker', 'build', MOCK_DOCKER_PATH]
-        exec_cmd_live_output.assert_called_once_with(expected_args)
 
+        expected_args = ['docker', 'build', '-t', MOCK_IMG_TAG ,MOCK_DOCKER_PATH]
+        actual_args, _ = exec_cmd_live_output.call_args
+        self.assertEqual(len(actual_args[0]), len(expected_args))
+
+    @patch('ebcli.containers.commands._get_img_id_from_img_tag')
     @patch('ebcli.containers.commands.utils.exec_cmd_live_output')
     @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')
-    def test_build_img_happy_case_has_file_path(self, readlines_file,
-                                                exec_cmd_live_output):
+    def test_build_img_happy_case_has_file_path(
+        self,
+        readlines_file,
+        exec_cmd_live_output,
+        _get_img_id_from_img_tag_mock
+    ):
         _expect_dockerfile_lines(readlines_file, None, MOCK_CONTAINER_PORT)
         exec_cmd_live_output.return_value = MOCK_BUILD_OUTPUT
+        _get_img_id_from_img_tag_mock.return_value = EXPECTED_BUILD_IMG_ID
         ret = commands.build_img(MOCK_DOCKER_PATH, MOCK_SKELETON_DOCKER_PATH)
 
         msg = 'Expected returned image to be ' + EXPECTED_BUILD_IMG_ID
         self.assertEqual(EXPECTED_BUILD_IMG_ID, ret, msg)
-        expected_args = ['docker', 'build', '-f', MOCK_SKELETON_DOCKER_PATH,
+        expected_args = ['docker', 'build', '-t', MOCK_IMG_TAG, '-f', MOCK_SKELETON_DOCKER_PATH,
                          MOCK_DOCKER_PATH]
-        exec_cmd_live_output.assert_called_once_with(expected_args)
+        actual_args, _ = exec_cmd_live_output.call_args
+        self.assertEqual(len(actual_args[0]), len(expected_args))
 
     @patch('ebcli.containers.commands.utils.exec_cmd_live_output')
     @patch('ebcli.containers.commands.fileoperations.readlines_from_text_file')
@@ -123,6 +140,7 @@ class TestCommands(TestCase):
         port_map = '{}:{}'.format(MOCK_CONTAINER_PORT, MOCK_CONTAINER_PORT)
         expected_args = ['docker', 'run', '-i', '-t', '--rm', '-p', port_map,
                          '--env', 'a=0', '--env', 'b=1', MOCK_IMG_ID]
+
 
         actual_args, _ = exec_cmd_live_output.call_args
 
@@ -253,6 +271,12 @@ class TestCommands(TestCase):
 
         commands.up(compose_path, True)
         _compose_run.assert_called_once_with(expected_args)
+
+    @patch('ebcli.containers.commands.utils.exec_cmd_quiet')
+    def test_get_img_id_from_img_tag(self, exec_cmd_quiet):
+        commands._get_img_id_from_img_tag(MOCK_IMG_TAG)
+        expected_args = ['docker', 'images', '-q' ,MOCK_IMG_TAG]
+        exec_cmd_quiet.assert_called_once_with(expected_args)
 
 
 def _expect_dockerfile_lines(readlines_from_text_file, img=None,

@@ -18,17 +18,18 @@ import os
 import shutil
 import stat
 import sys
-import zipfile
-import yaml
 import warnings
-from pathspec import PathSpec
+import yaml
+import zipfile
 
 from cement.utils.misc import minimal_logger
 from ebcli.objects.buildconfiguration import BuildConfiguration
+from pathspec import PathSpec
 from six import StringIO
 from yaml import safe_load, safe_dump
 from yaml.parser import ParserError
 from yaml.scanner import ScannerError
+from json import load, JSONDecodeError
 try:
     import configparser
 except ImportError:
@@ -108,7 +109,6 @@ def _get_option(config, section, key, default):
 
 def is_git_directory_present():
     return os.path.isdir('.git')
-
 
 def clean_up():
     cwd = os.getcwd()
@@ -422,7 +422,6 @@ def zip_up_project(location, ignore_list=None):
     finally:
         os.chdir(cwd)
 
-
 def _zipdir(path, zipf, ignore_list=None):
     if ignore_list is None:
         ignore_list = {'.gitignore'}
@@ -432,21 +431,6 @@ def _zipdir(path, zipf, ignore_list=None):
         if '.elasticbeanstalk' in root:
             io.log_info('  -skipping: {}'.format(root))
             continue
-        for d in dirs:
-            cur_dir = os.path.join(root, d)
-            if os.path.islink(cur_dir):
-                # It is probably safe to remove this code since os.walk seems to categorize
-                # symlinks-to-directories as files. This doesn't matter as far as creation
-                # of the zip is concerned, but just having the code around is confusing.
-                zipInfo = zipfile.ZipInfo()
-                zipInfo.filename = os.path.join(root, d)
-
-                # 2716663808L is the "magic code" for symlinks
-                if sys.version_info > (3,):
-                    zipInfo.external_attr = 2716663808
-                else:
-                    zipInfo.external_attr = long(2716663808)
-                zipf.writestr(zipInfo, os.readlink(cur_dir))
         for f in files:
             cur_file = os.path.join(root, f)
 
@@ -576,20 +560,29 @@ def save_env_file(env):
     return file_name
 
 
-def get_environment_from_file(env_name):
+def get_environment_from_file(env_name, path=None):
     cwd = os.getcwd()
     file_name = beanstalk_directory + env_name
 
     try:
-        ProjectRoot.traverse()
-        file_ext = '.env.yml'
-        path = file_name + file_ext
+        if not path:
+            ProjectRoot.traverse()
+            file_ext = '.env.yml'
+            path = file_name + file_ext
         if os.path.exists(path):
             with codecs.open(path, 'r', encoding='utf8') as f:
-                return safe_load(f)
-    except (ScannerError, ParserError):
-        raise InvalidSyntaxError('The environment file contains '
-                                 'invalid syntax.')
+                try:
+                    return safe_load(f)
+                except (ScannerError, ParserError):
+                    f.seek(0)
+                    try:
+                        return load(f)
+                    except JSONDecodeError:
+                        raise InvalidSyntaxError('The environment configuration contains invalid syntax. Make sure your input '
+                                             'matches one of the supported formats: JSON, YAML.')
+        else:
+            raise NotFoundError('The file you specified in this configuration path cannot be found: '+path)
+
 
     finally:
         os.chdir(cwd)
@@ -802,7 +795,8 @@ def get_ebignore_list():
     with codecs.open(location, 'r', encoding='utf-8') as f:
         spec = PathSpec.from_lines('gitwildmatch', f)
 
-    ignore_list = {f for f in spec.match_tree(get_project_root())}
+    matches = [f for f in spec.match_tree_entries(get_project_root())]
+    ignore_list = {match.path for match in matches}
     ignore_list.add('.ebignore')
 
     return ignore_list

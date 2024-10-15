@@ -439,10 +439,7 @@ class Screen(object):
         scrolled = visible_tables[0].scroll_down(reverse=reverse)
         if scrolled:
             for i in range(1, len(visible_tables)):
-                assert(
-                    len(visible_tables[0].data) >= len(visible_tables[i].data),
-                    'First table should be the largest'
-                )
+                assert len(visible_tables[0].data) >= len(visible_tables[i].data),'First table should be the largest'
                 visible_tables[i].scroll_to_id(scrolled, reverse=reverse)
 
     def scroll_over(self, reverse=False):

@@ -49,6 +49,8 @@ def prepare_for_ssh(env_name, instance, keep_open, force, setup, number,
 
         elif len(instances) == 1:
             instance = instances[0]
+        elif len(instances) == 0:
+            raise InvalidOptionsError(strings['ssh.noinstance'])
         else:
             io.echo()
             io.echo('Select an instance to ssh into')
@@ -130,7 +132,7 @@ def ssh_into_instance(instance_id, keep_open=False, force_open=False, custom_ssh
             custom_ssh = custom_ssh.split()
         else:
             ident_file = _get_ssh_file(keypair_name)
-            custom_ssh = ['ssh', '-i', ident_file]
+            custom_ssh = ['ssh', '-i', ident_file, '-o', 'IdentitiesOnly yes']
 
         custom_ssh.extend([user + '@' + ip])
 

@@ -16,7 +16,7 @@ import time
 
 from ebcli.core import io, fileoperations, hooks
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.lib import elasticbeanstalk, utils
+from ebcli.lib import elasticbeanstalk, utils, iam
 from ebcli.objects.exceptions import (
     AlreadyExistsError,
     InvalidOptionsError,
@@ -218,11 +218,14 @@ class CreateController(AbstractBaseController):
         if (spot_max_price or on_demand_base_capacity or on_demand_above_base_capacity) and not enable_spot:
             raise InvalidOptionsError(strings['create.missing_enable_spot'])
 
-        if instance_types is "":
+        if instance_types == "":
             raise InvalidOptionsError(strings['spot.instance_types_validation'])
 
         if itype and instance_types:
             raise InvalidOptionsError(strings['create.itype_and_instances'])
+        
+        if service_role and not iam.role_exists(service_role):
+            raise InvalidOptionsError(f"The specified service role '{service_role}' does not exist. Please use a role that exists or create a new role .")
 
         platform = _determine_platform(platform, iprofile)
 
@@ -546,7 +549,7 @@ def get_elb_type_from_customer(interactive, single, tier):
     if single or (tier and not tier.is_webserver()):
         return
     elif not interactive:
-        return
+        return elb_names.APPLICATION_VERSION
 
     io.echo()
     io.echo('Select a load balancer type')
