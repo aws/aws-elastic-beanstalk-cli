@@ -16,21 +16,6 @@ The EB CLI is now an open source project, hosted in this repository.
 You're welcome to participate by reporting issues, making suggestions, and submitting pull requests.
 We value your contributions!
 
-Testing
-=======
-
-The EB CLI uses pytest for testing. To run the tests, first install the development requirements:
-
-.. code-block:: bash
-
-    pip install -r dev_requirements.txt
-
-Then run pytest:
-
-.. code-block:: bash
-
-    pytest tests/
-
 Installation
 ============
 
