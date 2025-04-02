@@ -25,8 +25,8 @@ with open("requirements.txt") as req:
 
 testing_requires = [
     'mock>=2.0.0',
-    'pytest>=3.03',
-    'pytest_socket',
+    'pytest>=8.3.5',
+    'pytest_socket>=0.5.1',
 ]
 
 extras_require = {
