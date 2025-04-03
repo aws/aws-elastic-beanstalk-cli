@@ -115,10 +115,11 @@ def delete_objects(bucket, keys):
     return result
 
 
-def upload_workspace_version(bucket, key, file_path, workspace_type='Application'):
+def upload_workspace_version(bucket, key, file_path, workspace_type='Application', relative_to_project_root=True):
     cwd = os.getcwd()
     try:
-        fileoperations.ProjectRoot.traverse()
+        if relative_to_project_root:
+            fileoperations.ProjectRoot.traverse()
         size = os.path.getsize(file_path)
     except OSError as err:
         if err.errno == 2:
@@ -144,8 +145,8 @@ def upload_workspace_version(bucket, key, file_path, workspace_type='Application
     return result
 
 
-def upload_application_version(bucket, key, file_path):
-    upload_workspace_version(bucket, key, file_path, 'Application')
+def upload_application_version(bucket, key, file_path, relative_to_project_root=True):
+    upload_workspace_version(bucket, key, file_path, 'Application', relative_to_project_root=relative_to_project_root)
 
 
 def upload_platform_version(bucket, key, file_path):

@@ -12,6 +12,8 @@
 # language governing permissions and limitations under the License.
 import os
 import shutil
+import subprocess
+import sys
 import unittest
 
 import mock
@@ -27,8 +29,7 @@ from .. import mock_responses
 class TestDeploy(unittest.TestCase):
     def setUp(self):
         self.root_dir = os.getcwd()
-        if os.path.exists("testDir"):
-            shutil.rmtree("testDir")
+        self._delete_testDir_if_exists()
         os.mkdir("testDir")
         os.chdir("testDir")
 
@@ -42,7 +43,14 @@ class TestDeploy(unittest.TestCase):
 
     def tearDown(self):
         os.chdir(self.root_dir)
-        shutil.rmtree("testDir")
+        self._delete_testDir_if_exists()
+
+    def _delete_testDir_if_exists(self):
+        if os.path.exists("testDir"):
+            if sys.platform == "win32":
+                subprocess.run(['rd', '/s', '/q', 'testDir'], shell=True)
+            else:
+                shutil.rmtree("testDir")
 
     def setup_git_repo(self):
         """Set up a basic Git repository for testing - only call this in tests that need Git"""
