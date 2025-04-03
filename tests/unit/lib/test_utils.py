@@ -240,7 +240,7 @@ class TestUtils(TestCase):
         utils.sleep(sleep_time=0)
 
     def test_datetime_utcnow(self):
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(datetime.UTC)
         a_little_later = utils.datetime_utcnow()
         very_small_difference = datetime.timedelta(seconds=0.001)
         self.assertTrue(

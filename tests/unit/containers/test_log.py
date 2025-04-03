@@ -11,7 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 
-from datetime import datetime
+from datetime import datetime, UTC
 import os
 import shutil
 import sys
@@ -32,7 +32,7 @@ HOST_LOG = os.path.join('.elasticbeanstalk', 'logs', 'local', '1234567')
 CONTAINER_LOG = os.path.join('var', 'log')
 LOG_VOLUME_MAP = {HOST_LOG: CONTAINER_LOG}
 DOCKERRUN = {dockerrun.LOGGING_KEY: CONTAINER_LOG}
-MOCK_DATETIME = datetime(2015, 3, 18, 13, 33, 30, 254552)
+MOCK_DATETIME = datetime(2015, 3, 18, 13, 33, 30, 254552, tzinfo=UTC)
 EXPECTED_DATETIME_STR = '150318_133330254552'
 EXPECTED_HOST_LOG_PATH = os.path.join(ROOT_LOG_DIR, EXPECTED_DATETIME_STR)
 EXPECTED_LOGDIR_PATH = '.'
