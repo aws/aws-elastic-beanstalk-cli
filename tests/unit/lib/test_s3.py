@@ -332,7 +332,7 @@ class TestS3(unittest.TestCase):
     ):
         s3.upload_application_version('bucket', 'key', 'file/path.py')
 
-        upload_workspace_version_mock.assert_called_once_with('bucket', 'key', 'file/path.py', 'Application')
+        upload_workspace_version_mock.assert_called_once_with('bucket', 'key', 'file/path.py', 'Application', relative_to_project_root=True)
 
     @mock.patch('ebcli.lib.s3.upload_workspace_version')
     def test_upload_platform_version(
