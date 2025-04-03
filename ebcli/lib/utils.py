@@ -13,7 +13,7 @@
 import argparse
 import os
 import re
-import pkg_resources
+from packaging import version
 import random
 import string
 import sys
@@ -274,7 +274,7 @@ def parse_version(version_string):
     Example: parse_version('1.9.2') > parse_version('1.9.alpha')
     See docs for pkg_resource.parse_version as this is just a wrapper
     """
-    return pkg_resources.parse_version(version_string)
+    return version.parse(version_string)
 
 
 def save_file_from_url(url, location, filename):
