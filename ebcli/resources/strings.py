@@ -822,6 +822,7 @@ flag_text = {
     'init.platform': 'default Platform',
     'init.keyname': 'default EC2 key name',
     'init.interactive': 'force interactive mode',
+    'init.environment_name': 'default environment name',
 
     'platformcreate.instanceprofile': 'the instance profile to use when creating AMIs '
                                       'for custom platforms',
