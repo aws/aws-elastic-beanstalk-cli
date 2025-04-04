@@ -11,7 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import calendar
-from datetime import datetime, UTC
+from datetime import datetime
 import os
 import threading
 import time
@@ -952,7 +952,7 @@ def _timestamped_directory_name():
 
 
 def _updated_start_time():
-    return calendar.timegm(datetime.now(UTC).timetuple()) * 1000
+    return calendar.timegm(utils.datetime_utcnow().timetuple()) * 1000
 
 
 def _updated_instance_id_list(instance_id_list, instance_id):

@@ -10,9 +10,6 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from datetime import datetime, UTC
-import locale
-
 from botocore.compat import six
 from cement.utils.misc import minimal_logger
 
@@ -20,7 +17,7 @@ from ebcli.core import io
 from ebcli.display import term
 from ebcli.display.data_poller import DataPoller
 from ebcli.display.screen import Screen
-from ebcli.lib import ec2, elasticbeanstalk, elb, elbv2
+from ebcli.lib import ec2, elasticbeanstalk, elb, elbv2, utils
 from ebcli.resources import statics
 
 
@@ -149,4 +146,4 @@ class TraditionalHealthScreen(Screen):
 
 
 def _datetime_utcnow_wrapper():
-    return datetime.now(UTC)
+    return utils.datetime_utcnow()

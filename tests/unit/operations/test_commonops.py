@@ -12,9 +12,8 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta
 import os
-import sys
 import shutil
 
 from dateutil import tz
@@ -28,6 +27,7 @@ from ebcli.objects.event import Event
 from ebcli.objects.environment import Environment
 from ebcli.objects.region import Region
 from ebcli.operations import commonops
+from ebcli.lib import utils
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.buildconfiguration import BuildConfiguration
 from ebcli.resources.strings import strings, responses
@@ -592,7 +592,7 @@ class TestCommonOperations(unittest.TestCase):
     def test_timeout_reached(self):
         self.assertTrue(
             commonops._timeout_reached(
-                datetime.now(UTC) - timedelta(minutes=5),
+                utils.datetime_utcnow() - timedelta(minutes=5),
                 timedelta(seconds=300)
             )
         )
@@ -600,7 +600,7 @@ class TestCommonOperations(unittest.TestCase):
     def test_timeout_reached__false(self):
         self.assertFalse(
             commonops._timeout_reached(
-                datetime.now(UTC) - timedelta(minutes=5),
+                utils.datetime_utcnow() - timedelta(minutes=5),
                 timedelta(seconds=301)
             )
         )
