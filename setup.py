@@ -12,16 +12,35 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import sys
-
-from pkg_resources import parse_requirements
+import re
 from setuptools import setup, find_packages
 
 import ebcli
 
 
-with open("requirements.txt") as req:
-    install_reqs = parse_requirements(req)
-    requires = [str(ir) for ir in install_reqs]
+def parse_requirements(filename):
+    """
+    Parse a requirements file, returning a list of requirements.
+    This replaces the deprecated pkg_resources.parse_requirements function.
+    """
+    requirements = []
+    with open(filename) as f:
+        for line in f:
+            line = line.strip()
+            # Skip empty lines, comments, and editable installs
+            if not line or line.startswith('#'):
+                continue
+            # Handle requirement specs with markers
+            if ';' in line:
+                req, marker = line.split(';', 1)
+                requirements.append(f"{req.strip()};{marker.strip()}")
+            else:
+                requirements.append(line)
+    return requirements
+
+
+# Parse requirements.txt
+requires = parse_requirements("requirements.txt")
 
 testing_requires = [
     'mock>=2.0.0',
@@ -79,19 +98,5 @@ setup_options = dict(
         ]
     },
 )
-
-
-def _unpack_eggs(egg_list):
-    import os
-    for pkg in egg_list:
-        import pkg_resources
-        eggs = pkg_resources.require(pkg)
-        from setuptools.archive_util import unpack_archive
-        for egg in eggs:
-            if os.path.isdir(egg.location):
-                sys.path.insert(0, egg.location)
-                continue
-            unpack_archive(egg.location, os.path.abspath(os.path.dirname(egg.location)))
-
 
 setup(**setup_options)

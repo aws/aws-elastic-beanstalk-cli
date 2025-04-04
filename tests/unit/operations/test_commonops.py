@@ -12,7 +12,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 import os
 import sys
 import shutil
@@ -592,7 +592,7 @@ class TestCommonOperations(unittest.TestCase):
     def test_timeout_reached(self):
         self.assertTrue(
             commonops._timeout_reached(
-                datetime.utcnow() - timedelta(minutes=5),
+                datetime.now(UTC) - timedelta(minutes=5),
                 timedelta(seconds=300)
             )
         )
@@ -600,7 +600,7 @@ class TestCommonOperations(unittest.TestCase):
     def test_timeout_reached__false(self):
         self.assertFalse(
             commonops._timeout_reached(
-                datetime.utcnow() - timedelta(minutes=5),
+                datetime.now(UTC) - timedelta(minutes=5),
                 timedelta(seconds=301)
             )
         )

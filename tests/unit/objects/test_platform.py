@@ -12,7 +12,7 @@
 # language governing permissions and limitations under the License.
 import unittest
 import mock
-import pkg_resources
+from packaging import version as pkg_version
 from datetime import datetime
 from dateutil import tz
 
@@ -303,7 +303,7 @@ class TestPlatformVersion(unittest.TestCase):
 
     @mock.patch('ebcli.objects.platform.utils.parse_version')
     def test_sortable_version(self, parse_version_mock):
-        version = pkg_resources.parse_version(self.platform_version_description['PlatformVersion'])
+        version = pkg_version.parse(self.platform_version_description['PlatformVersion'])
         parse_version_mock.return_value = version
 
         platform_version = PlatformVersion.from_platform_version_description(self.platform_version_description)

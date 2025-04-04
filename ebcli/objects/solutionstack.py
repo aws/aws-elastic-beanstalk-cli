@@ -14,7 +14,7 @@
 import re
 from collections import OrderedDict
 
-import pkg_resources
+from packaging import version
 from cement.utils.misc import minimal_logger
 
 LOG = minimal_logger(__name__)
@@ -129,7 +129,7 @@ class SolutionStack(object):
 
         :return: True, if HeadlthD V2 support is available, False otherwise
         """
-        return self.platform_version >= pkg_resources.parse_version('v2.0.10')
+        return self.platform_version >= version.parse('v2.0.10')
 
     @property
     def has_healthd_support(self):
@@ -138,7 +138,7 @@ class SolutionStack(object):
 
         :return: True, if HealthD support is available, False otherwise
         """
-        return self.platform_version >= pkg_resources.parse_version('v2.0.0')
+        return self.platform_version >= version.parse('v2.0.0')
 
     @property
     def language_name(self):
@@ -174,7 +174,7 @@ class SolutionStack(object):
         :return: The language version represented by the SolutionStack
         """
 
-        return pkg_resources.parse_version(self.__language_version())
+        return version.parse(self.__language_version())
 
     @property
     def operating_system_version(self):
@@ -189,7 +189,7 @@ class SolutionStack(object):
         match = re.search(OS_VERSION_REGEX, self.name)
         operating_system_version_string = match.group(0) if match else '0000.01'
 
-        return pkg_resources.parse_version(operating_system_version_string)
+        return version.parse(operating_system_version_string)
 
     @property
     def os_bitness(self):
@@ -236,7 +236,7 @@ class SolutionStack(object):
         match = re.search(PLATFORM_VERSION_REGEX, self.name)
         platform_version_string = match.group(0) if match else 'v0.0.1'
 
-        return pkg_resources.parse_version(platform_version_string)
+        return version.parse(platform_version_string)
 
     def pythonify(self):
         """
@@ -257,7 +257,7 @@ class SolutionStack(object):
 
         :return: The language name represented by the SolutionStack
         """
-        return pkg_resources.parse_version(self.__language_version(match_number=1))
+        return version.parse(self.__language_version(match_number=1))
 
     @property
     def server_name(self):

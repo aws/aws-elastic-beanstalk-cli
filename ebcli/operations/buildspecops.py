@@ -13,7 +13,7 @@
 
 import time
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from cement.utils.misc import minimal_logger
 from ebcli.core import io
 from ebcli.lib import elasticbeanstalk, codebuild
@@ -108,7 +108,7 @@ def wait_for_app_version_attribute(app_name, version_labels, timeout=5):
     versions_to_check = list(version_labels)
     found = dict.fromkeys(version_labels)
     failed = dict.fromkeys(version_labels)
-    start_time = datetime.utcnow()
+    start_time = datetime.now(UTC)
     timediff = timedelta(minutes=timeout)
     while versions_to_check:
         if _timeout_reached(start_time, timediff):
@@ -151,4 +151,4 @@ def _sleep():
 
 
 def _timeout_reached(start_time, timediff):
-    return datetime.utcnow() - start_time >= timediff
+    return datetime.now(UTC) - start_time >= timediff
