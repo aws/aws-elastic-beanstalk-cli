@@ -15,6 +15,7 @@ import sys
 import time
 from datetime import datetime, timedelta
 import platform
+import zipfile
 
 from ebcli.core.fileoperations import _marker
 
@@ -486,8 +487,9 @@ def create_dummy_app_version(app_name):
                                        None, None, warning=False)
 
 
-def create_app_version(app_name, process=False, label=None, message=None, staged=False, build_config=None):
+def create_app_version(app_name, process=False, label=None, message=None, staged=False, build_config=None, source_bundle=None):
     cwd = os.getcwd()
+
     fileoperations.ProjectRoot.traverse()
     try:
         if heuristics.directory_is_empty():
@@ -514,7 +516,6 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
 
     if len(description) > 200:
         description = description[:195] + '...'
-
     artifact = fileoperations.get_config_setting('deploy', 'artifact')
     if artifact:
         file_name, file_extension = os.path.splitext(artifact)
@@ -525,16 +526,41 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
     else:
         s3_bucket, s3_key = get_app_version_s3_location(app_name, version_label)
 
+        file_name = file_path = None, None
         if s3_bucket is None and s3_key is None:
-            file_name, file_path = _zip_up_project(
-                version_label, source_control, staged=staged)
-        else:
-            file_name = None
-            file_path = None
+            if not source_bundle:
+                file_name, file_path = _zip_up_project(
+                    version_label, source_control, staged=staged)
+            elif zipfile.is_zipfile(source_bundle):
+                file_name, file_path = label, source_bundle
 
+    return handle_upload_target(app_name,
+        s3_bucket,
+        s3_key,
+        file_name,
+        file_path,
+        version_label,
+        description,
+        process,
+        build_config,
+    )
+
+
+def handle_upload_target(
+        app_name,
+        s3_bucket,
+        s3_key,
+        file_name,
+        file_path,
+        version_label,
+        description,
+        process,
+        build_config,
+        relative_to_project_root=True
+):
     bucket = elasticbeanstalk.get_storage_location() if s3_bucket is None else s3_bucket
-    key = app_name + '/' + file_name if s3_key is None else s3_key
 
+    key = app_name + '/' + file_name if s3_key is None else s3_key
     try:
         s3.get_object_info(bucket, key)
         io.log_info('S3 Object already exists. Skipping upload.')
@@ -544,12 +570,17 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
                                 ' Try uploading the Application Version again.')
 
         io.log_info('Uploading archive to s3 location: ' + key)
-        s3.upload_application_version(bucket, key, file_path)
+        if relative_to_project_root:
+            s3.upload_application_version(bucket, key, file_path)
+        else:
+            s3.upload_application_version(bucket, key, file_path, relative_to_project_root=False)
 
-    fileoperations.delete_app_versions()
+    if not relative_to_project_root:
+        fileoperations.delete_app_versions()
     io.log_info('Creating AppVersion ' + version_label)
     return _create_application_version(app_name, version_label, description,
-                                       bucket, key, process, build_config=build_config)
+                                       bucket, key, process, build_config=build_config,
+                                       relative_to_project_root=relative_to_project_root)
 
 
 def create_codecommit_app_version(app_name, process=False, label=None, message=None, build_config=None):
@@ -672,7 +703,7 @@ def create_app_version_from_source(
 def _create_application_version(app_name, version_label, description,
                                 bucket, key, process=False, warning=True,
                                 repository=None, commit_id=None,
-                                build_config=None):
+                                build_config=None, relative_to_project_root=True):
     """
     A wrapper around elasticbeanstalk.create_application_version that
     handles certain error cases:
@@ -680,7 +711,7 @@ def _create_application_version(app_name, version_label, description,
      * version already exists
      * validates BuildSpec files for CodeBuild
     """
-    if build_config is not None:
+    if relative_to_project_root and build_config is not None:
         buildspecops.validate_build_config(build_config)
     while True:
         try:
@@ -723,6 +754,15 @@ def _zip_up_project(version_label, source_control, staged=False):
             io.log_info('Found .ebignore, using system zip.')
             fileoperations.zip_up_project(file_path, ignore_list=ignore_files)
     return file_name, file_path
+
+
+def _zip_up_project_at_location(version_label, upload_target_dir, zip_output_path):
+    file_name = version_label + '.zip'
+    fileoperations.zip_up_folder(
+        upload_target_dir,
+        zip_output_path,
+    )
+    return file_name, zip_output_path
 
 
 def update_environment(env_name, changes, nohang, remove=None,

@@ -21,13 +21,28 @@ LOG = minimal_logger(__name__)
 
 
 def deploy(app_name, env_name, version, label, message, group_name=None,
-           process_app_versions=False, staged=False, timeout=5, source=None):
+           process_app_versions=False, staged=False, timeout=5, source=None,
+           source_bundle=None):
     region_name = aws.get_region_name()
-
     build_config = None
-    if fileoperations.build_spec_exists() and version is None:
-        build_config = fileoperations.get_build_configuration()
-        LOG.debug("Retrieved build configuration from buildspec: {0}".format(build_config.__str__()))
+    if source_bundle:
+        file_name, file_path = label, source_bundle
+        version = commonops.handle_upload_target(
+            app_name,
+            None,
+            None,
+            file_name,
+            file_path,
+            label,
+            message,
+            process_app_versions,
+            build_config,
+            relative_to_project_root=False
+        )
+    else:
+        if fileoperations.build_spec_exists() and version is None:
+            build_config = fileoperations.get_build_configuration()
+            LOG.debug("Retrieved build configuration from buildspec: {0}".format(build_config.__str__()))
 
     io.log_info('Deploying code to ' + env_name + " in region " + region_name)
 
@@ -59,7 +74,7 @@ def deploy(app_name, env_name, version, label, message, group_name=None,
             build_config=build_config
         )
 
-    if build_config is not None:
+    if not source_bundle and build_config is not None:
         buildspecops.stream_build_configuration_app_version_creation(
             app_name, app_version_label, build_config)
     elif process_app_versions is True:

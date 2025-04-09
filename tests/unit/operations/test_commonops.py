@@ -1077,7 +1077,8 @@ class TestCommonOperations(unittest.TestCase):
             's3-bucket',
             's3-key',
             False,
-            build_config=None
+            build_config=None,
+            relative_to_project_root=True,
         )
 
     @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
@@ -1138,7 +1139,8 @@ class TestCommonOperations(unittest.TestCase):
             's3-bucket',
             'my-application/version-label',
             False,
-            build_config=None
+            build_config=None,
+            relative_to_project_root=True,
         )
 
     @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
@@ -1194,7 +1196,8 @@ class TestCommonOperations(unittest.TestCase):
             's3-bucket',
             'my-application/version-label.zip',
             False,
-            build_config=None
+            build_config=None,
+            relative_to_project_root=True,
         )
 
     @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
@@ -1254,7 +1257,8 @@ class TestCommonOperations(unittest.TestCase):
             's3-bucket',
             'my-application/version-label',
             False,
-            build_config=None
+            build_config=None,
+            relative_to_project_root=True,
         )
 
     @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
@@ -1295,7 +1299,7 @@ class TestCommonOperations(unittest.TestCase):
                 label='my-version-label',
                 message='message ' * 50,
                 process=True,
-                build_config=build_config_mock
+                build_config=build_config_mock,
             )
         )
 
@@ -1308,7 +1312,8 @@ class TestCommonOperations(unittest.TestCase):
             's3-bucket',
             's3-key',
             True,
-            build_config=build_config_mock
+            build_config=build_config_mock,
+            relative_to_project_root=True,
         )
 
     @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
