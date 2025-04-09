@@ -19,7 +19,7 @@ import string
 import sys
 import textwrap
 import time
-from datetime import datetime, UTC
+from datetime import datetime
 
 from dateutil import tz, parser
 
@@ -298,9 +298,9 @@ def prettydate(d):
     """
 
     if isinstance(d, float):
-        d = datetime.fromtimestamp(d, UTC)
+        d = fromutctimestamp(d)
 
-    diff = datetime.now(UTC) - d
+    diff = datetime_utcnow() - d
     s = diff.seconds
     if diff.days > 7 or diff.days < 0:
         return d.strftime('%d %b %y')
@@ -581,7 +581,19 @@ def sleep(sleep_time=5):
 
 
 def datetime_utcnow():
-    return datetime.now(UTC)
+    try:
+        from datetime import UTC
+        return datetime.now(UTC)
+    except ImportError:
+        return datetime.utcnow()
+
+
+def fromutctimestamp(d):
+    try:
+        from datetime import UTC
+        return datetime.fromtimestamp(d, UTC)
+    except ImportError:
+        return datetime.utcfromtimestamp(d)
 
 
 def prevent_throttling():

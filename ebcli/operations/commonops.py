@@ -13,7 +13,7 @@
 import os
 import sys
 import time
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta
 import platform
 
 from ebcli.core.fileoperations import _marker
@@ -60,7 +60,7 @@ def wait_for_success_events(request_id, timeout_in_minutes=None,
     if timeout_in_minutes is None:
         timeout_in_minutes = 10
 
-    start = datetime.now(UTC)
+    start = utils.datetime_utcnow()
     timediff = timedelta(seconds=timeout_in_minutes * 60)
 
     last_time = start
@@ -187,18 +187,18 @@ def wait_for_compose_events(request_id, app_name, grouped_envs, timeout_in_minut
     if timeout_in_minutes is None:
         timeout_in_minutes = 15
 
-    start = datetime.now(UTC)
+    start = utils.datetime_utcnow()
     timediff = timedelta(seconds=timeout_in_minutes * 60)
 
     last_times = []
     events_matrix = []
     successes = []
 
-    last_time_compose = datetime.now(UTC)
+    last_time_compose = utils.datetime_utcnow()
     compose_events = []
 
     for i in range(len(grouped_envs)):
-        last_times.append(datetime.now(UTC))
+        last_times.append(utils.datetime_utcnow())
         events_matrix.append([])
         successes.append(False)
 
@@ -880,7 +880,7 @@ def wait_for_processed_app_versions(app_name, version_labels, timeout=5):
     for version in version_labels:
         processed[version] = False
         failed[version] = False
-    start_time = datetime.now(UTC)
+    start_time = utils.datetime_utcnow()
     timediff = timedelta(seconds=timeout * 60)
     while not all([(processed[version] or failed[version]) for version in versions_to_check]):
         if _timeout_reached(start_time, timediff):
@@ -1096,4 +1096,4 @@ def _sleep(sleep_time):
 
 
 def _timeout_reached(start, timediff):
-    return (datetime.now(UTC) - start) >= timediff
+    return (utils.datetime_utcnow() - start) >= timediff
