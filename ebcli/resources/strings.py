@@ -223,8 +223,7 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'sstacks.notaversion': 'Elastic Beanstalk could not find any supported platforms for the '
                            'given version {version}.',
     'timeout.error': "The EB CLI timed out after {timeout_in_minutes} minute(s). The operation "
-                     "might still be running. To keep viewing events, run 'eb events -f'. To "
-                     "set timeout duration, use '--timeout MINUTES'.",
+                     "might still be running. To keep viewing events, run 'eb events -f'.",
     'sc.notfound': 'Git is not set up for this project. EB CLI will deploy a .zip file of the '
                    'entire directory.',
     'exit.platformworkspacenotsupported': 'This command is not supported outside Application workspaces.',
@@ -496,8 +495,6 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                                     'attributes. Unable to continue with deployment.',
     'appversion.attribute.success': 'Found attributes for application version {app_version}',
 
-    'codecommit.nosc': 'Cannot setup CodeCommit because there is no Source Control setup, '
-                       'continuing with initialization',
     'codecommit.norepo': 'Repository does not exist in CodeCommit',
     'codecommit.nobranch': 'Branch does not exist in CodeCommit',
     'codecommit.badregion': 'AWS CodeCommit is not supported in this region; continuing '

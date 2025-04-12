@@ -504,7 +504,7 @@ class TestCommonOperations(unittest.TestCase):
             commonops.wait_for_success_events(create_environment_events[0].request_id)
 
         self.assertEqual(
-            "The EB CLI timed out after 10 minute(s). The operation might still be running. To keep viewing events, run 'eb events -f'. To set timeout duration, use '--timeout MINUTES'.",
+            "The EB CLI timed out after 10 minute(s). The operation might still be running. To keep viewing events, run 'eb events -f'.",
             str(context_manager.exception)
         )
 
@@ -592,7 +592,7 @@ class TestCommonOperations(unittest.TestCase):
         )
 
         log_error_mock.assert_called_once_with(
-            "The EB CLI timed out after {timeout_in_minutes} minute(s). The operation might still be running. To keep viewing events, run 'eb events -f'. To set timeout duration, use '--timeout MINUTES'."
+            "The EB CLI timed out after {timeout_in_minutes} minute(s). The operation might still be running. To keep viewing events, run 'eb events -f'."
         )
 
     def test_sleep(self):
