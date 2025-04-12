@@ -13,6 +13,7 @@
 import os
 import sys
 import time
+import typing
 from datetime import datetime, timedelta
 import platform
 import zipfile
@@ -1061,6 +1062,19 @@ def get_region(region_argument, interactive, force_non_interactive=False, platfo
         region = result.name
 
     return region
+
+
+def get_region_force_non_interactive(_platform: typing.Optional[str]) -> str:
+    region = None
+    if _platform:
+        region = PlatformVersion.get_region_from_platform_arn(_platform)
+
+    if region:
+        return region
+
+    # Choose defaults
+    region_list = get_all_regions()
+    return region_list[2].name
 
 
 def check_credentials(profile, given_profile, given_region, interactive, force_non_interactive):

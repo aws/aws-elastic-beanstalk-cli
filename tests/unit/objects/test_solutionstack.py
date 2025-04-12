@@ -529,6 +529,61 @@ class TestSolutionStack(unittest.TestCase):
             [solution_stack['SolutionStack'] for solution_stack in grouped_solution_stacks]
         )
 
+    def test_match_with_windows_server_version_string(self):
+        """
+        Test the match_with_windows_server_version_string method which finds the most appropriate
+        EB Windows platform based on an input string.
+        """
+        # Setup test data
+        solution_stack_list = [
+            '64bit Windows Server 2025 v2.18.0 running IIS 10.0',
+            '64bit Windows Server Core 2022 v2.18.0 running IIS 10.0',
+            '64bit Windows Server 2016 v2.18.0 running IIS 10.0',
+            '64bit Windows Server Core 2016 v2.18.0 running IIS 10.0',
+            '64bit Windows Server 2019 v2.18.0 running IIS 10.0',
+            '64bit Amazon Linux 2017.09 v4.4.0 running Node.js'
+        ]
+        solution_stacks = [SolutionStack(s) for s in solution_stack_list]
+        
+        # Test case 1: Match with Windows Server 2016 - should prefer non-Core version
+        result = SolutionStack.match_with_windows_server_version_string(
+            solution_stacks,
+            'Microsoft Windows Server 2016 Datacenter'
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual('64bit Windows Server 2016 v2.18.0 running IIS 10.0', result.name)
+        
+        # Test case 2: Match with Windows Server 2022 - only Core version available
+        result = SolutionStack.match_with_windows_server_version_string(
+            solution_stacks,
+            'Windows Server 2022'
+        )
+        self.assertIsNotNone(result)
+        self.assertEqual('64bit Windows Server Core 2022 v2.18.0 running IIS 10.0', result.name)
+        
+        # Test case 3: Generic Windows Server - should return first match
+        result = SolutionStack.match_with_windows_server_version_string(
+            solution_stacks,
+            'Windows Server'
+        )
+        self.assertIsNotNone(result)
+        # Should return any Windows Server match
+        self.assertTrue('Windows Server' in result.name)
+        
+        # Test case 4: No match for non-Windows input
+        result = SolutionStack.match_with_windows_server_version_string(
+            solution_stacks,
+            'Amazon Linux'
+        )
+        self.assertIsNone(result)
+        
+        # Test case 5: Empty solution stack list
+        result = SolutionStack.match_with_windows_server_version_string(
+            [],
+            'Microsoft Windows Server 2016 Datacenter'
+        )
+        self.assertIsNone(result)
+
     def test_solution_string_sorting(self):
         solution_stacks = [
             '64bit Amazon Linux 2017.09 v4.4.0 running Node.js',
