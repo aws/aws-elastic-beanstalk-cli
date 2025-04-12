@@ -51,10 +51,11 @@ class DeployController(AbstractBaseController):
         usage = AbstractBaseController.Meta.usage.replace('{cmd}', label)
 
     def do_command(self):
-        self.timeout = self.app.pargs.timeout
         self.nohang = self.app.pargs.nohang
+        self.timeout = self.app.pargs.timeout
         if self.nohang:
             self.timeout = 0
+
         if self.app.pargs.modules:
             self.multiple_app_deploy()
             return
