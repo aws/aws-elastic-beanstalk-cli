@@ -533,9 +533,12 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
                 file_name, file_path = _zip_up_project(
                     version_label, source_control, staged=staged)
             elif zipfile.is_zipfile(source_bundle):
+                if not label:
+                    label = f"{source_control.get_version_label()}.zip"
                 file_name, file_path = label, source_bundle
 
-    return handle_upload_target(app_name,
+    return handle_upload_target(
+        app_name,
         s3_bucket,
         s3_key,
         file_name,

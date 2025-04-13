@@ -73,7 +73,8 @@ setup_options = dict(
     package_data={
         'ebcli.lib': ['botocoredata/*/*/*.json'],
         'ebcli.containers': ['containerfiles/*'],
-        'ebcli.labs': ['cloudwatchfiles/*.config']},
+        'ebcli.labs': ['cloudwatchfiles/*.config'],
+        'ebcli.controllers': ['migrate_scripts/*.ps1']},
     install_requires=requires,
     extras_require=extras_require,
     license="Apache License 2.0",

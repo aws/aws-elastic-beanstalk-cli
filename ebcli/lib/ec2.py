@@ -173,7 +173,7 @@ def get_current_instance_details():
     instance_id = get_instance_metadata('instance-id')
     availability_zone = get_instance_metadata('placement/availability-zone')
     region = availability_zone[:-1]
-
+    aws.set_region(region)
     fileoperations.write_config_setting('global', 'default_region', region)
     mac_address = get_instance_metadata('mac')
     vpc_id = get_instance_metadata(f'network/interfaces/macs/{mac_address}/vpc-id')
