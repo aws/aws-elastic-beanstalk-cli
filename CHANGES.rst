@@ -2,6 +2,12 @@
 Changelog
 =========
 --------------------
+3.22.0 (2025-04-14)
+--------------------
+- Added `--archive` argument through `eb deploy` to deploy prepackaged zip files to environments
+- Added `--environment-name` argument through `eb init` to specify environment name at workspace initialization
+
+--------------------
 3.21.0 (2024-09-17)
 --------------------
 - Updated botocore requirement to `>=1.35.0,<1.36.0`
