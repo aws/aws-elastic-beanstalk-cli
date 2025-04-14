@@ -10,12 +10,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from pip import __version__ as pip_version
-from pkg_resources import get_distribution, parse_version
 
-
-if pip_version != '21.1':
-    raise RuntimeError('You need pip==21.1 to check for dependency incompatibilities.')
 
 try:
     from pip._internal.operations.check import (
@@ -41,7 +36,7 @@ def color_green(message):
 def collect_package_requirements_by_requirement_name(req_name, package_set):
     required_by = dict()
     for pkg_name, package in package_set.items():
-        for req in package.requires:
+        for req in package.dependencies:
             if req.name.lower() == req_name.lower():
                 required_by[pkg_name] = req.specifier
 
@@ -49,13 +44,7 @@ def collect_package_requirements_by_requirement_name(req_name, package_set):
 
 
 def collect_package_set():
-    pip_version = parse_version(get_distribution('pip').version)
-    package_set = None
-
-    if pip_version >= parse_version('18') and pip_version < parse_version('19'):
-        return create_package_set_from_installed()
-    elif pip_version >= parse_version('19'):
-        package_set = create_package_set_from_installed()[0]
+    package_set = create_package_set_from_installed()[0]
 
     return package_set
 

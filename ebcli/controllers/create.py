@@ -16,7 +16,7 @@ import time
 import yaml 
 from ebcli.core import io, fileoperations, hooks
 from ebcli.core.abstractcontroller import AbstractBaseController
-from ebcli.lib import elasticbeanstalk, utils, iam 
+from ebcli.lib import elasticbeanstalk, utils, iam
 from ebcli.objects.exceptions import (
     AlreadyExistsError,
     InvalidOptionsError,

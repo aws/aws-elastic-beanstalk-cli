@@ -1436,7 +1436,7 @@ class TestInitModule(unittest.TestCase):
                 'description': 'Java 8 Running on Amazon Linux 32bit '
             }
         ]
-        prompt_for_index_in_list_mock.return_value = 1
+        prompt_for_index_in_list_mock.return_value =  1
 
         self.assertIsNone(initialize.handle_buildspec_image('Java 8', False))
 
@@ -2031,14 +2031,13 @@ class TestInitModule(unittest.TestCase):
         self.assertFalse(
             initialize.should_prompt_customer_to_opt_into_codecommit(
                 True,
-                'us-west-2',
                 'codecommit/repository/branch'
             )
         )
 
     def test_should_prompt_customer_to_opt_into_codecommit__no_source(self):
         self.assertFalse(
-            initialize.should_prompt_customer_to_opt_into_codecommit(False, 'us-west-2', None)
+            initialize.should_prompt_customer_to_opt_into_codecommit(False, None)
         )
 
     @mock.patch('ebcli.controllers.initialize.codecommit.region_supported')
@@ -2051,7 +2050,6 @@ class TestInitModule(unittest.TestCase):
         self.assertFalse(
             initialize.should_prompt_customer_to_opt_into_codecommit(
                 False,
-                'us-west-10',
                 'codecommit/repository/branch'
             )
         )
@@ -2068,7 +2066,6 @@ class TestInitModule(unittest.TestCase):
         self.assertFalse(
             initialize.should_prompt_customer_to_opt_into_codecommit(
                 False,
-                'us-west-10',
                 'codecommit/repository/branch'
             )
         )
@@ -2077,10 +2074,8 @@ class TestInitModule(unittest.TestCase):
 
     @mock.patch('ebcli.controllers.initialize.codecommit.region_supported')
     @mock.patch('ebcli.controllers.initialize.fileoperations.is_git_directory_present')
-    @mock.patch('ebcli.controllers.initialize.io.echo')
     def test_should_prompt_customer_to_opt_into_codecommit__directory_is_not_git_inited(
             self,
-            echo_mock,
             is_git_directory_present_mock,
             region_supported_mock
     ):
@@ -2090,23 +2085,17 @@ class TestInitModule(unittest.TestCase):
         self.assertFalse(
             initialize.should_prompt_customer_to_opt_into_codecommit(
                 False,
-                'us-west-2',
                 'codecommit/repository/branch'
             )
         )
 
         region_supported_mock.assert_called_once_with()
-        echo_mock.assert_called_once_with(
-            'Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization'
-        )
 
     @mock.patch('ebcli.controllers.initialize.codecommit.region_supported')
     @mock.patch('ebcli.controllers.initialize.fileoperations.is_git_directory_present')
     @mock.patch('ebcli.controllers.initialize.fileoperations.program_is_installed')
-    @mock.patch('ebcli.controllers.initialize.io.echo')
     def test_should_prompt_customer_to_opt_into_codecommit__git_not_installed(
             self,
-            echo_mock,
             program_is_installed_mock,
             is_git_directory_present_mock,
             region_supported_mock
@@ -2118,16 +2107,12 @@ class TestInitModule(unittest.TestCase):
         self.assertFalse(
             initialize.should_prompt_customer_to_opt_into_codecommit(
                 False,
-                'us-west-2',
                 'codecommit/repository/branch'
             )
         )
 
         region_supported_mock.assert_called_once_with()
         program_is_installed_mock.assert_called_once_with('git')
-        echo_mock.assert_called_once_with(
-            'Cannot setup CodeCommit because there is no Source Control setup, continuing with initialization'
-        )
 
     @mock.patch('ebcli.controllers.initialize.codecommit.region_supported')
     @mock.patch('ebcli.controllers.initialize.fileoperations.is_git_directory_present')
@@ -2150,7 +2135,6 @@ class TestInitModule(unittest.TestCase):
         self.assertFalse(
             initialize.should_prompt_customer_to_opt_into_codecommit(
                 False,
-                'us-west-2',
                 'codecommit/repository/branch'
             )
         )
@@ -2181,7 +2165,6 @@ class TestInitModule(unittest.TestCase):
         self.assertTrue(
             initialize.should_prompt_customer_to_opt_into_codecommit(
                 False,
-                'us-west-2',
                 'codecommit/repository/branch'
             )
         )

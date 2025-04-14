@@ -12,7 +12,8 @@
 # language governing permissions and limitations under the License.
 import os
 import shutil
-import threading
+import asyncio
+import pytest
 
 import mock
 import unittest
@@ -87,10 +88,11 @@ class TestHealth(unittest.TestCase):
         app.setup()
         app.run()
 
+    @pytest.mark.asyncio
     @mock.patch('ebcli.controllers.health.healthops.elasticbeanstalk.describe_configuration_settings')
     @mock.patch('ebcli.display.data_poller.elasticbeanstalk.get_environment_health')
     @mock.patch('ebcli.display.data_poller.elasticbeanstalk.get_instance_health')
-    def test_health__refresh(
+    async def test_health__refresh(
             self,
             get_instance_health_mock,
             get_environment_health_mock,
@@ -106,14 +108,12 @@ class TestHealth(unittest.TestCase):
         get_environment_health_mock.return_value = mock_responses.DESCRIBE_ENVIRONMENT_HEALTH_RESPONSE
         get_instance_health_mock.return_value = mock_responses.DESCRIBE_INSTANCES_HEALTH_RESPONSE
 
-        def run_eb_health_refresh():
+        async def run_eb_health_refresh():
             app = EB(argv=['health', '--refresh'])
             app.setup()
             app.run()
 
-        t = threading.Thread(target=run_eb_health_refresh)
-        t.start()
-        t.join(timeout=2)
+        await asyncio.wait_for(run_eb_health_refresh(), timeout=2)
 
     @mock.patch('ebcli.controllers.health.healthops.elasticbeanstalk.describe_configuration_settings')
     @mock.patch('ebcli.display.data_poller.elasticbeanstalk.get_environment_health')

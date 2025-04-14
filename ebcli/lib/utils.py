@@ -13,7 +13,7 @@
 import argparse
 import os
 import re
-import pkg_resources
+from packaging import version
 import random
 import string
 import sys
@@ -274,7 +274,7 @@ def parse_version(version_string):
     Example: parse_version('1.9.2') > parse_version('1.9.alpha')
     See docs for pkg_resource.parse_version as this is just a wrapper
     """
-    return pkg_resources.parse_version(version_string)
+    return version.parse(version_string)
 
 
 def save_file_from_url(url, location, filename):
@@ -298,9 +298,9 @@ def prettydate(d):
     """
 
     if isinstance(d, float):
-        d = datetime.utcfromtimestamp(d)
+        d = fromutctimestamp(d)
 
-    diff = datetime.utcnow() - d
+    diff = datetime_utcnow() - d
     s = diff.seconds
     if diff.days > 7 or diff.days < 0:
         return d.strftime('%d %b %y')
@@ -581,7 +581,19 @@ def sleep(sleep_time=5):
 
 
 def datetime_utcnow():
-    return datetime.utcnow()
+    try:
+        from datetime import UTC
+        return datetime.now(UTC)
+    except ImportError:
+        return datetime.utcnow()
+
+
+def fromutctimestamp(d):
+    try:
+        from datetime import UTC
+        return datetime.fromtimestamp(d, UTC)
+    except ImportError:
+        return datetime.utcfromtimestamp(d)
 
 
 def prevent_throttling():

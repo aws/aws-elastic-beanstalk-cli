@@ -19,7 +19,6 @@ from unittest import mock
 from unittest.mock import patch, mock_open
 
 from ebcli.controllers import create
-from ebcli.controllers.create import check_elb_type_from_configs
 
 from ebcli.core import fileoperations
 from ebcli.core.ebcore import EB
@@ -2456,14 +2455,14 @@ class TestCreateModuleE2E(unittest.TestCase):
                 tier=Tier.from_raw_string('webserver')
             )
         )
-
+        
     def test_get_elb_type_from_customer__non_interactive_mode(self):
         self.assertEqual(
             create.get_elb_type_from_customer(
                 interactive=False,
                 single=False,
-                tier=None
-
+                tier=None,
+                
             ),
             'application'
         )

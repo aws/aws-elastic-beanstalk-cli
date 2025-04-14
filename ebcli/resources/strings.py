@@ -260,8 +260,7 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                           'Tags may only contain letters, numbers, and the following '
                           'symbols: / _ . : + = - @',
     'tags.max': 'Elastic Beanstalk supports a maximum of 50 tags.',
-    'deploy.invalidoptions': 'You cannot use the "--version" option with either the "--message" '
-                             'or "--label" option.',
+
     'init.getvarsfromoldeb': 'You previous used an earlier version of eb. Getting options from '
                              '.elasticbeanstalk/config.\n'
                              'Credentials will now be stored in ~/.aws/config',
@@ -324,12 +323,22 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'region.china.credentials':
         'To use the China (Beijing) region, account credentials unique to the '
         'China (Beijing) region must be used.',
+
     'deploy.notadirectory': 'The directory {module} does not exist.',
     'deploy.modulemissingenvyaml':
         'All specified modules require an env.yaml file.\n'
         'The following modules are missing this file: {modules}',
     'deploy.noenvname':
         'No environment name was specified in env.yaml for module {module}. Unable to deploy.',
+    'deploy.invalidoptions': 'You cannot use the "--version" option with either the "--message" '
+                        'or "--label" option.',
+    'deploy.archivewithoutregion': 'You cannot use the "--archive" option without the "--region" option.',
+    'deploy.archivewithoutenvname': 'You cannot use the "--archive" option without the environment name.',
+    'deploy.archivewithversion': 'You cannot use the "--archive" option with the "--version" option for environment updates. '
+                                'These are mutually exclusive methods for specifying application code.',
+    'deploy.archivewithsource': 'You cannot use the "--archive" option with the "--source" option for environment updates. '
+                               'These are mutually exclusive methods for specifying application code.',
+    'deploy.archive_must_be_dir_or_zip': 'The "--archive" option requires a directory or ZIP file as an argument.',
     'compose.noenvyaml':
         'The module {module} does not contain an env.yaml file. This module will be skipped.',
     'compose.novalidmodules': 'No valid modules were found. No environments will be created.',
@@ -814,6 +823,7 @@ flag_text = {
     'deploy.group_suffix': 'group suffix',
     'deploy.source': 'source of code to deploy directly; example source_location/repo/branch',
     'deploy.process': 'enable preprocessing of the application version',
+    'deploy.archive': 'directory or ZIP file containing application version source code',
 
     'platformevents.version': 'version to retrieve events for',
     'events.follow': 'wait and continue to print events as they come',
@@ -822,6 +832,7 @@ flag_text = {
     'init.platform': 'default Platform',
     'init.keyname': 'default EC2 key name',
     'init.interactive': 'force interactive mode',
+    'init.environment_name': 'default environment name',
 
     'platformcreate.instanceprofile': 'the instance profile to use when creating AMIs '
                                       'for custom platforms',

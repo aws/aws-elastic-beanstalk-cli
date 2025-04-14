@@ -2,10 +2,24 @@
 Changelog
 =========
 --------------------
+3.21.0 (2024-09-17)
+--------------------
+- Updated botocore requirement to `>=1.35.0,<1.36.0`
+- Updated cement to `2.10.14` to fix EBCLI for Python 3.12
+- Updated colorama requirement to `>=0.4.6,<0.5`
+- Updated semantic_version requirement to `>=2.10.0,<2.11`
+- Updated termcolor requirement to `>=2.4.0,<3`
+- Updated wcwidth requirement to `>=0.2.13,<0.3`
+- Updated blessed requirement from Windows to `>=1.20.0`
+- Declared support drop for Python 2.7 and Python < 3.7
+- Fixed bug preventing environment creates and updates with JSON ebextensions
+- Removed explicit check for Docker installation
+
+--------------------
 3.20.10 (2023-09-15)
 --------------------
-- Removed Docker-compose as a dependancy 
-- Fixed Codebuild image bug   
+- Removed Docker-compose as a dependancy
+- Fixed Codebuild image bug
 
 -------------------
 3.20.9 (2023-08-31)
@@ -13,7 +27,7 @@ Changelog
 - Updated botocore requirement to `>1.23.41,<1.32.0`
 - Updated six requirement to `>=1.11.0,<1.17.0`
 - Update dependabot configuration to only update minor version
-- Bug fix for Cloudformation pagination token  
+- Bug fix for Cloudformation pagination token
 
 -------------------
 3.20.8 (2023-08-15)

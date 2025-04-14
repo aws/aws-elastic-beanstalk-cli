@@ -952,7 +952,7 @@ def _timestamped_directory_name():
 
 
 def _updated_start_time():
-    return calendar.timegm(datetime.utcnow().timetuple()) * 1000
+    return calendar.timegm(utils.datetime_utcnow().timetuple()) * 1000
 
 
 def _updated_instance_id_list(instance_id_list, instance_id):

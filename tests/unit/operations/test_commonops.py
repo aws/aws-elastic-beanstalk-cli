@@ -14,8 +14,9 @@
 # language governing permissions and limitations under the License.
 from datetime import datetime, timedelta
 import os
-import sys
 import shutil
+import sys
+import subprocess
 
 from dateutil import tz
 import mock
@@ -28,6 +29,7 @@ from ebcli.objects.event import Event
 from ebcli.objects.environment import Environment
 from ebcli.objects.region import Region
 from ebcli.operations import commonops
+from ebcli.lib import utils
 from ebcli.lib.aws import InvalidParameterValueError
 from ebcli.objects.buildconfiguration import BuildConfiguration
 from ebcli.resources.strings import strings, responses
@@ -68,8 +70,8 @@ class TestCommonOperations(unittest.TestCase):
 
     def setUp(self):
         self.root = os.getcwd()
-        if not os.path.exists('testDir'):
-            os.makedirs('testDir')
+        self._delete_testDir_if_exists()
+        os.makedirs('testDir')
         os.chdir('testDir')
 
         if not os.path.exists(fileoperations.beanstalk_directory):
@@ -87,7 +89,14 @@ class TestCommonOperations(unittest.TestCase):
 
     def tearDown(self):
         os.chdir(self.root)
-        shutil.rmtree('testDir')
+        self._delete_testDir_if_exists()
+
+    def _delete_testDir_if_exists(self):
+        if os.path.exists("testDir"):
+            if sys.platform == "win32":
+                subprocess.run(['rd', '/s', '/q', 'testDir'], shell=True)
+            else:
+                shutil.rmtree("testDir")
 
     def test_is_success_event(self):
         self.assertTrue(commonops._is_success_event('Environment health has been set to GREEN'))
@@ -592,7 +601,7 @@ class TestCommonOperations(unittest.TestCase):
     def test_timeout_reached(self):
         self.assertTrue(
             commonops._timeout_reached(
-                datetime.utcnow() - timedelta(minutes=5),
+                utils.datetime_utcnow() - timedelta(minutes=5),
                 timedelta(seconds=300)
             )
         )
@@ -600,7 +609,7 @@ class TestCommonOperations(unittest.TestCase):
     def test_timeout_reached__false(self):
         self.assertFalse(
             commonops._timeout_reached(
-                datetime.utcnow() - timedelta(minutes=5),
+                utils.datetime_utcnow() - timedelta(minutes=5),
                 timedelta(seconds=301)
             )
         )
@@ -1077,7 +1086,8 @@ class TestCommonOperations(unittest.TestCase):
             's3-bucket',
             's3-key',
             False,
-            build_config=None
+            build_config=None,
+            relative_to_project_root=True,
         )
 
     @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
@@ -1138,7 +1148,8 @@ class TestCommonOperations(unittest.TestCase):
             's3-bucket',
             'my-application/version-label',
             False,
-            build_config=None
+            build_config=None,
+            relative_to_project_root=True,
         )
 
     @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
@@ -1194,7 +1205,8 @@ class TestCommonOperations(unittest.TestCase):
             's3-bucket',
             'my-application/version-label.zip',
             False,
-            build_config=None
+            build_config=None,
+            relative_to_project_root=True,
         )
 
     @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
@@ -1254,7 +1266,8 @@ class TestCommonOperations(unittest.TestCase):
             's3-bucket',
             'my-application/version-label',
             False,
-            build_config=None
+            build_config=None,
+            relative_to_project_root=True,
         )
 
     @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')
@@ -1295,7 +1308,7 @@ class TestCommonOperations(unittest.TestCase):
                 label='my-version-label',
                 message='message ' * 50,
                 process=True,
-                build_config=build_config_mock
+                build_config=build_config_mock,
             )
         )
 
@@ -1308,7 +1321,8 @@ class TestCommonOperations(unittest.TestCase):
             's3-bucket',
             's3-key',
             True,
-            build_config=build_config_mock
+            build_config=build_config_mock,
+            relative_to_project_root=True,
         )
 
     @mock.patch('ebcli.operations.commonops.fileoperations.ProjectRoot.traverse')

@@ -52,6 +52,7 @@ class InitController(AbstractBaseController):
         arguments = [
             (['application_name'], dict(
                 help=flag_text['init.name'], nargs='?', default=[])),
+            (['-e', '--environment-name'], dict(help=flag_text['init.environment_name'])),
             (['-m', '--modules'], dict(help=flag_text['init.module'], nargs='*')),
             (['-p', '--platform'], dict(help=flag_text['init.platform'])),
             (['-k', '--keyname'], dict(help=flag_text['init.keyname'])),
@@ -74,6 +75,7 @@ class InitController(AbstractBaseController):
         platform = self.app.pargs.platform
         source = self.app.pargs.source
         app_name = self.app.pargs.application_name
+        env_name = self.app.pargs.environment_name
         modules = self.app.pargs.modules
         force_non_interactive = _customer_is_avoiding_interactive_flow(
             self.app.pargs)
@@ -98,7 +100,7 @@ class InitController(AbstractBaseController):
         region_name = commonops.set_region_for_application(interactive, region_name, force_non_interactive, platform)
         commonops.set_up_credentials(profile, region_name, interactive)
         app_name = get_app_name(app_name, interactive, force_non_interactive)
-        default_env = set_default_env(interactive, force_non_interactive)
+        default_env = env_name or set_default_env(interactive, force_non_interactive)
         tags = tagops.get_and_validate_tags(tags)
 
         platform_arn, keyname_of_existing_application = create_app_or_use_existing_one(app_name, default_env, tags)
@@ -111,7 +113,6 @@ class InitController(AbstractBaseController):
 
         prompt_codecommit = should_prompt_customer_to_opt_into_codecommit(
             force_non_interactive,
-            region_name,
             source
         )
         repository, branch = None, None
@@ -425,7 +426,7 @@ def handle_buildspec_image(solution, force_non_interactive):
         return None
 
     build_spec = fileoperations.get_build_configuration()
-
+    
     if not force_non_interactive and build_spec and build_spec.image is None:
         LOG.debug("Buildspec file is present but image does not exist. Attempting to fill best guess.")
         platform_image = initializeops.get_codebuild_image_from_platform(solution)
@@ -441,7 +442,7 @@ def handle_buildspec_image(solution, force_non_interactive):
             else:
                 io.echo(prompts['codebuild.getplatform'].replace('{platform}', solution))
                 selected = int(utils.prompt_for_index_in_list([image['description'] for image in platform_image]))
-
+                
                 if selected is not None and 0 <= selected < len(platform_image):
                     selected_description = platform_image[selected]['description']
                 else:
@@ -458,6 +459,7 @@ def handle_buildspec_image(solution, force_non_interactive):
             fileoperations.write_buildspec_config_header('Image', selected_image['name'])
 
     return None
+
 
 
 def set_default_env(interactive, force_non_interactive):
@@ -513,7 +515,6 @@ def establish_codecommit_repository_and_branch(repository, branch, source_contro
 
 def should_prompt_customer_to_opt_into_codecommit(
         force_non_interactive,
-        region_name,
         source
 ):
     source_location, repository, branch = utils.parse_source(source)
@@ -525,10 +526,8 @@ def should_prompt_customer_to_opt_into_codecommit(
             io.log_warning(strings['codecommit.badregion'])
         return False
     elif not fileoperations.is_git_directory_present():
-        io.echo(strings['codecommit.nosc'])
         return False
     elif not fileoperations.program_is_installed('git'):
-        io.echo(strings['codecommit.nosc'])
         return False
     elif directory_is_already_associated_with_a_branch():
         return False

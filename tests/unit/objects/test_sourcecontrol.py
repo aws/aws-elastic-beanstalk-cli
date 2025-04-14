@@ -109,7 +109,7 @@ class TestGitSourceControl(unittest.TestCase):
 
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_current_branch(self):
-        self.assertEqual(sourcecontrol.Git().get_current_branch(), 'master')
+        self.assertIn(sourcecontrol.Git().get_current_branch(), ['master', 'main'])
 
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_current_branch_detached_head(self):
@@ -210,7 +210,7 @@ class TestGitSourceControl(unittest.TestCase):
 
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     def test_get_current_branch(self):
-        self.assertEqual('master', sourcecontrol.Git().get_current_branch())
+        self.assertTrue(sourcecontrol.Git().get_current_branch() in ['master', 'main'])
 
     @unittest.skipIf(not fileoperations.program_is_installed('git'), "Skipped because git is not installed")
     @mock.patch('ebcli.core.io.log_warning')
