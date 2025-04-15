@@ -19,43 +19,36 @@ import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 import zipfile
-
-from typing import Dict, List, Any, Union, Optional, Tuple, Set, LiteralString
-
+from typing import Dict, List, Any, Union, Optional, Tuple, Set
+import collections
+import json
+import argparse
 
 if sys.platform.startswith("win"):
     import winreg
     import clr
     import win32com.client
-import collections
-import json
-import argparse
 
-# TODO: Handle situations where two sites/applications point to the same directory/PhysicalPath.
-# TODO: Fix `eb logs`
-# TODO: Fix `eb appversion`
-# TODO: Fix `eb health --refresh` on Windows
-if sys.platform.startswith("win"):
     clr.AddReference("System.Reflection")
     clr.AddReference(r"C:\Windows\System32\inetsrv\Microsoft.Web.Administration.dll")
     clr.AddReference("System")
     clr.AddReference("System.Core")
-
-    try:
-        clr.AddReference("System.DirectoryServices.AccountManagement")
-        from System.DirectoryServices.AccountManagement import (
-            PrincipalContext,
-            ContextType,
-            UserPrincipal,
-            PrincipalSearcher,
-        )
-    except:
-        # TODO: Make this raise on source machine; Pass this on dumb-terminals
-        pass
-
+    clr.AddReference("System.DirectoryServices.AccountManagement")
+    from System.DirectoryServices.AccountManagement import (
+        PrincipalContext,
+        ContextType,
+        UserPrincipal,
+        PrincipalSearcher,
+    )
     from System.Collections.Generic import HashSet, Queue
     from System.Reflection import Assembly
-    from Microsoft.Web.Administration import ServerManager, Binding, Site, Application
+    from Microsoft.Web.Administration import (
+        ServerManager,
+        Binding,
+        Site,
+        Application,
+        ObjectState,
+    )
     from System.Diagnostics import Process, ProcessStartInfo
     from System.Runtime.InteropServices import COMException
 
@@ -69,18 +62,13 @@ from ebcli.lib import utils, ec2, elasticbeanstalk, aws
 from ebcli.objects import requests
 from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.exceptions import (
-    RetiredPlatformBranchError,
     NotFoundError,
     NotAnEC2Instance,
 )
-from ebcli.resources.strings import prompts, flag_text, alerts
+from ebcli.resources.strings import prompts, flag_text
 from ebcli.operations import commonops, createops, platformops, statusops
 from ebcli.operations.tagops import tagops
-from ebcli.resources.statics import (
-    platform_branch_lifecycle_states,
-    iam_attributes,
-    namespaces,
-)
+from ebcli.resources.statics import namespaces
 
 
 class MigrateExploreController(AbstractBaseController):
@@ -118,9 +106,6 @@ class MigrateCleanupController(AbstractBaseController):
         cleanup_previous_migration_artifacts(force, self.app.pargs.verbose)
 
 
-# TODO: define powershell utilities inside a utilities.ps1 powershell script
-# TODO: move all powershell scripts to inside a "ebdefined-scripts" dir
-# TODO: constantize
 # TODO: error when a physical path is in incidental to the migration execution path
 class MigrateController(AbstractBaseController):
     class Meta:
@@ -158,8 +143,6 @@ class MigrateController(AbstractBaseController):
                 ["-hc", "--use-host-ebs-configuration"],
                 dict(action="store_true", help=argparse.SUPPRESS),
             ),
-            # TODO: Accept additional security groups
-            # TODO: keyname should force creation of ingress rule on port 3389 from this machine
             (["-k", "--keyname"], dict(help=flag_text["migrate.keyname"])),
             (
                 ["-in", "--interactive"],
@@ -194,7 +177,6 @@ class MigrateController(AbstractBaseController):
             (["--archive"], dict(help=flag_text["migrate.archive"])),
             (["-vpc", "--vpc-config"], dict(help=flag_text["migrate.vpc_config"])),
             # TODO: support userdata copy using robocopy
-            # TODO: consider supporting dry run capabilities
         ]
 
     def generate_ms_deploy_source_bundle(
@@ -319,7 +301,6 @@ class MigrateController(AbstractBaseController):
             raise ValueError("Cannot use --archive-only with --archive-dir together.")
         vpc_config = self.app.pargs.vpc_config
 
-        # TODO: ignore stopped sites
         sites = establish_candidate_sites(site_names, interactive)
         on_an_ec2_instance = True
         try:
@@ -353,8 +334,7 @@ class MigrateController(AbstractBaseController):
         all_ports = get_all_ports(sites)
         ec2_security_group = None
         load_balancer_security_group = None
-        if on_an_ec2_instance:
-            # TODO: decide whether to do this only if --copy-firewall-config is specified
+        if on_an_ec2_instance and copy_firewall_config:
             load_balancer_security_group, ec2_security_group = (
                 ec2.establish_security_group(all_ports, env_name, environment_vpc["id"])
             )
@@ -967,9 +947,6 @@ def construct_environment_vpc_config(
         instance_id = current_instance_details["InstanceId"]
         _vpc = current_instance_details["VpcId"]
         security_groups = current_instance_details["SecurityGroupIds"]
-        # TODO: ensure that all subnets have publicly accessible EC2 instances
-        # for RDP access
-        # TODO: should use different sets of subnets for Elb and EC2
         subnets = ",".join(ec2.list_subnets_azs_interleaved(_vpc)[:3])
         region = current_instance_details["Region"]
         environment_vpc = {
@@ -997,9 +974,6 @@ def construct_environment_vpc_config(
     except NotAnEC2Instance:
         raise
     except Exception:
-        # This is probably not an EC2 instance. Use EB to create VPC, subnets,
-        # SGs.
-        # TODO: Allow VPC config input like with `eb create`
         io.echo(
             f"Unable to detect EC2 configuration. Possibly executing on a non-EC2 instance"
         )
@@ -1400,7 +1374,6 @@ def ms_deploy_sync_application(
             )
             # manifest_contents['deployments']['custom'].append(manifest_section)
     else:
-        # TODO: fix for default website on a non-standard port
         manifest_section = {
             "name": manifest_section_name,
             "parameters": {
@@ -1980,7 +1953,6 @@ def write_arr_import_script_to_source_bundle(upload_target_dir: str) -> None:
         file.write(script)
 
 
-# TODO: ensure installer runs as a background job to circumvent timeouts
 def write_windows_proxy_feature_enabler_script(upload_target_dir):
     script_path = os.path.join(
         os.path.dirname(__file__),
@@ -2342,8 +2314,6 @@ def write_copy_firewall_config_script(upload_target_dir: str) -> None:
     ) as file:
         file.write(script_content)
 
-    # TODO: Define these rules as part of site definitions. Ideally, we would remove firewall
-    # config associated with a site upon removing the site
     with open(
         os.path.join(upload_target_dir, "aws-windows-deployment-manifest.json")
     ) as file:
@@ -3064,7 +3034,6 @@ def get_site_configs(sites: List["Site"]):
             config = SiteConfig(
                 name=site.Name,
                 binding_info=binding.BindingInformation,
-                # TODO: is a "/" application guaranteed to exist?
                 physical_path=site.Applications["/"]
                 .VirtualDirectories["/"]
                 .PhysicalPath,
