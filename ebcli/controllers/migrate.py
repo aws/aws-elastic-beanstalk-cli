@@ -2236,7 +2236,9 @@ def write_ebdeploy_utility_script(upload_target_dir: str) -> None:
         file.write(script_content)
 
 
-def write_copy_firewall_config_script(upload_target_dir: str) -> None:
+def write_copy_firewall_config_script(
+    upload_target_dir: str, sites: List["Site"]
+) -> None:
     """
     Generate and configure deployment of Windows Firewall rules based on IIS site bindings.
 
@@ -2273,7 +2275,7 @@ def write_copy_firewall_config_script(upload_target_dir: str) -> None:
         sites are removed. Firewall rules persist after site removal.
     """
     ports = set()
-    for site in ServerManager().Sites:
+    for site in sites:
         for binding in site.Bindings:
             host, port, domain = binding.BindingInformation.split(":")
             protocol = binding.Protocol
