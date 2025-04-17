@@ -5,6 +5,7 @@ Changelog
 3.22.1 (2025-04-17)
 --------------------
 - Added dependency on packaging `>=24.2,<25.0`
+- Fixed `eb health --refresh` for Windows
 
 --------------------
 3.22.0 (2025-04-14)
