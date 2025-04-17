@@ -307,6 +307,7 @@ class MigrateController(AbstractBaseController):
             environment_vpc, _region, instance_id, instance_tags = (
                 construct_environment_vpc_config(on_prem_mode, verbose)
             )
+            on_an_ec2_instance = not not instance_id
         except NotAnEC2Instance:
             environment_vpc, _region, instance_id, instance_tags = (
                 dict(),
