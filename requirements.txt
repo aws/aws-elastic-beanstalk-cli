@@ -10,3 +10,4 @@ termcolor>=2.4.0,<3
 wcwidth>=0.2.13,<0.3
 PyYAML>=5.3.1,<6.1 # use the same range that 'aws-cli' uses
 urllib3>=1.26.5,<2
+packaging>=24.2,<25.0
