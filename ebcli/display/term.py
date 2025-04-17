@@ -251,11 +251,11 @@ class WindowsTerminal(object):
 
             def __enter__(self):
                 self.saved_position = self.term._get_cursor_pos()
-                print(self.term.move(y, x))
+                print(self.term.move(y, x), end='')
 
             def __exit__(self, exc_type, exc_val, exc_tb):
                 # Return cursor state
-                print(self.term.move(self.saved_position[1], self.saved_position[0]))
+                print(self.term.move(self.saved_position[1], self.saved_position[0]), end='')
 
         return TermLocation(self)
 
