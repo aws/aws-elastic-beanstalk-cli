@@ -2,6 +2,11 @@
 Changelog
 =========
 --------------------
+3.22.1 (2025-04-17)
+--------------------
+- Added dependency on packaging `>=24.2,<25.0`
+
+--------------------
 3.22.0 (2025-04-14)
 --------------------
 - Added `--archive` argument through `eb deploy` to deploy prepackaged zip files to environments
