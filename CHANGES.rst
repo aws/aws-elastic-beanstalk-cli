@@ -2,6 +2,11 @@
 Changelog
 =========
 --------------------
+3.23.1 (2025-04-18)
+--------------------
+- Handle `eb migrate` execution failures on non-Windows machines gracefully
+
+--------------------
 3.23 (2025-04-18)
 --------------------
 - Declared dependency on blessed for Windows, Linux and macOS

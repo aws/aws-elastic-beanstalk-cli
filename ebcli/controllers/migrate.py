@@ -64,6 +64,7 @@ from ebcli.objects.platform import PlatformVersion
 from ebcli.objects.exceptions import (
     NotFoundError,
     NotAnEC2Instance,
+    NotSupportedError,
 )
 from ebcli.resources.strings import prompts, flag_text
 from ebcli.operations import commonops, createops, platformops, statusops
@@ -81,6 +82,8 @@ class MigrateExploreController(AbstractBaseController):
         stacked_type = "nested"
 
     def do_command(self):
+        if not sys.platform.startswith("win"):
+            raise NotSupportedError("'eb migrate explore' is only supported on Windows")
         verbose = self.app.pargs.verbose
 
         if verbose:
@@ -102,6 +105,8 @@ class MigrateCleanupController(AbstractBaseController):
         ]
 
     def do_command(self):
+        if not sys.platform.startswith("win"):
+            raise NotSupportedError("'eb migrate cleanup' is only supported on Windows")
         force = self.app.pargs.force
         cleanup_previous_migration_artifacts(force, self.app.pargs.verbose)
 
@@ -274,6 +279,8 @@ class MigrateController(AbstractBaseController):
             json.dump(manifest_contents, file, indent=4)
 
     def do_command(self):
+        if not sys.platform.startswith("win"):
+            raise NotSupportedError("'eb migrate' is only supported on Windows")
         validate_iis_version_greater_than_7_0()
         verbose = self.app.pargs.verbose
 
@@ -375,7 +382,7 @@ class MigrateController(AbstractBaseController):
                 listener_configs_json = {"listener_configs": listener_configs}
                 json.dump(listener_configs_json, file, indent=2)
         if archive_only and upload_target_dir:
-            generate_upload_target_archive(upload_target_dir, env_name)
+            generate_upload_target_archive(upload_target_dir, env_name, region)
             return
 
         self.create_app_version_and_environment(
@@ -572,7 +579,7 @@ def establish_instance_profile(instance_profile):
     return instance_profile
 
 
-def generate_upload_target_archive(upload_target_dir, env_name):
+def generate_upload_target_archive(upload_target_dir, env_name, region):
     fileoperations.zip_up_folder(upload_target_dir, upload_target_zip_path())
     relative_normalized_upload_target_dir_path = absolute_to_relative_normalized_path(
         upload_target_dir
@@ -583,13 +590,13 @@ def generate_upload_target_archive(upload_target_dir, env_name):
         io.echo(
             f"\nGenerated destination archive ZIP at .\\{relative_normalized_upload_target_dir_path}.zip. "
             "You can now upload the zip using:\n\n"
-            "    eb deploy --zip .\\migrations\\latest\\upload_target.zip\n"
+            f"    eb deploy {env_name} --archive .\\migrations\\latest\\upload_target.zip --region {region}\n"
         )
     except NotFoundError:
         io.echo(
             f"\nGenerated destination archive directory at .\\{relative_normalized_upload_target_dir_path}.zip. "
             "You can create en environment with the zip using:\n\n"
-            "    eb migrate --archive .\\migrations\\latest\\upload_target.zip\n"
+            f"    eb migrate --environment-name {env_name} --archive .\\migrations\\latest\\upload_target.zip --region {region}\n"
         )
 
 
