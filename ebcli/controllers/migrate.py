@@ -354,7 +354,7 @@ class MigrateController(AbstractBaseController):
             if _arr_enabled():
                 export_arr_config(upload_target_dir, verbose)
             if copy_firewall_config:
-                write_copy_firewall_config_script(upload_target_dir)
+                write_copy_firewall_config_script(upload_target_dir, sites)
             fileoperations.zip_up_folder(upload_target_dir, upload_target_zip_path())
         else:
             if zipfile.is_zipfile(archive):

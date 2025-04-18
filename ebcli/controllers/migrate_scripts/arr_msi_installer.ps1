@@ -142,7 +142,6 @@ function Install-ARR {
     New-Item -ItemType Directory -Path $arrInstallPath -Force | Out-Null
 
     Download-ARR -ArrInstallPath $arrInstallPath
-    Download-Rewrite -ArrInstallPath $arrInstallPath
     Install-ARRFromMSI -ArrInstallPath $arrInstallPath
 }
 
