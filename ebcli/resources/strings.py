@@ -901,7 +901,7 @@ flag_text = {
     'migrate.cleanup': 'Remove all previous migration artifacts from ./migrations/*\n'
                        '            except ./migrations/latest/',
     'migrate.explore': 'List all available IIS sites on this server.\n'
-                       '            Use --verbose for detailed information.',
+                       'Use --verbose for detailed information.',
     'migrate.copy_firewall_config': 'Copy source server firewall configuration to the destination\n'
                                     'for all HTTP ports with active bindings.',
     'migrate.encrypt_ebs_volumes': 'Enforce encryption for all new EBS volumes.\n'

@@ -434,7 +434,8 @@ class MigrateController(AbstractBaseController):
 
         if environment_vpc and environment_vpc.get("securitygroups"):
             vpc_security_groups = set(environment_vpc["securitygroups"].split(","))
-            vpc_security_groups.add(ec2_security_group["Value"])
+            if ec2_security_group:
+                vpc_security_groups.add(ec2_security_group.get("Value", set()))
             environment_vpc["securitygroups"] = ",".join(list(vpc_security_groups))
             ec2_security_group = None
 
@@ -469,7 +470,7 @@ class MigrateController(AbstractBaseController):
             root_volume=root_volume,
         )
 
-        createops.make_new_env(env_request, interactive=interactive)
+        createops.make_new_env(env_request, interactive=interactive, timeout=15)
 
     def package_sites(
         self,
@@ -604,16 +605,22 @@ def add_virtual_directory_custom_script_to_manifest(upload_target_dir):
     manifest_file_path = os.path.join(
         upload_target_dir, "aws-windows-deployment-manifest.json"
     )
-    with open(manifest_file_path) as file:
-        manifest_contents = json.load(file)
-    manifest_contents["deployments"]["custom"] = [
+    if os.path.exists(manifest_file_path):
+        with open(manifest_file_path) as file:
+            manifest_contents = json.load(file)
+    else:
+        manifest_contents = {
+            "manifestVersion": 1,
+            "deployments": {"msDeploy": [], "custom": []},
+        }
+    manifest_contents["deployments"]["custom"].append(
         create_custom_manifest_section(
             "FixVirtualDirPermissions",
             "add_virtual_dir_read_access.ps1",
             "noop.ps1",
             "noop.ps1",
         )
-    ]
+    )
     with open(manifest_file_path, "w") as file:
         json.dump(manifest_contents, file, indent=4)
 

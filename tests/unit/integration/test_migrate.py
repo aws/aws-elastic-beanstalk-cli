@@ -1161,7 +1161,7 @@ if sys.platform.startswith("win"):
             ]
 
             mock_make_new_env.assert_called_once_with(
-                mock_create_env_request_object, interactive=False
+                mock_create_env_request_object, interactive=False, timeout=15
             )
             mock_do_encrypt_ebs_volumes.assert_not_called()
             call_args = mock_upload_application_version.call_args[0]
@@ -1350,7 +1350,7 @@ if sys.platform.startswith("win"):
             ]
 
             mock_make_new_env.assert_called_once_with(
-                mock_create_env_request_object, interactive=False
+                mock_create_env_request_object, interactive=False, timeout=15
             )
             mock_do_encrypt_ebs_volumes.assert_called_once_with()
             call_args = mock_upload_application_version.call_args[0]
