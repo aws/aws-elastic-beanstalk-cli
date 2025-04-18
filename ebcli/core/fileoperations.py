@@ -15,7 +15,6 @@ import codecs
 import glob
 import json
 import os
-import pathlib
 import shutil
 import stat
 import sys
@@ -24,7 +23,6 @@ import yaml
 import zipfile
 
 from cement.utils.misc import minimal_logger
-from ebcli.core import fileoperations
 from ebcli.objects.buildconfiguration import BuildConfiguration
 from pathspec import PathSpec
 from six import StringIO
@@ -390,19 +388,14 @@ def delete_app_versions():
 def zip_append_archive(target_file, source_file):
     zip_source = zipfile.ZipFile(source_file, 'r', allowZip64=True)
     zip_target = zipfile.ZipFile(target_file, 'a', allowZip64=True)
-    # Because zipfile doesn't preserve file permission code, we have to extract and then zip up using shutil
-    tmp_folder_name = 'tmpAppendFolder'
     with warnings.catch_warnings():
         # Ignore UserWarning raised by zip module for zipping modules.
         warnings.simplefilter('ignore', category=UserWarning)
-        zip_source.extractall(tmp_folder_name)
-        zip_target.extractall(tmp_folder_name)
+        for filename in zip_source.namelist():
+            zf = zip_source.read(filename)
+            zip_target.writestr(filename, zf)
     zip_target.close()
     zip_source.close()
-    delete_file(target_file)
-    path_without_suffix = pathlib.Path(target_file).with_suffix('')
-    shutil.make_archive(path_without_suffix, 'zip', tmp_folder_name)
-    delete_directory(tmp_folder_name)
 
 
 def zip_up_folder(directory, location, ignore_list=None):
