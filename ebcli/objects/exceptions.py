@@ -209,3 +209,7 @@ class EndOfTestError(EOFError):
     Must not be raised in source code.
     """
     pass
+
+
+class NotAnEC2Instance(EBCLIException):
+    pass

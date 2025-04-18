@@ -223,8 +223,7 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'sstacks.notaversion': 'Elastic Beanstalk could not find any supported platforms for the '
                            'given version {version}.',
     'timeout.error': "The EB CLI timed out after {timeout_in_minutes} minute(s). The operation "
-                     "might still be running. To keep viewing events, run 'eb events -f'. To "
-                     "set timeout duration, use '--timeout MINUTES'.",
+                     "might still be running. To keep viewing events, run 'eb events -f'.",
     'sc.notfound': 'Git is not set up for this project. EB CLI will deploy a .zip file of the '
                    'entire directory.',
     'exit.platformworkspacenotsupported': 'This command is not supported outside Application workspaces.',
@@ -496,8 +495,6 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
                                     'attributes. Unable to continue with deployment.',
     'appversion.attribute.success': 'Found attributes for application version {app_version}',
 
-    'codecommit.nosc': 'Cannot setup CodeCommit because there is no Source Control setup, '
-                       'continuing with initialization',
     'codecommit.norepo': 'Repository does not exist in CodeCommit',
     'codecommit.nobranch': 'Branch does not exist in CodeCommit',
     'codecommit.badregion': 'AWS CodeCommit is not supported in this region; continuing '
@@ -707,6 +704,8 @@ prompts = {
                                                     'Would you like your new environment to use a shared load balancer?',
     'sharedlb.shared_load_balancer_prompt': 'Select a shared load balancer',
     'sharedlb.listener_prompt': 'Select a listener port for your shared load balancer',
+
+    'migrate.should_cleanup': 'Are you sure you would like to cleanup older artifacts within `./migrations/`?',
 }
 
 alerts = {
@@ -865,6 +864,64 @@ flag_text = {
             '  without --cloudwatch-logs (retrieve): instance | environment-health',
         ]
     ),
+
+    'migrate.sites': 'Specify a comma-separated list of IIS sites to migrate. If not specified,\n'
+                     'migrates all available sites on the server.',
+    'migrate.environment_name': 'Name for the new Elastic Beanstalk environment. Defaults to EBMigratedApp.',
+    'migrate.application_name': 'Name for the new Elastic Beanstalk application. Defaults to EBMigratedEnv.',
+
+    'migrate.platform': 'Elastic Beanstalk platform runtime for the environment. If not specified,\n'
+                        'automatically detected from host VM or application.\n'
+                        'Example: "64bit Windows Server 2016 v2.16.2 running IIS 10.0"',
+
+    'migrate.execution_role': 'IAM role for executing eb migrate. Uses credentials from:\n'
+                              '1. ~/.aws/config\n'
+                              '2. AWS CLI credential chain (if config not found)',
+    'migrate.instance_type': 'EC2 instance type for the Elastic Beanstalk environment. Defaults to c5.2xlarge.',
+    'migrate.cname': 'CNAME prefix for the Elastic Beanstalk environment.',
+    'migrate.instance_profile': 'Instance Profile to associate with the environment\'s EC2 instances.',
+    'migrate.service_role': 'IAM service role for Elastic Beanstalk to manage related AWS services.',
+    'migrate.ebs_snapshots': 'Comma-separated list of EBS snapshot IDs to associate with the environment.',
+    'migrate.stream_to_cloudwatch': 'Stream EB CLI debug logs and execution metrics to CloudWatch.',
+    'migrate.use_host_ebs_configuration': 'Generate EBS snapshots from volumes attached to the current instance.',
+    'migrate.keyname': 'EC2 key pair to enable SSH/RDP access to environment instances.\n'
+                       'Useful for investigating instance-level issues not visible in logs.',
+    'migrate.interactive': 'Force interactive mode for the migration process.',
+    'migrate.tags': 'Comma-separated list of key=value pairs to tag new resources:\n'
+                    '- Elastic Beanstalk application\n'
+                    '- Environment\n'
+                    '- Application version',
+    'migrate.copy_deps': 'Include all dependency DLLs in the environment, including those in Global\n'
+                         'Assembly Cache (GAC).',
+    'migrate.archive_only': 'Create only the destination archive directory without deployment.\n'
+                            'The resulting directory can be manually deployed following:\n'
+                            'https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/GettingStarted.DeployApp.html',
+    'migrate.on_prem_mode': 'Execute EB CLI in EC2-agnostic mode.',
+    'migrate.force': 'Force non-interactive mode for the migration process.',
+    'migrate.cleanup': 'Remove all previous migration artifacts from ./migrations/*\n'
+                       '            except ./migrations/latest/',
+    'migrate.explore': 'List all available IIS sites on this server.\n'
+                       'Use --verbose for detailed information.',
+    'migrate.copy_firewall_config': 'Copy source server firewall configuration to the destination\n'
+                                    'for all HTTP ports with active bindings.',
+    'migrate.encrypt_ebs_volumes': 'Enforce encryption for all new EBS volumes.\n'
+                                   'Note: This is an account-wide setting that affects all future\n'
+                                   'EBS volume creation.',
+    'migrate.ssl_certificate_arns': 'Comma-Separated list of Amazon Certificate Manager (ACM) SSL certificate\n'
+                                    'ARN to associate with the Application Load Balancer.',
+    'migrate.archive': 'The directory or the ZIP file containing source code that\n'
+                       '`eb migrate --archive-only` previously generated.',
+    'migrate.vpc_config': """VPC config for the environment either in the form of a JSON file or'
+a string. In both cases, config must have the format:
+    {
+        "id": "<VPC ID>",
+        "publicip": "true|false",
+        "elbscheme": "public|private",
+        "ec2subnets": [list of subnets IDs for the EC2 instances],
+        "securitygroups": [list of security group IDs],
+        "elbsubnets": [list of subnets IDs for the load balancer]
+    }
+""",
 
     'restore.env': 'The ID of the environment to restore',
 

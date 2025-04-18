@@ -32,6 +32,7 @@ from ebcli.controllers.lifecycle import LifecycleController
 from ebcli.controllers.list import ListController
 from ebcli.controllers.local import LocalController
 from ebcli.controllers.logs import LogsController
+from ebcli.controllers.migrate import MigrateController, MigrateExploreController, MigrateCleanupController
 from ebcli.controllers.open import OpenController
 from ebcli.controllers.platform import PlatformController
 from ebcli.controllers.platform.initialize import PlatformInitController
@@ -91,6 +92,9 @@ class EB(foundation.CementApp):
             ListController,
             LocalController,
             LogsController,
+            MigrateController,
+            MigrateExploreController,
+            MigrateCleanupController,
             OpenController,
             PlatformController,
             PrintEnvController,
