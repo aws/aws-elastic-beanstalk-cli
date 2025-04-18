@@ -146,7 +146,7 @@ def ensure_vpc_exists(vpc_id):
 
 
 # Function to get metadata
-def _get_instance_metadata(path):
+def get_instance_metadata(path):
     metadata_url = f"http://169.254.169.254/latest/meta-data/{path}"
     token_url = "http://169.254.169.254/latest/api/token"
 
@@ -175,14 +175,14 @@ def _is_timeout_exception(exception: urllib.error.URLError) -> bool:
 
 
 def get_current_instance_details():
-    instance_id = _get_instance_metadata('instance-id')
-    availability_zone = _get_instance_metadata('placement/availability-zone')
+    instance_id = get_instance_metadata('instance-id')
+    availability_zone = get_instance_metadata('placement/availability-zone')
     region = availability_zone[:-1]
     aws.set_region(region)
     fileoperations.write_config_setting('global', 'default_region', region)
-    mac_address = _get_instance_metadata('mac')
-    vpc_id = _get_instance_metadata(f'network/interfaces/macs/{mac_address}/vpc-id')
-    subnet_id = _get_instance_metadata(f'network/interfaces/macs/{mac_address}/subnet-id')
+    mac_address = get_instance_metadata('mac')
+    vpc_id = get_instance_metadata(f'network/interfaces/macs/{mac_address}/vpc-id')
+    subnet_id = get_instance_metadata(f'network/interfaces/macs/{mac_address}/subnet-id')
     try:
         ensure_vpc_exists(vpc_id)
         instance = describe_instance(instance_id=instance_id)

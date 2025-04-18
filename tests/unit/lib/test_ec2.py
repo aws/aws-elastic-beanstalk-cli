@@ -37,7 +37,7 @@ class TestEC2(unittest.TestCase):
         if os.path.exists(self.test_dir):
             shutil.rmtree(self.test_dir)
 
-    @mock.patch('ebcli.lib.ec2._get_instance_metadata')
+    @mock.patch('ebcli.lib.ec2.get_instance_metadata')
     @mock.patch('ebcli.lib.ec2.describe_instance')
     @mock.patch('ebcli.lib.ec2.ensure_vpc_exists')
     @mock.patch('ebcli.lib.ec2.aws.set_region')
@@ -101,7 +101,7 @@ class TestEC2(unittest.TestCase):
         describe_instance_mock.assert_called_once_with(instance_id='i-1234567890abcdef0')
         instance_tags_mock.assert_called_once_with('i-1234567890abcdef0')
 
-    @mock.patch('ebcli.lib.ec2._get_instance_metadata')
+    @mock.patch('ebcli.lib.ec2.get_instance_metadata')
     @mock.patch('ebcli.lib.ec2.describe_instance')
     @mock.patch('ebcli.lib.ec2.ensure_vpc_exists')
     @mock.patch('ebcli.lib.ec2.aws.set_region')
@@ -145,7 +145,7 @@ class TestEC2(unittest.TestCase):
         # Verify describe_instance was not called
         describe_instance_mock.assert_not_called()
 
-    @mock.patch('ebcli.lib.ec2._get_instance_metadata')
+    @mock.patch('ebcli.lib.ec2.get_instance_metadata')
     @mock.patch('ebcli.lib.ec2.describe_instance')
     @mock.patch('ebcli.lib.ec2.ensure_vpc_exists')
     @mock.patch('ebcli.lib.ec2.aws.set_region')
@@ -187,7 +187,7 @@ class TestEC2(unittest.TestCase):
         # Verify warning was logged - use the actual message from the code
         log_warning_mock.assert_called_once_with('Unable to retrieve details of instance, None')
 
-    @mock.patch('ebcli.lib.ec2._get_instance_metadata')
+    @mock.patch('ebcli.lib.ec2.get_instance_metadata')
     @mock.patch('ebcli.lib.ec2.describe_instance')
     @mock.patch('ebcli.lib.ec2.ensure_vpc_exists')
     @mock.patch('ebcli.lib.ec2.aws.set_region')
@@ -232,7 +232,7 @@ class TestEC2(unittest.TestCase):
         self.assertEqual('us-west-2', result['Region'])
         self.assertEqual([], result['Tags'])  # Tags should be empty due to exception
 
-    @mock.patch('ebcli.lib.ec2._get_instance_metadata')
+    @mock.patch('ebcli.lib.ec2.get_instance_metadata')
     def test_get_current_instance_details_not_an_ec2_instance(
         self,
         get_instance_metadata_mock
@@ -263,7 +263,7 @@ class TestEC2(unittest.TestCase):
         urlopen_mock.side_effect = [token_response_mock, metadata_response_mock]
         
         # Call the function
-        result = ec2._get_instance_metadata('instance-id')
+        result = ec2.get_instance_metadata('instance-id')
         
         # Verify result
         self.assertEqual('metadata-value', result)
@@ -288,7 +288,7 @@ class TestEC2(unittest.TestCase):
         
         # Call the function and expect exception
         with self.assertRaises(NotAnEC2Instance):
-            ec2._get_instance_metadata('instance-id')
+            ec2.get_instance_metadata('instance-id')
 
     @mock.patch('ebcli.lib.ec2.urllib.request.Request')
     @mock.patch('ebcli.lib.ec2.urllib.request.urlopen')
@@ -304,7 +304,7 @@ class TestEC2(unittest.TestCase):
         
         # Call the function and expect exception
         with self.assertRaises(NotAnEC2Instance):
-            ec2._get_instance_metadata('instance-id')
+            ec2.get_instance_metadata('instance-id')
 
     @mock.patch('ebcli.lib.ec2.urllib.request.Request')
     @mock.patch('ebcli.lib.ec2.urllib.request.urlopen')
@@ -319,7 +319,7 @@ class TestEC2(unittest.TestCase):
         
         # Call the function and expect exception
         with self.assertRaises(NotAnEC2Instance):
-            ec2._get_instance_metadata('instance-id')
+            ec2.get_instance_metadata('instance-id')
 
     @mock.patch('ebcli.lib.ec2.urllib.request.Request')
     @mock.patch('ebcli.lib.ec2.urllib.request.urlopen')
@@ -333,7 +333,7 @@ class TestEC2(unittest.TestCase):
         
         # Call the function and expect exception
         with self.assertRaises(ConnectionError):
-            ec2._get_instance_metadata('instance-id')
+            ec2.get_instance_metadata('instance-id')
 
     def test_is_timeout_exception_with_timeout_error(self):
         # Create a URLError with TimeoutError reason
