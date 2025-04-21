@@ -93,7 +93,7 @@ def initialize_codecommit():
         source_control_setup = False
 
     if not source_control_setup:
-        io.log_error("Cannot setup CodeCommit because there is no Source Control setup")
+        LOG.debug("Cannot setup CodeCommit because there is no Source Control setup")
         return
 
     if codecommit.region_supported():

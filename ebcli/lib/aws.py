@@ -25,6 +25,7 @@ from botocore.loaders import Loader
 from cement.utils.misc import minimal_logger
 
 from ebcli import __version__
+from ebcli.core import fileoperations
 from ebcli.lib.botopatch import apply_patches
 from ebcli.lib.utils import static_var
 from ebcli.objects.exceptions import ServiceError, NotAuthorizedError, \
@@ -198,6 +199,8 @@ def make_api_call(service_name, operation_name, **operation_options):
     region = _region_name
     if not region:
         region = 'default'
+    if region == 'placeholder':
+        set_region(fileoperations.get_config_setting('global', 'default_region'))
 
     attempt = 0
     while True:

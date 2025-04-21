@@ -91,6 +91,7 @@ def find_solution_stack_from_string(solution_string, find_newer=False):
         SolutionStack.match_with_solution_string_shorthand,
         SolutionStack.match_with_solution_string_language_name,
         SolutionStack.match_with_pythonified_solution_string,
+        SolutionStack.match_with_windows_server_version_string,
     ]:
         if not match:
             match = solution_string_matcher(available_solution_stacks, solution_string)

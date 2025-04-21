@@ -69,6 +69,7 @@ class namespaces(object):
 class option_names(object):
     BATCH_SIZE = 'BatchSize'
     BATCH_SIZE_TYPE = 'BatchSizeType'
+    BLOCK_DEVICE_MAPPINGS = 'BlockDeviceMappings'
     CONNECTION_DRAINING = 'ConnectionDrainingEnabled'
     CROSS_ZONE = 'CrossZone'
     DB_DELETION_POLICY = 'DBDeletionPolicy'

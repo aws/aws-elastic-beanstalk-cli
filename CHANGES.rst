@@ -2,6 +2,17 @@
 Changelog
 =========
 --------------------
+3.23.1 (2025-04-18)
+--------------------
+- Handle `eb migrate` execution failures on non-Windows machines gracefully
+
+--------------------
+3.23 (2025-04-18)
+--------------------
+- Declared dependency on blessed for Windows, Linux and macOS
+- Added `eb migrate` command to support migrations of IIS servers to Elastic Beanstalk: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/dotnet-migrating-applications.html
+
+--------------------
 3.22.1 (2025-04-17)
 --------------------
 - Added dependency on packaging `>=24.2,<25.0`

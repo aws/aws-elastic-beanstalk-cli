@@ -13,6 +13,7 @@
 import os
 import sys
 import time
+import typing
 from datetime import datetime, timedelta
 import platform
 import zipfile
@@ -532,9 +533,12 @@ def create_app_version(app_name, process=False, label=None, message=None, staged
                 file_name, file_path = _zip_up_project(
                     version_label, source_control, staged=staged)
             elif zipfile.is_zipfile(source_bundle):
+                if not label:
+                    label = f"{source_control.get_version_label()}.zip"
                 file_name, file_path = label, source_bundle
 
-    return handle_upload_target(app_name,
+    return handle_upload_target(
+        app_name,
         s3_bucket,
         s3_key,
         file_name,
@@ -1061,6 +1065,19 @@ def get_region(region_argument, interactive, force_non_interactive=False, platfo
         region = result.name
 
     return region
+
+
+def get_region_force_non_interactive(_platform: typing.Optional[str]) -> str:
+    region = None
+    if _platform:
+        region = PlatformVersion.get_region_from_platform_arn(_platform)
+
+    if region:
+        return region
+
+    # Choose defaults
+    region_list = get_all_regions()
+    return region_list[2].name
 
 
 def check_credentials(profile, given_profile, given_region, interactive, force_non_interactive):

@@ -431,6 +431,35 @@ class SolutionStack(object):
             if solution_stack.pythonify() == pythonified_solution_string.lower():
                 return solution_stack
 
+    @classmethod
+    def match_with_windows_server_version_string(
+            cls,
+            solution_stack_list,
+            windows_server_version_string
+    ):
+        if 'windows' not in windows_server_version_string.lower():
+            return
+        try:
+            version_substring = windows_server_version_string.split('Windows Server ')[1]
+            version_year = version_substring.split(' ')[0].strip()
+        except IndexError:
+            version_year = None
+            pass
+        good_match = None
+        better_match = None
+        for solution_stack in solution_stack_list:
+            if 'windows server' in solution_stack.name.lower():
+                good_match = solution_stack
+                if version_year and version_year in solution_stack.name:
+                    # if you already have non-core, stick to it
+                    if better_match and 'core' not in solution_stack.name.lower():
+                        better_match = solution_stack
+                    # set core or non-core since we don't have anything better than a "good" match
+                    elif not better_match:
+                        better_match = solution_stack
+
+        return better_match or good_match
+
     def __language_version(self, match_number=0):
         """
         Private method returns a the version number of language. If there are multiple versions,

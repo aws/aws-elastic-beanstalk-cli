@@ -213,7 +213,6 @@ class TestEventOps(unittest.TestCase):
         get_repository_interactive_mock.assert_not_called()
         get_branch_interactive_mock.assert_not_called()
         print_current_codecommit_settings_mock.assert_not_called()
-        log_error_mock.assert_called_once_with('Cannot setup CodeCommit because there is no Source Control setup')
 
     @mock.patch('ebcli.operations.gitops.get_repo_default_for_current_environment')
     def test_get_default_repository(

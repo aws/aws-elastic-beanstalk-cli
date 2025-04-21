@@ -55,8 +55,8 @@ extras_require = {
     ':sys_platform == "win32" and python_version >= "3.6"': 'pypiwin32==223',
 
 }
-if not sys.platform.startswith('win'):
-    requires.append('blessed>=1.20.0')
+if sys.platform.startswith('win'):
+    requires.append('pythonnet>=3.0.5,<4')
 
 
 setup_options = dict(
@@ -73,7 +73,8 @@ setup_options = dict(
     package_data={
         'ebcli.lib': ['botocoredata/*/*/*.json'],
         'ebcli.containers': ['containerfiles/*'],
-        'ebcli.labs': ['cloudwatchfiles/*.config']},
+        'ebcli.labs': ['cloudwatchfiles/*.config'],
+        'ebcli.controllers': ['migrate_scripts/*.ps1']},
     install_requires=requires,
     extras_require=extras_require,
     license="Apache License 2.0",

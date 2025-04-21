@@ -60,7 +60,9 @@ class CreateEnvironmentRequest(object):
                  elb_type=None, shared_lb=None, shared_lb_port=None, enable_spot=None, instance_types=None,
                  spot_max_price=None, on_demand_base_capacity=None,
                  on_demand_above_base_capacity=None, min_instances=None,
-                 max_instances=None):
+                 max_instances=None, block_device_mappings=None, listener_configs=None,
+                 description=None, load_balancer_security_group=None, ec2_security_group=None,
+                 ssl_certificate=None, root_volume=None):
         self.app_name = app_name
         self.cname = cname
         self.env_name = env_name
@@ -94,7 +96,7 @@ class CreateEnvironmentRequest(object):
         self.scale = None
         self.option_settings = []
         self.compiled = False
-        self.description = strings['env.description']
+        self.description = description or strings['env.description']
         self.enable_spot = enable_spot
         self.instance_types = instance_types
         self.spot_max_price = spot_max_price
@@ -102,6 +104,16 @@ class CreateEnvironmentRequest(object):
         self.on_demand_above_base_capacity = on_demand_above_base_capacity
         self.min_instances = min_instances
         self.max_instances = max_instances
+        self.block_device_mappings = block_device_mappings
+        self.ssl_certificate = ssl_certificate
+        if listener_configs:
+            self.merge_option_settings(listener_configs)
+        if load_balancer_security_group:
+            self.merge_option_settings([load_balancer_security_group])
+        if ec2_security_group:
+            security_groups_expressed_through_vpc_config = self.vpc and self.vpc.get('securitygroups')
+            if not security_groups_expressed_through_vpc_config :
+                self.merge_option_settings([ec2_security_group])
 
         if not self.app_name:
             raise TypeError(self.__class__.__name__ + ' requires key-word argument app_name')
@@ -113,6 +125,13 @@ class CreateEnvironmentRequest(object):
                 raise TypeError('key-word argument scale must be of type int')
             else:
                 self.scale = str(scale)
+        if ssl_certificate:
+            self.add_option_setting(
+                namespaces.LOAD_BALANCER_V2,
+                option_names.SSL_CERT_ID,
+                ssl_certificate)
+        if root_volume:
+            self.merge_option_settings(root_volume)
 
     def __eq__(self, other):
         self_dict = copy.deepcopy(self.__dict__)
@@ -138,6 +157,12 @@ class CreateEnvironmentRequest(object):
             setting['ResourceName'] = resource
 
         self.option_settings.append(setting)
+
+    def merge_option_settings(self, option_settings):
+        if not option_settings:
+            return
+        self.option_settings = self.option_settings or []
+        self.option_settings += option_settings
 
     def convert_to_kwargs(self):
         self.compile_option_settings()
@@ -245,6 +270,12 @@ class CreateEnvironmentRequest(object):
                 namespaces.ENVIRONMENT,
                 option_names.LOAD_BALANCER_TYPE,
                 self.elb_type)
+        if self.block_device_mappings:
+            self.add_option_setting(
+                namespaces.LAUNCH_CONFIGURATION,
+                option_names.BLOCK_DEVICE_MAPPINGS,
+                self.block_device_mappings
+            )
 
     def add_client_defaults(self):
         if self.template_name:
@@ -314,26 +345,26 @@ class CreateEnvironmentRequest(object):
         namespace = namespaces.VPC
         self.add_option_setting(namespace, option_names.VPC_ID,
                                 self.vpc['id'])
-        if self.vpc['publicip']:
+        if self.vpc.get('publicip'):
             self.add_option_setting(
                 namespace,
                 option_names.PUBLIC_IP,
                 self.vpc['publicip']
             )
-        if self.vpc['elbscheme']:
+        if self.vpc.get('elbscheme'):
             self.add_option_setting(namespace, option_names.ELB_SCHEME,
                                     self.vpc['elbscheme'])
-        if self.vpc['elbsubnets']:
+        if self.vpc.get('elbsubnets'):
             self.add_option_setting(namespace, option_names.ELB_SUBNETS,
                                     self.vpc['elbsubnets'])
-        if self.vpc['ec2subnets']:
+        if self.vpc.get('ec2subnets'):
             self.add_option_setting(namespace, option_names.SUBNETS,
                                     self.vpc['ec2subnets'])
-        if self.vpc['securitygroups']:
+        if self.vpc.get('securitygroups'):
             self.add_option_setting(namespaces.LAUNCH_CONFIGURATION,
                                     option_names.SECURITY_GROUPS,
                                     self.vpc['securitygroups'])
-        if self.vpc['dbsubnets']:
+        if self.vpc.get('dbsubnets'):
             self.add_option_setting(namespace, option_names.DB_SUBNETS,
                                     self.vpc['dbsubnets'])
 
