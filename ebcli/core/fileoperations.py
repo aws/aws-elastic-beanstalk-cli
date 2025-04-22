@@ -18,13 +18,13 @@ import os
 import shutil
 import stat
 import sys
-import warnings
-import yaml
 import zipfile
+import yaml
+import warnings
+from pathspec import PathSpec
 
 from cement.utils.misc import minimal_logger
 from ebcli.objects.buildconfiguration import BuildConfiguration
-from pathspec import PathSpec
 from six import StringIO
 from yaml import safe_load, safe_dump
 from yaml.parser import ParserError
@@ -431,6 +431,21 @@ def _zipdir(path, zipf, ignore_list=None):
         if '.elasticbeanstalk' in root:
             io.log_info('  -skipping: {}'.format(root))
             continue
+        for d in dirs:
+            cur_dir = os.path.join(root, d)
+            if os.path.islink(cur_dir):
+                # os.walk categorize symlinks-to-directories as dirs
+                # and we want to include symlinks in the zip
+                if cur_dir in ignore_list:
+                    io.log_info(' -skipping: {}'.format(cur_dir))
+                else:
+                    zipInfo = zipfile.ZipInfo()
+                    zipInfo.filename = os.path.join(root, d)
+
+                    # 2716663808L is the "magic code" for symlinks
+                    zipInfo.external_attr = 2716663808 if sys.version_info > (3,) else long(2716663808)
+
+                    zipf.writestr(zipInfo, os.readlink(cur_dir))
         for f in files:
             cur_file = os.path.join(root, f)
 
