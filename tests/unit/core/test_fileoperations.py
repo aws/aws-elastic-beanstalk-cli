@@ -717,16 +717,22 @@ ccc""",
     def test_zip_up_project(self, _validate_file_for_archive_mock):
         _validate_file_for_archive_mock.side_effect = lambda f: not f.endswith('.sock')
         shutil.rmtree('home', ignore_errors=True)
-        os.mkdir('ignore-me')
-        os.mkdir('linkme')
+        os.mkdir('ignoredir')
+        os.mkdir('linkdir')
         os.mkdir('src')
         os.mkdir(os.path.join('src', 'lib'))
-        open(os.path.join('src', 'lib', 'app.py'), 'w').write('import os')
-        open(os.path.join('src', 'lib', 'app.py~'), 'w').write('import os')
-        open(os.path.join('src', 'lib', 'ignore-this-file.py'), 'w').write('import os')
-        open(os.path.join('src', 'lib', 'test.sock'), 'w').write('mock socket file')
-        open(os.path.join('ignore-me', 'text.txt'), 'w').write('import os')
-        open(os.path.join('linkme', 'foobar.txt'), 'w').write('import os linkme')
+        with open(os.path.join('src', 'lib', 'app.py'), 'w') as f:
+            f.write('import os')
+        with open(os.path.join('src', 'lib', 'app.py~'), 'w') as f:
+            f.write('import os')
+        with open(os.path.join('src', 'lib', 'ignore-this-file.py'), 'w') as f:
+            f.write('import os')
+        with open(os.path.join('src', 'lib', 'test.sock'), 'w') as f:
+            f.write('mock socket file')
+        with open(os.path.join('ignoredir', 'ignoredfile.txt'), 'w') as f:
+            f.write('import os')
+        with open(os.path.join('linkdir', 'foobar.txt'), 'w') as f:
+            f.write('import os linkdir/foobar.txt')
 
         os.symlink(
             os.path.abspath(os.path.join('src', 'lib', 'app.py')),
@@ -742,8 +748,8 @@ ccc""",
                 target_is_directory=True
             )
             os.symlink(
-                os.path.abspath(os.path.join('linkme')),
-                os.path.abspath(os.path.join('ignore-me','linkme')),
+                os.path.abspath(os.path.join('linkdir')),
+                os.path.abspath(os.path.join('ignoredir', 'symlink-to-linkdir')),
                 target_is_directory=True
             )
         else:
@@ -751,12 +757,27 @@ ccc""",
                 os.path.join('src', 'lib', 'api'),
                 os.path.join('src', 'lib', 'api-copy')
             )
+            os.symlink(
+                os.path.abspath(os.path.join('linkdir')),
+                os.path.abspath(os.path.join('ignoredir', 'symlink-to-linkdir'))
+            )
 
-        open(os.path.join('src', 'lib', 'api', 'api.py'), 'w').write('import unittest')
+        with open(os.path.join('src', 'lib', 'api', 'api.py'), 'w') as f:
+            f.write('import unittest')
 
         fileoperations.zip_up_project(
             'app.zip',
-            ignore_list=[os.path.join('src', 'lib', 'ignore-this-file.py'), os.path.join('ignore-me/'), os.path.join('src', 'lib', 'api-copy')]
+            ignore_list=[
+                os.path.join('src', 'lib', 'ignore-this-file.py'),
+
+                # When a directory is specified in .ebignore, the directory itself and all of its
+                # contents (files and subdirectories) are automatically added to the ignore_list recursively
+                os.path.join('ignoredir'),
+                os.path.join('ignoredir', 'ignoredfile.txt'),
+                os.path.join('ignoredir', 'symlink-to-linkdir'),
+
+                os.path.join('src', 'lib', 'api-copy')
+            ]
         )
 
         os.mkdir('tmp')
@@ -769,7 +790,7 @@ ccc""",
         self.assertFalse(os.path.exists(os.path.join('tmp', 'src', 'lib', 'app.py~')))
         self.assertFalse(os.path.exists(os.path.join('tmp', 'src', 'lib', 'ignore-this-file.py')))
         self.assertFalse(os.path.exists(os.path.join('tmp', 'src', 'lib', 'test.sock')))
-        self.assertFalse(os.path.exists(os.path.join('tmp','ignore-me', 'link-me')))
+        self.assertFalse(os.path.exists(os.path.join('tmp', 'ignoredir', 'symlink-to-linkdir')))
 
     def test_delete_app_versions(self):
         os.mkdir(os.path.join('.elasticbeanstalk', 'app_versions'))
