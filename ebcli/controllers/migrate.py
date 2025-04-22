@@ -2674,8 +2674,8 @@ def get_listener_configs(sites: List["Site"], ssl_certificate_domain_name: str =
 
 
 def _create_process_option_settings(
-    process_protocol_mappings: dict[str, str],
-) -> list[dict]:
+    process_protocol_mappings: Dict[str, str],
+) -> List[dict]:
     """
     Create Elastic Beanstalk process option settings from process-protocol mappings.
 
@@ -2736,7 +2736,7 @@ def _create_process_option_settings(
 
 def _create_listener_settings(
     namespace: str, option_name_value_pairs: List[Tuple[str, str]]
-) -> list[dict]:
+) -> List[dict]:
     """
     Create Elastic Beanstalk listener option settings from name-value pairs.
 
@@ -2758,7 +2758,7 @@ def _create_listener_settings(
 
 def _create_http_listener_settings(
     default_process_name: str, rule_names: str
-) -> list[dict]:
+) -> List[dict]:
     """
     Create HTTP listener configuration settings for Elastic Beanstalk.
 
@@ -2788,7 +2788,7 @@ def _create_http_listener_settings(
 
 def _create_https_listener_settings(
     default_process_name: str, rule_names: str, ssl_cert: str
-) -> list[dict]:
+) -> List[dict]:
     """
     Create HTTPS listener configuration settings for Elastic Beanstalk.
 
@@ -2819,12 +2819,12 @@ def _create_https_listener_settings(
     return _create_listener_settings("aws:elbv2:listener:443", option_name_value_pairs)
 
 
-def _extract_and_join_rule_names(option_settings: list[dict]) -> str:
+def _extract_and_join_rule_names(option_settings: List[dict]) -> str:
     rule_names = {option["Namespace"].split(":")[-1] for option in option_settings}
     return ",".join(sorted(rule_names))
 
 
-def _extract_process_values(option_settings: list[dict]) -> set[str]:
+def _extract_process_values(option_settings: List[dict]) -> Set[str]:
     return {
         setting["Value"]
         for setting in option_settings
@@ -3241,7 +3241,7 @@ def _process_url_rewrite_rule(rule, processed_patterns, site, target_groups, iis
 
 
 def _create_rewrite_rule(
-    conditions: List[Dict[str, str | List[str]]], target_group_arn: str, protocol: str
+    conditions: List[Dict[str, Union[str , List[str]]]], target_group_arn: str, protocol: str
 ) -> Dict[str, Any]:
     return {
         "Conditions": conditions,
