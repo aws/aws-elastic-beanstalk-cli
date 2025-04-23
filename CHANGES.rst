@@ -2,6 +2,12 @@
 Changelog
 =========
 --------------------
+3.23.2 (2025-04-22)
+--------------------
+- Fixed bug in Python 3.8 due to incompatible type specification
+- Fixed bug that caused omission of symlinks-to-directories during application version creation
+
+--------------------
 3.23.1 (2025-04-18)
 --------------------
 - Handle `eb migrate` execution failures on non-Windows machines gracefully
