@@ -2,6 +2,11 @@
 Changelog
 =========
 --------------------
+3.23.3 (2025-05-01)
+--------------------
+- Fixed bug that causes eb on non-IIS server Windows machines to crash
+
+--------------------
 3.23.2 (2025-04-22)
 --------------------
 - Fixed bug in Python 3.8 due to incompatible type specification

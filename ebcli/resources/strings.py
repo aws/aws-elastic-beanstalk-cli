@@ -705,7 +705,9 @@ prompts = {
     'sharedlb.shared_load_balancer_prompt': 'Select a shared load balancer',
     'sharedlb.listener_prompt': 'Select a listener port for your shared load balancer',
 
-    'migrate.should_cleanup': 'Are you sure you would like to cleanup older artifacts within `./migrations/`?',
+    'migrate.should_cleanup': "Are you sure you want to clean up older artifacts within the\n"
+                              "'./migrations/directory'? The most recent successful migration\n"
+                              "in directory './migrations/latest' will be preserved.",
 }
 
 alerts = {
@@ -867,26 +869,28 @@ flag_text = {
 
     'migrate.sites': 'Specify a comma-separated list of IIS sites to migrate. If not specified,\n'
                      'migrates all available sites on the server.',
-    'migrate.environment_name': 'Name for the new Elastic Beanstalk environment. Defaults to EBMigratedApp.',
-    'migrate.application_name': 'Name for the new Elastic Beanstalk application. Defaults to EBMigratedEnv.',
+    'migrate.environment_name': 'Name for the new Elastic Beanstalk environment. Defaults to EBMigratedEnv.',
+    'migrate.application_name': 'Name for the new Elastic Beanstalk application. Defaults to EBMigratedApp.',
 
     'migrate.platform': 'Elastic Beanstalk platform runtime for the environment. If not specified,\n'
                         'automatically detected from host VM or application.\n'
-                        'Example: "64bit Windows Server 2016 v2.16.2 running IIS 10.0"',
+                        'Example: "64bit Windows Server 2016 v2.16.2 running IIS 10.0".'
+                        "For a list of available platform versions, use the command 'eb platform list'.",
 
     'migrate.execution_role': 'IAM role for executing eb migrate. Uses credentials from:\n'
                               '1. ~/.aws/config\n'
                               '2. AWS CLI credential chain (if config not found)',
     'migrate.instance_type': 'EC2 instance type for the Elastic Beanstalk environment. Defaults to c5.2xlarge.',
     'migrate.cname': 'CNAME prefix for the Elastic Beanstalk environment.',
-    'migrate.instance_profile': 'Instance Profile to associate with the environment\'s EC2 instances.',
-    'migrate.service_role': 'IAM service role for Elastic Beanstalk to manage related AWS services.',
+    'migrate.instance_profile': 'Instance Profile to associate with the EC2 instances running on the environment.',
+    'migrate.service_role': 'The name of the IAM service role for Elastic Beanstalk to manage related AWS services.\n '
+                            'If not specified, creates a default service role with necessary permissions.',
     'migrate.ebs_snapshots': 'Comma-separated list of EBS snapshot IDs to associate with the environment.',
     'migrate.stream_to_cloudwatch': 'Stream EB CLI debug logs and execution metrics to CloudWatch.',
     'migrate.use_host_ebs_configuration': 'Generate EBS snapshots from volumes attached to the current instance.',
     'migrate.keyname': 'EC2 key pair to enable SSH/RDP access to environment instances.\n'
                        'Useful for investigating instance-level issues not visible in logs.',
-    'migrate.interactive': 'Force interactive mode for the migration process.',
+    'migrate.interactive': 'Force interactive mode for the migration process. Prompts for configuration values even when defaults are available.',
     'migrate.tags': 'Comma-separated list of key=value pairs to tag new resources:\n'
                     '- Elastic Beanstalk application\n'
                     '- Environment\n'
@@ -907,10 +911,11 @@ flag_text = {
     'migrate.encrypt_ebs_volumes': 'Enforce encryption for all new EBS volumes.\n'
                                    'Note: This is an account-wide setting that affects all future\n'
                                    'EBS volume creation.',
-    'migrate.ssl_certificate_arns': 'Comma-Separated list of Amazon Certificate Manager (ACM) SSL certificate\n'
+    'migrate.ssl_certificate_arns': 'Comma-separated list of ARNs for Amazon Certificate Manager (ACM) SSL certificate\n'
                                     'ARN to associate with the Application Load Balancer.',
     'migrate.archive': 'The directory or the ZIP file containing source code that\n'
-                       '`eb migrate --archive-only` previously generated.',
+                       '`eb migrate --archive-only` previously generated. Use this\n'
+                       'option to deploy a previously created migration package.',
     'migrate.vpc_config': """VPC config for the environment either in the form of a JSON file or'
 a string. In both cases, config must have the format:
     {

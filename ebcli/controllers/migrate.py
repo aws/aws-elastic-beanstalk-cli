@@ -116,7 +116,7 @@ class MigrateController(AbstractBaseController):
     class Meta:
         argument_formatter = argparse.RawTextHelpFormatter
         label = "migrate"
-        description = "This is an experimental command that enables you to migrate an IIS site from a source machine to Elastic Beanstalk"
+        description = "This command migrates an IIS site or application from a source Windows machine to an environment hosted on AWS Elastic Beanstalk."
         usage = "eb migrate [options ...]"
         arguments = [
             (["-s", "--sites"], dict(help=flag_text["migrate.sites"])),
@@ -595,7 +595,7 @@ def generate_upload_target_archive(upload_target_dir, env_name, region):
     except NotFoundError:
         io.echo(
             f"\nGenerated destination archive directory at .\\{relative_normalized_upload_target_dir_path}.zip. "
-            "You can create en environment with the zip using:\n\n"
+            "You can create an environment with the zip using:\n\n"
             f"    eb migrate --environment-name {env_name} --archive .\\migrations\\latest\\upload_target.zip --region {region}\n"
         )
 
@@ -1078,7 +1078,7 @@ def setup_migrations_dir(verbose: bool) -> str:
         )
         io.echo(f"  .\\{relative_normalized_path}\\error.log -> msbuild.exe error logs")
         io.echo(
-            f"  .\\{relative_normalized_path}\\upload_target\\ -> destination archive dir"
+            f"  .\\{relative_normalized_path}\\upload_target\\ -> destination archive directory"
         )
     return latest_migration_run_path
 
@@ -1613,7 +1613,7 @@ def do_ms_deploy_sync_application(
     else:
         io.log_error(f"MSDeploy process exited with code {process.ExitCode}.")
         raise RuntimeError(
-            f"MSDeploy process exited with code {process.ExitCode}. You can find execution logs at .\\migrations\\latest\\error.log')"
+            f"MSDeploy process exited with code {process.ExitCode}. You can find execution logs at .\\migrations\\latest\\error.log"
         )
 
 
@@ -1761,8 +1761,7 @@ def warn_about_password_protection(site, application):
         for vdir in application.VirtualDirectories:
             if vdir.Password:
                 io.log_warning(
-                    f"{_iis_application_name_value} is hosted at {vdir.PhysicalPath} "
-                    "which is password-protected and won't be copied."
+                    f"Cannot copy virtual directory associated with site because it is password protected: Site [{site.Name}/{_iis_application_name_value}], Path hosting:[{vdir.PhysicalPath}]"
                 )
     except AttributeError:
         pass
@@ -1891,7 +1890,7 @@ def export_arr_config(upload_target_dir: str, verbose: bool) -> None:
         "system.webServer/caching",
     ]
     if not _arr_enabled() and verbose:
-        io.echo("No Automatic Request Routing configuration found.")
+        io.echo("No Automatic Request Routing (ARR) configuration found.")
         return
     else:
         io.echo("Automatic Request Routing (ARR) configuration found.")
