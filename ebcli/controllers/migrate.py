@@ -24,33 +24,39 @@ import collections
 import json
 import argparse
 
+IIS_MODULES_ARE_AVAILABLE = False
 if sys.platform.startswith("win"):
     import winreg
     import clr
     import win32com.client
 
-    clr.AddReference("System.Reflection")
-    clr.AddReference(r"C:\Windows\System32\inetsrv\Microsoft.Web.Administration.dll")
-    clr.AddReference("System")
-    clr.AddReference("System.Core")
-    clr.AddReference("System.DirectoryServices.AccountManagement")
-    from System.DirectoryServices.AccountManagement import (
-        PrincipalContext,
-        ContextType,
-        UserPrincipal,
-        PrincipalSearcher,
-    )
-    from System.Collections.Generic import HashSet, Queue
-    from System.Reflection import Assembly
-    from Microsoft.Web.Administration import (
-        ServerManager,
-        Binding,
-        Site,
-        Application,
-        ObjectState,
-    )
-    from System.Diagnostics import Process, ProcessStartInfo
-    from System.Runtime.InteropServices import COMException
+    try:
+        clr.AddReference("System.Reflection")
+        clr.AddReference(r"C:\Windows\System32\inetsrv\Microsoft.Web.Administration.dll")
+        clr.AddReference("System")
+        clr.AddReference("System.Core")
+        clr.AddReference("System.DirectoryServices.AccountManagement")
+        from System.DirectoryServices.AccountManagement import (
+            PrincipalContext,
+            ContextType,
+            UserPrincipal,
+            PrincipalSearcher,
+        )
+        from System.Collections.Generic import HashSet, Queue
+        from System.Reflection import Assembly
+        from Microsoft.Web.Administration import (
+            ServerManager,
+            Binding,
+            Site,
+            Application,
+            ObjectState,
+        )
+        from System.Diagnostics import Process, ProcessStartInfo
+        from System.Runtime.InteropServices import COMException
+
+        IIS_MODULES_ARE_AVAILABLE = True
+    except Exception as e:
+        print(f"Failed to import DLL or MS Server Python module. Sure necessary modules are installed and enabled on your server: {e}")
 
 from cement.utils.misc import minimal_logger
 
@@ -84,6 +90,8 @@ class MigrateExploreController(AbstractBaseController):
     def do_command(self):
         if not sys.platform.startswith("win"):
             raise NotSupportedError("'eb migrate explore' is only supported on Windows")
+        if not IIS_MODULES_ARE_AVAILABLE:
+            raise NotSupportedError("'eb migrate explore' couldn't find one or more IIS modules or features. Ensure access to Microsoft.Web.Administration.dll")
         verbose = self.app.pargs.verbose
 
         if verbose:
@@ -107,6 +115,8 @@ class MigrateCleanupController(AbstractBaseController):
     def do_command(self):
         if not sys.platform.startswith("win"):
             raise NotSupportedError("'eb migrate cleanup' is only supported on Windows")
+        if not IIS_MODULES_ARE_AVAILABLE:
+            raise NotSupportedError("'eb migrate explore' couldn't find one or more IIS modules or features. Ensure access to Microsoft.Web.Administration.dll")
         force = self.app.pargs.force
         cleanup_previous_migration_artifacts(force, self.app.pargs.verbose)
 
@@ -281,6 +291,8 @@ class MigrateController(AbstractBaseController):
     def do_command(self):
         if not sys.platform.startswith("win"):
             raise NotSupportedError("'eb migrate' is only supported on Windows")
+        if not IIS_MODULES_ARE_AVAILABLE:
+            raise NotSupportedError("'eb migrate explore' couldn't find one or more IIS modules or features. Ensure access to Microsoft.Web.Administration.dll")
         validate_iis_version_greater_than_7_0()
         verbose = self.app.pargs.verbose
 
