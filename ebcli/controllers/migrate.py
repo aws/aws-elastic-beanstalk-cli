@@ -23,6 +23,8 @@ from typing import Dict, List, Any, Union, Optional, Tuple, Set
 import collections
 import json
 import argparse
+from fabric import Connection
+import base64
 
 if sys.platform.startswith("win"):
     import winreg
@@ -181,6 +183,23 @@ class MigrateController(AbstractBaseController):
             ),
             (["--archive"], dict(help=flag_text["migrate.archive"])),
             (["-vpc", "--vpc-config"], dict(help=flag_text["migrate.vpc_config"])),
+
+            (
+                ["--remote"],
+                dict(action="store_true", help="Enable remote execution mode for IIS site discovery"),
+            ),
+            (
+                ["--target-ip"],
+                dict(help="IP address of the remote machine for IIS site discovery"),
+            ),
+            (
+                ["--username"],
+                dict(help="Username for authentication on the remote machine"),
+            ),
+            (
+                ["--password"],
+                dict(help="Password for authentication on the remote machine"),
+            ),
             # TODO: support userdata copy using robocopy
         ]
 
@@ -278,10 +297,76 @@ class MigrateController(AbstractBaseController):
         with open(manifest_file_path, "w") as file:
             json.dump(manifest_contents, file, indent=4)
 
+    def generate_ms_deploy_source_bundle_remote(
+            self,
+            remote_connection,
+            site,
+            destination,
+            destination_remote,
+            verbose,
+            additional_virtual_dir_physical_paths=[]
+    ):
+        # destination
+        # |- upload_target
+        # |  |-- source1.zip
+        # |  |-- source2.zip
+        # |  |-- ...
+        # |  |-- manifest.json
+        # |  |-- <other util ps1 files>
+        # |
+        # |-- upload_target.zip
+        if verbose:
+            io.echo(f"Generating source bundle for {site.Name}")
+        upload_target_dir = os.path.join(destination, 'upload_target')
+        os.makedirs(upload_target_dir, exist_ok=True)
+        os.makedirs(os.path.join(upload_target_dir, 'ebmigrateScripts'), exist_ok=True)
+
+        bundle_dir_remote = windows_path_join(destination_remote, 'bundle')
+        upload_target_dir_remote = windows_path_join(destination_remote, 'upload_target')
+        manifest_file_path = os.path.join(upload_target_dir, "aws-windows-deployment-manifest.json")
+
+        create_migration_folders_remote(remote_connection, bundle_dir_remote, upload_target_dir_remote)
+
+        relative_normalized_manifest_path = absolute_to_relative_normalized_path(manifest_file_path)
+        if os.path.exists(manifest_file_path):
+            if verbose:
+                io.echo(f"  Updating {relative_normalized_manifest_path}")
+            with open(manifest_file_path) as file:
+                manifest_contents = json.load(file)
+        else:
+            manifest_contents = {
+                'manifestVersion': 1,
+                'deployments': {
+                    'msDeploy': [],
+                    'custom': []
+                }
+            }
+
+        for application in site.Applications:
+            warn_about_password_protection(site, application)
+            ms_deploy_sync_application_remote(
+                remote_connection,
+                site,
+                application,
+                destination,
+                destination_remote,
+                upload_target_dir,
+                upload_target_dir_remote,
+                manifest_contents
+            )
+            for vdir in application.VirtualDirectories:
+                if vdir.Path != '/':
+                    additional_virtual_dir_physical_paths.append(vdir.PhysicalPath)
+        if verbose:
+            io.echo(f"Updating manifest file for archive at {relative_normalized_manifest_path}")
+        with open(manifest_file_path, 'w') as file:
+            json.dump(manifest_contents, file, indent=4)
+
     def do_command(self):
-        if not sys.platform.startswith("win"):
+        remote = self.app.pargs.remote
+        if not remote and not sys.platform.startswith("win"):
             raise NotSupportedError("'eb migrate' is only supported on Windows")
-        validate_iis_version_greater_than_7_0()
+
         verbose = self.app.pargs.verbose
 
         site_names = self.app.pargs.sites
@@ -304,24 +389,57 @@ class MigrateController(AbstractBaseController):
         encrypt_ebs_volumes = self.app.pargs.encrypt_ebs_volumes
         ssl_certificate = self.app.pargs.ssl_certificates
         archive = self.app.pargs.archive
+
+        target_ip = self.app.pargs.target_ip
+        username = self.app.pargs.username
+        password = self.app.pargs.password
+
+
+        
+        # Validate remote execution parameters
+        if remote:
+            if not target_ip:
+                raise ValueError("--target-ip is required when using --remote")
+            if not username:
+                raise ValueError("--username is required when using --remote")
+            if not password:
+                raise ValueError("--password is required when using --remote")
+                
         if archive and archive_only:
             raise ValueError("Cannot use --archive-only with --archive-dir together.")
         vpc_config = self.app.pargs.vpc_config
 
-        sites = establish_candidate_sites(site_names, interactive)
+        if remote:
+            remote_connection = initialize_ssh_connection(target_ip, username, password)
+        else:
+            remote_connection = None
+
+        if remote:
+            validate_iis_and_powershell_remote(remote_connection)
+        else:
+            validate_iis_version_greater_than_7_0()
+
+        if remote:
+            sites = populate_site_data_remote(remote_connection,
+                                      establish_candidate_sites_remote(remote_connection, site_names))
+        else:
+            sites = establish_candidate_sites(site_names, interactive)
+
         on_an_ec2_instance = True
+        environment_vpc, _region, instance_id, instance_tags = (
+            dict(),
+            None,
+            list(),
+            None,
+        )
+
         try:
-            environment_vpc, _region, instance_id, instance_tags = (
-                construct_environment_vpc_config(on_prem_mode, verbose)
-            )
-            on_an_ec2_instance = not not instance_id
+            if not remote:
+                environment_vpc, _region, instance_id, instance_tags = (
+                    construct_environment_vpc_config(on_prem_mode, verbose)
+                )
+                on_an_ec2_instance = not not instance_id
         except NotAnEC2Instance:
-            environment_vpc, _region, instance_id, instance_tags = (
-                dict(),
-                None,
-                list(),
-                None,
-            )
             on_an_ec2_instance = False
         if vpc_config:
             environment_vpc = load_environment_vpc_from_vpc_config(vpc_config)
@@ -333,16 +451,21 @@ class MigrateController(AbstractBaseController):
 
         app_name = establish_app_name(app_name, interactive, sites)
         env_name = establish_env_name(env_name, app_name, interactive, sites)
-        platform = establish_platform(platform, interactive)
+        platform = establish_platform_remote(remote_connection) if remote else establish_platform(platform, interactive)
         process_keyname(keyname)
 
         listener_configs = []
-        if not _arr_enabled():
-            listener_configs = get_listener_configs(sites, ssl_certificate)
+        if remote and not _arr_enabled_remote(remote_connection):
+            listener_configs = get_listener_configs(sites, remote, remote_connection, ssl_certificate)
+
+        if not remote and not _arr_enabled():
+            listener_configs = get_listener_configs(sites, remote, remote_connection, ssl_certificate)
+
         all_ports = get_all_ports(sites)
+
         ec2_security_group = None
         load_balancer_security_group = None
-        if on_an_ec2_instance and copy_firewall_config:
+        if on_an_ec2_instance and copy_firewall_config and not remote:
             load_balancer_security_group, ec2_security_group = (
                 ec2.establish_security_group(all_ports, env_name, environment_vpc["id"])
             )
@@ -353,16 +476,31 @@ class MigrateController(AbstractBaseController):
         if not archive:
             latest_migration_run_path = setup_migrations_dir(verbose)
             upload_target_dir = os.path.join(latest_migration_run_path, "upload_target")
-            os.makedirs(upload_target_dir, exist_ok=True)
-            self.package_sites(
-                sites, latest_migration_run_path, upload_target_dir, verbose
-            )
-            write_ebdeploy_utility_script(upload_target_dir)
-            if _arr_enabled():
-                export_arr_config(upload_target_dir, verbose)
-            if copy_firewall_config:
-                write_copy_firewall_config_script(upload_target_dir, sites)
-            fileoperations.zip_up_folder(upload_target_dir, upload_target_zip_path())
+            if remote:
+                latest_migration_run_path_remote = setup_migrations_dir_remote(remote_connection)
+                upload_target_dir_remote = windows_path_join(latest_migration_run_path, 'upload_target')
+                os.makedirs(upload_target_dir, exist_ok=True)
+                self.package_sites_remote(remote_connection, sites, latest_migration_run_path,
+                                          latest_migration_run_path_remote, upload_target_dir, upload_target_dir_remote,
+                                          verbose)
+                import_packaged_sites_from_remote(remote_connection, latest_migration_run_path_remote, upload_target_dir)
+                write_ebdeploy_utility_script(upload_target_dir)
+                if _arr_enabled_remote(remote_connection):
+                    export_arr_config_remote(remote_connection, upload_target_dir, verbose)
+                if copy_firewall_config:
+                    write_copy_firewall_config_script(upload_target_dir, sites)
+                fileoperations.zip_up_folder(upload_target_dir, upload_target_zip_path())
+            else:
+                os.makedirs(upload_target_dir, exist_ok=True)
+                self.package_sites(
+                    sites, latest_migration_run_path, upload_target_dir, verbose
+                )
+                write_ebdeploy_utility_script(upload_target_dir)
+                if _arr_enabled():
+                    export_arr_config(upload_target_dir, verbose)
+                if copy_firewall_config:
+                    write_copy_firewall_config_script(upload_target_dir, sites)
+                fileoperations.zip_up_folder(upload_target_dir, upload_target_zip_path())
         else:
             if zipfile.is_zipfile(archive):
                 source_bundle_zip = archive
@@ -375,6 +513,7 @@ class MigrateController(AbstractBaseController):
                 fileoperations.zip_up_folder(
                     upload_target_dir, upload_target_zip_path()
                 )
+
         if listener_configs and latest_migration_run_path:
             with open(
                 os.path.join(latest_migration_run_path, "listener_configs.json"), "w"
@@ -404,6 +543,7 @@ class MigrateController(AbstractBaseController):
             load_balancer_security_group=load_balancer_security_group,
             interactive=interactive,
         )
+
         # -------------------------------------------------------------------------------
         # proceed to create application version and the EB environment beyond this point
         # -------------------------------------------------------------------------------
@@ -536,6 +676,85 @@ class MigrateController(AbstractBaseController):
             )
             add_virtual_directory_custom_script_to_manifest(upload_target_dir)
 
+    def package_sites_remote(self, remote_connection, sites, latest_migration_run_path, latest_migration_run_path_remote, upload_target_dir, upload_target_dir_remote, verbose):
+        additional_virtual_dir_physical_paths = []
+        if not verbose:
+            command_separated_sites_list = ', '.join([s.Name for s in sites])
+            io.echo(f"Generating source bundle for sites, applications, and virtual directories: [{command_separated_sites_list}]")
+        for site in sites:
+            self.generate_ms_deploy_source_bundle_remote(
+                remote_connection,
+                site,
+                destination=latest_migration_run_path,
+                destination_remote=latest_migration_run_path_remote,
+                verbose=verbose,
+                additional_virtual_dir_physical_paths=additional_virtual_dir_physical_paths
+            )
+
+        create_noop_ps1_script(upload_target_dir)
+        if additional_virtual_dir_physical_paths:
+            create_virtualdir_path_permission_script(additional_virtual_dir_physical_paths, upload_target_dir)
+            add_virtual_directory_custom_script_to_manifest(upload_target_dir)
+
+
+def import_packaged_sites_from_remote(remote_connection, latest_migration_run_path_remote, upload_target_dir):
+    upload_target_dir_remote = latest_migration_run_path_remote + "/upload_target"
+    remote_directory = convert_to_ssh_path(upload_target_dir_remote)
+    local_directory = upload_target_dir
+
+    remote_directory = remote_directory.replace('/', '\\').strip('\\')
+    if remote_directory.startswith('\\'):
+        remote_directory = remote_directory[1:]
+
+    try:
+        result = remote_connection.run(f'powershell -Command "Get-ChildItem -Path \"{remote_directory}\" -Filter *.zip | Select-Object -ExpandProperty Name"', hide=True)
+
+        filenames = [f.strip().rstrip('?') for f in result.stdout.strip().split('\n') if f.strip()]
+
+        for filename in filenames:
+            temp_remote_file = remote_directory+"/"+filename
+            temp_remote_file_normalized = convert_to_ssh_path(temp_remote_file)
+            local_file_path = os.path.join(local_directory, filename)
+
+            try:
+                remote_connection.get(temp_remote_file_normalized, local_file_path)
+            except Exception as e:
+                io.echo(f"Failed to download {filename}: {e}")
+                continue
+
+        # Now handle folders containing zip files
+        folder_result = remote_connection.run(
+            f'powershell -Command "Get-ChildItem -LiteralPath \'{remote_directory}\' -Directory | Select-Object -ExpandProperty Name"',
+            hide=True)
+        folders = [f.strip() for f in folder_result.stdout.strip().split('\n') if f.strip()]
+
+        for folder in folders:
+            # Create the local folder
+            local_folder_path = os.path.join(local_directory, folder)
+            os.makedirs(local_folder_path, exist_ok=True)
+
+            # Get zip files in this folder
+            zip_result = remote_connection.run(
+                f'powershell -Command "Get-ChildItem -LiteralPath \'{remote_directory}\\{folder}\' -Filter *.zip | Select-Object -ExpandProperty Name"',
+                hide=True)
+            zip_files = [f.strip() for f in zip_result.stdout.strip().split('\n') if f.strip()]
+
+            for zip_file in zip_files:
+                remote_zip_path = f"{remote_directory}\\{folder}\\{zip_file}"
+                remote_zip_path_normalized = convert_to_ssh_path(remote_zip_path)
+                local_zip_path = os.path.join(local_folder_path, zip_file)
+
+                try:
+                    remote_connection.get(remote_zip_path_normalized, local_zip_path)
+                except Exception as e:
+                    io.echo(f"Failed to download {zip_file} in folder {folder}: {e}")
+                    continue
+
+    except Exception as e:
+        io.echo(f"Error during file download: {str(e)}")
+        raise
+
+    return True
 
 def get_all_ports(sites):
     all_ports = set()
@@ -650,6 +869,12 @@ def establish_platform(platform, interactive):
         platform = _determine_platform(platform)
     LOG.debug("Writing platform_name to .elasticbeanstalk/config")
     fileoperations.write_config_setting("global", "platform_name", platform.name)
+    return platform
+
+def establish_platform_remote(remote_connection):
+    io.echo("Determining EB platform based on remote machine properties")
+    platform = _determine_platform(platform_string=get_windows_server_version_remote(remote_connection))
+
     return platform
 
 
@@ -779,6 +1004,175 @@ def establish_candidate_sites(
             "`eb migrate` failed because there are no sites on this IIS server."
         )
     return sites
+
+def establish_candidate_sites_remote(remote_connection, site_names):
+    ps_command = '''
+    Import-Module WebAdministration
+    Get-Website | Select-Object -ExpandProperty Name | ForEach-Object {
+        Write-Host $_
+    }
+    '''
+    command_bytes = ps_command.encode('utf-16le')
+    encoded_command = base64.b64encode(command_bytes).decode()
+    result = remote_connection.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command}', hide=True)
+    output = result.stdout.strip()
+
+    available_sites = [site for site in output.split('\n') if site.strip()]
+
+    if not available_sites:
+        raise EnvironmentError(
+            "`eb migrate` failed because there are no sites on this IIS server."
+        )
+
+    if site_names:
+        site_names = site_names.split(",")
+        sites = []
+
+        for site_name in site_names:
+            if site_name not in available_sites:
+                raise ValueError(
+                    f"Specified site, '{site_name}', does not exist. Available sites: [{', '.join(available_sites)}]"
+                )
+            sites.append(site_name)
+        return sites
+    else:
+        return available_sites
+
+def populate_site_data_remote(remote_connection, site_names):
+    sites = []
+    for name in site_names:
+        sites.append(get_site_remote(remote_connection, name))
+
+    return sites
+
+def get_site_remote(c, site_name) -> None:
+    ps_command = f"""
+    Import-Module WebAdministration
+    $site = Get-Item "IIS:\\Sites\\{site_name}"
+    $config = Get-WebConfiguration -Filter "system.webServer/httpProtocol/customHeaders" -PSPath "IIS:\\Sites\\{site_name}"
+    $hsts = $config.Collection | Where-Object {{ $_.ElementTagName -eq 'add' -and $_.Attributes['name'].Value -eq 'Strict-Transport-Security' }}
+    $bindings = Get-WebBinding -Name "{site_name}"
+
+    $rootVDirs = @(Get-WebConfiguration "/system.applicationHost/sites/site[@name='{site_name}']/application[@path='/']/virtualDirectory" | ForEach-Object {{
+        @{{
+            Path = $_.GetAttributeValue("path")
+            PhysicalPath = $_.GetAttributeValue("physicalPath")
+        }}
+    }})
+
+    $rootApp = @{{
+        Path = "/"
+        ApplicationPoolName = $site.applicationPool
+        PhysicalPath = $site.PhysicalPath
+        VirtualDirectories = $rootVDirs
+    }}
+
+    $applications = Get-WebApplication -Site "{site_name}" | ForEach-Object {{
+        $appPath = $_.path
+        $appVDirs = @(Get-WebConfiguration "/system.applicationHost/sites/site[@name='{site_name}']/application[@path='$appPath']/virtualDirectory" | ForEach-Object {{
+            @{{
+                Path = $_.GetAttributeValue("path")
+                PhysicalPath = $_.GetAttributeValue("physicalPath")
+            }}
+        }})
+
+        @{{
+            Path = $appPath
+            ApplicationPoolName = $_.applicationPool
+            PhysicalPath = $_.PhysicalPath
+            VirtualDirectories = $appVDirs
+        }}
+    }}
+
+    $allApplications = @($rootApp) + @($applications)
+
+    $result = @{{
+        Name = $site.Name
+        Attributes = @($site.Attributes | ForEach-Object {{ @{{ Name = $_.Name; Value = $_.Value }} }})
+        Bindings = @($bindings | ForEach-Object {{
+            $bindingInfo = $_.bindingInformation -split ':'
+            $hostValue = if ($bindingInfo[2] -eq '') {{ '*' }} else {{ $bindingInfo[2] }}
+            @{{
+                BindingInformation = $_.bindingInformation
+                Protocol = $_.protocol
+                CertificateHash = $_.certificateHash
+                CertificateStoreName = $_.certificateStoreName
+                Host = $hostValue
+                EndPoint = @{{
+                    Port = [int]$bindingInfo[1]
+                    Address = $bindingInfo[0]
+                }}
+            }}
+        }})
+        Applications = $allApplications
+        HSTS = @{{
+            Enabled = $hsts -ne $null
+            MaxAge = if ($hsts) {{ $hsts.Attributes['value'].Value }} else {{ $null }}
+        }}
+    }}
+
+    ConvertTo-Json -InputObject $result -Depth 5
+    """
+
+    command_bytes = ps_command.encode('utf-16le')
+    encoded_command = base64.b64encode(command_bytes).decode()
+    result = c.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command}', hide=True)
+
+    site_data = json.loads(result.stdout.strip())
+
+    EndPoint = namedtuple('EndPoint', ['Port', 'Address'])
+
+    Attribute = namedtuple('Attribute', ['get_Name', 'get_Value'])
+    Binding = namedtuple('Binding', ['get_BindingInformation', 'BindingInformation', 'Protocol', 'get_Protocol', 'get_CertificateHash',
+                                     'get_CertificateStoreName', 'Host', 'get_Host', 'EndPoint', 'get_EndPoint'])
+    VirtualDirectory = namedtuple('VirtualDirectory', ['Path', 'PhysicalPath'])
+    Application = namedtuple('Application', ['Path', 'ApplicationPoolName', 'PhysicalPath', 'VirtualDirectories'])
+    HSTS = namedtuple('HSTS', ['Enabled', 'MaxAge'])
+    Site = namedtuple('Site', ['Name', 'Bindings', 'get_Attributes', 'get_Bindings', 'Applications', 'HSTS'])
+
+    attributes = [Attribute(
+        get_Name=lambda name=attr['Name']: name,
+        get_Value=lambda value=attr['Value']: value
+    ) for attr in site_data['Attributes']]
+
+    bindings = [Binding(
+        get_BindingInformation=lambda bi=b['BindingInformation']: bi,
+        BindingInformation=b['BindingInformation'],
+        Protocol=b['Protocol'],
+        get_Protocol=lambda p=b['Protocol']: p,
+        get_CertificateHash=lambda ch=b['CertificateHash']: ch,
+        get_CertificateStoreName=lambda csn=b['CertificateStoreName']: csn,
+        Host=b['Host'],  # Use the Host value directly
+        get_Host=lambda h=b['Host']: h,
+        EndPoint=EndPoint(Port=b['EndPoint']['Port'], Address=b['EndPoint']['Address']),
+        get_EndPoint=lambda ep=EndPoint(Port=b['EndPoint']['Port'], Address=b['EndPoint']['Address']): ep
+    ) for b in site_data['Bindings']]
+
+    applications = [Application(
+        Path=app['Path'],
+        ApplicationPoolName=app['ApplicationPoolName'],
+        PhysicalPath=app['PhysicalPath'],
+        VirtualDirectories=[VirtualDirectory(
+            Path=vdir['Path'],
+            PhysicalPath=vdir['PhysicalPath']
+        ) for vdir in app['VirtualDirectories']]
+    ) for app in site_data['Applications']]
+
+    hsts = HSTS(
+        Enabled=site_data['HSTS']['Enabled'],
+        MaxAge=site_data['HSTS']['MaxAge']
+    )
+
+    site = Site(
+        Name=site_data['Name'],
+        Bindings=bindings,
+        get_Attributes=lambda: attributes,
+        get_Bindings=lambda: bindings,
+        Applications=applications,
+        HSTS=hsts
+    )
+
+    return site
 
 
 def list_sites_verbosely():
@@ -1082,6 +1476,38 @@ def setup_migrations_dir(verbose: bool) -> str:
         )
     return latest_migration_run_path
 
+def setup_migrations_dir_remote(remote_connection):
+    # PowerShell command to execute
+    ps_command = '''
+    $migrationsDir = "migrations"
+    $migrationsDirPath = Join-Path -Path $PWD -ChildPath $migrationsDir
+    $cwd = $PWD
+
+    New-Item -Path $migrationsDirPath -ItemType Directory -Force | Out-Null
+
+    Set-Location -Path $migrationsDirPath
+
+    $latestMigrationDirName = "migration_" + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    New-Item -Path $latestMigrationDirName -ItemType Directory | Out-Null
+
+    if (Test-Path -Path "latest") {
+        (Get-Item "latest").Delete()
+    }
+
+    $null = New-Item -ItemType Junction -Path "latest" -Target $latestMigrationDirName
+
+    Set-Location -Path $cwd
+
+    return Join-Path -Path $migrationsDirPath -ChildPath $latestMigrationDirName
+    '''
+    command_bytes = ps_command.encode('utf-16le')
+    encoded_command = base64.b64encode(command_bytes).decode()
+    result = remote_connection.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command}', hide=True)
+
+    output = result.stdout.strip()
+
+    return output
+
 
 def get_environment_name(app_name):
     return io.prompt_for_environment_name(get_unique_environment_name(app_name))
@@ -1142,6 +1568,41 @@ def get_windows_server_version():
     product_name = get_windows_product_name()
     return product_name.replace(" Datacenter", "")
 
+def get_windows_server_version_remote(c):
+    ps_command = '''
+    function Get-WindowsServerVersion {
+        $registryPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+        $valueName = "ProductName"
+
+        try {
+            $productName = Get-ItemPropertyValue -Path $registryPath -Name $valueName
+            if ($productName -like "*Windows Server*") {
+                return $productName -replace ' (Datacenter).*$', ''
+            } else {
+                Write-Host "This does not appear to be a Windows Server operating system."
+                exit 1
+            }
+        }
+        catch {
+            Write-Host "Failed to retrieve Windows Product Name: $_"
+            exit 1
+        }
+    }
+
+
+    $windowsServerVersion = Get-WindowsServerVersion
+    if ($windowsServerVersion) {
+        $windowsServerVersion
+    }
+    '''
+
+    command_bytes = ps_command.encode('utf-16le')
+    encoded_command = base64.b64encode(command_bytes).decode()
+
+    result = c.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command}', hide=True)
+    output = result.stdout.strip()
+
+    return output
 
 def get_unique_cname(env_name):
     """
@@ -1203,6 +1664,32 @@ def validate_iis_version_greater_than_7_0() -> None:
             "Please ensure that IIS (version 7.0 or later) is properly installed."
         ) from e
 
+def validate_iis_and_powershell_remote(remote_connection) -> None:
+    ps_command = '''
+    $is64Bit = [System.Environment]::Is64BitProcess
+    Import-Module WebAdministration
+    $iisVersion = Get-ItemProperty "HKLM:\\SOFTWARE\\Microsoft\\InetStp" | Select-Object -ExpandProperty MajorVersion
+
+    if ($is64Bit -and [int]$iisVersion -gt 7) {
+        Write-Host "Requirements met: 64-bit PowerShell and IIS version > 7"
+    } else {
+        $errors = @()
+        if (-not $is64Bit) { $errors += "PowerShell is not 64-bit" }
+        if (-not ([int]$iisVersion -gt 7)) { $errors += "IIS version is not > 7" }
+        Write-Host ("Requirements not met: " + ($errors -join " and "))
+        exit 1
+    }
+    '''
+    command_bytes = ps_command.encode('utf-16le')
+    encoded_command = base64.b64encode(command_bytes).decode()
+    result = remote_connection.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command}', hide=True)
+    output = result.stdout.strip()
+
+    if not output.startswith("Requirements met:"):
+        raise EnvironmentError(output)
+
+def initialize_ssh_connection(target_ip, username, password):
+    return Connection(target_ip, user=username, connect_kwargs={'password': password, 'allow_agent': False, 'look_for_keys': False})
 
 def get_all_assemblies(root_assembly):
     visited = HashSet[str]()
@@ -1437,6 +1924,151 @@ def ms_deploy_sync_application(
             "ExecuteDefaultWebSitePortReassignment", manifest_contents, manifest_section
         )
 
+def ms_deploy_sync_application_remote(
+        remote_connection,
+        site,
+        application,
+        destination,
+        destination_remote,
+        upload_target_dir,
+        upload_target_dir_remote,
+        manifest_contents
+):
+    _normalized_application_name = normalized_application_name(site, application)
+    destination_archive_path_remote = windows_path_join(upload_target_dir_remote, _normalized_application_name)
+
+    _iis_application_name_value = iis_application_name_value(site, application)
+    ms_deploy_args_str = construct_ms_deploy_command_for_application(
+        site,
+        application,
+        _iis_application_name_value,
+        destination_archive_path_remote
+    )
+    LOG.debug("    Executing the following script to create destination application:")
+    LOG.debug(f"\n        {ms_deploy_args_str}\n")
+
+    ms_deploy_ps_command = construct_msdeploy_powershell_command(ms_deploy_args_str)
+
+    do_ms_deploy_sync_application_remote(
+        remote_connection,
+        ms_deploy_args_str,
+        destination_remote,
+        destination_archive_path_remote,
+        upload_target_dir_remote,
+        _normalized_application_name,
+        ms_deploy_ps_command
+    )
+    manifest_section_name = _iis_application_name_value.strip("/")
+
+    application_pool_name = application.ApplicationPoolName
+    virts = [virt for virt in application.VirtualDirectories if virt.Path == '/']
+    if not virts:
+        return
+    physical_path = virts[0].PhysicalPath
+    contains_iistart_htm = contains_iistart_htm_remote(remote_connection, physical_path)
+
+    if site.Name != 'Default Web Site':
+        installation_script_name = f"install_site_{site.Name.replace(' ', '')}.ps1"
+        removal_script_name = f"remove_site_{site.Name.replace(' ', '')}.ps1"
+        restart_script_name = f"restart_site_{site.Name.replace(' ', '')}.ps1"
+
+        write_custom_site_installer_script_remote(
+            remote_connection,
+            upload_target_dir,
+            site.Name,
+            site.Bindings,
+            physical_path,
+            installation_script_name,
+        )
+
+        write_custom_site_removal_script(
+            upload_target_dir, site.Name, removal_script_name
+        )
+
+        write_custom_site_restarter_script(
+            upload_target_dir, site.Name, restart_script_name
+        )
+
+        manifest_section = create_custom_manifest_section(
+            manifest_section_name,
+            installation_script_name,
+            restart_script_name,
+            removal_script_name,
+            f"Custom script to install {site.Name}"
+        )
+        manifest_contents['deployments']['custom'].append(manifest_section)
+        if _arr_enabled_remote(remote_connection):
+            write_windows_proxy_feature_enabler_script(upload_target_dir)
+            manifest_section = create_custom_manifest_section(
+                "WindowsProxyFeatureEnabler",
+                "windows_proxy_feature_enabler.ps1",
+                "noop.ps1",
+                "noop.ps1",
+                f"Custom script to execute Install-WindowsFeature Web Proxy",
+            )
+            add_unique_manifest_section(
+                "WindowsProxyFeatureEnabler", manifest_contents, manifest_section
+            )
+
+            write_arr_configuration_importer_script(upload_target_dir)
+            manifest_section = create_custom_manifest_section(
+                "ArrConfigurationImporterScript",
+                "arr_configuration_importer_script.ps1",
+                "noop.ps1",
+                "noop.ps1",
+                f"Custom script to enable ARR proxy",
+            )
+            add_unique_manifest_section(
+                "ArrConfigurationImporterScript", manifest_contents, manifest_section
+            )
+    else:
+        manifest_section = {
+            "name": manifest_section_name,
+            "parameters": {
+                "appBundle": f"{_normalized_application_name}.zip",
+                "iisPath": application.Path,
+                "iisWebSite": site.Name,
+            },
+        }
+        post_install_custom_script_section = None
+        for binding in site.Bindings:
+            host, port, domain = binding.get_BindingInformation().split(":")
+            if port != "80":
+                port_reassignment_script_name = (
+                    "default_web_site_port_reassignment_script.ps1"
+                )
+                write_default_web_site_port_reassignment_script(
+                    upload_target_dir, binding, port_reassignment_script_name
+                )
+                post_install_custom_script_section = create_custom_manifest_section(
+                    "ExecuteDefaultWebSitePortReassignment",
+                    port_reassignment_script_name,
+                    port_reassignment_script_name,
+                    port_reassignment_script_name,
+                    f"Perform port-reassignment for {site.Name} away from port 80",
+                )
+                break
+        manifest_contents["deployments"]["msDeploy"].append(manifest_section)
+        if post_install_custom_script_section:
+            add_unique_manifest_section(
+                "ExecuteDefaultWebSitePortReassignment",
+                manifest_contents,
+                post_install_custom_script_section,
+            )
+    # TODO: identify all DefaultDocuments for a given site and determine
+    # whether there are any extra ones to account for
+    if contains_iistart_htm:
+        write_reinstate_iisstart_htm_default_document_script(upload_target_dir)
+        manifest_section = create_custom_manifest_section(
+            "ReinstateIISStartHTMDefaultDocumentScript",
+            "reinstate_iisstart_htm_default_document.ps1",
+            "noop.ps1",
+            "noop.ps1",
+            f"Custom script to enable iisstart.htm default document",
+        )
+        add_unique_manifest_section(
+            "ExecuteDefaultWebSitePortReassignment", manifest_contents, manifest_section
+        )
 
 def add_unique_manifest_section(
     section_name: str,
@@ -1541,6 +2173,34 @@ def cleanup_previous_migration_artifacts(force: bool, verbose: bool) -> None:
             shutil.rmtree(item_path)
 
 
+def construct_msdeploy_powershell_command(args_string):
+    ps_command = ['$msdeployExe = "${env:ProgramFiles}\\IIS\\Microsoft Web Deploy V3\\msdeploy.exe"']
+    ps_command.append('$msdeployArgs = @(')
+
+    # Split on space-hyphen-letter, but keep the hyphen-letter part
+    args = re.split(r' (?=-[a-zA-Z])', args_string)
+
+    for arg_str in args:
+        arg_str = arg_str.strip()
+        if not arg_str:
+            continue
+
+        arg_str = arg_str.replace("'", '"')
+
+        if arg_str.startswith('-dest:archiveDir='):
+            path = arg_str.split('=', 1)[1]
+            path = path.strip('"').strip("'")
+            arg_str = f'-dest:archiveDir=`"{path}`"'
+        else:
+            arg_str = arg_str.replace('"', '`"')
+
+        ps_command.append(f'    "{arg_str}"')
+
+    ps_command.append(')')
+    ps_command.append('$output = & $msdeployExe $msdeployArgs 2>&1')
+
+    return '\n'.join(ps_command)
+
 def do_ms_deploy_sync_application(
     ms_deploy_args_str: str,
     destination: str,
@@ -1615,6 +2275,164 @@ def do_ms_deploy_sync_application(
         raise RuntimeError(
             f"MSDeploy process exited with code {process.ExitCode}. You can find execution logs at .\\migrations\\latest\\error.log"
         )
+
+
+def do_ms_deploy_sync_application_remote(
+        remote_connection,
+        ms_deploy_args_str,
+        destination_remote,
+        destination_archive_path_remote,
+        upload_target_dir_remote,
+        _normalized_application_name,
+        ms_deploy_ps_command
+):
+    ps_script_1 = f"""
+    New-Item -ItemType Directory -Force -Path "{destination_remote}" | Out-Null
+    New-Item -ItemType Directory -Force -Path "{upload_target_dir_remote}" | Out-Null
+
+    $null > "{destination_remote}\\application.log"
+    $null > "{destination_remote}\\error.log"
+
+    try {{
+        # Get MSDeploy path
+        $programFiles = $env:ProgramFiles
+        $msdeployExe = Join-Path $programFiles "IIS\Microsoft Web Deploy V3\msdeploy.exe"
+
+        if (-not (Test-Path $msdeployExe)) {{
+            throw "Could not find MSDeploy.exe at: $msdeployExe"
+            exit 1
+        }}
+
+        Write-Host "Using MSDeploy: $msdeployExe"
+    }}
+    catch {{
+        Write-Error "Error during execution: $_"
+        throw
+    }}
+    """
+    ps_script_2 = ms_deploy_ps_command
+    ps_script_3 = f"""
+    try {{
+        $exitCode = $LASTEXITCODE
+
+        # Log standard output and error
+        $output | Out-File -Append -FilePath "{destination_remote}\\application.log"
+
+        if ($exitCode -eq 0) {{
+            Write-Host "MSDeploy completed successfully"
+        }}
+        else {{
+            $errorMessage = "MSDeploy process exited with code $exitCode"
+            Write-Error $errorMessage
+            throw $errorMessage
+        }}
+    }}
+    catch {{
+        Write-Error "Error during execution: $_"
+        throw
+    }}
+    """
+
+    ps_script_5 = f"""
+        try {{
+            $ErrorActionPreference = 'Continue'
+            $src="{destination_archive_path_remote}";$dst="{upload_target_dir_remote}\\{_normalized_application_name}.zip"
+            if(Test-Path -Path $dst){{Remove-Item -Path $dst -Recurse -Force}}
+            Add-Type -A System.IO.Compression,System.IO.Compression.FileSystem
+            $z=[System.IO.Compression.ZipFile]::Open($dst,[System.IO.Compression.ZipArchiveMode]::Create)
+            Get-ChildItem $src -Recurse -Force|Where-Object{{$_.Name -ne '.gitignore' -and $_.FullName -notlike '*.elasticbeanstalk*'}}|ForEach-Object{{
+                $p=$_.FullName.Substring($src.Length+1).Replace('\\','/')
+                if($_.PSIsContainer){{
+                    if(-not$p.EndsWith('/')){{$p+='/'}}
+                    $e=$z.CreateEntry($p);$e.ExternalAttributes=0x41ED0000  # Directory: 755
+                }}else{{
+                    $e=$z.CreateEntry($p)
+                    if($_.Attributes -band [IO.FileAttributes]::ReparsePoint){{
+                        $t=[IO.Path]::GetFullPath((Get-Item $_.FullName).Target)
+                        $b=[Text.Encoding]::UTF8.GetBytes($t);$e.ExternalAttributes=0xA1FF0000  # Symlink: 777
+                        $s=$e.Open();$s.Write($b,0,$b.Length);$s.Dispose()
+                    }}else{{
+                        $e.ExternalAttributes=0x81A40000  # Regular file: 644
+                        $b=[IO.File]::ReadAllBytes($_.FullName)
+                        $s=$e.Open();$s.Write($b,0,$b.Length);$s.Dispose()
+                    }}
+                }}
+            }}
+            $z.Dispose()
+            if(Test-Path -Path $src){{Remove-Item -Path $src -Recurse -Force}}
+        }}catch{{Write-Output "Error: $_";throw}}
+        """
+
+    combined_ps_script = f"""
+    # First command
+    {ps_script_1}
+
+    # Second command
+    {ps_script_2}
+
+    # Third command
+    {ps_script_3}
+    """
+
+    ps_script_23 = ps_script_2 + "\n\n" + ps_script_3
+
+    command_one_bytes = ps_script_1.encode('utf-16le')
+    encoded_command_one = base64.b64encode(command_one_bytes).decode()
+    result_one = remote_connection.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command_one}', hide=True)
+
+    output_one = result_one.stdout.strip()
+
+    command_two_bytes = ps_script_23.encode('utf-16le')
+    encoded_command_two = base64.b64encode(command_two_bytes).decode()
+    result_2 = remote_connection.run(f'powershell -NonInteractive -EncodedCommand {encoded_command_two}', hide=True)
+
+    output_2 = result_2.stdout.strip()
+
+    command_three_bytes = ps_script_5.encode('utf-16le')
+    encoded_command_three = base64.b64encode(command_three_bytes).decode()
+    result_3 = remote_connection.run(f'powershell -NonInteractive -EncodedCommand {encoded_command_three}', hide=True)
+
+    output_3 = result_3.stdout.strip()
+
+def contains_iistart_htm_remote(remote_connection, physical_path):
+    physical_path = physical_path.replace('/', '\\')
+
+    ps_command = f'''
+    function Test-IISStartHtm {{
+        param(
+            [string]$physicalPath
+        )
+
+        try {{
+            # Expand any environment variables in the path
+            $expandedPath = [System.Environment]::ExpandEnvironmentVariables($physicalPath)
+
+            # Resolve the path to handle relative paths
+            $resolvedPath = Resolve-Path $expandedPath -ErrorAction Stop | Select-Object -ExpandProperty Path
+
+            $fullPath = Join-Path -Path $resolvedPath -ChildPath "iisstart.htm"
+            $exists = Test-Path -Path $fullPath -PathType Leaf
+
+            # Return the result as a string
+            return $exists.ToString().ToLower()
+        }}
+        catch {{
+            Write-Error "Failed to check for iisstart.htm: $_"
+            return "error"
+        }}
+    }}
+
+    $result = Test-IISStartHtm -physicalPath '{physical_path}'
+    Write-Output $result
+    '''
+
+    command_bytes = ps_command.encode('utf-16le')
+    encoded_command = base64.b64encode(command_bytes).decode()
+
+    result = remote_connection.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command}', hide=True)
+    output = result.stdout.strip()
+
+    return output.lower() == 'true'
 
 
 def construct_ms_deploy_command_for_application(
@@ -1693,10 +2511,10 @@ def construct_ms_deploy_command_for_application(
     return " ".join(ms_deploy_args)
 
 
-def normalized_application_name(site: "Site", application: "Application") -> str:
-    if application.Path == "/":
-        return site.Name.replace(" ", "")
-    return f"{site.Name}-{application.Path.strip('/')}"
+def normalized_application_name(site, application):
+    if application.Path == '/':
+        return site.Name.replace(' ', '')
+    return f'{site.Name}-{application.Path.strip('/')}'
 
 
 def get_webdeployv3path() -> Tuple[str, bool]:
@@ -1849,6 +2667,44 @@ def _arr_enabled() -> bool:
     except Exception as e:
         raise e
 
+def _arr_enabled_remote(remote_connection):
+    ps_command = '''
+    function Check-ARREnabled {
+        try {
+            # Import WebAdministration module
+            Import-Module WebAdministration -ErrorAction Stop
+
+            # Check if the proxy section exists in IIS configuration
+            $proxySection = Get-WebConfiguration -Filter "system.webServer/proxy" -ErrorAction SilentlyContinue
+
+            if ($proxySection -ne $null) {
+                Write-Output "True"
+            } else {
+                Write-Output "False"
+            }
+        }
+        catch {
+            Write-Output "False"
+            Write-Error "Error checking ARR status: $_"
+            exit 1
+        }
+    }
+
+    Check-ARREnabled
+    '''
+
+    command_bytes = ps_command.encode('utf-16le')
+    encoded_command = base64.b64encode(command_bytes).decode()
+
+    try:
+        result = remote_connection.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command}', hide=True)
+        output = result.stdout.strip()
+
+        return output.lower() == "true"
+    except Exception as e:
+        io.echo(f"Error checking ARR status: {str(e)}")
+        return False
+
 
 def export_arr_config(upload_target_dir: str, verbose: bool) -> None:
     """
@@ -1936,6 +2792,134 @@ def export_arr_config(upload_target_dir: str, verbose: bool) -> None:
         raise
     write_arr_import_script_to_source_bundle(upload_target_dir)
 
+def export_arr_config_remote(remote_connection, upload_target_dir, verbose):
+    config_sections = [
+        "system.webServer/proxy",
+        "system.webServer/rewrite",
+        "system.webServer/caching",
+    ]
+    if not _arr_enabled_remote(remote_connection):
+        io.echo("No Automatic Request Routing configuration found.")
+        return
+    else:
+        io.echo("Automatic Request Routing (ARR) configuration found.")
+
+    try:
+        for i, section in enumerate(config_sections, 1):
+            section_name = section.split('/')[-1]
+            arr_config_file = f"arr_config_{section_name}.xml"
+            arr_config_file_path = os.path.join(upload_target_dir, 'ebmigrateScripts', arr_config_file)
+
+            section_config = get_arr_section_config_remote(remote_connection, section)
+
+            if section_config is None:
+                if verbose:
+                    io.echo(f"  {i}. Section {section} not found")
+                continue
+
+            xml_content = f"<{section_name}"
+            for attr_name, attr_value in section_config.items():
+                xml_content += f' {attr_name}="{attr_value}"'
+            xml_content += " />"
+
+            with open(arr_config_file_path, 'w') as file:
+                file.write(xml_content)
+
+            if verbose:
+                io.echo(f"  {i}. Modified {section_name} configuration exported to {arr_config_file_path}")
+
+        if not verbose:
+            io.echo("Exported ARR config.")
+    except Exception as e:
+        io.echo(f"Failed to export ARR configuration: {str(e)}")
+        raise
+    write_arr_import_script_to_source_bundle(upload_target_dir)
+
+
+def get_arr_section_config_remote(remote_connection, section_path):
+    # For proxy section, we need special handling
+    if section_path == "system.webServer/proxy":
+        ps_command = '''
+        Import-Module WebAdministration
+
+        # Get the current configuration
+        $config = Get-WebConfiguration -Filter "system.webServer/proxy"
+
+        # Create a hashtable to store only the attributes we know are modified
+        $modified = @{}
+
+        # Check each attribute against known defaults
+        # These are the attributes that appear in the local execution
+
+        # enabled - default is False
+        if ($config.enabled -eq $true) {
+            $modified["enabled"] = $config.enabled
+        }
+
+        # timeout - default is 00:02:00 (2 minutes)
+        if ($config.timeout.TotalMinutes -ne 2) {
+            $h = $config.timeout.Hours.ToString("00")
+            $m = $config.timeout.Minutes.ToString("00")
+            $s = $config.timeout.Seconds.ToString("00")
+            $modified["timeout"] = "$h`:$m`:$s"
+        }
+
+        # minResponseBuffer - default is 0
+        if ($config.minResponseBuffer -ne 0) {
+            $modified["minResponseBuffer"] = $config.minResponseBuffer
+        }
+
+        # responseBufferLimit - default is 4194304
+        if ($config.responseBufferLimit -ne 4194304) {
+            $modified["responseBufferLimit"] = $config.responseBufferLimit
+        }
+
+        ConvertTo-Json -InputObject $modified -Compress
+        '''
+    elif section_path == "system.webServer/caching":
+        ps_command = '''
+        Import-Module WebAdministration
+
+        # Get the current configuration
+        $config = Get-WebConfiguration -Filter "system.webServer/caching"
+
+        # Create a hashtable to store only the attributes we know are modified
+        $modified = @{}
+
+        # Check each attribute against known defaults
+
+        # enabled - default is False
+        if ($config.enabled -eq $true) {
+            $modified["enabled"] = $config.enabled
+        }
+
+        # enableKernelCache - default is False
+        if ($config.enableKernelCache -eq $true) {
+            $modified["enableKernelCache"] = $config.enableKernelCache
+        }
+
+        ConvertTo-Json -InputObject $modified -Compress
+        '''
+    else:
+        # For other sections, return empty object
+        ps_command = '''
+        ConvertTo-Json -InputObject @{} -Compress
+        '''
+
+    command_bytes = ps_command.encode('utf-16le')
+    encoded_command = base64.b64encode(command_bytes).decode()
+
+    try:
+        result = remote_connection.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command}', hide=True)
+        output = result.stdout.strip()
+
+        if output == "SECTION_NOT_FOUND":
+            return None
+
+        return json.loads(output)
+    except Exception as e:
+        io.echo(f"Error getting section config: {str(e)}")
+        return None
 
 def write_arr_import_script_to_source_bundle(upload_target_dir: str) -> None:
     """
@@ -2023,6 +3007,15 @@ def write_arr_configuration_importer_script(upload_target_dir: str) -> None:
     ) as file:
         file.write(script_contents)
 
+def convert_to_ssh_path(remote_path):
+    # Replace backslashes with forward slashes
+    ssh_path = remote_path.replace('\\', '/')
+
+    # Add leading forward slash if not present
+    if not ssh_path.startswith('/'):
+        ssh_path = '/' + ssh_path
+
+    return ssh_path
 
 def write_custom_site_installer_script(
     upload_target_dir: str,
@@ -2074,6 +3067,83 @@ def write_custom_site_installer_script(
             )
             # Only set ARR import script if ARR is enabled
             if _arr_enabled():
+                invoke_arr_import_script_call = "Invoke-ARRImportScript"
+    binding_protocol_powershell_array = "\n".join(binding_protocol_tuples)
+
+    # Read the template script
+    script_path = os.path.join(
+        os.path.dirname(__file__), "migrate_scripts", "site_installer_template.ps1"
+    )
+    with open(script_path, "r") as source_file:
+        script_template = source_file.read()
+
+    # Replace placeholders in the template
+    script_content = (
+        script_template.replace("{site_name}", site_name)
+        .replace(
+            "{binding_protocol_powershell_array}", binding_protocol_powershell_array
+        )
+        .replace("{physical_path}", physical_path)
+        .replace("{invoke_arr_import_script_call}", invoke_arr_import_script_call)
+    )
+
+    with open(
+        os.path.join(upload_target_dir, "ebmigrateScripts", installation_script_name),
+        "w",
+    ) as file:
+        file.write(script_content)
+
+def write_custom_site_installer_script_remote(
+    remote_connection,
+    upload_target_dir: str,
+    site_name: str,
+    bindings: List["Binding"],
+    physical_path: str,
+    installation_script_name: str,
+) -> None:
+    """
+    Generate a PowerShell script for installing and configuring an IIS website.
+
+    Creates an installation script that will be referenced in the Elastic Beanstalk
+    deployment manifest's custom section. The script handles complete website setup
+    including app pool creation, website configuration, and permissions. If Application
+    Request Routing (ARR) is enabled in IIS, additional ARR configuration is included.
+
+    Args:
+        upload_target_dir: Base directory for deployment artifacts
+        site_name: Name of the IIS website to create
+        bindings: List of IIS binding objects defining site endpoints
+        physical_path: Physical path where website content will be deployed
+        installation_script_name: Name of the PowerShell script file to generate
+
+    Generated Script Features:
+        - Creates and configures application pool with .NET 4.0 runtime
+        - Creates website with specified bindings and physical path
+        - Deploys content using Web Deploy (msdeploy.exe)
+        - Sets appropriate file system permissions
+        - Handles ARR configuration if proxy is enabled:
+            * Installs ARR components if needed
+            * Imports ARR configuration from XML files
+            * Configures proxy settings
+
+    Notes:
+        - Script requires WebAdministration PowerShell module
+        - Uses site_name for both website and app pool names
+        - Expects website content at 'C:\\staging\\{site_name}.zip'
+        - Includes ARR configuration only if proxy is enabled in IIS
+        - Generated script is referenced in EB deployment manifest
+    """
+    binding_protocol_tuples = []
+    invoke_arr_import_script_call = ""
+    for binding in bindings:
+        binding_string = binding.BindingInformation
+        # Always add the binding information regardless of ARR status
+        if binding_string and binding_string.strip():
+            binding_protocol_tuples.append(
+                f'"{binding_string.strip()}" = "{binding.Protocol.lower()}"'
+            )
+            # Only set ARR import script if ARR is enabled
+            if _arr_enabled_remote(remote_connection):
                 invoke_arr_import_script_call = "Invoke-ARRImportScript"
     binding_protocol_powershell_array = "\n".join(binding_protocol_tuples)
 
@@ -2559,7 +3629,7 @@ def write_reinstate_iisstart_htm_default_document_script(
 
 
 # TODO: allow override through .ebextensions or a `--alb-configs alb-configs.json`
-def get_listener_configs(sites: List["Site"], ssl_certificate_domain_name: str = None):
+def get_listener_configs(sites: List["Site"], remote, remote_connection, ssl_certificate_domain_name: str = None) -> dict:
     """
     Generate complete Elastic Beanstalk listener configurations from IIS site configurations.
 
@@ -2589,7 +3659,7 @@ def get_listener_configs(sites: List["Site"], ssl_certificate_domain_name: str =
     """
     option_settings = []
     try:
-        site_configs = get_site_configs(sites=sites)
+        site_configs = get_site_configs_remote(remote_connection, sites=sites) if remote else get_site_configs(sites=sites)
         alb_rules = create_alb_rules(site_configs)
 
         converted_alb_rules = convert_alb_rules_to_option_settings(
@@ -2667,9 +3737,11 @@ def get_listener_configs(sites: List["Site"], ssl_certificate_domain_name: str =
 
         return option_settings
     except Exception as e:
+        import traceback
         io.log_warning(
             f"Error: {str(e)}. Treating listener rule creation as non-fatal. This might cause environment to be in degraded state."
         )
+        io.log_warning(f"Traceback: {traceback.format_exc()}")
 
 
 def _create_process_option_settings(
@@ -3082,6 +4154,98 @@ def get_site_configs(sites: List["Site"]):
 
     return site_configs
 
+def get_site_configs_remote(remote_connection, sites: List["Site"]) -> "SiteConfig":
+    site_configs = []
+
+    for site in sites:
+        for binding in site.Bindings:
+            binding_info = _parse_binding_info(binding)
+            physical_path = None
+            for app in site.Applications:
+                if app.Path == "/":
+                    for vdir in app.VirtualDirectories:
+                        if vdir.Path == "/":
+                            physical_path = vdir.PhysicalPath
+                            break
+                    break
+            config = SiteConfig(
+                name=site.Name,
+                binding_info=binding.BindingInformation,
+                physical_path=physical_path,
+                protocol=binding_info["protocol"],
+            )
+
+            # Get rewrite rules from web.config remotely
+            if "SystemDrive" in config.physical_path:
+                web_config_path = config.physical_path.replace("%SystemDrive%", "")  # This will leave \inetpub\wwwroot
+                web_config_path = windows_path_join(web_config_path, "web.config")
+                # Check if web.config exists remotely
+                ps_check_file = f'''
+                $path = $env:SystemDrive + "{web_config_path}"
+                if (Test-Path -Path $path -PathType Leaf) {{
+                    Write-Output "EXISTS"
+                }} else {{
+                    Write-Output "NOT_EXISTS"
+                }}
+                '''
+                command_bytes = ps_check_file.encode('utf-16le')
+                encoded_command = base64.b64encode(command_bytes).decode()
+                result = remote_connection.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command}', hide=True)
+                file_exists = result.stdout.strip() == "EXISTS"
+            else:
+                web_config_path = windows_path_join(config.physical_path, "web.config")
+                # Check if web.config exists remotely
+                ps_check_file = f'''
+                $path = "{web_config_path}"
+                if (Test-Path -Path $path -PathType Leaf) {{
+                    Write-Output "EXISTS"
+                }} else {{
+                    Write-Output "NOT_EXISTS"
+                }}
+                '''
+                command_bytes = ps_check_file.encode('utf-16le')
+                encoded_command = base64.b64encode(command_bytes).decode()
+                result = remote_connection.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command}', hide=True)
+                file_exists = result.stdout.strip() == "EXISTS"
+            
+            if file_exists:
+                try:
+                    # Read web.config content remotely
+                    ps_read_file = f'''
+                    $webConfigContent = Get-Content -Path "{web_config_path}" -Raw
+                    Write-Output $webConfigContent
+                    '''
+                    command_bytes = ps_read_file.encode('utf-16le')
+                    encoded_command = base64.b64encode(command_bytes).decode()
+                    result = remote_connection.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command}', hide=True)
+                    web_config_content = result.stdout.strip()
+                    
+                    # Parse XML content
+                    root = ET.fromstring(web_config_content)
+                    rules = root.findall(".//rewrite/rules/rule")
+
+                    for rule in rules:
+                        match_element = rule.find("match")
+                        action_element = rule.find("action")
+                        
+                        if match_element is not None and action_element is not None:
+                            config.rewrite_rules.append({
+                                "name": rule.get("name"),
+                                "pattern": match_element.get("url"),
+                                "action_type": action_element.get("type"),
+                                "action_url": action_element.get("url"),
+                            })
+                except Exception as e:
+                    io.log_warning(
+                        f"Error reading web.config for {site.Name}: {str(e)}. Skipping over rewrite rule identification for {site.Name}"
+                    )
+
+            site_configs.append(config)
+
+    return site_configs
+
+
+
 
 def _sort_rules_by_specificity(rules: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
@@ -3320,3 +4484,58 @@ def translate_iis_to_alb(iis_pattern: str) -> str:
     alb_pattern = alb_pattern.rstrip("$")
 
     return alb_pattern
+
+def windows_path_join(*args):
+    return '\\'.join(arg.rstrip('\\') for arg in args)
+
+
+def sanitize_windows_path(path):
+    """
+    Sanitize a path for Windows systems.
+
+    This function:
+    1. Replaces forward slashes with backslashes
+    2. Normalizes multiple consecutive backslashes to single backslashes
+    3. Removes trailing backslashes (unless it's a root drive path like "C:\")
+    4. Handles UNC paths correctly
+
+    Args:
+        path (str): The path to sanitize
+
+    Returns:
+        str: A sanitized Windows path
+    """
+    if not path:
+        return path
+
+    # Replace forward slashes with backslashes
+    sanitized_path = path.replace('/', '\\')
+
+    # Normalize multiple consecutive backslashes to single backslashes
+    # (except for UNC paths which start with \\)
+    if sanitized_path.startswith('\\\\'):
+        sanitized_path = '\\\\' + sanitized_path[2:].replace('\\\\', '\\')
+    else:
+        sanitized_path = sanitized_path.replace('\\\\', '\\')
+
+    # Remove trailing backslash unless it's a root drive path like "C:\"
+    if sanitized_path.endswith('\\') and not (len(sanitized_path) == 3 and sanitized_path[1] == ':'):
+        sanitized_path = sanitized_path.rstrip('\\')
+
+    return sanitized_path
+
+
+def create_migration_folders_remote(remote_connection, bundle_dir_remote, upload_target_dir_remote):
+
+    ps_command = f'''
+    New-Item -Path "{bundle_dir_remote}" -ItemType Directory -Force
+    New-Item -Path "{upload_target_dir_remote}" -ItemType Directory -Force
+    Write-Host "Successfully created bundle and upload_target_dir directories"
+    '''
+    command_bytes = ps_command.encode('utf-16le')
+    encoded_command = base64.b64encode(command_bytes).decode()
+    result = remote_connection.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command}', hide=True)
+
+    output = result.stdout.strip()
+
+    return output
