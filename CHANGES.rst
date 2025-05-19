@@ -2,6 +2,11 @@
 Changelog
 =========
 --------------------
+3.24 (2025-05-19)
+--------------------
+- Added remote execution for `eb migrate` command to support migrations of remote IIS servers to Elastic Beanstalk
+
+--------------------
 3.23.3 (2025-05-01)
 --------------------
 - Fixed bug that causes eb on non-IIS server Windows machines to crash
