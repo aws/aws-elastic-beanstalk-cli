@@ -2514,7 +2514,7 @@ def construct_ms_deploy_command_for_application(
 def normalized_application_name(site, application):
     if application.Path == '/':
         return site.Name.replace(' ', '')
-    return f'{site.Name}-{application.Path.strip('/')}'
+    return f'{site.Name}-{application.Path.strip("/")}'
 
 
 def get_webdeployv3path() -> Tuple[str, bool]:
