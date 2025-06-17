@@ -41,6 +41,11 @@ class iam_attributes(object):
         'arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker',
         'arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier'
     ]
+    DEFAULT_ROLE_POLICIES_US_GOV = [
+        'arn:aws-us-gov:iam::aws:policy/AWSElasticBeanstalkWebTier',
+        'arn:aws-us-gov:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker',
+        'arn:aws-us-gov:iam::aws:policy/AWSElasticBeanstalkWorkerTier'
+    ]
     DEFAULT_CUSTOM_PLATFORM_BUILDER_POLICIES = [
         'arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier',
         'arn:aws:iam::aws:policy/AWSElasticBeanstalkCustomPlatformforEC2Role',
