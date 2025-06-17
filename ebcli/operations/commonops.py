@@ -964,7 +964,12 @@ def create_default_instance_profile(profile_name=iam_attributes.DEFAULT_ROLE_NAM
     """
     Create default elasticbeanstalk IAM profile and return its name.
     """
-    create_instance_profile(profile_name, iam_attributes.DEFAULT_ROLE_POLICIES)
+    region = aws.get_region_name()
+    if isinstance(region, str) and 'us-gov' in region:
+        policies = iam_attributes.DEFAULT_ROLE_POLICIES_US_GOV
+    else:
+        policies = iam_attributes.DEFAULT_ROLE_POLICIES
+    create_instance_profile(profile_name, policies)
     return profile_name
 
 
