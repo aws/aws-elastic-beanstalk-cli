@@ -38,6 +38,8 @@ def get_all_regions():
         Region('af-south-1', 'Africa (Cape Town)'),
         Region('ap-southeast-3', 'Asia Pacific (Jakarta)'),
         Region('ap-northeast-3', 'Asia Pacific (Osaka)'),
+        Region('il-central-1', 'Israel (Tel Aviv)'),
+        Region('me-central-1', 'Middle East (UAE)'),
     ]
 
 

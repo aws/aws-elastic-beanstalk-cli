@@ -1,6 +1,12 @@
 Changelog
 =========
 --------------------
+3.25 (2025-06-23)
+--------------------
+- Added me-central-1 elasticbeanstalk-env-resources bucket
+- Added il-central-1 and me-central-1 to regions list
+
+--------------------
 3.24.1 (2025-05-20)
 --------------------
 - Fixed malformed f-string in `eb migrate` command

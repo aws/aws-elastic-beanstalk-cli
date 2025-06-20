@@ -317,6 +317,23 @@ def create_application_version(
                           **kwargs)
 
 
+def _get_env_resources_bucket_name(region):
+    """
+    Get the environment resources bucket name for a given region.
+    Some regions have different bucket naming patterns with suffixes.
+    """
+    region_suffix_mapping = {
+        'me-central-1': 'f08b818c'
+    }
+    
+    base_name = 'elasticbeanstalk-env-resources-' + region
+    
+    if region in region_suffix_mapping:
+        return base_name + '-' + region_suffix_mapping[region]
+    
+    return base_name
+
+
 def create_environment(environment):
     """
     Creates an Elastic Beanstalk environment
@@ -327,14 +344,13 @@ def create_environment(environment):
 
     if environment.database:
         region = aws.get_region_name()
+        bucket_name = _get_env_resources_bucket_name(region)
 
         kwargs['TemplateSpecification'] = {
             'TemplateSnippets': [
                 {'SnippetName': 'RdsExtensionEB',
                  'Order': 10000,
-                 'SourceUrl': 'https://s3.amazonaws.com/'
-                              'elasticbeanstalk-env-resources-' + region +
-                              '/eb_snippets/rds/rds.json'}
+                 'SourceUrl': 'https://s3.amazonaws.com/' + bucket_name + '/eb_snippets/rds/rds.json'}
             ]
         }
 
