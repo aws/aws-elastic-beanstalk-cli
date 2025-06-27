@@ -1791,6 +1791,14 @@ class TestElasticbeanstalk(unittest.TestCase):
                 expected_result, result
             )
 
+    def test_get_env_resources_bucket_name_standard_region(self):
+        bucket_name = elasticbeanstalk._get_env_resources_bucket_name('us-east-1')
+        self.assertEqual(bucket_name, 'elasticbeanstalk-env-resources-us-east-1')
+
+    def test_get_env_resources_bucket_name_me_central_1(self):
+        bucket_name = elasticbeanstalk._get_env_resources_bucket_name('me-central-1')
+        self.assertEqual(bucket_name, 'elasticbeanstalk-env-resources-me-central-1-f08b818c')
+
     @mock.patch('ebcli.lib.elasticbeanstalk.describe_configuration_options')
     def test_list_application_load_balancers__with_vpc(
         self,
