@@ -1,5 +1,11 @@
 Changelog
 =========
+
+--------------------
+3.24.2 (2025-06-17)
+--------------------
+- Fixed "ServiceError - Invalid ARN partition" error in `eb create` command on AWS GovCloud
+
 --------------------
 3.25 (2025-06-27)
 --------------------
