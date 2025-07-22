@@ -55,9 +55,6 @@ extras_require = {
     ':sys_platform == "win32" and python_version >= "3.6"': 'pypiwin32==223',
 
 }
-if sys.platform.startswith('win'):
-    requires.append('pythonnet>=3.0.5,<4')
-
 
 setup_options = dict(
     name='awsebcli',
