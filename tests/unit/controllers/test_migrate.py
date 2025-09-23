@@ -33,7 +33,7 @@ from ebcli.controllers.migrate import (
 )
 
 
-@skipIf(not sys.platform.startswith("win"), "`eb migrate` only supports Windows")
+@skipIf(not sys.platform.startswith("win"), "`eb migrate` only supports Windows with IIS installed")
 class TestMigrateController(unittest.TestCase):
     """Tests for the migrate controller module."""
 
@@ -108,7 +108,7 @@ class TestMigrateController(unittest.TestCase):
         )
 
 
-@skipIf(not sys.platform.startswith("win"), "`eb migrate` only supports Windows")
+@skipIf(not sys.platform.startswith("win"), "`eb migrate` only supports Windows with IIS installed")
 class TestSortRulesBySpecificity(unittest.TestCase):
     """Tests for the _sort_rules_by_specificity function."""
 
@@ -267,7 +267,7 @@ class TestSortRulesBySpecificity(unittest.TestCase):
         self.assertEqual(multiple_hosts_rule, sorted_rules[2])
 
 
-@skipIf(not sys.platform.startswith("win"), "`eb migrate` only supports Windows")
+@skipIf(not sys.platform.startswith("win"), "`eb migrate` only supports Windows with IIS installed")
 class TestCreateAlbRules(unittest.TestCase):
     """Tests for the create_alb_rules function."""
 
@@ -519,7 +519,7 @@ class TestCreateAlbRules(unittest.TestCase):
         self.assertEqual(rules, [])  # Should ignore non-HTTP/HTTPS sites
 
 
-@skipIf(not sys.platform.startswith("win"), "`eb migrate` only supports Windows")
+@skipIf(not sys.platform.startswith("win"), "`eb migrate` only supports Windows with IIS installed")
 class TestGetSiteConfigs(unittest.TestCase):
     """Tests for the get_site_configs function."""
 
