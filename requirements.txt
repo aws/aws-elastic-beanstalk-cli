@@ -13,3 +13,4 @@ urllib3>=1.26.5,<2
 packaging>=24.2,<25.0
 blessed>=1.20.0
 fabric==3.2.2
+pythonnet>=3.0.5,<4 ; platform_system=="Windows"

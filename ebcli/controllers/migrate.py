@@ -26,7 +26,12 @@ import argparse
 from fabric import Connection
 import base64
 
-if sys.platform.startswith("win"):
+def is_supported() -> bool:
+    return (sys.platform.startswith("win")
+            and os.path.exists(r"C:\Windows\System32\inetsrv\Microsoft.Web.Administration.dll"))
+
+
+if is_supported():
     import winreg
     import clr
     import win32com.client
@@ -84,7 +89,7 @@ class MigrateExploreController(AbstractBaseController):
         stacked_type = "nested"
 
     def do_command(self):
-        if not sys.platform.startswith("win"):
+        if not is_supported():
             raise NotSupportedError("'eb migrate explore' is only supported on Windows")
         verbose = self.app.pargs.verbose
 
@@ -107,7 +112,7 @@ class MigrateCleanupController(AbstractBaseController):
         ]
 
     def do_command(self):
-        if not sys.platform.startswith("win"):
+        if not is_supported():
             raise NotSupportedError("'eb migrate cleanup' is only supported on Windows")
         force = self.app.pargs.force
         cleanup_previous_migration_artifacts(force, self.app.pargs.verbose)
@@ -364,7 +369,7 @@ class MigrateController(AbstractBaseController):
 
     def do_command(self):
         remote = self.app.pargs.remote
-        if not remote and not sys.platform.startswith("win"):
+        if not remote and not is_supported():
             raise NotSupportedError("'eb migrate' is only supported on Windows")
 
         verbose = self.app.pargs.verbose

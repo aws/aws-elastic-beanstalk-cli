@@ -10,7 +10,7 @@ from unittest.mock import patch, MagicMock
 import unittest
 import sys
 
-if sys.platform.startswith("win"):
+if sys.platform.startswith("win") and os.path.exists(r"C:\Windows\System32\inetsrv\Microsoft.Web.Administration.dll"):
     import clr
 
     clr.AddReference("System.Reflection")
