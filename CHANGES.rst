@@ -1,6 +1,11 @@
 Changelog
 =========
 --------------------
+3.25.1 (2025-09-30)
+--------------------
+- Fixed pythonnet imports to be lazy
+
+--------------------
 3.25 (2025-06-27)
 --------------------
 - Added me-central-1 elasticbeanstalk-env-resources bucket
