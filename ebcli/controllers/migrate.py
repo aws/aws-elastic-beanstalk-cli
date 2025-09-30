@@ -90,7 +90,7 @@ class MigrateExploreController(AbstractBaseController):
 
     def do_command(self):
         if not is_supported():
-            raise NotSupportedError("'eb migrate explore' is only supported on Windows")
+            raise NotSupportedError("'eb migrate explore' is only supported on Windows with IIS installed")
         verbose = self.app.pargs.verbose
 
         if verbose:
@@ -113,7 +113,7 @@ class MigrateCleanupController(AbstractBaseController):
 
     def do_command(self):
         if not is_supported():
-            raise NotSupportedError("'eb migrate cleanup' is only supported on Windows")
+            raise NotSupportedError("'eb migrate cleanup' is only supported on Windows with IIS installed")
         force = self.app.pargs.force
         cleanup_previous_migration_artifacts(force, self.app.pargs.verbose)
 
@@ -370,7 +370,7 @@ class MigrateController(AbstractBaseController):
     def do_command(self):
         remote = self.app.pargs.remote
         if not remote and not is_supported():
-            raise NotSupportedError("'eb migrate' is only supported on Windows")
+            raise NotSupportedError("'eb migrate' is only supported on Windows with IIS installed")
 
         verbose = self.app.pargs.verbose
 
