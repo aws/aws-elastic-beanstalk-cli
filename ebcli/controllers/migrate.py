@@ -21,6 +21,7 @@ from dataclasses import dataclass
 import zipfile
 from typing import Dict, List, Any, Union, Optional, Tuple, Set
 import collections
+from collections import namedtuple
 import json
 import argparse
 from fabric import Connection
@@ -67,14 +68,14 @@ from ebcli.core.abstractcontroller import AbstractBaseController
 from ebcli.core import io, fileoperations
 from ebcli.lib import utils, ec2, elasticbeanstalk, aws
 from ebcli.objects import requests
-from ebcli.objects.platform import PlatformVersion
+from ebcli.objects.platform import PlatformVersion, PlatformBranch
 from ebcli.objects.exceptions import (
     NotFoundError,
     NotAnEC2Instance,
     NotSupportedError,
 )
 from ebcli.resources.strings import prompts, flag_text
-from ebcli.operations import commonops, createops, platformops, statusops
+from ebcli.operations import commonops, createops, platformops, statusops, platform_version_ops
 from ebcli.operations.tagops import tagops
 from ebcli.resources.statics import namespaces
 
@@ -87,16 +88,37 @@ class MigrateExploreController(AbstractBaseController):
         usage = "eb migrate explore"
         stacked_on = "migrate"
         stacked_type = "nested"
+        arguments = [
+            (["--remote"], dict(action="store_true", help="Enable remote execution mode")),
+            (["--target-ip"], dict(help="IP address of the remote machine")),
+            (["--username"], dict(help="Username for authentication")),
+            (["--password"], dict(help="Password for authentication")),
+        ]
 
     def do_command(self):
-        if not is_supported():
-            raise NotSupportedError("'eb migrate explore' is only supported on Windows with IIS installed")
-        verbose = self.app.pargs.verbose
-
-        if verbose:
-            list_sites_verbosely()
+        remote = self.app.pargs.remote
+        
+        if remote:
+            target_ip = self.app.pargs.target_ip
+            username = self.app.pargs.username
+            password = self.app.pargs.password
+            
+            if not target_ip or not username or not password:
+                raise ValueError("--target-ip, --username, and --password are required with --remote")
+            
+            remote_connection = initialize_ssh_connection(target_ip, username, password)
+            validate_iis_and_powershell_remote(remote_connection)
+            site_names = establish_candidate_sites_remote(remote_connection, None)
+            io.echo("\n".join(site_names))
         else:
-            io.echo("\n".join([s.Name for s in ServerManager().Sites]))
+            if not is_supported():
+                raise NotSupportedError("'eb migrate explore' is only supported on Windows with IIS installed")
+            verbose = self.app.pargs.verbose
+
+            if verbose:
+                list_sites_verbosely()
+            else:
+                io.echo("\n".join([s.Name for s in ServerManager().Sites]))
 
 
 class MigrateCleanupController(AbstractBaseController):
@@ -866,6 +888,9 @@ def process_keyname(keyname):
 def establish_platform(platform, interactive):
     if not platform and interactive:
         platform = platformops.prompt_for_platform()
+        # If prompt returns a PlatformBranch, convert it to PlatformVersion
+        if isinstance(platform, PlatformBranch):
+            platform = platform_version_ops.get_preferred_platform_version_for_branch(platform.branch_name)
     elif not platform:
         io.echo("Determining EB platform based on host machine properties")
         platform = _determine_platform(platform_string=get_windows_server_version())

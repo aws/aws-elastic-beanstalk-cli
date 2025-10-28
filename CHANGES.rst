@@ -1,6 +1,13 @@
 Changelog
 =========
 --------------------
+3.25.2 (2025-10-28)
+--------------------
+- Added remote execution support for `eb migrate explore` command
+- Fixed `namedtuple` import for Python 3.9+ compatibility
+- Fixed AttributeError when selecting platform branch interactively in `eb migrate`
+
+--------------------
 3.25.1 (2025-09-30)
 --------------------
 - Fixed pythonnet imports to be lazy
