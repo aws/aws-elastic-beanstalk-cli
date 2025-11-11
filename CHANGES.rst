@@ -1,6 +1,11 @@
 Changelog
 =========
 --------------------
+3.25.3 (2025-11-11)
+--------------------
+- Added verbose flag support for remote site exploration
+
+--------------------
 3.25.2 (2025-10-28)
 --------------------
 - Added remote execution support for `eb migrate explore` command

@@ -108,8 +108,13 @@ class MigrateExploreController(AbstractBaseController):
             
             remote_connection = initialize_ssh_connection(target_ip, username, password)
             validate_iis_and_powershell_remote(remote_connection)
-            site_names = establish_candidate_sites_remote(remote_connection, None)
-            io.echo("\n".join(site_names))
+            verbose = self.app.pargs.verbose
+            
+            if verbose:
+                list_sites_verbosely_remote(remote_connection)
+            else:
+                site_names = establish_candidate_sites_remote(remote_connection, None)
+                io.echo("\n".join(site_names))
         else:
             if not is_supported():
                 raise NotSupportedError("'eb migrate explore' is only supported on Windows with IIS installed")
@@ -1236,6 +1241,81 @@ def list_sites_verbosely():
         io.echo(f"  - {username}")
         io.echo(f"    - Home: {homedir}")
 
+
+def list_sites_verbosely_remote(remote_connection):
+    ps_command = '''
+    Import-Module WebAdministration
+    $sites = Get-Website
+    $output = @()
+    $index = 1
+    foreach ($site in $sites) {
+        $siteInfo = "$index`: $($site.Name):`n"
+        $siteInfo += "  - Bindings:`n"
+        $bindings = Get-WebBinding -Name $site.Name
+        foreach ($binding in $bindings) {
+            $siteInfo += "    - $($binding.bindingInformation)`n"
+        }
+        $applications = @(Get-WebApplication -Site $site.Name)
+        $rootApp = @{
+            Path = "/"
+            ApplicationPoolName = $site.applicationPool
+            EnabledProtocols = $site.enabledProtocols
+        }
+        $allApps = @($rootApp) + $applications
+        foreach ($app in $allApps) {
+            $appPath = if ($app.Path) { $app.Path } else { "/" }
+            $appPool = if ($app.ApplicationPoolName) { $app.ApplicationPoolName } else { $app.applicationPool }
+            $protocols = if ($app.EnabledProtocols) { $app.EnabledProtocols } else { $app.enabledProtocols }
+            $siteInfo += "  - Application '$appPath':`n"
+            $siteInfo += "    - Application Pool: $appPool`n"
+            $siteInfo += "    - Enabled Protocols: $protocols`n"
+            $siteInfo += "    - Virtual Directories:`n"
+            $vdirs = Get-WebConfiguration "/system.applicationHost/sites/site[@name='$($site.Name)']/application[@path='$appPath']/virtualDirectory"
+            foreach ($vdir in $vdirs) {
+                $vdirPath = $vdir.GetAttributeValue("path")
+                $physicalPath = $vdir.GetAttributeValue("physicalPath")
+                $logonMethodValue = $vdir.GetAttributeValue("logonMethod")
+                $logonMethod = switch ($logonMethodValue) {
+                    0 { "Interactive" }
+                    1 { "Batch" }
+                    2 { "Network" }
+                    3 { "ClearText" }
+                    default { $logonMethodValue }
+                }
+                $userName = $vdir.GetAttributeValue("userName")
+                $password = $vdir.GetAttributeValue("password")
+                $siteInfo += "      - $vdirPath`:`n"
+                $siteInfo += "        - Physical Path: $physicalPath`n"
+                $siteInfo += "        - Logon Method: $logonMethod`n"
+                if ($userName) {
+                    $siteInfo += "        - Username: $userName`n"
+                }
+                if ($password) {
+                    $siteInfo += "        - Password: <redacted>`n"
+                }
+            }
+        }
+        $output += $siteInfo
+        $index++
+    }
+    Write-Host ($output -join "")
+    Write-Host "----------------------------------------------------"
+    Write-Host "Users:"
+    try {
+        $users = Get-LocalUser | Where-Object { $_.Enabled -eq $true }
+        foreach ($user in $users) {
+            $homedir = if ($user.HomeDirectory) { $user.HomeDirectory } else { "None" }
+            Write-Host "  - $($user.Name)"
+            Write-Host "    - Home: $homedir"
+        }
+    } catch {
+        # Silently skip if user enumeration fails
+    }
+    '''
+    command_bytes = ps_command.encode('utf-16le')
+    encoded_command = base64.b64encode(command_bytes).decode()
+    result = remote_connection.run(f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded_command}', hide=True)
+    io.echo(result.stdout.strip())
 
 def get_local_users():
     ctx = PrincipalContext(ContextType.Machine)
