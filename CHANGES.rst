@@ -1,6 +1,11 @@
 Changelog
 =========
 --------------------
+3.26 (2026-01-06)
+--------------------
+- Added ap-southeast-6 (Auckland), ap-southeast-4 (Melbourne), ca-west-1 (Calgary), ap-south-2 (Hyderabad), and eu-central-2 (Zurich) to regions list
+
+--------------------
 3.25.3 (2025-11-11)
 --------------------
 - Added verbose flag support for remote site exploration
