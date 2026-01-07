@@ -1799,6 +1799,38 @@ class TestElasticbeanstalk(unittest.TestCase):
         bucket_name = elasticbeanstalk._get_env_resources_bucket_name('me-central-1')
         self.assertEqual(bucket_name, 'elasticbeanstalk-env-resources-me-central-1-f08b818c')
 
+    def test_get_env_resources_bucket_name_ap_southeast_7(self):
+        bucket_name = elasticbeanstalk._get_env_resources_bucket_name('ap-southeast-7')
+        self.assertEqual(bucket_name, 'elasticbeanstalk-env-resources-ap-southeast-7-81bc2d85')
+
+    def test_get_env_resources_bucket_name_ap_southeast_5(self):
+        bucket_name = elasticbeanstalk._get_env_resources_bucket_name('ap-southeast-5')
+        self.assertEqual(bucket_name, 'elasticbeanstalk-env-resources-ap-southeast-5-152a81b8')
+
+    def test_get_env_resources_bucket_name_eu_south_2(self):
+        bucket_name = elasticbeanstalk._get_env_resources_bucket_name('eu-south-2')
+        self.assertEqual(bucket_name, 'elasticbeanstalk-env-resources-eu-south-2-55d6b528')
+
+    def test_get_env_resources_bucket_name_ap_southeast_6(self):
+        bucket_name = elasticbeanstalk._get_env_resources_bucket_name('ap-southeast-6')
+        self.assertEqual(bucket_name, 'elasticbeanstalk-env-resources-ap-southeast-6-11e75a81')
+
+    def test_get_env_resources_bucket_name_ap_south_2(self):
+        bucket_name = elasticbeanstalk._get_env_resources_bucket_name('ap-south-2')
+        self.assertEqual(bucket_name, 'elasticbeanstalk-env-resources-ap-south-2-756e067d')
+
+    def test_get_env_resources_bucket_name_ap_southeast_4(self):
+        bucket_name = elasticbeanstalk._get_env_resources_bucket_name('ap-southeast-4')
+        self.assertEqual(bucket_name, 'elasticbeanstalk-env-resources-ap-southeast-4-e33a8980')
+
+    def test_get_env_resources_bucket_name_ca_west_1(self):
+        bucket_name = elasticbeanstalk._get_env_resources_bucket_name('ca-west-1')
+        self.assertEqual(bucket_name, 'elasticbeanstalk-env-resources-ca-west-1-e09147ba')
+
+    def test_get_env_resources_bucket_name_eu_central_2(self):
+        bucket_name = elasticbeanstalk._get_env_resources_bucket_name('eu-central-2')
+        self.assertEqual(bucket_name, 'elasticbeanstalk-env-resources-eu-central-2-2742d7fd')
+
     @mock.patch('ebcli.lib.elasticbeanstalk.describe_configuration_options')
     def test_list_application_load_balancers__with_vpc(
         self,
