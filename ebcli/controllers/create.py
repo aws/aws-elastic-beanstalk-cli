@@ -20,7 +20,6 @@ from ebcli.lib import elasticbeanstalk, utils, iam
 from ebcli.objects.exceptions import (
     AlreadyExistsError,
     InvalidOptionsError,
-    RetiredPlatformBranchError,
     NotFoundError,
 )
 from ebcli.objects.platform import PlatformVersion, PlatformBranch
@@ -42,7 +41,7 @@ from ebcli.operations import (
 )
 from ebcli.operations.tagops import tagops
 from ebcli.resources.strings import strings, prompts, flag_text, alerts
-from ebcli.resources.statics import elb_names, platform_branch_lifecycle_states
+from ebcli.resources.statics import elb_names
 
 
 class CreateController(AbstractBaseController):
@@ -625,8 +624,6 @@ def _determine_platform(platform_string=None, iprofile=None):
             io.log_warning(prompts['ecs.permissions'])
     if isinstance(platform, PlatformVersion):
         platform.hydrate(elasticbeanstalk.describe_platform_version)
-        if platform.platform_branch_lifecycle_state == platform_branch_lifecycle_states.RETIRED:
-            raise RetiredPlatformBranchError(alerts['platformbranch.retired'])
         statusops.alert_platform_status(platform)
         if 'Multi-container Docker' in platform.platform_name and not iprofile:
             io.log_warning(prompts['ecs.permissions'])

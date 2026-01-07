@@ -26,7 +26,6 @@ from ebcli.objects.exceptions import (
     AlreadyExistsError,
     InvalidOptionsError,
     NotFoundError,
-    RetiredPlatformBranchError,
 )
 from ebcli.objects.requests import CreateEnvironmentRequest
 from ebcli.objects.platform import PlatformVersion
@@ -216,10 +215,7 @@ class TestCreate(unittest.TestCase):
             'PlatformBranchLifecycleState': 'Retired'
         }
 
-        self.assertRaises(
-            RetiredPlatformBranchError,
-            create._determine_platform,
-            'PHP 5.3 running on 64bit Amazon Linux')
+        result = create._determine_platform('PHP 5.3 running on 64bit Amazon Linux')
 
         get_configured_default_platform_mock.assert_not_called()
         prompt_for_platform_mock.assert_not_called()
@@ -227,7 +223,8 @@ class TestCreate(unittest.TestCase):
             'PHP 5.3 running on 64bit Amazon Linux')
         describe_platform_version_mock.assert_called_once_with(platform_version.platform_arn)
         log_warning_mock.assert_not_called()
-        alert_platform_status_mock.assert_not_called()
+        alert_platform_status_mock.assert_called_once_with(platform_version)
+        self.assertEqual(platform_version, result)
 
     @mock.patch('ebcli.controllers.create.platformops.get_configured_default_platform')
     @mock.patch('ebcli.controllers.create.platformops.prompt_for_platform')
