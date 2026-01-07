@@ -1,9 +1,10 @@
 Changelog
 =========
 --------------------
-3.26 (2026-01-06)
+3.26 (2026-01-07)
 --------------------
-- Added ap-southeast-6 (Auckland), ap-southeast-4 (Melbourne), ca-west-1 (Calgary), ap-south-2 (Hyderabad), and eu-central-2 (Zurich) to regions list
+- Added ap-southeast-6 (New Zealand), ap-southeast-4 (Melbourne), ca-west-1 (Calgary), ap-south-2 (Hyderabad), eu-central-2 (Zurich), eu-south-2 (Spain), ap-southeast-7 (Thailand), and ap-southeast-5 (Malaysia) to regions list
+- Updated bucket naming with hash suffixes for newer regions
 
 --------------------
 3.25.3 (2025-11-11)
