@@ -323,7 +323,15 @@ def _get_env_resources_bucket_name(region):
     Some regions have different bucket naming patterns with suffixes.
     """
     region_suffix_mapping = {
-        'me-central-1': 'f08b818c'
+        'me-central-1': 'f08b818c',
+        'ap-southeast-7': '81bc2d85',
+        'ap-southeast-5': '152a81b8',
+        'eu-south-2': '55d6b528',
+        'ap-southeast-6': '11e75a81',
+        'ap-south-2': '756e067d',
+        'ap-southeast-4': 'e33a8980',
+        'ca-west-1': 'e09147ba',
+        'eu-central-2': '2742d7fd'
     }
     
     base_name = 'elasticbeanstalk-env-resources-' + region
