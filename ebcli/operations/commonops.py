@@ -303,6 +303,8 @@ def _is_success_event(message, log_events=False):
         return True
     if responses['logs.successbundle'] in message:
         return True
+    if responses['logs.successanalyze'] in message:
+        return True
     if responses['tags.tag_update_successful'] in message:
         return True
     if message.startswith(responses['event.platformdeletesuccess']):

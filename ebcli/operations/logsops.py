@@ -330,24 +330,47 @@ def get_instance_log_url_mappings(env_name, info_type):
     return instance_id_list
 
 
+def _get_latest_instance_log_url_mappings(env_name, info_type):
+    result = elasticbeanstalk.retrieve_environment_info(env_name, info_type)
+
+    instance_id_list = dict()
+    instance_timestamps = dict()
+
+    for log in result['EnvironmentInfo']:
+        instance_id = log['Ec2InstanceId']
+        url = log['Message']
+        timestamp = log.get('SampleTimestamp')
+
+        if instance_id not in instance_id_list or timestamp > instance_timestamps[instance_id]:
+            instance_id_list[instance_id] = url
+            instance_timestamps[instance_id] = timestamp
+
+    return instance_id_list
+
+
 def get_logs(env_name, info_type, do_zip=False, instance_id=None):
     """
     Obtains the set of logs from ElasticBeanstalk for the environment `env_name` from ElasticBeanstalk
     (and not CloudWatch) for the environment, `env_name` and determines whether to tail it or bundle/zip
     it.
     :param env_name: An Elastic Beanstalk environment name
-    :param info_type: The type of information to request. Possible values: tail, bundle
+    :param info_type: The type of information to request. Possible values: tail, bundle, analyze
     :param do_zip: Whether the information retrieved should be zipped; works only with info_type 'bundle'
     :param instance_id: The specific EC2 instance associated with `env_name` whose log information to retrieve
     :return: None
     """
-    instance_id_list = get_instance_log_url_mappings(env_name, info_type)
+    if info_type == logs_operations_constants.INFORMATION_FORMAT.ANALYZE:
+        instance_id_list = _get_latest_instance_log_url_mappings(env_name, info_type)
+    else:
+        instance_id_list = get_instance_log_url_mappings(env_name, info_type)
 
     if instance_id:
         instance_id_list = _updated_instance_id_list(instance_id_list, instance_id)
 
     if info_type == logs_operations_constants.INFORMATION_FORMAT.BUNDLE:
         _handle_bundle_logs(instance_id_list, do_zip)
+    elif info_type == logs_operations_constants.INFORMATION_FORMAT.ANALYZE:
+        _handle_analyze_logs(instance_id_list)
     else:
         _handle_tail_logs(instance_id_list)
 
@@ -473,7 +496,7 @@ def retrieve_beanstalk_logs(env_name, info_type, do_zip=False, instance_id=None)
     """
     Obtains the set of logs from ElasticBeanstalk for the environment `env_name`.
     :param env_name: An Elastic Beanstalk environment name
-    :param info_type: The type of information to request. Possible values: tail, bundle
+    :param info_type: The type of information to request. Possible values: tail, bundle, analyze
     :param do_zip: Whether the information retrieved should be zipped; works only with info_type 'bundle'
     :param instance_id: The specific EC2 instance associated with `env_name` whose log information to retrieve
     :return: None
@@ -481,7 +504,11 @@ def retrieve_beanstalk_logs(env_name, info_type, do_zip=False, instance_id=None)
     result = elasticbeanstalk.request_environment_info(env_name, info_type)
 
     request_id = result['ResponseMetadata']['RequestId']
-    io.echo(prompts['logs.retrieving'])
+    
+    if info_type == logs_operations_constants.INFORMATION_FORMAT.ANALYZE:
+        io.echo(prompts['logs.analyzing'])
+    else:
+        io.echo(prompts['logs.retrieving'])
 
     commonops.wait_for_success_events(
         request_id,
@@ -896,6 +923,12 @@ def _handle_tail_logs(instance_id_list):
         log_result = utils.get_data_from_url(url)
         data.append(utils.decode_bytes(log_result))
     io.echo_with_pager(os.linesep.join(data))
+
+
+def _handle_analyze_logs(instance_id_list):
+    for instance_id, url in iteritems(instance_id_list):
+        log_result = utils.get_data_from_url(url)
+        io.echo(utils.decode_bytes(log_result))
 
 
 def _instance_log_streaming_option_setting(disable=False):

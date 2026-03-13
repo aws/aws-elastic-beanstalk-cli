@@ -22,6 +22,7 @@ class logs_operations_constants(object):
     class INFORMATION_FORMAT(object):
         BUNDLE = 'bundle'
         TAIL = 'tail'
+        ANALYZE = 'analyze'
 
 
 class iam_documents(object):
