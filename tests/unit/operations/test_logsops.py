@@ -1708,6 +1708,27 @@ class TestSetupLogs(unittest.TestCase):
             True
         )
 
+    @mock.patch('ebcli.operations.logsops._get_latest_instance_log_url_mappings')
+    @mock.patch('ebcli.operations.logsops._handle_analyze_logs')
+    @mock.patch('ebcli.operations.logsops._handle_bundle_logs')
+    @mock.patch('ebcli.operations.logsops._handle_tail_logs')
+    def test_get_logs__analyzed_logs(
+            self,
+            handle_tail_logs_mock,
+            handle_bundle_logs_mock,
+            handle_analyze_logs_mock,
+            get_latest_instance_id_list_mock
+    ):
+        get_latest_instance_id_list_mock.return_value = {
+            'i-024a31a441247971d': 'https://elasticbeanstalk-us-east-1-123123123123.s3.amazonaws.com',
+        }
+
+        logsops.get_logs('my-env', 'analyze')
+
+        handle_analyze_logs_mock.assert_called_once_with(get_latest_instance_id_list_mock.return_value)
+        handle_tail_logs_mock.assert_not_called()
+        handle_bundle_logs_mock.assert_not_called()
+
     def test_updated_instance_id_list(self):
         with self.assertRaises(NotFoundError) as context_manager:
             logsops._updated_instance_id_list(

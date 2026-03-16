@@ -33,6 +33,8 @@ class LogsController(AbstractBaseController):
                 action='store_true', help=flag_text['logs.all'])),
             (['-z', '--zip'], dict(
                 action='store_true', help=flag_text['logs.zip'])),
+            (['-ai', '--analyze'], dict(action='store_true',
+                                help=flag_text['logs.analyze'])),
             (['-i', '--instance'], dict(help=flag_text['logs.instance'])),
             (['-g', '--log-group'], dict(help=flag_text['logs.log-group'])),
             (['-cw', '--cloudwatch-logs'], dict(help=flag_text['logs.cloudwatch_logs'], nargs='?',
@@ -51,6 +53,7 @@ class LogsController(AbstractBaseController):
         self.instance = self.app.pargs.instance
         self.all = self.app.pargs.all
         self.zip = self.app.pargs.zip
+        self.analyze = self.app.pargs.analyze
         self.cloudwatch_logs = self.app.pargs.cloudwatch_logs
         self.cloudwatch_log_source = self.app.pargs.cloudwatch_log_source
         self.stream = self.app.pargs.stream
@@ -61,6 +64,8 @@ class LogsController(AbstractBaseController):
             self.__modify_log_streaming()
         elif self.stream:
             self.__stream_cloudwatch_logs()
+        elif self.analyze:
+            self.__analyze_logs()
         else:
             self.__get_logs()
 
@@ -144,6 +149,18 @@ class LogsController(AbstractBaseController):
         if self.cloudwatch_logs and self.zip:
             raise InvalidOptionsError(strings['logs.cloudwatch_logs_argument_and_zip_argument'])
 
+        if self.analyze and self.instance:
+            raise InvalidOptionsError(strings['logs.analyze_argument_and_instance_argument'])
+
+        if self.analyze and self.all:
+            raise InvalidOptionsError(strings['logs.analyze_argument_and_all_argument'])
+
+        if self.analyze and self.zip:
+            raise InvalidOptionsError(strings['logs.analyze_argument_and_zip_argument'])
+
+        if self.analyze and self.log_group:
+            raise InvalidOptionsError(strings['logs.analyze_argument_and_log_group_argument'])
+
         if self.cloudwatch_log_source and self.cloudwatch_log_source not in [
                 logs_operations_constants.LOG_SOURCES.ALL_LOG_SOURCES,
                 logs_operations_constants.LOG_SOURCES.INSTANCE_LOG_SOURCE,
@@ -184,3 +201,9 @@ class LogsController(AbstractBaseController):
                 raise InvalidOptionsError(strings['logs.environment_health_log_streaming_disabled'].format(self.env_name))
 
             logsops.stream_instance_logs_from_cloudwatch(log_group=self.__normalized_log_group_name())
+
+    def __analyze_logs(self):
+        logsops.retrieve_beanstalk_logs(
+            self.env_name,
+            logs_operations_constants.INFORMATION_FORMAT.ANALYZE,
+        )

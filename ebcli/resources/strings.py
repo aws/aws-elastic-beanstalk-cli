@@ -384,6 +384,14 @@ To get started enter "eb platform init". Then enter "eb platform create".""",
     'logs.cloudwatch_logs_argument_and_zip_argument':
         'You can\'t use the "--zip" option when setting log streaming. This is an '
         'output option for log retrieval commands.',
+    'logs.analyze_argument_and_instance_argument':
+        'You can\'t use the "--instance" option with the "--analyze" option.',
+    'logs.analyze_argument_and_all_argument':
+        'You can\'t use the "--all" option with the "--analyze" option.',
+    'logs.analyze_argument_and_zip_argument':
+        'You can\'t use the "--zip" option with the "--analyze" option.',
+    'logs.analyze_argument_and_log_group_argument':
+        'You can\'t use the "--log-group" option with the "--analyze" option.',
     'logs.health_and_instance_argument':
         'You can\'t use the "--instance" option when retrieving environment-health '
         'logs. The scope for these logs is the entire environment.',
@@ -619,6 +627,7 @@ prompts = {
     'vpc.elbpublic': 'Do you want the load balancer to be public? (Select no for internal)',
     'vpc.dbsubnets': 'Enter a comma-separated list of database subnets',
     'logs.retrieving': 'Retrieving logs...',
+    'logs.analyzing': 'Analyzing environment...',
     'swap.envprompt': 'Select the environment with which you want to swap CNAMEs.',
     'abort.envprompt': 'Select the environment you want to stop updating.',
     'clone.latest': 'There is a newer version of the platform used by the environment '
@@ -853,6 +862,7 @@ flag_text = {
 
     'logs.all': 'retrieve all logs',
     'logs.zip': 'retrieve all logs as .zip',
+    'logs.analyze': 'AI-powered analysis of logs, events, and environment health',
     'logs.instance': 'retrieve logs only for this instance',
     'logs.log-group': 'retrieve logs only for this log group',
     'logs.stream': 'enable/disable log streaming to CloudWatch Logs',
@@ -1052,6 +1062,7 @@ responses = {
     'logs.pulled': 'Pulled logs for environment instances.',
     'logs.successtail': 'Successfully finished tailing',
     'logs.successbundle': 'Successfully finished bundling',
+    'logs.successanalyze': 'AI analysis request has completed.',
     'logs.fail': 'Failed to pull logs for environment instances.',
     'env.terminated': 'terminateEnvironment completed successfully.',
     'env.invalidstate': 'Environment named {env-name} is in an invalid state for this operation. '
