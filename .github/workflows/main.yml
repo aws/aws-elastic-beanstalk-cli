@@ -3,9 +3,11 @@ name: CI
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on pull request events but only for the main branch
-  pull_request:
+  # Uses pull_request_target so fork PRs run in the base repo context (has access to secrets).
+  # The "integ-test" environment requires deployment approval before jobs execute.
+  pull_request_target:
     branches: [ master ]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
   
 permissions: write-all
@@ -15,9 +17,14 @@ jobs:
   WindowsBuild:
     # Although the job runs on Ubuntu, but it will trigger a codebuild job that runs on Win
     runs-on: ubuntu-latest
+    environment: integ-test
     steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -28,9 +35,14 @@ jobs:
           project-name: EBCLI-codetest-windows
   AmazonLinuxBuild:
     runs-on: ubuntu-latest
+    environment: integ-test
     steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
