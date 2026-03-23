@@ -684,6 +684,7 @@ class TestCreateE2E(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.controllers.create._determine_platform')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.check_dns_availability')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -692,6 +693,7 @@ class TestCreateE2E(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
+            check_dns_availability_mock,
             _determine_platform_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
@@ -700,6 +702,7 @@ class TestCreateE2E(TestCreateBase):
     ):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
+        check_dns_availability_mock.return_value = (True, 'my-awesome-env.us-west-2.elasticbeanstalk.com')
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
@@ -738,6 +741,7 @@ class TestCreateE2E(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.controllers.create._determine_platform')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.check_dns_availability')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -746,6 +750,7 @@ class TestCreateE2E(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
+            check_dns_availability_mock,
             _determine_platform_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
@@ -754,6 +759,7 @@ class TestCreateE2E(TestCreateBase):
     ):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
+        check_dns_availability_mock.return_value = (True, 'my-awesome-env.us-west-2.elasticbeanstalk.com')
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
@@ -882,6 +888,7 @@ class TestCreateE2E(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.controllers.create._determine_platform')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.check_dns_availability')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.controllers.create.get_unique_cname')
@@ -892,6 +899,7 @@ class TestCreateE2E(TestCreateBase):
             get_unique_cname_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
+            check_dns_availability_mock,
             _determine_platform_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
@@ -899,6 +907,7 @@ class TestCreateE2E(TestCreateBase):
     ):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
+        check_dns_availability_mock.return_value = (True, self.app_name + '-dev.us-west-2.elasticbeanstalk.com')
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = self.app_name + '-dev'
@@ -1631,6 +1640,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     @mock.patch('ebcli.core.io.get_pass')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.controllers.create._determine_platform')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.check_dns_availability')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -1639,6 +1649,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
+            check_dns_availability_mock,
             _determine_platform_mock,
             make_new_env_mock,
             get_pass_mock,
@@ -1648,6 +1659,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     ):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
+        check_dns_availability_mock.return_value = (True, 'my-awesome-env.us-west-2.elasticbeanstalk.com')
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
@@ -1702,6 +1714,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.controllers.create._determine_platform')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.check_dns_availability')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -1710,6 +1723,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
+            check_dns_availability_mock,
             _determine_platform_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
@@ -1719,6 +1733,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     ):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
+        check_dns_availability_mock.return_value = (True, 'my-awesome-env.us-west-2.elasticbeanstalk.com')
         get_default_keyname_mock.return_value = None
         get_unique_cname_mock.return_value = 'my-awesome-env'
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
@@ -1770,6 +1785,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.controllers.create._determine_platform')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.check_dns_availability')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -1778,6 +1794,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
+            check_dns_availability_mock,
             _determine_platform_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
@@ -1786,6 +1803,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     ):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
+        check_dns_availability_mock.return_value = (True, 'my-awesome-env.us-west-2.elasticbeanstalk.com')
         get_default_keyname_mock.return_value = None
         get_unique_cname_mock.return_value = 'my-awesome-env'
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
@@ -1885,6 +1903,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     @mock.patch('ebcli.core.io.get_boolean_response')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.controllers.create._determine_platform')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.check_dns_availability')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -1895,6 +1914,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
+            check_dns_availability_mock,
             _determine_platform_mock,
             make_new_env_mock,
             get_boolean_response_mock,
@@ -1904,6 +1924,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     ):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
+        check_dns_availability_mock.return_value = (True, 'my-awesome-env.us-west-2.elasticbeanstalk.com')
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
@@ -2029,6 +2050,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     @mock.patch('ebcli.core.io.get_boolean_response')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.controllers.create._determine_platform')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.check_dns_availability')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -2037,6 +2059,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
+            check_dns_availability_mock,
             _determine_platform_mock,
             make_new_env_mock,
             get_boolean_response_mock,
@@ -2046,6 +2069,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     ):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
+        check_dns_availability_mock.return_value = (True, 'my-awesome-env.us-west-2.elasticbeanstalk.com')
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_unique_cname_mock.return_value = 'my-awesome-env'
@@ -2158,6 +2182,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     @mock.patch('ebcli.controllers.create.get_unique_environment_name')
     @mock.patch('ebcli.operations.createops.make_new_env')
     @mock.patch('ebcli.controllers.create._determine_platform')
+    @mock.patch('ebcli.controllers.create.elasticbeanstalk.check_dns_availability')
     @mock.patch('ebcli.controllers.create.elasticbeanstalk.is_cname_available')
     @mock.patch('ebcli.operations.commonops.get_default_keyname')
     @mock.patch('ebcli.operations.spotops.get_spot_request_from_customer')
@@ -2168,6 +2193,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
             get_spot_request_from_customer_mock,
             get_default_keyname_mock,
             is_cname_available_mock,
+            check_dns_availability_mock,
             _determine_platform_mock,
             make_new_env_mock,
             get_unique_environment_name_mock,
@@ -2178,6 +2204,7 @@ class TestCreateWithDatabaseAndVPCE2E(TestCreateBase):
     ):
         _determine_platform_mock.return_value = self.solution
         is_cname_available_mock.return_value = True
+        check_dns_availability_mock.return_value = (True, 'my-awesome-env.us-west-2.elasticbeanstalk.com')
         get_default_keyname_mock.return_value = None
         get_unique_environment_name_mock.return_value = self.app_name + '-dev'
         get_spot_request_from_customer_mock.return_value = None
