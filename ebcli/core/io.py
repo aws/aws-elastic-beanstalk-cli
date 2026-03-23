@@ -233,6 +233,7 @@ def validate_action(output, expected_input):
 def prompt_for_cname(default=None):
     while True:
         echo('Enter DNS CNAME prefix')
+        echo('(This will be part of your environment URL: prefix.region.elasticbeanstalk.com)')
         if default:
             cname = prompt('default is ' + default)
         else:

@@ -425,6 +425,18 @@ def is_cname_available(cname):
     return result['Available']
 
 
+def check_dns_availability(cname):
+    """Check DNS availability and return both availability and the fully qualified CNAME.
+
+    :param cname: the CNAME prefix to check
+    :return: tuple of (is_available, fully_qualified_cname)
+    """
+    LOG.debug('Inside check_dns_availability api wrapper')
+    result = _make_api_call('check_dns_availability',
+                            CNAMEPrefix=cname)
+    return result['Available'], result.get('FullyQualifiedCNAME')
+
+
 def swap_environment_cnames(source_env, dest_env):
     LOG.debug('Inside swap_environment_cnames api wrapper')
     result = _make_api_call('swap_environment_cnames',

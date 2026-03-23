@@ -526,8 +526,17 @@ def get_cname_from_customer(env_name):
     cname = get_unique_cname(env_name)
     while True:
         cname = io.prompt_for_cname(default=cname)
-        if cname and not elasticbeanstalk.is_cname_available(cname):
-            io.echo('That cname is not available. Please choose another.')
+        if cname:
+            available, fqdn = elasticbeanstalk.check_dns_availability(cname)
+            if not available:
+                message = 'That cname is not available.'
+                if fqdn:
+                    message = '{fqdn} is already in use.'.format(fqdn=fqdn)
+                io.echo(message + ' Please choose another.')
+            else:
+                if fqdn:
+                    io.echo('Your environment will be accessible at: {fqdn}'.format(fqdn=fqdn))
+                break
         else:
             break
     return cname
