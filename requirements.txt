@@ -9,8 +9,9 @@ semantic_version>=2.10.0,<2.11
 termcolor>=2.4.0,<3
 wcwidth>=0.2.13,<0.3
 PyYAML>=5.3.1,<6.1
-urllib3>=1.26.5,<2
-packaging>=24.2,<25.0
+urllib3>=1.26.5,<2; python_version < "3.10"
+urllib3>=1.26.5,<3; python_version >= "3.10"
+packaging>=24.2,<27.0
 blessed>=1.20.0
 fabric==3.2.2
 pythonnet>=3.0.5,<4 ; platform_system=="Windows"
