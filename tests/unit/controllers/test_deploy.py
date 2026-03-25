@@ -786,10 +786,12 @@ class TestGetOrCreateSourceBundle(unittest.TestCase):
             ]
         )
 
+    @mock.patch('ebcli.core.abstractcontroller.cli_update_exists', return_value=False)
     @mock.patch('ebcli.controllers.deploy.io.echo')
     def test_multiple_modules__one_or_more_of_the_specified_modules_lacks_an_env_yaml(
             self,
-            echo_mock
+            echo_mock,
+            cli_update_exists_mock
     ):
         os.mkdir('module-1')
         os.mkdir('module-2')
