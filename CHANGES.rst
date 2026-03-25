@@ -1,6 +1,14 @@
 Changelog
 =========
 --------------------
+3.27.1 (2026-03-25)
+--------------------
+- Improved `eb create` CNAME prompt to show how the prefix maps to the environment URL and display the full domain on success
+- Relaxed ``urllib3`` version constraint to allow 2.x on Python 3.10+
+- Relaxed ``packaging`` version constraint to ``<27.0``
+- Fixed GitHub Actions CI and added unit test workflow for PRs
+
+--------------------
 3.27 (2026-03-16)
 --------------------
 - Added `--analyze` flag to `eb logs` command for AI-powered log analysis
