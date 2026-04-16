@@ -203,7 +203,7 @@ def multithreaded_upload(bucket, key, file_path):
         if not _all_parts_were_uploaded(etaglist, total_parts):
             LOG.debug('Uploaded {0} parts, but should have uploaded {1} parts.'
                       .format(len(etaglist), total_parts))
-            raise UploadError('An error occured while uploading Application Version. '
+            raise UploadError('An error occurred while uploading Application Version. '
                               'Use the --debug option for more information if the problem persists.')
         result = _make_api_call(
             'complete_multipart_upload',
