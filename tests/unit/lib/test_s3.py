@@ -444,7 +444,7 @@ class TestS3(unittest.TestCase):
         with self.assertRaises(s3.UploadError) as context_manager:
             s3.multithreaded_upload('bucket', 'key', 'tempfile.txt')
         self.assertEqual(
-            'An error occured while uploading Application Version. Use the --debug option for more information if the problem persists.',
+            'An error occurred while uploading Application Version. Use the --debug option for more information if the problem persists.',
             str(context_manager.exception)
         )
 
