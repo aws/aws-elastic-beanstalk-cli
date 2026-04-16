@@ -117,7 +117,7 @@ class NotInitializedError(EBCLIException):
 
 
 class NoSourceControlError(EBCLIException):
-    """  Error occured because a source control system
+    """  Error occurred because a source control system
     can not be found in the current directory
      """
     pass
@@ -187,7 +187,7 @@ class FileTooLargeError(EBCLIException):
 
 
 class UploadError(EBCLIException):
-    """ An error occured while uploading app version
+    """ An error occurred while uploading app version
     """
 
 
