@@ -66,14 +66,13 @@ class TestLocalState(TestCase):
     def test_constructor(self):
         self.assertEqual(self.envvarcollector, self.localstate.envvarcollector)
 
-    @patch('ebcli.operations.localops.cPickle')
+    @patch('ebcli.operations.localops._SafeUnpickler')
     @patch('ebcli.operations.localops.fileoperations')
-    def test_loads(self, fileoperations, cPickle):
+    def test_loads(self, fileoperations, safe_unpickler):
         fileoperations.read_from_data_file.return_value = b'foo'
-        cPickle.loads.return_value = self.localstate
+        safe_unpickler.return_value.load.return_value = self.localstate
 
         self.assertEqual(self.localstate, LocalState.loads(LOCAL_STATE_PATH))
-        cPickle.loads.assert_called_once_with(b'foo')
 
     @patch('ebcli.operations.localops.LocalState.loads')
     def test_get_envvarcollector(self, loads):
@@ -81,3 +80,28 @@ class TestLocalState(TestCase):
 
         self.assertEqual(self.envvarcollector,
                          LocalState.get_envvarcollector(LOCAL_STATE_PATH))
+
+    @patch('ebcli.operations.localops.fileoperations')
+    def test_loads_rejects_unlisted_class(self, fileoperations):
+        """Verify that a pickle containing a class not in the allowlist is rejected."""
+        import pickle
+        fileoperations.read_from_data_file.return_value = pickle.dumps(
+            object(), protocol=2)
+
+        result = LocalState.loads(LOCAL_STATE_PATH)
+
+        self.assertIsInstance(result, LocalState)
+        self.assertDictEqual({}, result.envvarcollector.map)
+
+    def test_dumps_loads_roundtrip(self):
+        """Verify dumps/loads round-trip through real pickle."""
+        import os, tempfile
+        tmpdir = tempfile.mkdtemp()
+        path = os.path.join(tmpdir, '.localstate')
+        try:
+            self.localstate.dumps(path)
+            result = LocalState.loads(path)
+            self.assertDictEqual(self.envvarcollector.map, result.envvarcollector.map)
+        finally:
+            os.remove(path)
+            os.rmdir(tmpdir)
