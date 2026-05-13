@@ -10,7 +10,8 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
-from botocore.compat import six
+import io as _io
+import pickle
 
 from ebcli.containers.envvarcollector import EnvvarCollector
 from ebcli.containers.pathconfig import PathConfig
@@ -18,7 +19,21 @@ from ebcli.core import fileoperations, io
 from ebcli.lib import utils
 from ebcli.operations import commonops, envvarops
 from ebcli.resources.strings import strings
-cPickle = six.moves.cPickle
+
+
+class _SafeUnpickler(pickle.Unpickler):
+    """Only allow deserializing LocalState and EnvvarCollector."""
+    _ALLOWED = {
+        ('ebcli.operations.localops', 'LocalState'),
+        ('ebcli.containers.envvarcollector', 'EnvvarCollector'),
+        ('__builtin__', 'set'),
+        ('builtins', 'set'),
+    }
+
+    def find_class(self, module, name):
+        if (module, name) in self._ALLOWED:
+            return super().find_class(module, name)
+        raise pickle.UnpicklingError(f"Forbidden: {module}.{name}")
 
 
 class LocalState(object):
@@ -30,15 +45,15 @@ class LocalState(object):
         self.envvarcollector = envvarcollector
 
     def dumps(self, path):
-        fileoperations.write_to_data_file(data=cPickle.dumps(self, protocol=2),
+        fileoperations.write_to_data_file(data=pickle.dumps(self, protocol=2),
                                           location=path)
 
     @classmethod
     def loads(cls, path):
         try:
             data = fileoperations.read_from_data_file(path)
-            return cPickle.loads(data)
-        except IOError:
+            return _SafeUnpickler(_io.BytesIO(data)).load()
+        except (IOError, pickle.UnpicklingError):
             return cls(EnvvarCollector())
 
     @classmethod

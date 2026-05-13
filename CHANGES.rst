@@ -1,6 +1,11 @@
 Changelog
 =========
 --------------------
+3.27.2 (2026-05-13)
+--------------------
+- Restrict pickle class loading for ``.localstate`` deserialization in ``eb local`` commands
+
+--------------------
 3.27.1 (2026-03-25)
 --------------------
 - Improved `eb create` CNAME prompt to show how the prefix maps to the environment URL and display the full domain on success
