@@ -12,7 +12,6 @@
 # language governing permissions and limitations under the License.
 import os
 import re
-from zipfile import ZipFile
 
 from cement.utils.misc import minimal_logger
 
@@ -164,7 +163,7 @@ def download_and_extract_sample_app(env_name):
         zip_file_location = '.elasticbeanstalk/.sample_app_download.zip'
         io.echo('INFO: {}'.format(strings['create.downloading_sample_application']))
         download_application_version(url, zip_file_location)
-        ZipFile(zip_file_location, 'r', allowZip64=True).extractall()
+        fileoperations.unzip_folder(zip_file_location, os.getcwd())
         os.remove(zip_file_location)
         io.echo('INFO: {}'.format(strings['create.sample_application_download_complete']))
     except NotAuthorizedError as e:

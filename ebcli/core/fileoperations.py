@@ -40,7 +40,8 @@ from ebcli.resources.strings import prompts, strings
 from ebcli.objects.exceptions import (
     NotInitializedError,
     InvalidSyntaxError,
-    NotFoundError
+    NotFoundError,
+    ValidationError
 )
 from ebcli.core.ebglobals import Constants
 
@@ -482,14 +483,19 @@ def unzip_folder(file_location, directory):
     if not os.path.isdir(directory):
         os.makedirs(directory)
 
-    zip = zipfile.ZipFile(file_location, 'r', allowZip64=True)
-    for cur_file in zip.namelist():
-        if not cur_file.endswith('/'):
-            root, name = os.path.split(cur_file)
-            path = os.path.normpath(os.path.join(directory, root))
-            if not os.path.isdir(path):
-                os.makedirs(path)
-            open(os.path.join(path, name), 'wb').write(zip.read(cur_file))
+    real_directory = os.path.realpath(directory)
+    with zipfile.ZipFile(file_location, 'r', allowZip64=True) as zf:
+        for cur_file in zf.namelist():
+            if not cur_file.endswith('/'):
+                root, name = os.path.split(cur_file)
+                path = os.path.normpath(os.path.join(directory, root))
+                target_file = os.path.realpath(os.path.join(path, name))
+                if not target_file.startswith(real_directory + os.sep):
+                    raise ValidationError(
+                        'Zip entry "{}" would extract outside the target directory'.format(cur_file))
+                if not os.path.isdir(path):
+                    os.makedirs(path)
+                open(os.path.join(path, name), 'wb').write(zf.read(cur_file))
 
 
 def delete_app_file(app_name):
