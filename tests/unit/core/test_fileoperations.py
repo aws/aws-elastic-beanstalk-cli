@@ -25,7 +25,7 @@ from mock import call, patch, Mock
 
 from ebcli.core import fileoperations
 from ebcli.objects.buildconfiguration import BuildConfiguration
-from ebcli.objects.exceptions import NotInitializedError, NotFoundError
+from ebcli.objects.exceptions import NotInitializedError, NotFoundError, ValidationError
 
 
 class TestFileOperations(unittest.TestCase):
@@ -1060,3 +1060,63 @@ aws_secret_access_key = my-secret-key""",
         actual = fileoperations._validate_file_for_archive(filepath)
 
         self.assertFalse(actual)
+
+
+class TestUnzipFolderPathTraversal(unittest.TestCase):
+    def setUp(self):
+        self.test_dir = os.path.join(os.path.dirname(__file__), '_test_unzip_traversal')
+        self.extract_dir = os.path.join(self.test_dir, 'extract')
+        os.makedirs(self.extract_dir, exist_ok=True)
+
+    def tearDown(self):
+        shutil.rmtree(self.test_dir, ignore_errors=True)
+
+    def _make_zip(self, entries, zip_path=None):
+        if zip_path is None:
+            zip_path = os.path.join(self.test_dir, 'test.zip')
+        with zipfile.ZipFile(zip_path, 'w') as zf:
+            for name, content in entries.items():
+                zf.writestr(name, content)
+        return zip_path
+
+    def test_unzip_folder__normal_entries_extract_correctly(self):
+        zip_path = self._make_zip({
+            'app.py': 'print("hello")',
+            'subdir/config.yml': 'key: value',
+            'a/b/c/deep.txt': 'deep content',
+            './foo/bar.txt': 'content',
+        })
+        fileoperations.unzip_folder(zip_path, self.extract_dir)
+
+        self.assertTrue(os.path.exists(os.path.join(self.extract_dir, 'app.py')))
+        self.assertTrue(os.path.exists(os.path.join(self.extract_dir, 'subdir', 'config.yml')))
+        self.assertTrue(os.path.exists(os.path.join(self.extract_dir, 'a', 'b', 'c', 'deep.txt')))
+        self.assertTrue(os.path.exists(os.path.join(self.extract_dir, 'foo', 'bar.txt')))
+
+    def test_unzip_folder__path_traversal_raises_error(self):
+        zip_path = self._make_zip({
+            '../../../tmp/pwned.txt': 'PWNED',
+        })
+        with self.assertRaises(ValidationError):
+            fileoperations.unzip_folder(zip_path, self.extract_dir)
+
+        self.assertFalse(os.path.exists(os.path.join(self.test_dir, 'pwned.txt')))
+
+    def test_unzip_folder__absolute_path_entry_raises_error(self):
+        zip_path = self._make_zip({
+            '/tmp/absolute_pwned.txt': 'PWNED',
+        })
+        with self.assertRaises(ValidationError):
+            fileoperations.unzip_folder(zip_path, self.extract_dir)
+
+    def test_unzip_folder__legitimate_deep_and_redundant_paths(self):
+        zip_path = self._make_zip({
+            'a/b/c/d/e/deep.txt': 'deep content',
+            './foo/bar.txt': 'content1',
+            'foo//baz.txt': 'content2',
+        })
+        fileoperations.unzip_folder(zip_path, self.extract_dir)
+
+        self.assertTrue(os.path.exists(os.path.join(self.extract_dir, 'a', 'b', 'c', 'd', 'e', 'deep.txt')))
+        self.assertTrue(os.path.exists(os.path.join(self.extract_dir, 'foo', 'bar.txt')))
+        self.assertTrue(os.path.exists(os.path.join(self.extract_dir, 'foo', 'baz.txt')))

@@ -1,6 +1,11 @@
 Changelog
 =========
 --------------------
+3.27.3 (2026-06-29)
+--------------------
+- Fix path traversal vulnerability in zip extraction for ``eb labs download`` and ``eb create``
+
+--------------------
 3.27.2 (2026-05-13)
 --------------------
 - Restrict pickle class loading for ``.localstate`` deserialization in ``eb local`` commands

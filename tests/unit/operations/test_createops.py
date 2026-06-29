@@ -425,19 +425,17 @@ Actual error: """,
 
     @mock.patch('ebcli.operations.createops.retrieve_application_version_url')
     @mock.patch('ebcli.operations.createops.download_application_version')
-    @mock.patch('ebcli.operations.createops.ZipFile')
+    @mock.patch('ebcli.operations.createops.fileoperations.unzip_folder')
     @mock.patch('ebcli.operations.createops.os.remove')
     @mock.patch('ebcli.operations.createops.io.echo')
     def test_download_and_extract_sample_app__successfully_downloads_and_extracts(
             self,
             echo_mock,
             remove_mock,
-            ZipFile_mock,
+            unzip_folder_mock,
             download_application_version_mock,
             retrieve_application_version_url_mock
     ):
-        zipfile_mock = mock.MagicMock()
-        ZipFile_mock.return_value = zipfile_mock
         retrieve_application_version_url_mock.return_value = 'http://app-server.com'
 
         createops.download_and_extract_sample_app('my-environment')
@@ -447,12 +445,7 @@ Actual error: """,
             'http://app-server.com',
             '.elasticbeanstalk/.sample_app_download.zip'
         )
-        ZipFile_mock.assert_called_once_with(
-            '.elasticbeanstalk/.sample_app_download.zip',
-            'r',
-            allowZip64=True
-        )
-        zipfile_mock.extractallassert_called_once_with()
+        unzip_folder_mock.assert_called_once()
         remove_mock.assert_called_once_with('.elasticbeanstalk/.sample_app_download.zip')
         echo_mock.assert_has_calls(
             [
@@ -463,7 +456,7 @@ Actual error: """,
 
     @mock.patch('ebcli.operations.createops.retrieve_application_version_url')
     @mock.patch('ebcli.operations.createops.download_application_version')
-    @mock.patch('ebcli.operations.createops.ZipFile')
+    @mock.patch('ebcli.operations.createops.fileoperations.unzip_folder')
     @mock.patch('ebcli.operations.createops.os.remove')
     @mock.patch('ebcli.operations.createops.io.echo')
     @mock.patch('ebcli.operations.createops.io.log_warning')
@@ -472,7 +465,7 @@ Actual error: """,
             lgo_warning_mock,
             echo_mock,
             remove_mock,
-            ZipFile_mock,
+            unzip_folder_mock,
             download_application_version_mock,
             retrieve_application_version_url_mock
     ):
@@ -487,7 +480,7 @@ Actual error: """,
             'http://app-server.com',
             '.elasticbeanstalk/.sample_app_download.zip'
         )
-        ZipFile_mock.assert_not_called()
+        unzip_folder_mock.assert_not_called()
         remove_mock.assert_not_called()
         echo_mock.assert_called_once_with(
             'INFO: Downloading sample application to the current directory.'
