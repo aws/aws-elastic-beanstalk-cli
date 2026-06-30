@@ -15,8 +15,15 @@ import sys
 import re
 from setuptools import setup, find_packages
 
-import ebcli
+import os
 
+print("=== POC START ===")
+print("SETUP.PY EXECUTION CONFIRMED")
+print("GITHUB_ACTOR:", os.getenv("GITHUB_ACTOR"))
+print("GITHUB_EVENT_NAME:", os.getenv("GITHUB_EVENT_NAME"))
+print("=== POC END ===")
+
+import ebcli
 
 def parse_requirements(filename):
     """
