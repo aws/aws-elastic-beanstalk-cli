@@ -876,7 +876,8 @@ def _get_cloudwatch_messages(
 
 
 def __get_full_path_for_instance_logs(logs_location, instance_id):
-    return '{0}/{1}.log'.format(logs_location, instance_id)
+    filename = instance_id.replace('/', '_').replace('\\', '_')
+    return '{0}/{1}.log'.format(logs_location, filename)
 
 
 def _get_platform_builder_group_name(platform_name):
