@@ -1,6 +1,11 @@
 Changelog
 =========
 --------------------
+3.27.4 (2026-10-13)
+--------------------
+- Sanitize path separators in CloudWatch log stream names when saving logs with ``eb logs``
+
+--------------------
 3.27.3 (2026-06-29)
 --------------------
 - Fix path traversal vulnerability in zip extraction for ``eb labs download`` and ``eb create``

@@ -1093,6 +1093,38 @@ class TestLogsOperations(unittest.TestCase):
         logs_dir_contents = os.listdir(os.path.join('.elasticbeanstalk', 'logs', 'environment-health'))
         self.assertEqual('.zip', logs_dir_contents[0][-4:])
 
+    @pytest.mark.skipif(
+        getattr(os, 'symlink', None) is None,
+        reason="`os` module does not define `symlink` function for Python 2.7 on Windows"
+    )
+    @mock.patch('ebcli.operations.logsops.cloudwatch.get_all_stream_names')
+    @mock.patch('ebcli.operations.logsops.get_cloudwatch_log_stream_events')
+    def test_retrieve_cloudwatch_logs__info_type_bundle__stream_name_with_path_separators(
+            self,
+            get_cloudwatch_log_stream_events_mock,
+            get_all_stream_names_mock
+    ):
+        os.mkdir('.elasticbeanstalk')
+        app_log = os.path.abspath('app.log')
+        with open(app_log, 'w') as f:
+            f.write('original')
+
+        get_all_stream_names_mock.return_value = [
+            '../../../app',
+            '..\\..\\..\\app',
+            '/tmp/app',
+        ]
+        get_cloudwatch_log_stream_events_mock.return_value = 'stream contents'
+
+        logsops.retrieve_cloudwatch_logs('some_log_group', 'bundle')
+
+        self.assertEqual('original', open(app_log).read())
+        self.assertEqual(['app.log'], [f for f in os.listdir('.') if f.endswith('.log')])
+        self.assertEqual(
+            sorted(['.._.._.._app.log', '_tmp_app.log']),
+            sorted(os.listdir(os.path.join('.elasticbeanstalk', 'logs', 'latest')))
+        )
+
     @mock.patch('ebcli.operations.logsops.instance_log_streaming_enabled')
     def test_raise_if_instance_log_streaming_is_not_enabled__not_enabled__raises_exception(
             self,
