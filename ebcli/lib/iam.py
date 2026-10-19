@@ -10,12 +10,19 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import json
 import re
 
 from cement.utils.misc import minimal_logger
 
+from ebcli.core import io
 from ebcli.lib import aws
-from ebcli.objects.exceptions import AlreadyExistsError
+from ebcli.objects.exceptions import (
+    AlreadyExistsError,
+    NotAuthorizedError,
+    NotAuthorizedInRegionError,
+)
+from ebcli.resources.strings import strings
 
 LOG = minimal_logger(__name__)
 ACCOUNT_ID_REGEX = re.compile(r'arn:aws:iam::(\d+):.*')
@@ -117,9 +124,62 @@ def create_role_with_policy(role_name, trust_document, policy_arns, allow_recrea
     :param allow_recreate: Set to True to ignore AlreadyExistsError
     """
     ret = create_role(role_name, trust_document, allow_recreate=allow_recreate)
+    if ret is None:
+        policy_arns = _policies_safe_to_attach(role_name, trust_document, policy_arns)
     for arn in policy_arns:
         attach_role_policy(role_name, arn)
     return ret
+
+
+def _trusted_principals(trust_document):
+    """ Principals an assume role policy allows, with China endpoints folded in. """
+    if not isinstance(trust_document, dict):
+        trust_document = json.loads(trust_document)
+    statements = trust_document.get('Statement', [])
+    if isinstance(statements, dict):
+        statements = [statements]
+
+    principals = set()
+    for statement in statements:
+        if statement.get('Effect') != 'Allow':
+            continue
+        # NotPrincipal means everyone except the listed principals.
+        principal = '*' if 'NotPrincipal' in statement else statement.get('Principal', '*')
+        if not isinstance(principal, dict):
+            principal = {'AWS': principal}
+        for principal_type, values in principal.items():
+            if not isinstance(values, list):
+                values = [values]
+            for value in values:
+                if value.endswith('.amazonaws.com.cn'):
+                    value = value[:-len('.cn')]
+                principals.add('{}:{}'.format(principal_type, value))
+    return principals
+
+
+def _policies_safe_to_attach(role_name, expected_trust_document, policy_arns):
+    """
+    For a role that already existed, return the policies it is missing, or none
+    if its trust policy allows anything other than the expected service.
+    """
+    try:
+        attached = {p['PolicyArn'] for p in _make_api_call(
+            'list_attached_role_policies', RoleName=role_name)['AttachedPolicies']}
+        missing = [arn for arn in policy_arns if arn not in attached]
+        if not missing:
+            return []
+        trusted = _trusted_principals(get_role(role_name)['AssumeRolePolicyDocument'])
+    except (NotAuthorizedError, NotAuthorizedInRegionError):
+        io.log_warning(strings['iam.unreadablerole'].format(role_name=role_name))
+        return []
+
+    expected = _trusted_principals(expected_trust_document)
+    if trusted and trusted <= expected:
+        return missing
+    io.log_warning(strings['iam.untrustedrole'].format(
+        role_name=role_name,
+        expected=', '.join(sorted(p.split(':', 1)[1] for p in expected))))
+    return []
 
 
 def create_policy(policy_name, policy):
