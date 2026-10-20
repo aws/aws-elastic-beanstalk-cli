@@ -92,6 +92,14 @@ To get started, enter "eb platform init". Then enter "eb platform create".""",
                                     'on the most recent platform version. The version '
                                     'and increment options are mutually exclusive.',
 
+    'iam.untrustedrole': "IAM role '{role_name}' is missing policies Elastic Beanstalk needs, "
+                         "but its trust policy allows principals other than {expected}, so they "
+                         "were not attached. Review the role's trust policy, or use a different "
+                         "role.",
+
+    'iam.unreadablerole': "Unable to read IAM role '{role_name}', so the policies Elastic "
+                          "Beanstalk needs were not attached to it.",
+
     'platformcreateiamdescribeerror.info': "Insufficient IAM privileges. Unable to determine "
                                            "if instance profile '{profile_name}' exists, assuming "
                                            "that it exists.",
