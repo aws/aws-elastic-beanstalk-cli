@@ -89,15 +89,12 @@ def get_object_info(bucket, object_key):
     __raise_if_bucket_is_empty(result)
 
     objects = result['Contents']
-    if len(objects) == 1:
-        return objects[0]
-    else:
-        s3_object = next((s3_object for s3_object in objects if s3_object['Key'] == object_key), None)
+    s3_object = next((s3_object for s3_object in objects if s3_object['Key'] == object_key), None)
 
-        if not s3_object:
-            raise NotFoundError('Object not found.')
+    if not s3_object:
+        raise NotFoundError('Object not found.')
 
-        return s3_object
+    return s3_object
 
 
 def get_object(bucket, key):
@@ -175,11 +172,11 @@ def multithreaded_upload(bucket, key, file_path):
     total_parts = math.ceil(size / CHUNK_SIZE)  # Number of parts needed
     LOG.debug('Doing multi-threaded upload. Parts Needed=' + str(total_parts))
 
-    upload_id = _get_multipart_upload_id(bucket, key)
-    io.update_upload_progress(0)
+    upload_id = _create_multipart_upload(bucket, key)
 
     # Upload parts
     try:
+        io.update_upload_progress(0)
         etaglist = []  # list for part id's (etags)
         with open(file_path, 'rb') as f:
             # Create threads to handle parts of upload
@@ -216,8 +213,7 @@ def multithreaded_upload(bucket, key, file_path):
         return result
 
     except (Exception, KeyboardInterrupt):
-        # We dont want to clean up multipart in case a user decides to
-        # continue later
+        _abort_multipart_upload(bucket, key, upload_id)
         raise
 
 
@@ -254,21 +250,18 @@ def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id):
         if not data:
             LOG.debug('No data left, closing')
             return
-        # First check to see if s3 already has part
         for i in range(0, 5):
             try:
-                etag = _get_part_etag(bucket, key, part, upload_id)
-                if etag is None:
-                    b = BytesIO()
-                    b.write(data)
-                    b.seek(0)
-                    response = _make_api_call('upload_part',
-                                              Bucket=bucket,
-                                              Key=key,
-                                              UploadId=upload_id,
-                                              Body=b,
-                                              PartNumber=part)
-                    etag = response['ETag']
+                b = BytesIO()
+                b.write(data)
+                b.seek(0)
+                response = _make_api_call('upload_part',
+                                          Bucket=bucket,
+                                          Key=key,
+                                          UploadId=upload_id,
+                                          Body=b,
+                                          PartNumber=part)
+                etag = response['ETag']
 
                 etaglist.append({'PartNumber': part, 'ETag': etag})
 
@@ -285,45 +278,23 @@ def _upload_chunk(f, lock, etaglist, total_parts, bucket, key, upload_id):
                 LOG.debug('Exception raised: ' + str(e))
 
 
-def _get_part_etag(bucket, key, part, upload_id):
-    try:
-        response = _make_api_call(
-            'list_parts',
-            Bucket=bucket,
-            Key=key,
-            UploadId=upload_id
-        )
-    except Exception as e:
-        # We want to swallow all exceptions or else they will be printed
-        # as a stack trace to the Console
-        LOG.debug('Exception raised: ' + str(e))
-        return None
-
-    if 'Parts' not in response:
-        return None
-    etag = next((i['ETag'] for i in response['Parts']
-                 if i['PartNumber'] == part), None)
-    return etag
-
-
-def _get_multipart_upload_id(bucket, key):
-    # Check to see if multipart already exists
-    response = _make_api_call('list_multipart_uploads',
-                              Bucket=bucket,
-                              Prefix=key)
-
-    try:
-        for r in response['Uploads']:
-            if r['Key'] == key:
-                return r['UploadId']
-    except KeyError:
-        pass
-
+def _create_multipart_upload(bucket, key):
+    # Always start a new upload rather than resuming an existing one.
     response = _make_api_call('create_multipart_upload',
                               Bucket=bucket,
                               Key=key)
 
     return response['UploadId']
+
+
+def _abort_multipart_upload(bucket, key, upload_id):
+    try:
+        _make_api_call('abort_multipart_upload',
+                       Bucket=bucket,
+                       Key=key,
+                       UploadId=upload_id)
+    except Exception as e:
+        LOG.debug('Unable to abort multipart upload: ' + str(e))
 
 
 @static_var('part_num', 0)

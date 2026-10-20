@@ -2868,3 +2868,53 @@ asdfhjgksadfKHGHJ12334ASDGAHJSDG123123235/dsfadfakhgksdhjfgasdas
 
     def test_raise_if_inside_platform_workspace__directory_is_inited_with_application_workspace(self):
         commonops.raise_if_inside_platform_workspace()
+
+
+@mock.patch('ebcli.operations.commonops._create_application_version')
+@mock.patch('ebcli.operations.commonops.s3')
+@mock.patch('ebcli.operations.commonops.elasticbeanstalk.application_version_exists',
+            return_value=None)
+@mock.patch('ebcli.operations.commonops.elasticbeanstalk.get_storage_location',
+            return_value='bucket')
+class TestHandleUploadTarget(unittest.TestCase):
+    def _run(self, file_path, s3_key=None):
+        commonops.handle_upload_target(
+            'app', None, s3_key, 'app.zip', file_path, 'label', 'description', False, None)
+
+    def test_local_file_is_uploaded_when_key_is_free(self, _, version_exists, s3, create_version):
+        s3.get_object_info.side_effect = commonops.NotFoundError
+
+        self._run('/local/app.zip')
+
+        s3.upload_application_version.assert_called_once_with(
+            'bucket', 'app/app.zip', '/local/app.zip')
+        self.assertEqual('app/app.zip', create_version.call_args[0][4])
+
+    def test_local_file_is_uploaded_even_when_key_is_taken(self, _, version_exists, s3, create_version):
+        s3.get_object_info.return_value = {'Key': 'app/app.zip'}
+
+        self._run('/local/app.zip')
+
+        s3.upload_application_version.assert_called_once()
+        bucket, key, path = s3.upload_application_version.call_args[0]
+        self.assertEqual('/local/app.zip', path)
+        self.assertNotEqual('app/app.zip', key)
+        self.assertEqual(key, create_version.call_args[0][4])
+
+    def test_existing_version_bundle_is_reused_without_upload(self, _, version_exists, s3, create_version):
+        s3.get_object_info.return_value = {'Key': 'app/existing.zip'}
+
+        commonops.handle_upload_target(
+            'app', 'bucket', 'app/existing.zip', None, None, 'label', 'description', False, None)
+
+        s3.upload_application_version.assert_not_called()
+        self.assertEqual('app/existing.zip', create_version.call_args[0][4])
+
+    def test_reused_label_skips_upload(self, _, version_exists, s3, create_version):
+        """The existing version is deployed, so there is nothing to upload."""
+        s3.get_object_info.return_value = {'Key': 'app/app.zip'}
+        version_exists.return_value = {'VersionLabel': 'label'}
+
+        self._run('/local/app.zip')
+
+        s3.upload_application_version.assert_not_called()

@@ -14,6 +14,7 @@ import os
 import sys
 import time
 import typing
+import uuid
 from datetime import datetime, timedelta
 import platform
 import zipfile
@@ -569,11 +570,21 @@ def handle_upload_target(
     key = app_name + '/' + file_name if s3_key is None else s3_key
     try:
         s3.get_object_info(bucket, key)
-        io.log_info('S3 Object already exists. Skipping upload.')
+        key_taken = True
     except NotFoundError:
-        if file_name is None and file_path is None:
+        key_taken = False
+
+    if key_taken and (file_path is None
+                      or elasticbeanstalk.application_version_exists(app_name, version_label)):
+        io.log_info('S3 Object already exists. Skipping upload.')
+    else:
+        if not key_taken and file_name is None and file_path is None:
             raise NotFoundError('Application Version does not exist in the S3 bucket.'
                                 ' Try uploading the Application Version again.')
+        if key_taken:
+            # Upload the user's file under a new key. An existing version may use this one.
+            root, extension = os.path.splitext(key)
+            key = '{}-{}{}'.format(root, uuid.uuid4().hex[:12], extension)
 
         io.log_info('Uploading archive to s3 location: ' + key)
         if relative_to_project_root:
