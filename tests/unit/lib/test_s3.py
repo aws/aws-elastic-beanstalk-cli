@@ -127,7 +127,7 @@ class TestS3(unittest.TestCase):
         )
 
     @mock.patch('ebcli.lib.s3.aws.make_api_call')
-    def test_get_object_info__list_objects_called__exactly_one_object(
+    def test_get_object_info__list_objects_called__required_object_absent(
             self,
             make_api_call_mock
     ):
@@ -143,6 +143,16 @@ class TestS3(unittest.TestCase):
             Bucket='bucket',
             Prefix='absent-application/app-171205_194441.zip'
         )
+
+    @mock.patch('ebcli.lib.s3.aws.make_api_call')
+    def test_get_object_info__only_a_longer_key_shares_the_prefix(
+            self,
+            make_api_call_mock
+    ):
+        make_api_call_mock.return_value = {'Contents': [{'Key': 'app/app.zip.backup'}]}
+
+        with self.assertRaises(s3.NotFoundError):
+            s3.get_object_info('bucket', 'app/app.zip')
 
     @mock.patch('ebcli.lib.s3.aws.make_api_call')
     def test_get_object(
@@ -367,7 +377,7 @@ class TestS3(unittest.TestCase):
         s3._wait_for_threads(threads)
         s3._wait_for_threads([])
 
-    @mock.patch('ebcli.lib.s3._get_multipart_upload_id')
+    @mock.patch('ebcli.lib.s3._create_multipart_upload')
     @mock.patch('ebcli.lib.s3.io.update_upload_progress')
     @mock.patch('ebcli.lib.s3._wait_for_threads')
     @mock.patch('ebcli.lib.s3.aws.make_api_call')
@@ -380,7 +390,7 @@ class TestS3(unittest.TestCase):
             make_api_call_mock,
             _wait_for_threads_mock,
             update_upload_progress_mock,
-            _get_multipart_upload_id_mock
+            _create_multipart_upload_mock
     ):
         with open('tempfile.txt', 'w') as file:
             file.write('a' * 1000000)
@@ -396,20 +406,20 @@ class TestS3(unittest.TestCase):
             mock.MagicMock(),
         ]
         Thread_mock.side_effect = thread_mocks
-        _get_multipart_upload_id_mock.return_value = 'upload_id'
+        _create_multipart_upload_mock.return_value = 'upload_id'
         _all_parts_were_uploaded_mock.return_value = True
 
         self.assertTrue(
             s3.multithreaded_upload('bucket', 'key', 'tempfile.txt')
         )
-        _get_multipart_upload_id_mock.assert_called_once_with('bucket', 'key')
+        _create_multipart_upload_mock.assert_called_once_with('bucket', 'key')
         update_upload_progress_mock.assert_has_calls([mock.call(0)])
         _wait_for_threads_mock.assert_called_once_with(thread_mocks)
         make_api_call_mock.assert_called_once_with(
             's3', 'complete_multipart_upload', Bucket='bucket', Key='key', MultipartUpload={'Parts': []}, UploadId='upload_id'
         )
 
-    @mock.patch('ebcli.lib.s3._get_multipart_upload_id')
+    @mock.patch('ebcli.lib.s3._create_multipart_upload')
     @mock.patch('ebcli.lib.s3.io.update_upload_progress')
     @mock.patch('ebcli.lib.s3._wait_for_threads')
     @mock.patch('ebcli.lib.s3.aws.make_api_call')
@@ -422,7 +432,7 @@ class TestS3(unittest.TestCase):
             make_api_call_mock,
             _wait_for_threads_mock,
             update_upload_progress_mock,
-            _get_multipart_upload_id_mock
+            _create_multipart_upload_mock
     ):
         with open('tempfile.txt', 'w') as file:
             file.write('a' * 1000000)
@@ -438,7 +448,7 @@ class TestS3(unittest.TestCase):
             mock.MagicMock(),
         ]
         Thread_mock.side_effect = thread_mocks
-        _get_multipart_upload_id_mock.return_value = 'upload_id'
+        _create_multipart_upload_mock.return_value = 'upload_id'
         _all_parts_were_uploaded_mock.return_value = False
 
         with self.assertRaises(s3.UploadError) as context_manager:
@@ -448,12 +458,13 @@ class TestS3(unittest.TestCase):
             str(context_manager.exception)
         )
 
-        _get_multipart_upload_id_mock.assert_called_once_with('bucket', 'key')
+        _create_multipart_upload_mock.assert_called_once_with('bucket', 'key')
         update_upload_progress_mock.assert_has_calls([mock.call(0)])
         _wait_for_threads_mock.assert_called_once_with(thread_mocks)
-        make_api_call_mock.assert_not_called()
+        make_api_call_mock.assert_called_once_with(
+            's3', 'abort_multipart_upload', Bucket='bucket', Key='key', UploadId='upload_id')
 
-    @mock.patch('ebcli.lib.s3._get_multipart_upload_id')
+    @mock.patch('ebcli.lib.s3._create_multipart_upload')
     @mock.patch('ebcli.lib.s3.io.update_upload_progress')
     @mock.patch('ebcli.lib.s3._wait_for_threads')
     @mock.patch('ebcli.lib.s3.aws.make_api_call')
@@ -466,7 +477,7 @@ class TestS3(unittest.TestCase):
             make_api_call_mock,
             _wait_for_threads_mock,
             update_upload_progress_mock,
-            _get_multipart_upload_id_mock
+            _create_multipart_upload_mock
     ):
         with open('tempfile.txt', 'w') as file:
             file.write('a' * 10000)
@@ -482,42 +493,49 @@ class TestS3(unittest.TestCase):
             mock.MagicMock(),
         ]
         Thread_mock.side_effect = thread_mocks
-        _get_multipart_upload_id_mock.return_value = 'upload_id'
+        _create_multipart_upload_mock.return_value = 'upload_id'
         _all_parts_were_uploaded_mock.return_value = True
         make_api_call_mock.side_effect = Exception
 
         with self.assertRaises(Exception):
             s3.multithreaded_upload('bucket', 'key', 'tempfile.txt')
 
-        _get_multipart_upload_id_mock.assert_called_once_with('bucket', 'key')
+        _create_multipart_upload_mock.assert_called_once_with('bucket', 'key')
         update_upload_progress_mock.assert_has_calls([mock.call(0)])
         _wait_for_threads_mock.assert_called_once_with(thread_mocks)
+
+    @mock.patch('ebcli.lib.s3._abort_multipart_upload')
+    @mock.patch('ebcli.lib.s3._create_multipart_upload', return_value='upload_id')
+    @mock.patch('ebcli.lib.s3.io.update_upload_progress', side_effect=Exception)
+    @mock.patch('ebcli.lib.s3.os.path.getsize', return_value=10 * 1024 * 1024)
+    def test_multithreaded_upload__early_failure_still_aborts(
+            self,
+            getsize_mock,
+            update_upload_progress_mock,
+            create_mock,
+            abort_mock
+    ):
+        with self.assertRaises(Exception):
+            s3.multithreaded_upload('bucket', 'key', 'file')
+
+        abort_mock.assert_called_once_with('bucket', 'key', 'upload_id')
 
     @mock.patch('ebcli.lib.s3.io.update_upload_progress')
     @mock.patch('ebcli.lib.s3.aws.make_api_call')
     @mock.patch('ebcli.lib.s3._read_next_section_from_file')
-    @mock.patch('ebcli.lib.s3._get_part_etag')
     @mock.patch('ebcli.lib.s3.BytesIO')
     def test_upload_chunk(
             self,
             BytesIO_mock,
-            _get_part_etag_mock,
             _read_next_section_from_file_mock,
             make_api_call_mock,
             update_upload_progress_mock
     ):
+        """Every part is uploaded from the local file."""
         bytes_io_instance_mock = mock.MagicMock()
         BytesIO_mock.return_value = bytes_io_instance_mock
-        _read_next_section_from_file_mock.return_value = ('data', 'part')
-        with open('tempfile.txt', 'w') as file:
-            file.write('a' * 10000)
-
-        _get_part_etag_mock.side_effect = [
-            None,
-            {'ETag': 'Tag 1'},
-            s3.EndOfTestError
-        ]
-        make_api_call_mock.return_value = 'response 1'
+        _read_next_section_from_file_mock.side_effect = [('data', 'part'), (None, None)]
+        make_api_call_mock.return_value = {'ETag': 'Tag 1'}
         lock = threading.Lock()
         file_mock = mock.MagicMock()
         etaglist = []
@@ -525,143 +543,28 @@ class TestS3(unittest.TestCase):
 
         s3._upload_chunk(file_mock, lock, etaglist, total_parts, 'bucket', 'key', 'upload_id')
 
+        self.assertEqual([{'PartNumber': 'part', 'ETag': 'Tag 1'}], etaglist)
         update_upload_progress_mock.assert_called_once_with(0.125)
         make_api_call_mock.assert_called_once_with(
             's3',
             'upload_part',
             Body=bytes_io_instance_mock, Bucket='bucket', Key='key', PartNumber='part', UploadId='upload_id'
         )
-        _read_next_section_from_file_mock.assert_has_calls(
-            [
-                mock.call(file_mock, lock),
-                mock.call(file_mock, lock),
-            ]
-        )
 
     @mock.patch('ebcli.lib.s3.aws.make_api_call')
-    def test_get_part_etag__required_attribute_not_in_response(
+    def test_create_multipart_upload__never_resumes_an_existing_upload(
             self,
             make_api_call_mock
     ):
-        make_api_call_mock.return_value = {}
+        make_api_call_mock.return_value = {'UploadId': 1}
 
-        self.assertIsNone(s3._get_part_etag('bucket', 'key', 1, 'upload-id'))
+        self.assertEqual(1, s3._create_multipart_upload('bucket', 'key'))
 
         make_api_call_mock.assert_called_once_with(
             's3',
-            'list_parts',
+            'create_multipart_upload',
             Bucket='bucket',
-            Key='key',
-            UploadId='upload-id'
-        )
-
-    @mock.patch('ebcli.lib.s3.aws.make_api_call')
-    def test_get_part_etag__required_attribute_present__etag_found(
-            self,
-            make_api_call_mock
-    ):
-        make_api_call_mock.return_value = {
-            'Parts': [
-                {
-                    'ETag': 'etag',
-                    'PartNumber': 1,
-                }
-            ]
-        }
-
-        self.assertEqual('etag', s3._get_part_etag('bucket', 'key', 1, 'upload-id'))
-
-        make_api_call_mock.assert_called_once_with(
-            's3',
-            'list_parts',
-            Bucket='bucket',
-            Key='key',
-            UploadId='upload-id'
-        )
-
-    @mock.patch('ebcli.lib.s3.aws.make_api_call')
-    def test_get_part_etag__required_attribute_present__etag_not_found(
-            self,
-            make_api_call_mock
-    ):
-        make_api_call_mock.return_value = {
-            'Parts': [
-                {
-                    'ETag': 'etag',
-                    'PartNumber': 2,
-                }
-            ]
-        }
-
-        self.assertIsNone(s3._get_part_etag('bucket', 'key', 1, 'upload-id'))
-
-        make_api_call_mock.assert_called_once_with(
-            's3',
-            'list_parts',
-            Bucket='bucket',
-            Key='key',
-            UploadId='upload-id'
-        )
-
-    @mock.patch('ebcli.lib.s3.aws.make_api_call')
-    def test_get_multipart_upload_id__upload_id_found(
-            self,
-            make_api_call_mock
-    ):
-        make_api_call_mock.return_value = {
-            'Uploads': [
-                {
-                    'Key': 'key',
-                    'UploadId': 1,
-                }
-            ]
-        }
-
-        self.assertEqual(1, s3._get_multipart_upload_id('bucket', 'key'))
-
-        make_api_call_mock.assert_called_once_with(
-            's3',
-            'list_multipart_uploads',
-            Bucket='bucket',
-            Prefix='key'
-        )
-
-    @mock.patch('ebcli.lib.s3.aws.make_api_call')
-    def test_get_multipart_upload_id__upload_id_absent_in_response_of_list_multipart_uploads__multipart_upload_created(
-            self,
-            make_api_call_mock
-    ):
-        make_api_call_mock.side_effect = [
-            {
-                'Uploads': [
-                    {
-                        'Key': 'key',
-                    }
-                ]
-            },
-            {
-                'UploadId': 1
-            }
-
-        ]
-
-        self.assertEqual(1, s3._get_multipart_upload_id('bucket', 'key'))
-
-        make_api_call_mock.assert_has_calls(
-            [
-                mock.call(
-                    's3',
-                    'list_multipart_uploads',
-                    Bucket='bucket',
-                    Prefix='key'
-                ),
-                mock.call(
-                    's3',
-                    'create_multipart_upload',
-                    Bucket='bucket',
-                    Key='key'
-                )
-            ]
+            Key='key'
         )
 
     def test_read_next_section_from_file(self):

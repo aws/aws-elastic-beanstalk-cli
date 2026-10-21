@@ -1,6 +1,12 @@
 Changelog
 =========
 --------------------
+3.27.5 (2026-10-21)
+--------------------
+- Check the trust policy of an existing default IAM role before attaching managed policies to it
+- Always upload the local archive with ``eb deploy`` instead of reusing an existing S3 object at the same key
+
+--------------------
 3.27.4 (2026-10-13)
 --------------------
 - Sanitize path separators in CloudWatch log stream names when saving logs with ``eb logs``
