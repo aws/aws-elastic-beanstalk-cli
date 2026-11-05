@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import os
+import re
 import sys
 import time
 import typing
@@ -41,6 +42,7 @@ from ebcli.objects.exceptions import (
     InvalidSyntaxError,
     NoRegionError,
     NotAuthorizedError,
+    NotAuthorizedInRegionError,
     NotInitializedError,
     ServiceError,
     TimeoutError
@@ -982,38 +984,52 @@ def create_default_instance_profile(profile_name=iam_attributes.DEFAULT_ROLE_NAM
         policies = iam_attributes.DEFAULT_ROLE_POLICIES_US_GOV
     else:
         policies = iam_attributes.DEFAULT_ROLE_POLICIES
-    create_instance_profile(profile_name, policies)
-    return profile_name
+    return create_instance_profile(profile_name, policies)
 
 
 def create_instance_profile(
         profile_name,
         policy_arns,
-        role_name=None,
-        inline_policy_name=None,
-        inline_policy_doc=None
+        role_name=None
 ):
     """
     Create instance profile and associated IAM role, and attach policy ARNs.
     If role_name is omitted profile_name will be used as role name.
-    Inline policy is optional.
+    An existing profile that holds a role is used as-is. An existing empty
+    profile is left unchanged, and a profile and role with a unique suffix are
+    used instead. Returns the profile name to use.
     """
+    if not role_name:
+        role_name = profile_name
+    empty_profile_name = None
     try:
         name = iam.create_instance_profile(profile_name)
         if name:
             io.log_info('Created instance profile: {}.'.format(name))
+        else:
+            usable_name = _find_usable_instance_profile(profile_name)
+            if usable_name == profile_name:
+                return profile_name
 
-        if not role_name:
-            role_name = profile_name
+            new_name = usable_name or '{}-{}'.format(profile_name, uuid.uuid4().hex[:6])
+            io.log_warning(strings['iam.emptyprofile'].format(
+                profile_name=profile_name, new_name=new_name))
+            if usable_name:
+                return usable_name
+
+            empty_profile_name = profile_name
+            profile_name = role_name = iam.create_instance_profile(new_name, allow_recreate=False)
+            io.log_info('Created instance profile: {}.'.format(profile_name))
+
         name = _create_instance_role(role_name, policy_arns)
         if name:
             io.log_info('Created instance role: {}.'.format(name))
 
-        if inline_policy_name:
-            iam.put_role_policy(role_name, inline_policy_name, inline_policy_doc)
-
         iam.add_role_to_profile(profile_name, role_name)
-    except NotAuthorizedError:
+    except (NotAuthorizedError, NotAuthorizedInRegionError) as e:
+        if empty_profile_name:
+            raise NotAuthorizedError(strings['iam.emptyprofile.cannotreplace'].format(
+                profile_name=empty_profile_name, error=e.message))
         io.log_warning(strings['platformcreateiamdescribeerror.info'].format(profile_name=profile_name))
 
     return profile_name
@@ -1154,6 +1170,19 @@ def set_region_for_application(interactive, region, force_non_interactive, platf
     aws.set_region(region)
 
     return region
+
+
+def _find_usable_instance_profile(profile_name):
+    """
+    Return profile_name if it holds a role. Otherwise return a suffixed
+    profile from an earlier run that holds a role, or None.
+    """
+    roles = {p['InstanceProfileName']: p['Roles'] for p in iam.get_all_instance_profiles()}
+    suffixed = re.compile(r'^{}-[0-9a-f]{{6}}$'.format(re.escape(profile_name)))
+    for name in [profile_name] + sorted(n for n in roles if suffixed.match(n)):
+        if roles.get(name):
+            return name
+    return None
 
 
 def _create_instance_role(role_name, policy_arns):
