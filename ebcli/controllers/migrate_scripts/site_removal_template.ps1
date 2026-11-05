@@ -31,7 +31,7 @@ if (-not [Environment]::Is64BitProcess) {
 
 Import-Module WebAdministration
 
-$websiteName = "{site_name}"
+$websiteName = {site_name}
 
 try {
     Write-HostWithTimestamp "Stopping IIS site, $websiteName."

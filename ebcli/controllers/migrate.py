@@ -11,6 +11,7 @@
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
 import datetime
+import hashlib
 import shutil
 import os
 import string
@@ -1935,9 +1936,10 @@ def ms_deploy_sync_application(
     contains_iistart_htm = os.path.exists(os.path.join(physical_path, "iisstart.htm"))
 
     if site.Name != "Default Web Site":
-        installation_script_name = f"install_site_{site.Name.replace(' ', '')}.ps1"
-        removal_script_name = f"remove_site_{site.Name.replace(' ', '')}.ps1"
-        restart_script_name = f"restart_site_{site.Name.replace(' ', '')}.ps1"
+        script_file_site_name = _script_file_site_name(site.Name)
+        installation_script_name = f"install_site_{script_file_site_name}.ps1"
+        removal_script_name = f"remove_site_{script_file_site_name}.ps1"
+        restart_script_name = f"restart_site_{script_file_site_name}.ps1"
 
         write_custom_site_installer_script(
             upload_target_dir,
@@ -2078,9 +2080,10 @@ def ms_deploy_sync_application_remote(
     contains_iistart_htm = contains_iistart_htm_remote(remote_connection, physical_path)
 
     if site.Name != 'Default Web Site':
-        installation_script_name = f"install_site_{site.Name.replace(' ', '')}.ps1"
-        removal_script_name = f"remove_site_{site.Name.replace(' ', '')}.ps1"
-        restart_script_name = f"restart_site_{site.Name.replace(' ', '')}.ps1"
+        script_file_site_name = _script_file_site_name(site.Name)
+        installation_script_name = f"install_site_{script_file_site_name}.ps1"
+        removal_script_name = f"remove_site_{script_file_site_name}.ps1"
+        restart_script_name = f"restart_site_{script_file_site_name}.ps1"
 
         write_custom_site_installer_script_remote(
             remote_connection,
@@ -2702,6 +2705,30 @@ def iis_application_name_value(site: "Site", application: "Application"):
         return f"{site.Name}\\{application.Path.strip('/')}"
 
 
+def _powershell_single_quote(value):
+    # PowerShell treats these as single-quote characters too
+    for q in ("'", "\u2018", "\u2019", "\u201a", "\u201b"):
+        value = value.replace(q, q + q)
+    return f"'{value}'"
+
+
+def _script_file_site_name(site_name):
+    # The Windows deployment tool runs custom scripts as & "<path>", so the file
+    # name must not contain anything PowerShell expands inside double quotes.
+    # Altered names get a digest so e.g. "My Site" and "MySite" don't collide.
+    name = site_name.replace(" ", "")
+    if name == site_name and re.fullmatch(r"[A-Za-z0-9_.-]+", name):
+        return name
+    digest = hashlib.sha256(site_name.encode("utf-8")).hexdigest()[:8]
+    return f"{re.sub(r'[^A-Za-z0-9_.-]', '_', name)}_{digest}"
+
+
+def _fill_powershell_template(script_template, values):
+    # Single pass so inserted values are never re-scanned for other placeholders
+    pattern = "|".join(re.escape(placeholder) for placeholder in values)
+    return re.sub(pattern, lambda match: values[match.group(0)], script_template)
+
+
 def create_noop_ps1_script(upload_target_dir):
     script_path = os.path.join(os.path.dirname(__file__), "migrate_scripts", "noop.ps1")
     with open(script_path, "r") as source_file:
@@ -2721,7 +2748,9 @@ def create_virtualdir_path_permission_script(physical_paths, upload_target_dir):
         script_template = source_file.read()
 
     # Create the physical paths array string
-    physical_paths_array_string = ",\n  ".join([f'"{p}"' for p in set(physical_paths)])
+    physical_paths_array_string = ",\n  ".join(
+        [_powershell_single_quote(p) for p in set(physical_paths)]
+    )
 
     # Replace the placeholder in the template
     script = script_template.replace(
@@ -2734,6 +2763,7 @@ def create_virtualdir_path_permission_script(physical_paths, upload_target_dir):
             upload_target_dir, "ebmigrateScripts", "add_virtual_dir_read_access.ps1"
         ),
         "w",
+        encoding="utf-8-sig",
     ) as file:
         file.write(script)
 
@@ -3173,7 +3203,8 @@ def write_custom_site_installer_script(
         # Always add the binding information regardless of ARR status
         if binding_string and binding_string.strip():
             binding_protocol_tuples.append(
-                f'"{binding_string.strip()}" = "{binding.Protocol.lower()}"'
+                f"{_powershell_single_quote(binding_string.strip())} = "
+                f"{_powershell_single_quote(binding.Protocol.lower())}"
             )
             # Only set ARR import script if ARR is enabled
             if _arr_enabled():
@@ -3188,18 +3219,23 @@ def write_custom_site_installer_script(
         script_template = source_file.read()
 
     # Replace placeholders in the template
-    script_content = (
-        script_template.replace("{site_name}", site_name)
-        .replace(
-            "{binding_protocol_powershell_array}", binding_protocol_powershell_array
-        )
-        .replace("{physical_path}", physical_path)
-        .replace("{invoke_arr_import_script_call}", invoke_arr_import_script_call)
+    script_content = _fill_powershell_template(
+        script_template,
+        {
+            "{site_name}": _powershell_single_quote(site_name),
+            "{source_zip_path}": _powershell_single_quote(
+                f"C:\\staging\\{site_name}.zip"
+            ),
+            "{binding_protocol_powershell_array}": binding_protocol_powershell_array,
+            "{physical_path}": _powershell_single_quote(physical_path),
+            "{invoke_arr_import_script_call}": invoke_arr_import_script_call,
+        },
     )
 
     with open(
         os.path.join(upload_target_dir, "ebmigrateScripts", installation_script_name),
         "w",
+        encoding="utf-8-sig",
     ) as file:
         file.write(script_content)
 
@@ -3250,7 +3286,8 @@ def write_custom_site_installer_script_remote(
         # Always add the binding information regardless of ARR status
         if binding_string and binding_string.strip():
             binding_protocol_tuples.append(
-                f'"{binding_string.strip()}" = "{binding.Protocol.lower()}"'
+                f"{_powershell_single_quote(binding_string.strip())} = "
+                f"{_powershell_single_quote(binding.Protocol.lower())}"
             )
             # Only set ARR import script if ARR is enabled
             if _arr_enabled_remote(remote_connection):
@@ -3265,18 +3302,23 @@ def write_custom_site_installer_script_remote(
         script_template = source_file.read()
 
     # Replace placeholders in the template
-    script_content = (
-        script_template.replace("{site_name}", site_name)
-        .replace(
-            "{binding_protocol_powershell_array}", binding_protocol_powershell_array
-        )
-        .replace("{physical_path}", physical_path)
-        .replace("{invoke_arr_import_script_call}", invoke_arr_import_script_call)
+    script_content = _fill_powershell_template(
+        script_template,
+        {
+            "{site_name}": _powershell_single_quote(site_name),
+            "{source_zip_path}": _powershell_single_quote(
+                f"C:\\staging\\{site_name}.zip"
+            ),
+            "{binding_protocol_powershell_array}": binding_protocol_powershell_array,
+            "{physical_path}": _powershell_single_quote(physical_path),
+            "{invoke_arr_import_script_call}": invoke_arr_import_script_call,
+        },
     )
 
     with open(
         os.path.join(upload_target_dir, "ebmigrateScripts", installation_script_name),
         "w",
+        encoding="utf-8-sig",
     ) as file:
         file.write(script_content)
 
@@ -3310,11 +3352,14 @@ def write_custom_site_removal_script(
         script_template = source_file.read()
 
     # Replace the site_name placeholder
-    script_contents = script_template.replace("{site_name}", site_name)
+    script_contents = _fill_powershell_template(
+        script_template, {"{site_name}": _powershell_single_quote(site_name)}
+    )
 
     with open(
         os.path.join(upload_target_dir, "ebmigrateScripts", uninstallation_script_name),
         "w",
+        encoding="utf-8-sig",
     ) as file:
         file.write(script_contents)
 
@@ -3348,10 +3393,14 @@ def write_custom_site_restarter_script(
         script_template = source_file.read()
 
     # Replace the site_name placeholder
-    script_contents = script_template.replace("{site_name}", site_name)
+    script_contents = _fill_powershell_template(
+        script_template, {"{site_name}": _powershell_single_quote(site_name)}
+    )
 
     with open(
-        os.path.join(upload_target_dir, "ebmigrateScripts", restarter_script_name), "w"
+        os.path.join(upload_target_dir, "ebmigrateScripts", restarter_script_name),
+        "w",
+        encoding="utf-8-sig",
     ) as file:
         file.write(script_contents)
 
@@ -3385,10 +3434,13 @@ def write_default_web_site_port_reassignment_script(
         script_template = source_file.read()
 
     # Replace placeholders in the template
-    script_content = (
-        script_template.replace("{host}", host)
-        .replace("{port}", port)
-        .replace("{domain}", domain)
+    script_content = _fill_powershell_template(
+        script_template,
+        {
+            "{binding_information}": _powershell_single_quote(
+                f"{host}:{port}:{domain}"
+            ),
+        },
     )
 
     with open(
@@ -3396,6 +3448,7 @@ def write_default_web_site_port_reassignment_script(
             upload_target_dir, "ebmigrateScripts", port_reassignment_script_name
         ),
         "w",
+        encoding="utf-8-sig",
     ) as file:
         file.write(script_content)
 
@@ -3478,10 +3531,13 @@ def write_copy_firewall_config_script(
     firewall_rules = get_firewall_rules(ports)
     powershell_commands = []
     for rule in firewall_rules:
+        local_ports = ",".join(
+            _powershell_single_quote(p.strip()) for p in rule["LocalPorts"].split(",")
+        )
         command = (
-            f'New-NetFirewallRule -DisplayName "{rule["Name"]}" '
+            f'New-NetFirewallRule -DisplayName {_powershell_single_quote(rule["Name"])} '
             f'-Direction Inbound -Action {rule["Action"]} '
-            f'-Protocol {rule["Protocol"]} -LocalPort {rule["LocalPorts"]} '
+            f'-Protocol {rule["Protocol"]} -LocalPort {local_ports} '
         )
         if not rule["Enabled"]:
             command += "-Enabled False"
@@ -3507,6 +3563,7 @@ def write_copy_firewall_config_script(
             upload_target_dir, "ebmigrateScripts", "modify_firewall_config.ps1"
         ),
         "w",
+        encoding="utf-8-sig",
     ) as file:
         file.write(script_content)
 
