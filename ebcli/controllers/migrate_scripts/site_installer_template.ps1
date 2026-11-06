@@ -11,7 +11,7 @@
     - WebAdministration module
     - Web Deploy V3 (msdeploy.exe)
     - Administrative privileges
-    - Source ZIP at C:\\staging\\{site_name}.zip
+    - Source ZIP at C:\\staging\\<site_name>.zip
     - ebdeploy_utils.ps1 in same directory
 #>
 
@@ -27,15 +27,15 @@ if (-not [Environment]::Is64BitProcess) {
 
 Import-Module WebAdministration
 
-$destination = "{physical_path}"
-$sourceZip = "C:\staging\{site_name}.zip"
+$destination = {physical_path}
+$sourceZip = {source_zip_path}
 if (-not (Test-Path $sourceZip)) {
     Write-HostWithTimestamp "$sourceZip not found. Nothing to do."
     exit 0
 }
 Write-HostWithTimestamp "Found or expecting source ZIP at $sourceZip"
-$websiteName = "{site_name}"
-$appPoolName = "{site_name}"
+$websiteName = {site_name}
+$appPoolName = {site_name}
 
 function Ensure-AppPool {
     param(
@@ -172,13 +172,13 @@ function Install-Website {
 
     Set-ItemProperty "IIS:\\Sites\\$Name" -Name "applicationPool" -Value $Name
 
-    $acl = Get-Acl '{physical_path}'
+    $acl = Get-Acl {physical_path}
 
     Write-HostWithTimestamp "Granting ReadAndExecute permissions ot IIS_IUSRS, IUSR, and Authenticated Users"
     foreach ($rule in $(Get-GenericWebpathACLRules)) {
         $acl.AddAccessRule($rule)
     }
-    Set-Acl '{physical_path}' $acl
+    Set-Acl {physical_path} $acl
 }
 
 function Invoke-ARRImportScript {

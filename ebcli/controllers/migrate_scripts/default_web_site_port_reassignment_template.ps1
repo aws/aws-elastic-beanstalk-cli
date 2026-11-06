@@ -55,7 +55,7 @@ function Reassign-DefaultWebSitePort {
         Get-WebBinding -Name 'Default Web Site'
         return
     }
-    $bindingToUpdate.bindingInformation = "{host}:{port}:{domain}"
+    $bindingToUpdate.bindingInformation = {binding_information}
 
     Set-ItemProperty 'IIS:\\Sites\\Default Web Site' -Name bindings -Value $bindings
 

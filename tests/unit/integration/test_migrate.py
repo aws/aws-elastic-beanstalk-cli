@@ -1460,11 +1460,11 @@ if sys.platform.startswith("win") and os.path.exists(r"C:\Windows\System32\inets
                 with open(firewall_script_path) as f:
                     script_content = f.read()
                     assert (
-                        'New-NetFirewallRule -DisplayName "EB-CLI-Test-HTTP"'
+                        "New-NetFirewallRule -DisplayName 'EB-CLI-Test-HTTP'"
                         not in script_content
                     )
                     assert (
-                        'New-NetFirewallRule -DisplayName "EB-CLI-Test-HTTPS"'
+                        "New-NetFirewallRule -DisplayName 'EB-CLI-Test-HTTPS'"
                         not in script_content
                     )
 
@@ -1599,18 +1599,18 @@ if sys.platform.startswith("win") and os.path.exists(r"C:\Windows\System32\inets
                 with open(firewall_script_path) as f:
                     script_content = f.read()
                     assert (
-                        'New-NetFirewallRule -DisplayName "EB-CLI-Test-HTTP"'
+                        "New-NetFirewallRule -DisplayName 'EB-CLI-Test-HTTP'"
                         in script_content
                     )
                     assert (
-                        'New-NetFirewallRule -DisplayName "EB-CLI-Test-HTTPS"'
+                        "New-NetFirewallRule -DisplayName 'EB-CLI-Test-HTTPS'"
                         in script_content
                     )
                     assert "-Action Allow" in script_content
                     assert "-Action Block" in script_content
                     assert "-Protocol TCP" in script_content
-                    assert f"-LocalPort {http_port}" in script_content
-                    assert f"-LocalPort {https_port}" in script_content
+                    assert f"-LocalPort '{http_port}'" in script_content
+                    assert f"-LocalPort '{https_port}'" in script_content
 
                 # Verify manifest references the firewall script
                 with open(manifest_path) as f:

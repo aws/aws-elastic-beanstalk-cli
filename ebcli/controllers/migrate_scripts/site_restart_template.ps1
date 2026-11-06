@@ -32,7 +32,7 @@ if (-not [Environment]::Is64BitProcess) {
 
 Import-Module WebAdministration
 
-$websiteName = "{site_name}"
+$websiteName = {site_name}
 
 if (Get-Website -Name $websiteName) {
     Write-HostWithTimestamp "Restarting IIS site, $websiteName."
