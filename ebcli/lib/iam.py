@@ -68,6 +68,17 @@ def get_role(role_name):
     return result['Role']
 
 
+def get_all_instance_profiles():
+    profiles = []
+    kwargs = {}
+    while True:
+        result = _make_api_call('list_instance_profiles', **kwargs)
+        profiles.extend(result['InstanceProfiles'])
+        if not result.get('IsTruncated'):
+            return profiles
+        kwargs['Marker'] = result['Marker']
+
+
 def create_instance_profile(profile_name, allow_recreate=True):
     """
     Create IAM instance profile.

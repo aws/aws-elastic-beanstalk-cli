@@ -97,6 +97,13 @@ To get started, enter "eb platform init". Then enter "eb platform create".""",
                          "were not attached. Review the role's trust policy, or use a different "
                          "role.",
 
+    'iam.emptyprofile': "Instance profile '{profile_name}' has no role, so it was left "
+                        "unchanged. Using instance profile '{new_name}' instead.",
+
+    'iam.emptyprofile.cannotreplace': "Instance profile '{profile_name}' has no role, and a "
+                                      "replacement couldn't be created: {error}\nAdd a role "
+                                      "to '{profile_name}' or pass --instance-profile.",
+
     'iam.unreadablerole': "Unable to read IAM role '{role_name}', so the policies Elastic "
                           "Beanstalk needs were not attached to it.",
 
