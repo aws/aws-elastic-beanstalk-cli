@@ -32,6 +32,17 @@ class TestIAM(unittest.TestCase):
 
         make_api_call_mock.assert_called_once_with('iam', 'get_user')
 
+    @mock.patch('ebcli.lib.iam.aws.make_api_call')
+    def test_get_all_instance_profiles_follows_pagination(self, make_api_call_mock):
+        make_api_call_mock.side_effect = [
+            {'InstanceProfiles': [{'InstanceProfileName': 'a'}], 'IsTruncated': True, 'Marker': 'm'},
+            {'InstanceProfiles': [{'InstanceProfileName': 'b'}], 'IsTruncated': False},
+        ]
+
+        self.assertEqual(['a', 'b'], [p['InstanceProfileName'] for p in iam.get_all_instance_profiles()])
+
+        make_api_call_mock.assert_called_with('iam', 'list_instance_profiles', Marker='m')
+
     @mock.patch('ebcli.lib.iam.get_roles')
     def test_role_exists(self, get_roles_mock):
         # Mock the get_roles function to return a sample list of roles

@@ -24,7 +24,7 @@ from mock import Mock
 import unittest
 
 from ebcli.core import fileoperations
-from ebcli.objects.exceptions import NotAuthorizedError
+from ebcli.objects.exceptions import NotAuthorizedError, NotAuthorizedInRegionError
 from ebcli.objects.event import Event
 from ebcli.objects.environment import Environment
 from ebcli.objects.region import Region
@@ -284,16 +284,6 @@ class TestCommonOperations(unittest.TestCase):
 
     @mock.patch('ebcli.operations.commonops.iam')
     @mock.patch('ebcli.operations.commonops.io')
-    def test_create_instance_profile_successful_with_inline_policy(self, _, mock_iam):
-        commonops.create_instance_profile('pname', 'policies', role_name='rname', inline_policy_name='inline_name', inline_policy_doc='{inline_json}')
-
-        mock_iam.create_instance_profile.assert_called_once_with('pname')
-        mock_iam.create_role_with_policy.assert_called_once_with('rname', iam_documents.EC2_ASSUME_ROLE_PERMISSION, 'policies')
-        mock_iam.put_role_policy.assert_called_once_with('rname', 'inline_name', '{inline_json}')
-        mock_iam.add_role_to_profile.assert_called_once_with('pname', 'rname')
-
-    @mock.patch('ebcli.operations.commonops.iam')
-    @mock.patch('ebcli.operations.commonops.io')
     def test_create_instance_profile_successful_omitting_role_name(self, _, mock_iam):
         commonops.create_instance_profile('pname', ['policies'])
 
@@ -314,6 +304,93 @@ class TestCommonOperations(unittest.TestCase):
         mock_iam.add_role_to_profile.assert_not_called()
 
         mock_io.log_warning.assert_called_once()
+
+    def _existing_profile(self, mock_iam, profiles):
+        mock_iam.create_instance_profile.side_effect = lambda name, allow_recreate=True: (
+            None if allow_recreate else name
+        )
+        mock_iam.get_all_instance_profiles.return_value = [
+            {'InstanceProfileName': name, 'Roles': [{'RoleName': r} for r in roles]}
+            for name, roles in profiles.items()
+        ]
+
+    @mock.patch('ebcli.operations.commonops.iam')
+    @mock.patch('ebcli.operations.commonops.io')
+    def _assert_reused_unchanged(self, profiles, expected, mock_io, mock_iam):
+        self._existing_profile(mock_iam, profiles)
+
+        self.assertEqual(expected, commonops.create_instance_profile('pname', ['p1', 'p2']))
+
+        mock_iam.create_instance_profile.assert_called_once_with('pname')
+        mock_iam.create_role_with_policy.assert_not_called()
+        mock_iam.attach_role_policy.assert_not_called()
+        mock_iam.add_role_to_profile.assert_not_called()
+
+    @mock.patch('ebcli.operations.commonops.uuid')
+    @mock.patch('ebcli.operations.commonops.iam')
+    @mock.patch('ebcli.operations.commonops.io')
+    def _assert_replaced_with_new_profile(self, profiles, mock_io, mock_iam, mock_uuid):
+        self._existing_profile(mock_iam, profiles)
+        mock_uuid.uuid4.return_value.hex = 'abc123def456'
+        new_name = 'pname-abc123'
+
+        self.assertEqual(new_name, commonops.create_instance_profile('pname', ['p1', 'p2']))
+
+        mock_iam.create_instance_profile.assert_called_with(new_name, allow_recreate=False)
+        mock_iam.create_role_with_policy.assert_called_once_with(
+            new_name, iam_documents.EC2_ASSUME_ROLE_PERMISSION, ['p1', 'p2'])
+        mock_iam.add_role_to_profile.assert_called_once_with(new_name, new_name)
+        mock_io.log_warning.assert_called_once_with(strings['iam.emptyprofile'].format(
+            profile_name='pname', new_name=new_name))
+
+    @mock.patch('ebcli.operations.commonops.iam')
+    @mock.patch('ebcli.operations.commonops.io')
+    def test_create_instance_profile__existing_profile_unreadable_in_china__left_unchanged(self, mock_io, mock_iam):
+        self._existing_profile(mock_iam, {})
+        mock_iam.get_all_instance_profiles.side_effect = NotAuthorizedInRegionError()
+
+        self.assertEqual('pname', commonops.create_instance_profile('pname', ['p1', 'p2']))
+
+        mock_iam.create_role_with_policy.assert_not_called()
+        mock_iam.add_role_to_profile.assert_not_called()
+        mock_io.log_warning.assert_called_once()
+
+    @mock.patch('ebcli.operations.commonops.uuid')
+    @mock.patch('ebcli.operations.commonops.iam')
+    @mock.patch('ebcli.operations.commonops.io')
+    def test_create_instance_profile__replacement_denied__raises(self, mock_io, mock_iam, mock_uuid):
+        self._existing_profile(mock_iam, {'pname': []})
+        mock_uuid.uuid4.return_value.hex = 'abc123def456'
+        mock_iam.create_role_with_policy.side_effect = NotAuthorizedInRegionError('denied')
+
+        with self.assertRaises(NotAuthorizedError) as context:
+            commonops.create_instance_profile('pname', ['p1', 'p2'])
+
+        self.assertIn("Instance profile 'pname' has no role", context.exception.message)
+        self.assertIn('denied', context.exception.message)
+        mock_iam.add_role_to_profile.assert_not_called()
+
+    def test_create_instance_profile__existing_profile_with_role__reused_unchanged(self):
+        self._assert_reused_unchanged({'pname': ['pname']}, 'pname')
+
+    def test_create_instance_profile__existing_profile_with_other_role__reused_unchanged(self):
+        self._assert_reused_unchanged({'pname': ['customer-role']}, 'pname')
+
+    def test_create_instance_profile__existing_empty_profile__replaced_with_new_profile(self):
+        self._assert_replaced_with_new_profile({'pname': []})
+
+    def test_create_instance_profile__empty_earlier_suffixed_profile__not_reused(self):
+        self._assert_replaced_with_new_profile(
+            {'pname': [], 'pname-0a1b2c': [], 'pname-extra-0a1b2c': ['pname-extra-0a1b2c']})
+
+    def test_create_instance_profile__earlier_suffixed_profile_with_role__reused_unchanged(self):
+        self._assert_reused_unchanged({'pname': [], 'pname-0a1b2c': ['pname-0a1b2c']}, 'pname-0a1b2c')
+
+    @mock.patch('ebcli.operations.commonops.create_instance_profile')
+    def test_create_default_instance_profile__returns_profile_actually_used(self, mock_create):
+        mock_create.return_value = 'aws-elasticbeanstalk-ec2-role-abc123'
+
+        self.assertEqual('aws-elasticbeanstalk-ec2-role-abc123', commonops.create_default_instance_profile())
 
     def test_filter_events__match_all_by_default__return_all_events_passed_in(self):
         describe_events_response = {

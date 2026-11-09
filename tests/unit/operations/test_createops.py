@@ -153,6 +153,7 @@ class TestCreateOps(unittest.TestCase):
 
         createops.resolve_roles(env_request, False)
         create_default_instance_profile_mock.assert_called_once_with()
+        self.assertEqual('default-profile', env_request.instance_profile)
 
     @mock.patch('ebcli.operations.createops.commonops.create_default_instance_profile')
     @mock.patch('ebcli.operations.createops.get_service_role')
