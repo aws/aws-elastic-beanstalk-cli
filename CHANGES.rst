@@ -1,6 +1,12 @@
 Changelog
 =========
 --------------------
+3.27.7 (2026-11-12)
+--------------------
+- Escape values in PowerShell that ``eb migrate --remote`` runs on the source server
+- Quote Web Deploy arguments in ``eb migrate``
+
+--------------------
 3.27.6 (2026-11-09)
 --------------------
 - Use a new instance profile instead of adding a role to an existing empty default instance profile
