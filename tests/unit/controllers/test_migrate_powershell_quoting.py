@@ -12,6 +12,7 @@
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 # ANY KIND, either express or implied. See the License for the specific
 # language governing permissions and limitations under the License.
+import base64
 import json
 import re
 import os
@@ -276,3 +277,242 @@ class TestScriptFileNames(unittest.TestCase):
                 manifest_contents,
             )
             self._assert_script_files_are_safe(manifest_contents)
+
+
+class FakeRemoteConnection:
+    """Records the PowerShell scripts that --remote mode runs on the source server."""
+
+    def __init__(self, outputs=None):
+        self.scripts = []
+        self.outputs = list(outputs or [])
+
+    def run(self, command, hide=True):
+        match = re.fullmatch(
+            r"powershell -NoProfile -NonInteractive -EncodedCommand (\S+)|"
+            r"powershell -NonInteractive -EncodedCommand (\S+)",
+            command,
+        )
+        assert match, command
+        encoded = match.group(1) or match.group(2)
+        self.scripts.append(base64.b64decode(encoded).decode("utf-16le"))
+        stdout = self.outputs.pop(0) if self.outputs else ""
+        return mock.MagicMock(stdout=stdout)
+
+    def get(self, *args, **kwargs):
+        pass
+
+
+class TestRemoteSourceServerScriptQuoting(unittest.TestCase):
+    def _assert_only_quoted(self, script):
+        # SPECIAL contains an apostrophe, so it can only appear verbatim if it
+        # was inserted without escaping
+        self.assertNotIn(SPECIAL, script)
+
+    def test_get_site_remote(self):
+        connection = FakeRemoteConnection(
+            [
+                json.dumps(
+                    {
+                        "Name": SPECIAL,
+                        "Attributes": [],
+                        "Bindings": [],
+                        "Applications": [],
+                        "HSTS": {"Enabled": False, "MaxAge": None},
+                    }
+                )
+            ]
+        )
+        migrate.get_site_remote(connection, SPECIAL)
+        script = connection.scripts[0]
+        self.assertIn(f"$siteName = {SPECIAL_QUOTED}\n", script)
+        self.assertIn("Get-Item -LiteralPath $sitePSPath\n", script)
+        self.assertIn("Get-WebBinding -Name $siteName\n", script)
+        self.assertIn("Get-WebApplication -Site $siteName ", script)
+        self.assertIn("site[@name=$siteXPath]", script)
+        self._assert_only_quoted(script)
+
+    def test_contains_iistart_htm_remote(self):
+        connection = FakeRemoteConnection(["true"])
+        self.assertTrue(migrate.contains_iistart_htm_remote(connection, SPECIAL))
+        self.assertIn(
+            f"Test-IISStartHtm -physicalPath {SPECIAL_QUOTED}\n", connection.scripts[0]
+        )
+        self._assert_only_quoted(connection.scripts[0])
+
+    def test_create_migration_folders_remote(self):
+        connection = FakeRemoteConnection()
+        migrate.create_migration_folders_remote(
+            connection, SPECIAL + "\\bundle", SPECIAL + "\\upload"
+        )
+        script = connection.scripts[0]
+        self.assertIn(f"New-Item -Path '{SPECIAL_QUOTED[1:-1]}\\bundle' ", script)
+        self.assertIn(f"New-Item -Path '{SPECIAL_QUOTED[1:-1]}\\upload' ", script)
+        self._assert_only_quoted(script)
+
+    def test_do_ms_deploy_sync_application_remote(self):
+        connection = FakeRemoteConnection()
+        migrate.do_ms_deploy_sync_application_remote(
+            connection,
+            "-verb:sync",
+            SPECIAL + "\\dest",
+            SPECIAL + "\\archive",
+            SPECIAL + "\\upload",
+            SPECIAL,
+            "# msdeploy",
+        )
+        inner = SPECIAL_QUOTED[1:-1]
+        create, _, archive = connection.scripts
+        self.assertIn(f"-Path '{inner}\\dest' | Out-Null", create)
+        self.assertIn(f"-Path '{inner}\\upload' | Out-Null", create)
+        self.assertIn(
+            f"$null | Out-File -LiteralPath '{inner}\\dest\\application.log'\n", create
+        )
+        self.assertIn(f"$null | Out-File -LiteralPath '{inner}\\dest\\error.log'\n", create)
+        self.assertIn(
+            f"-LiteralPath '{inner}\\dest\\application.log'\n", connection.scripts[1]
+        )
+        self.assertIn(
+            f"$src='{inner}\\archive';$dst='{inner}\\upload\\{inner}.zip'\n", archive
+        )
+        for script in connection.scripts:
+            self._assert_only_quoted(script)
+
+    def test_construct_msdeploy_powershell_command(self):
+        value = "a$(Write-Output MARKER)$name`b"
+        command = migrate.construct_msdeploy_powershell_command(
+            ["-verb:sync", "", f'-source:apphostconfig="{value}/"', "-x:'y'"]
+        )
+        self.assertIn(
+            "$msdeployArgs = @(\n"
+            "    '-verb:sync'\n"
+            f"    '-source:apphostconfig=\"{value}/\"'\n"
+            "    '-x:''y'''\n"
+            ")\n",
+            command,
+        )
+
+    def test_get_site_configs_remote(self):
+        for physical_path, expected in [
+            (SPECIAL, f"$path = '{SPECIAL_QUOTED[1:-1]}\\web.config'\n"),
+            (
+                "%SystemDrive%\\" + SPECIAL,
+                f"$path = $env:SystemDrive + '\\{SPECIAL_QUOTED[1:-1]}\\web.config'\n",
+            ),
+        ]:
+            connection = FakeRemoteConnection(["EXISTS", "<configuration/>"])
+            virtual_directory = mock.MagicMock(Path="/", PhysicalPath=physical_path)
+            application = mock.MagicMock(Path="/", VirtualDirectories=[virtual_directory])
+            site = mock.MagicMock(
+                Bindings=[Binding("*:80:", "http")], Applications=[application]
+            )
+            site.Name = "MySite"
+            migrate.get_site_configs_remote(connection, [site])
+            check, read = connection.scripts
+            self.assertIn(expected, check)
+            self.assertIn(
+                f"Get-Content -LiteralPath '{SPECIAL_QUOTED[1:-1]}\\web.config' -Raw\n"
+                if not physical_path.startswith("%")
+                else f"Get-Content -LiteralPath '\\{SPECIAL_QUOTED[1:-1]}\\web.config' -Raw\n",
+                read,
+            )
+            for script in connection.scripts:
+                self._assert_only_quoted(script)
+
+    def test_import_packaged_sites_from_remote(self):
+        local_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, local_dir)
+        connection = FakeRemoteConnection(["", "site" + SPECIAL.replace("'", ""), ""])
+        migrate.import_packaged_sites_from_remote(connection, "C:\\runs\\1", local_dir)
+        folder = "site" + SPECIAL.replace("'", "")
+        self.assertEqual(3, len(connection.scripts))
+        self.assertIn(
+            "Get-ChildItem -LiteralPath 'C:\\runs\\1\\upload_target' -Filter *.zip",
+            connection.scripts[0],
+        )
+        self.assertIn(
+            "Get-ChildItem -LiteralPath 'C:\\runs\\1\\upload_target' -Directory",
+            connection.scripts[1],
+        )
+        folder_path = migrate._powershell_single_quote(
+            "C:\\runs\\1\\upload_target\\" + folder
+        )
+        self.assertIn(
+            f"Get-ChildItem -LiteralPath {folder_path} -Filter *.zip",
+            connection.scripts[2],
+        )
+        self.assertIn("$(Write-Output MARKER)", folder_path)
+
+
+class TestMsDeployArguments(unittest.TestCase):
+    ARCHIVE = "C:\\migrations\\upload_target\\My Site"
+
+    def _site(self, name, path="/", pool="My Pool", hsts=False):
+        application = mock.MagicMock(Path=path, ApplicationPoolName=pool)
+        site = mock.MagicMock(HSTS=mock.MagicMock(Enabled=hsts))
+        site.Name = name
+        return site, application
+
+    def _local(self, site, application, archive=ARCHIVE):
+        return migrate.construct_ms_deploy_command_for_application(
+            site, application, migrate.iis_application_name_value(site, application), archive
+        )
+
+    def _remote(self, site, application, archive=ARCHIVE):
+        return migrate.ms_deploy_args_for_application(
+            site,
+            application,
+            migrate.iis_application_name_value(site, application),
+            archive,
+            quote='"',
+        )
+
+    def test_local_arguments_for_normal_values(self):
+        self.assertEqual(
+            "-verb:sync "
+            '-source:apphostconfig="My Site\\api" '
+            "-dest:archiveDir='C:\\migrations\\upload_target\\My Site' "
+            "-enableLink:AppPoolExtension "
+            "-declareParam:name='Application Pool',defaultValue='My Pool',"
+            "description='Application pool for application /api/',"
+            "kind=DeploymentObjectAttribute,scope=appHostConfig,"
+            "match='application/@applicationPool' "
+            "-declareParam:name='IIS Web Application Name',defaultValue='My Site\\api' "
+            '-skip:objectName=hsts,absolutePath="My Site" '
+            "-enableRule:CopySecureContent",
+            self._local(*self._site("My Site", "/api/")),
+        )
+
+    def test_remote_arguments_for_normal_values(self):
+        self.assertEqual(
+            [
+                "-verb:sync",
+                '-source:apphostconfig="My Site/"',
+                '-dest:archiveDir="C:\\migrations\\upload_target\\My Site"',
+                "-enableLink:AppPoolExtension",
+                '-declareParam:name="Application Pool",defaultValue="My Pool",'
+                'description="Application pool for application /",'
+                "kind=DeploymentObjectAttribute,scope=appHostConfig,"
+                'match="application/@applicationPool"',
+                '-declareParam:name="IIS Web Application Name",defaultValue="My Site"',
+                "",
+                "-enableRule:CopySecureContent",
+            ],
+            self._remote(*self._site("My Site", hsts=True)),
+        )
+
+    def test_value_cannot_start_a_new_argument(self):
+        args = self._remote(*self._site("a -postSync:runCommand=calc"))
+        self.assertIn('-source:apphostconfig="a -postSync:runCommand=calc/"', args)
+        self.assertFalse(any(arg.startswith("-postSync") for arg in args))
+
+    def test_quote_characters_are_rejected(self):
+        for quote in ("'", '"'):
+            for site, application, archive in [
+                self._site(f"a{quote}b") + (self.ARCHIVE,),
+                self._site("a", path=f"/x{quote}y") + (self.ARCHIVE,),
+                self._site("a", pool=f"p{quote}q") + (self.ARCHIVE,),
+                self._site("a") + (f"C:\\x{quote}y",),
+            ]:
+                for build in (self._local, self._remote):
+                    with self.assertRaises(migrate.NotSupportedError):
+                        build(site, application, archive)

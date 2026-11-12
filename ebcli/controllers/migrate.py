@@ -740,7 +740,9 @@ def import_packaged_sites_from_remote(remote_connection, latest_migration_run_pa
         remote_directory = remote_directory[1:]
 
     try:
-        result = remote_connection.run(f'powershell -Command "Get-ChildItem -Path \"{remote_directory}\" -Filter *.zip | Select-Object -ExpandProperty Name"', hide=True)
+        result = remote_connection.run(_encoded_powershell_command(
+            f"Get-ChildItem -LiteralPath {_powershell_single_quote(remote_directory)} -Filter *.zip | Select-Object -ExpandProperty Name"
+        ), hide=True)
 
         filenames = [f.strip().rstrip('?') for f in result.stdout.strip().split('\n') if f.strip()]
 
@@ -756,9 +758,9 @@ def import_packaged_sites_from_remote(remote_connection, latest_migration_run_pa
                 continue
 
         # Now handle folders containing zip files
-        folder_result = remote_connection.run(
-            f'powershell -Command "Get-ChildItem -LiteralPath \'{remote_directory}\' -Directory | Select-Object -ExpandProperty Name"',
-            hide=True)
+        folder_result = remote_connection.run(_encoded_powershell_command(
+            f"Get-ChildItem -LiteralPath {_powershell_single_quote(remote_directory)} -Directory | Select-Object -ExpandProperty Name"
+        ), hide=True)
         folders = [f.strip() for f in folder_result.stdout.strip().split('\n') if f.strip()]
 
         for folder in folders:
@@ -767,9 +769,10 @@ def import_packaged_sites_from_remote(remote_connection, latest_migration_run_pa
             os.makedirs(local_folder_path, exist_ok=True)
 
             # Get zip files in this folder
-            zip_result = remote_connection.run(
-                f'powershell -Command "Get-ChildItem -LiteralPath \'{remote_directory}\\{folder}\' -Filter *.zip | Select-Object -ExpandProperty Name"',
-                hide=True)
+            folder_path_ps = _powershell_single_quote(f"{remote_directory}\\{folder}")
+            zip_result = remote_connection.run(_encoded_powershell_command(
+                f"Get-ChildItem -LiteralPath {folder_path_ps} -Filter *.zip | Select-Object -ExpandProperty Name"
+            ), hide=True)
             zip_files = [f.strip() for f in zip_result.stdout.strip().split('\n') if f.strip()]
 
             for zip_file in zip_files:
@@ -1084,12 +1087,19 @@ def populate_site_data_remote(remote_connection, site_names):
 def get_site_remote(c, site_name) -> None:
     ps_command = f"""
     Import-Module WebAdministration
-    $site = Get-Item "IIS:\\Sites\\{site_name}"
-    $config = Get-WebConfiguration -Filter "system.webServer/httpProtocol/customHeaders" -PSPath "IIS:\\Sites\\{site_name}"
+    $siteName = {_powershell_single_quote(site_name)}
+    function ConvertTo-XPathLiteral([string]$value) {{
+        if ($value.Contains("'")) {{ return '"' + $value + '"' }}
+        return "'" + $value + "'"
+    }}
+    $siteXPath = ConvertTo-XPathLiteral $siteName
+    $sitePSPath = 'IIS:\\Sites\\' + $siteName
+    $site = Get-Item -LiteralPath $sitePSPath
+    $config = Get-WebConfiguration -Filter "system.webServer/httpProtocol/customHeaders" -PSPath $sitePSPath
     $hsts = $config.Collection | Where-Object {{ $_.ElementTagName -eq 'add' -and $_.Attributes['name'].Value -eq 'Strict-Transport-Security' }}
-    $bindings = Get-WebBinding -Name "{site_name}"
+    $bindings = Get-WebBinding -Name $siteName
 
-    $rootVDirs = @(Get-WebConfiguration "/system.applicationHost/sites/site[@name='{site_name}']/application[@path='/']/virtualDirectory" | ForEach-Object {{
+    $rootVDirs = @(Get-WebConfiguration "/system.applicationHost/sites/site[@name=$siteXPath]/application[@path='/']/virtualDirectory" | ForEach-Object {{
         @{{
             Path = $_.GetAttributeValue("path")
             PhysicalPath = $_.GetAttributeValue("physicalPath")
@@ -1103,9 +1113,10 @@ def get_site_remote(c, site_name) -> None:
         VirtualDirectories = $rootVDirs
     }}
 
-    $applications = Get-WebApplication -Site "{site_name}" | ForEach-Object {{
+    $applications = Get-WebApplication -Site $siteName | ForEach-Object {{
         $appPath = $_.path
-        $appVDirs = @(Get-WebConfiguration "/system.applicationHost/sites/site[@name='{site_name}']/application[@path='$appPath']/virtualDirectory" | ForEach-Object {{
+        $appPathXPath = ConvertTo-XPathLiteral $appPath
+        $appVDirs = @(Get-WebConfiguration "/system.applicationHost/sites/site[@name=$siteXPath]/application[@path=$appPathXPath]/virtualDirectory" | ForEach-Object {{
             @{{
                 Path = $_.GetAttributeValue("path")
                 PhysicalPath = $_.GetAttributeValue("physicalPath")
@@ -1841,10 +1852,23 @@ def copy_assemblies_into_bin(bin_path: str, site_name: str) -> None:
         LOG.debug(f"Copying {asm.FullName}: {asm.Location} into {bin_path}")
 
 
+def _ms_deploy_value(value, quote):
+    # Web Deploy can't escape a quote inside a quoted value, so one there would
+    # end the value early and could start a new argument
+    if "'" in value or '"' in value:
+        raise NotSupportedError(
+            f"`eb migrate` can't migrate {value!r} because Web Deploy doesn't support "
+            "quote characters (' or \") in IIS site names, application paths, "
+            "application pool names or folder paths."
+        )
+    return f"{quote}{value}{quote}"
+
+
 def hsts_disablement_arg(site):
     try:
         if not site.HSTS.Enabled:
-            return f'-skip:objectName=hsts,absolutePath="{site.Name}"'
+            site_name = _ms_deploy_value(site.Name, '"')
+            return f"-skip:objectName=hsts,absolutePath={site_name}"
     except AttributeError as e:
         if not "'Site' object has no attribute 'HSTS'" in str(e):
             raise e
@@ -2050,16 +2074,18 @@ def ms_deploy_sync_application_remote(
     destination_archive_path_remote = windows_path_join(upload_target_dir_remote, _normalized_application_name)
 
     _iis_application_name_value = iis_application_name_value(site, application)
-    ms_deploy_args_str = construct_ms_deploy_command_for_application(
+    ms_deploy_args = ms_deploy_args_for_application(
         site,
         application,
         _iis_application_name_value,
-        destination_archive_path_remote
+        destination_archive_path_remote,
+        quote='"',
     )
+    ms_deploy_args_str = " ".join(ms_deploy_args)
     LOG.debug("    Executing the following script to create destination application:")
     LOG.debug(f"\n        {ms_deploy_args_str}\n")
 
-    ms_deploy_ps_command = construct_msdeploy_powershell_command(ms_deploy_args_str)
+    ms_deploy_ps_command = construct_msdeploy_powershell_command(ms_deploy_args)
 
     do_ms_deploy_sync_application_remote(
         remote_connection,
@@ -2286,28 +2312,13 @@ def cleanup_previous_migration_artifacts(force: bool, verbose: bool) -> None:
             shutil.rmtree(item_path)
 
 
-def construct_msdeploy_powershell_command(args_string):
+def construct_msdeploy_powershell_command(ms_deploy_args):
     ps_command = ['$msdeployExe = "${env:ProgramFiles}\\IIS\\Microsoft Web Deploy V3\\msdeploy.exe"']
     ps_command.append('$msdeployArgs = @(')
 
-    # Split on space-hyphen-letter, but keep the hyphen-letter part
-    args = re.split(r' (?=-[a-zA-Z])', args_string)
-
-    for arg_str in args:
-        arg_str = arg_str.strip()
-        if not arg_str:
-            continue
-
-        arg_str = arg_str.replace("'", '"')
-
-        if arg_str.startswith('-dest:archiveDir='):
-            path = arg_str.split('=', 1)[1]
-            path = path.strip('"').strip("'")
-            arg_str = f'-dest:archiveDir=`"{path}`"'
-        else:
-            arg_str = arg_str.replace('"', '`"')
-
-        ps_command.append(f'    "{arg_str}"')
+    for arg in ms_deploy_args:
+        if arg:
+            ps_command.append(f'    {_powershell_single_quote(arg)}')
 
     ps_command.append(')')
     ps_command.append('$output = & $msdeployExe $msdeployArgs 2>&1')
@@ -2399,12 +2410,16 @@ def do_ms_deploy_sync_application_remote(
         _normalized_application_name,
         ms_deploy_ps_command
 ):
+    destination_remote_ps = _powershell_single_quote(destination_remote)
+    application_log_ps = _powershell_single_quote(destination_remote + "\\application.log")
+    error_log_ps = _powershell_single_quote(destination_remote + "\\error.log")
+    zip_path_ps = _powershell_single_quote(f"{upload_target_dir_remote}\\{_normalized_application_name}.zip")
     ps_script_1 = f"""
-    New-Item -ItemType Directory -Force -Path "{destination_remote}" | Out-Null
-    New-Item -ItemType Directory -Force -Path "{upload_target_dir_remote}" | Out-Null
+    New-Item -ItemType Directory -Force -Path {destination_remote_ps} | Out-Null
+    New-Item -ItemType Directory -Force -Path {_powershell_single_quote(upload_target_dir_remote)} | Out-Null
 
-    $null > "{destination_remote}\\application.log"
-    $null > "{destination_remote}\\error.log"
+    $null | Out-File -LiteralPath {application_log_ps}
+    $null | Out-File -LiteralPath {error_log_ps}
 
     try {{
         # Get MSDeploy path
@@ -2429,7 +2444,7 @@ def do_ms_deploy_sync_application_remote(
         $exitCode = $LASTEXITCODE
 
         # Log standard output and error
-        $output | Out-File -Append -FilePath "{destination_remote}\\application.log"
+        $output | Out-File -Append -LiteralPath {application_log_ps}
 
         if ($exitCode -eq 0) {{
             Write-Host "MSDeploy completed successfully"
@@ -2449,11 +2464,11 @@ def do_ms_deploy_sync_application_remote(
     ps_script_5 = f"""
         try {{
             $ErrorActionPreference = 'Continue'
-            $src="{destination_archive_path_remote}";$dst="{upload_target_dir_remote}\\{_normalized_application_name}.zip"
-            if(Test-Path -Path $dst){{Remove-Item -Path $dst -Recurse -Force}}
+            $src={_powershell_single_quote(destination_archive_path_remote)};$dst={zip_path_ps}
+            if(Test-Path -LiteralPath $dst){{Remove-Item -LiteralPath $dst -Recurse -Force}}
             Add-Type -A System.IO.Compression,System.IO.Compression.FileSystem
             $z=[System.IO.Compression.ZipFile]::Open($dst,[System.IO.Compression.ZipArchiveMode]::Create)
-            Get-ChildItem $src -Recurse -Force|Where-Object{{$_.Name -ne '.gitignore' -and $_.FullName -notlike '*.elasticbeanstalk*'}}|ForEach-Object{{
+            Get-ChildItem -LiteralPath $src -Recurse -Force|Where-Object{{$_.Name -ne '.gitignore' -and $_.FullName -notlike '*.elasticbeanstalk*'}}|ForEach-Object{{
                 $p=$_.FullName.Substring($src.Length+1).Replace('\\','/')
                 if($_.PSIsContainer){{
                     if(-not$p.EndsWith('/')){{$p+='/'}}
@@ -2461,7 +2476,7 @@ def do_ms_deploy_sync_application_remote(
                 }}else{{
                     $e=$z.CreateEntry($p)
                     if($_.Attributes -band [IO.FileAttributes]::ReparsePoint){{
-                        $t=[IO.Path]::GetFullPath((Get-Item $_.FullName).Target)
+                        $t=[IO.Path]::GetFullPath((Get-Item -LiteralPath $_.FullName).Target)
                         $b=[Text.Encoding]::UTF8.GetBytes($t);$e.ExternalAttributes=0xA1FF0000  # Symlink: 777
                         $s=$e.Open();$s.Write($b,0,$b.Length);$s.Dispose()
                     }}else{{
@@ -2472,7 +2487,7 @@ def do_ms_deploy_sync_application_remote(
                 }}
             }}
             $z.Dispose()
-            if(Test-Path -Path $src){{Remove-Item -Path $src -Recurse -Force}}
+            if(Test-Path -LiteralPath $src){{Remove-Item -LiteralPath $src -Recurse -Force}}
         }}catch{{Write-Output "Error: $_";throw}}
         """
 
@@ -2521,10 +2536,10 @@ def contains_iistart_htm_remote(remote_connection, physical_path):
             $expandedPath = [System.Environment]::ExpandEnvironmentVariables($physicalPath)
 
             # Resolve the path to handle relative paths
-            $resolvedPath = Resolve-Path $expandedPath -ErrorAction Stop | Select-Object -ExpandProperty Path
+            $resolvedPath = Resolve-Path -LiteralPath $expandedPath -ErrorAction Stop | Select-Object -ExpandProperty Path
 
             $fullPath = Join-Path -Path $resolvedPath -ChildPath "iisstart.htm"
-            $exists = Test-Path -Path $fullPath -PathType Leaf
+            $exists = Test-Path -LiteralPath $fullPath -PathType Leaf
 
             # Return the result as a string
             return $exists.ToString().ToLower()
@@ -2535,7 +2550,7 @@ def contains_iistart_htm_remote(remote_connection, physical_path):
         }}
     }}
 
-    $result = Test-IISStartHtm -physicalPath '{physical_path}'
+    $result = Test-IISStartHtm -physicalPath {_powershell_single_quote(physical_path)}
     Write-Output $result
     '''
 
@@ -2590,23 +2605,47 @@ def construct_ms_deploy_command_for_application(
         ... )
         >>> # Returns: "-verb:sync -source:apphostconfig=... -dest:archiveDir=..."
     """
+    return " ".join(
+        ms_deploy_args_for_application(
+            site, application, _iis_application_name_value, destination_archive_path, quote="'"
+        )
+    )
+
+
+def ms_deploy_args_for_application(
+    site: "Site",
+    application: "Application",
+    _iis_application_name_value: str,
+    destination_archive_path: str,
+    quote: str,
+) -> List[str]:
+    """
+    Web Deploy arguments for exporting an IIS application, one list item per
+    argument. quote delimits the archive path and parameter values: local mode
+    passes the joined string to msdeploy.exe directly and uses ', remote mode
+    runs it through PowerShell and uses ".
+    """
+    def q(value):
+        return _ms_deploy_value(value, quote)
+
     ms_deploy_verb = "-verb:sync"
-    ms_deploy_source = f'-source:apphostconfig="{_iis_application_name_value}"'
-    ms_deploy_dest = f"-dest:archiveDir='{destination_archive_path}'"
+    application_name = _ms_deploy_value(_iis_application_name_value, '"')
+    ms_deploy_source = f"-source:apphostconfig={application_name}"
+    ms_deploy_dest = f"-dest:archiveDir={q(destination_archive_path)}"
     ms_deploy_enable_app_pool_ext = "-enableLink:AppPoolExtension"
     application_pool_name = application.ApplicationPoolName
     ms_deploy_app_pool = (
-        "-declareParam:name='Application Pool',"
-        f"defaultValue='{application_pool_name}',"
-        f"description='Application pool for application {application.Path}',"
+        f"-declareParam:name={q('Application Pool')},"
+        f"defaultValue={q(application_pool_name)},"
+        f"description={q('Application pool for application ' + application.Path)},"
         "kind=DeploymentObjectAttribute,"
         "scope=appHostConfig,"
-        "match='application/@applicationPool'"
+        f"match={q('application/@applicationPool')}"
     )
 
     iis_website_application_name_arg = (
-        "-declareParam:name='IIS Web Application Name',"
-        f"defaultValue='{_iis_application_name_value.strip('/')}'"
+        f"-declareParam:name={q('IIS Web Application Name')},"
+        f"defaultValue={q(_iis_application_name_value.strip('/'))}"
     )
 
     copy_secure_content_arg = "-enableRule:CopySecureContent"
@@ -2621,7 +2660,7 @@ def construct_ms_deploy_command_for_application(
         hsts_disablement_arg(site),
         copy_secure_content_arg,
     ]
-    return " ".join(ms_deploy_args)
+    return ms_deploy_args
 
 
 def normalized_application_name(site, application):
@@ -2710,6 +2749,11 @@ def _powershell_single_quote(value):
     for q in ("'", "\u2018", "\u2019", "\u201a", "\u201b"):
         value = value.replace(q, q + q)
     return f"'{value}'"
+
+
+def _encoded_powershell_command(script):
+    encoded = base64.b64encode(script.encode('utf-16le')).decode()
+    return f'powershell -NoProfile -NonInteractive -EncodedCommand {encoded}'
 
 
 def _script_file_site_name(site_name):
@@ -4348,8 +4392,8 @@ def get_site_configs_remote(remote_connection, sites: List["Site"]) -> "SiteConf
                 web_config_path = windows_path_join(web_config_path, "web.config")
                 # Check if web.config exists remotely
                 ps_check_file = f'''
-                $path = $env:SystemDrive + "{web_config_path}"
-                if (Test-Path -Path $path -PathType Leaf) {{
+                $path = $env:SystemDrive + {_powershell_single_quote(web_config_path)}
+                if (Test-Path -LiteralPath $path -PathType Leaf) {{
                     Write-Output "EXISTS"
                 }} else {{
                     Write-Output "NOT_EXISTS"
@@ -4363,8 +4407,8 @@ def get_site_configs_remote(remote_connection, sites: List["Site"]) -> "SiteConf
                 web_config_path = windows_path_join(config.physical_path, "web.config")
                 # Check if web.config exists remotely
                 ps_check_file = f'''
-                $path = "{web_config_path}"
-                if (Test-Path -Path $path -PathType Leaf) {{
+                $path = {_powershell_single_quote(web_config_path)}
+                if (Test-Path -LiteralPath $path -PathType Leaf) {{
                     Write-Output "EXISTS"
                 }} else {{
                     Write-Output "NOT_EXISTS"
@@ -4379,7 +4423,7 @@ def get_site_configs_remote(remote_connection, sites: List["Site"]) -> "SiteConf
                 try:
                     # Read web.config content remotely
                     ps_read_file = f'''
-                    $webConfigContent = Get-Content -Path "{web_config_path}" -Raw
+                    $webConfigContent = Get-Content -LiteralPath {_powershell_single_quote(web_config_path)} -Raw
                     Write-Output $webConfigContent
                     '''
                     command_bytes = ps_read_file.encode('utf-16le')
@@ -4695,8 +4739,8 @@ def sanitize_windows_path(path):
 def create_migration_folders_remote(remote_connection, bundle_dir_remote, upload_target_dir_remote):
 
     ps_command = f'''
-    New-Item -Path "{bundle_dir_remote}" -ItemType Directory -Force
-    New-Item -Path "{upload_target_dir_remote}" -ItemType Directory -Force
+    New-Item -Path {_powershell_single_quote(bundle_dir_remote)} -ItemType Directory -Force
+    New-Item -Path {_powershell_single_quote(upload_target_dir_remote)} -ItemType Directory -Force
     Write-Host "Successfully created bundle and upload_target_dir directories"
     '''
     command_bytes = ps_command.encode('utf-16le')
