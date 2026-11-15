@@ -84,7 +84,7 @@ class TestProfileSelection(unittest.TestCase):
 
     def run(self, result=None):
         aws._flush()
-        aws._profile_env_var = 'AWS_EB_PROFILE'
+        aws._profile_env_var = ['AWS_EB_PROFILE', 'AWS_PROFILE']
         aws._region_name = 'us-west-2'
         self.root_dir = os.getcwd()
         if os.path.exists('testDir'):
@@ -232,6 +232,57 @@ aws_secret_access_key = {secret_key}
                 elasticbeanstalk.list_platform_versions()
 
             self.assertCorrectProfileWasUsed(_get_response_mock)
+
+    @mock.patch('botocore.endpoint.Endpoint._get_response')
+    def test_aws_profile_environment_variable_found__profile_exists_in_credentials_file(
+            self,
+            _get_response_mock
+    ):
+        """
+            - `--profile` is not passed and is not set in config.yml
+            - environment variable `AWS_EB_PROFILE` not found
+            - environment variable `AWS_PROFILE` found, profile exists in credentials file
+            - environment variables `AWS_SECRET_ACCESS_KEY` and `AWS_ACCESS_KEY_ID` found but not used
+        """
+        self._generate_profile(profile='some_profile')
+        with EnvVarSubstitutor('AWS_PROFILE', 'some_profile'):
+            _get_response_mock.return_value = self._generic_response()
+
+            @CredentialsEnvVarSubstituter('access_id', 'secret_key')
+            def invoke_api():
+                elasticbeanstalk.list_platform_versions()
+
+            self.assertCorrectProfileWasUsed(_get_response_mock)
+
+    @mock.patch('botocore.endpoint.Endpoint._get_response')
+    def test_aws_eb_profile_environment_variable_takes_precedence_over_aws_profile(
+            self,
+            _get_response_mock
+    ):
+        """
+            - `--profile` is not passed and is not set in config.yml
+            - environment variables `AWS_EB_PROFILE` and `AWS_PROFILE` both found, `AWS_EB_PROFILE` is used
+        """
+        credentials_dir = os.path.join(os.environ[HOME], '.aws')
+        os.mkdir(credentials_dir)
+        with open(os.path.join(credentials_dir, 'credentials'), 'w') as file:
+            file.write(
+                """[eb_profile]
+aws_access_key_id = eb_access_id
+aws_secret_access_key = secret_key
+
+[other_profile]
+aws_access_key_id = other_access_id
+aws_secret_access_key = secret_key
+"""
+            )
+        with EnvVarSubstitutor('AWS_EB_PROFILE', 'eb_profile'):
+            with EnvVarSubstitutor('AWS_PROFILE', 'other_profile'):
+                _get_response_mock.return_value = self._generic_response()
+
+                elasticbeanstalk.list_platform_versions()
+
+                self.assertCorrectProfileWasUsed(_get_response_mock, access_id='eb_access_id')
 
     @unittest.skip("Broken test setup")
     @mock.patch('botocore.endpoint.Endpoint._get_response')

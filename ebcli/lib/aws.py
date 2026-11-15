@@ -40,7 +40,8 @@ BOTOCORE_DATA_FOLDER_NAME = 'botocoredata'
 
 _api_clients = {}
 _profile = None
-_profile_env_var = 'AWS_EB_PROFILE'
+# botocore checks these in order, so AWS_EB_PROFILE takes precedence over AWS_PROFILE
+_profile_env_var = ['AWS_EB_PROFILE', 'AWS_PROFILE']
 _id = None
 _key = None
 _region_name = None
