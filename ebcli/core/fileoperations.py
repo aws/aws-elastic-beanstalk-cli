@@ -387,16 +387,13 @@ def delete_app_versions():
 
 
 def zip_append_archive(target_file, source_file):
-    zip_source = zipfile.ZipFile(source_file, 'r', allowZip64=True)
-    zip_target = zipfile.ZipFile(target_file, 'a', allowZip64=True)
-    with warnings.catch_warnings():
-        # Ignore UserWarning raised by zip module for zipping modules.
-        warnings.simplefilter('ignore', category=UserWarning)
-        for filename in zip_source.namelist():
-            zf = zip_source.read(filename)
-            zip_target.writestr(filename, zf)
-    zip_target.close()
-    zip_source.close()
+    with zipfile.ZipFile(source_file, 'r', allowZip64=True) as zip_source:
+        with zipfile.ZipFile(target_file, 'a', allowZip64=True) as zip_target:
+            with warnings.catch_warnings():
+                # Ignore UserWarning raised by zip module for zipping modules.
+                warnings.simplefilter('ignore', category=UserWarning)
+                for zip_info in zip_source.infolist():
+                    zip_target.writestr(zip_info, zip_source.read(zip_info.filename))
 
 
 def zip_up_folder(directory, location, ignore_list=None):

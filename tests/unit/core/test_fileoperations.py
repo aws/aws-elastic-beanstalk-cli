@@ -465,6 +465,30 @@ class TestFileOperations(unittest.TestCase):
         target_file_zip = zipfile.ZipFile('target_file.zip', 'r', allowZip64=True)
         self.assertEqual(['source_file.txt', 'target_file.txt'], sorted(target_file_zip.namelist()))
 
+    def test_zip_append_archive_preserves_file_metadata(self):
+        os.chdir(self.test_root)
+        os.chdir('testDir')
+
+        source_file = 'submodule_source.zip'
+        target_file = 'target_file.zip'
+        zip_info = zipfile.ZipInfo('submodule/static.txt')
+        zip_info.create_system = 3
+        zip_info.external_attr = (stat.S_IFREG | 0o644) << 16
+        zip_info.compress_type = zipfile.ZIP_DEFLATED
+
+        with zipfile.ZipFile(source_file, 'w') as source_zip:
+            source_zip.writestr(zip_info, 'static asset')
+        with zipfile.ZipFile(target_file, 'w') as target_zip:
+            target_zip.writestr('app.py', 'print("hello")')
+
+        fileoperations.zip_append_archive(target_file, source_file)
+
+        with zipfile.ZipFile(target_file, 'r') as target_zip:
+            appended_info = target_zip.getinfo('submodule/static.txt')
+            self.assertEqual(zipfile.ZIP_DEFLATED, appended_info.compress_type)
+            self.assertEqual(0o644, stat.S_IMODE(appended_info.external_attr >> 16))
+            self.assertEqual('static asset', target_zip.read('submodule/static.txt').decode())
+
     @patch('ebcli.core.fileoperations.get_editor')
     @patch('ebcli.core.fileoperations.os.system')
     def test_open_file_for_editing(self, system_mock, get_editor_mock):
