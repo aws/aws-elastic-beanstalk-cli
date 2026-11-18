@@ -2995,3 +2995,35 @@ class TestHandleUploadTarget(unittest.TestCase):
         self._run('/local/app.zip')
 
         s3.upload_application_version.assert_not_called()
+
+
+class TestOpenWebpageInBrowser(unittest.TestCase):
+    @mock.patch('ebcli.operations.commonops.os.fork', return_value=1)
+    @mock.patch('subprocess.Popen')
+    @mock.patch('ebcli.operations.commonops.platform.system', return_value='Linux')
+    @mock.patch('ebcli.operations.commonops.utils.is_ssh', return_value=False)
+    def test_nix_subprocess_is_isolated_and_shell_free(self, _is_ssh, _system, popen_mock, _fork):
+        url = "example.com/'; touch /tmp/pwned; '"
+        commonops.open_webpage_in_browser(url, ssl=True)
+
+        args, kwargs = popen_mock.call_args
+        self.assertEqual(
+            [sys.executable, '-I', '-m', 'webbrowser', 'https://' + url],
+            args[0]
+        )
+        self.assertFalse(kwargs.get('shell', False))
+
+    def test_isolated_mode_ignores_webbrowser_py_in_cwd(self):
+        import tempfile
+        tmp = tempfile.mkdtemp()
+        marker = os.path.join(tmp, 'shadowed')
+        try:
+            with open(os.path.join(tmp, 'webbrowser.py'), 'w') as f:
+                f.write('open({!r}, "w").close()\n'.format(marker))
+            subprocess.call(
+                [sys.executable, '-I', '-c', 'import webbrowser'],
+                cwd=tmp
+            )
+            self.assertFalse(os.path.exists(marker))
+        finally:
+            shutil.rmtree(tmp)
