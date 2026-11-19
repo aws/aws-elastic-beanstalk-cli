@@ -484,6 +484,9 @@ def open_webpage_in_browser(url, ssl=False):
         pid = os.fork()
         if pid == 0:  # Is child
             p.communicate()
+            # Exit the child without returning, otherwise it would run the
+            # rest of the eb command a second time.
+            os._exit(0)
 
 
 def create_dummy_app_version(app_name):
