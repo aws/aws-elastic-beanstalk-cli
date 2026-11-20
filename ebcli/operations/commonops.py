@@ -460,15 +460,14 @@ def open_webpage_in_browser(url, ssl=False):
         LOG.debug('Running webbrowser as subprocess.')
         from subprocess import Popen, PIPE
 
+        # -I (isolated mode) keeps the current directory and PYTHON* env vars
+        # off sys.path, so a webbrowser.py in the project directory cannot
+        # shadow the standard library module. Passing an argument list without
+        # a shell keeps the URL from being interpreted by the shell.
         p = Popen(
-            [
-                '{python} -m webbrowser \'{url}\''.format(
-                    python=sys.executable,
-                    url=url)
-            ],
+            [sys.executable, '-I', '-m', 'webbrowser', url],
             stderr=PIPE,
             stdout=PIPE,
-            shell=True
         )
         '''
          We need to fork the process for various reasons
@@ -485,6 +484,9 @@ def open_webpage_in_browser(url, ssl=False):
         pid = os.fork()
         if pid == 0:  # Is child
             p.communicate()
+            # Exit the child without returning, otherwise it would run the
+            # rest of the eb command a second time.
+            os._exit(0)
 
 
 def create_dummy_app_version(app_name):

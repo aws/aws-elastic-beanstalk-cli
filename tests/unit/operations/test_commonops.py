@@ -2995,3 +2995,56 @@ class TestHandleUploadTarget(unittest.TestCase):
         self._run('/local/app.zip')
 
         s3.upload_application_version.assert_not_called()
+
+
+class TestOpenWebpageInBrowser(unittest.TestCase):
+    # os.fork does not exist on Windows, so create=True lets these tests
+    # patch it there too.
+    def _open_on_nix(self, url, fork_pid=1):
+        with mock.patch('ebcli.operations.commonops.utils.is_ssh', return_value=False), \
+                mock.patch('ebcli.operations.commonops.platform.system', return_value='Linux'), \
+                mock.patch('ebcli.operations.commonops.os.fork', create=True, return_value=fork_pid), \
+                mock.patch('ebcli.operations.commonops.os._exit') as exit_mock, \
+                mock.patch('subprocess.Popen') as popen_mock:
+            commonops.open_webpage_in_browser(url, ssl=True)
+        return popen_mock, exit_mock
+
+    def test_nix_subprocess_is_isolated_and_shell_free(self):
+        url = "example.com/'; touch /tmp/pwned; '"
+        popen_mock, _ = self._open_on_nix(url)
+
+        args, kwargs = popen_mock.call_args
+        self.assertEqual(
+            [sys.executable, '-I', '-m', 'webbrowser', 'https://' + url],
+            args[0]
+        )
+        self.assertFalse(kwargs.get('shell', False))
+
+    def test_nix_subprocess_ignores_webbrowser_py_in_cwd(self):
+        popen_mock, _ = self._open_on_nix('example.com')
+        argv = popen_mock.call_args[0][0]
+        # Run the interpreter and flags that open_webpage_in_browser uses, but
+        # only import webbrowser instead of opening a browser.
+        interpreter_and_flags = argv[:argv.index('-m')]
+
+        import tempfile
+        tmp = tempfile.mkdtemp()
+        marker = os.path.join(tmp, 'shadowed')
+        try:
+            with open(os.path.join(tmp, 'webbrowser.py'), 'w') as f:
+                f.write('open({!r}, "w").close()\n'.format(marker))
+            subprocess.call(interpreter_and_flags + ['-c', 'import webbrowser'], cwd=tmp)
+            self.assertFalse(os.path.exists(marker))
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_forked_child_exits_after_browser_opens(self):
+        popen_mock, exit_mock = self._open_on_nix('example.com', fork_pid=0)
+
+        popen_mock.return_value.communicate.assert_called_once_with()
+        exit_mock.assert_called_once_with(0)
+
+    def test_parent_does_not_exit(self):
+        _, exit_mock = self._open_on_nix('example.com', fork_pid=1)
+
+        exit_mock.assert_not_called()
